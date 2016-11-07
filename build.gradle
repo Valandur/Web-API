@@ -1,0 +1,38 @@
+plugins {
+    id "java"
+    id "com.qixalite.spongestart" version "1.5.1"
+}
+
+repositories {
+    mavenCentral()
+    maven {
+        url 'https://repo.spongepowered.org/maven/'
+    }
+}
+
+spongestart{
+    eula true
+
+    //optional configs
+    spongeVanillaBuild 'LATEST'
+    spongeForgeBuild 'LATEST'
+    forgeServerFolder 'run/forge'
+    vanillaServerFolder 'run/vanilla'
+}
+
+dependencies {
+    compileOnly 'org.spongepowered:spongeapi:5.0.0-SNAPSHOT'
+    compile group: 'org.eclipse.jetty', name: 'jetty-server', version: '9.3.13.v20161014'
+    compile group: 'org.eclipse.jetty', name: 'jetty-http', version: '9.3.13.v20161014'
+}
+
+jar {
+    // Include all compile time dependencies in the jar (e.g. Jetty)
+    // Sponge is declared compileOnly so that it doesn't get included here
+    from configurations.compile.collect {
+        zipTree(it)
+    }
+
+    // Exclude signature files from JARs
+    exclude 'META-INF/*.RSA', 'META-INF/*.SF','META-INF/*.DSA'
+}

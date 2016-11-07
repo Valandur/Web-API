@@ -170,6 +170,9 @@
       <option name="VM_PARAMETERS" value="-Xmx512m -Xms256m -XX:MaxPermSize=250m -ea" />
     </configuration>
   </component>
+  <component name="VcsDirectoryMappings">
+    <mapping directory="$PROJECT_DIR$" vcs="Git" />
+  </component>
   <component name="libraryTable">
     <library name="Gradle: aopalliance:aopalliance:1.0">
       <CLASSES>

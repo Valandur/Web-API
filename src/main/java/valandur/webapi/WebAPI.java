@@ -11,8 +11,10 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.handler.ContextHandler;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
+import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.slf4j.Logger;
+import org.spongepowered.api.Sponge;
 import org.spongepowered.api.asset.AssetManager;
 import org.spongepowered.api.config.DefaultConfig;
 import org.spongepowered.api.entity.living.player.Player;
@@ -24,6 +26,7 @@ import org.spongepowered.api.event.game.state.GameStoppedServerEvent;
 import org.spongepowered.api.event.message.MessageChannelEvent;
 import org.spongepowered.api.plugin.Plugin;
 import org.spongepowered.api.text.Text;
+import valandur.webapi.handlers.AuthHandler;
 import valandur.webapi.servlets.*;
 
 import javax.servlet.ServletContext;
@@ -96,8 +99,8 @@ public class WebAPI {
 
         //Log.setLog(new JettyLogger());
 
+        // Load and prepare swagger yaml
         String swaggerYaml = "";
-
         try {
             StringWriter sink = new StringWriter();
             URL url = this.getClass().getResource("/assets/webapi/swagger.yaml");
@@ -120,30 +123,32 @@ public class WebAPI {
             server.addConnector(http);
 
             // Collection of all handlers
-            List<ContextHandler> handlers = new ArrayList<ContextHandler>();
-            ContextHandlerCollection contextCollection = new ContextHandlerCollection();
+            List<Handler> handlers = new ArrayList<Handler>();
 
             // Asset handlers
             handlers.add(newContext("/", new AssetHandler("redoc.html")));
             handlers.add(newContext("/docs", new AssetHandler(swaggerYaml, "application/json")));
 
             // Main servlet context
-            ServletContextHandler context = new ServletContextHandler();
-            context.setContextPath("/api");
+            ServletContextHandler servletsContext = new ServletContextHandler();
+            servletsContext.setContextPath("/api");
 
-            context.addServlet(InfoServlet.class, "/info");
-            context.addServlet(PluginServlet.class, "/plugins");
-            context.addServlet(ChatServlet.class, "/chat");
+            HandlerList list = new HandlerList();
+            list.setHandlers(new Handler[]{ new AuthHandler(), servletsContext });
+            handlers.add(list);
 
-            context.addServlet(CmdServlet.class, "/cmd/*");
-            context.addServlet(WorldServlet.class, "/worlds/*");
-            context.addServlet(PlayerServlet.class, "/players/*");
+            servletsContext.addServlet(InfoServlet.class, "/info");
+            servletsContext.addServlet(ChatServlet.class, "/chat");
+            servletsContext.addServlet(CmdServlet.class, "/cmd");
 
-            handlers.add(context);
+            servletsContext.addServlet(WorldServlet.class, "/worlds/*");
+            servletsContext.addServlet(PlayerServlet.class, "/players/*");
+            servletsContext.addServlet(PluginServlet.class, "/plugins/*");
 
             // Add collection of handlers to server
-            contextCollection.setHandlers(handlers.toArray(new Handler[handlers.size()]));
-            server.setHandler(contextCollection);
+            ContextHandlerCollection coll = new ContextHandlerCollection();
+            coll.setHandlers(handlers.toArray(new Handler[handlers.size()]));
+            server.setHandler(coll);
 
             server.start();
 

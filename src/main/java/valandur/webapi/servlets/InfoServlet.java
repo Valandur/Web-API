@@ -3,12 +3,11 @@ package valandur.webapi.servlets;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
-import org.eclipse.jetty.server.Request;
-import org.eclipse.jetty.server.handler.AbstractHandler;
 import org.spongepowered.api.Platform;
 import org.spongepowered.api.Server;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.plugin.PluginContainer;
+import valandur.webapi.Permission;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -19,7 +18,8 @@ import java.util.Optional;
 
 public class InfoServlet extends APIServlet {
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    @Permission(perm = "info")
+    protected void handleGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         resp.setContentType("application/json; charset=utf-8");
         resp.setStatus(HttpServletResponse.SC_OK);
 

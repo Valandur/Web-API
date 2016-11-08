@@ -1,0 +1,16 @@
+- name: guest
+  token: GUEST-TOKEN
+  permissions:
+    - info
+- name: user
+  token: USER-TOKEN
+  permissions:
+    - info
+    - chat
+    - player
+    - world
+    - plugin
+- name: admin
+  token: ADMIN-TOKEN
+  permissions:
+    - "*"

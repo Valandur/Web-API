@@ -3,11 +3,10 @@ package valandur.webapi.servlets;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
-import org.eclipse.jetty.server.Request;
-import org.eclipse.jetty.server.handler.AbstractHandler;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.plugin.PluginContainer;
 import org.spongepowered.api.plugin.PluginManager;
+import valandur.webapi.Permission;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -19,7 +18,8 @@ import java.util.Optional;
 
 public class PluginServlet extends APIServlet {
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    @Permission(perm = "plugin")
+    protected void handleGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         JsonObject json = new JsonObject();
         resp.setContentType("application/json; charset=utf-8");
         resp.setStatus(HttpServletResponse.SC_OK);
@@ -39,8 +39,8 @@ public class PluginServlet extends APIServlet {
             Optional<PluginContainer> res = pm.getPlugin(pName);
             if (res.isPresent()) {
                 PluginContainer plugin = res.get();
-                json.addProperty("name", plugin.getName());
                 json.addProperty("id", plugin.getId());
+                json.addProperty("name", plugin.getName());
                 Optional<String> descr = plugin.getDescription();
                 json.addProperty("description", descr.isPresent() ? descr.get() : null);
                 Optional<String> version = plugin.getVersion();

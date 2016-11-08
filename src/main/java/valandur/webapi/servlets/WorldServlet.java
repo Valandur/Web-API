@@ -7,10 +7,10 @@ import org.spongepowered.api.Sponge;
 import org.spongepowered.api.world.Chunk;
 import org.spongepowered.api.world.World;
 import org.spongepowered.api.world.WorldBorder;
+import valandur.webapi.Permission;
 import valandur.webapi.misc.Util;
 
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -21,7 +21,8 @@ import java.util.Optional;
 
 public class WorldServlet extends APIServlet {
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    @Permission(perm = "world")
+    protected void handleGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         JsonObject json = new JsonObject();
         resp.setContentType("application/json; charset=utf-8");
         resp.setStatus(HttpServletResponse.SC_OK);

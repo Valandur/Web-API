@@ -3,10 +3,9 @@ package valandur.webapi.servlets;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import org.apache.commons.lang3.tuple.Triple;
-import org.eclipse.jetty.server.Request;
-import org.eclipse.jetty.server.handler.AbstractHandler;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.text.Text;
+import valandur.webapi.Permission;
 import valandur.webapi.WebAPI;
 
 import javax.servlet.ServletException;
@@ -18,7 +17,8 @@ import java.util.Date;
 
 public class ChatServlet extends APIServlet {
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    @Permission(perm = "chat")
+    protected void handleGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         JsonObject json = new JsonObject();
         resp.setContentType("application/json; charset=utf-8");
         resp.setStatus(HttpServletResponse.SC_OK);

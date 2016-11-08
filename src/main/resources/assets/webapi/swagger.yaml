@@ -1,0 +1,215 @@
+swagger: '2.0'
+
+info:
+  title: WebAPI
+  description: |
+    Access Sponge powered Minecraft servers through a WebAPI
+
+    # Introduction
+  version: "1.0.0"
+
+host: <host>
+
+schemes:
+  - http
+basePath: /
+
+consumes:
+  - application/json
+
+produces:
+  - application/json
+
+tags:
+  - name: Info
+    description: Get general information about the minecraft server
+  - name: Player
+    description: List all players and get detailed information about players.
+  - name: World
+    description: List all the worlds and get detailed information about the server.
+
+#parameters:
+
+#responses:
+
+paths:
+  /info:
+    get:
+      summary: Server info
+      description: |
+        Get general information about the minecraft server
+      tags:
+        - Info
+      responses:
+        200:
+          description: General information about the server
+          schema:
+            $ref: '#/definitions/ServerInfo'
+  /players:
+    get:
+      summary: Player list
+      description: |
+        Get a list of all the players on the server.
+      tags:
+        - Player
+      responses:
+        200:
+          description: A list of all the players on the server
+          schema:
+            $ref: '#/definitions/PlayerList'
+  /players/{name}:
+    get:
+      summary: Detailed player info
+      description: |
+        Get detailed information about a player.
+      tags:
+        - Player
+      responses:
+        200:
+          description: Detailed information about the player.
+          schema:
+            $ref: '#/definitions/Player'
+  /worlds:
+    get:
+      summary: World list
+      description: |
+        Get a list of all the worlds on the server.
+      tags:
+        - World
+      responses:
+        200:
+          description: A list of all the worlds on the server
+          schema:
+            $ref: '#/definitions/WorldList'
+  /worlds/{name}:
+    get:
+      summary: Detailed world info
+      description: |
+        Get detailed information about a world.
+      tags:
+        - World
+      responses:
+        200:
+          description: Detailed information about the player.
+          schema:
+            $ref: '#/definitions/World'
+
+
+
+
+definitions:
+  ServerInfo:
+    type: object
+    properties:
+      motd:
+        type: string
+        description: The message of the day set on the server.
+      players:
+        type: integer
+        description: The amount of players currently playing on the server
+      maxPlayers:
+        type: integer
+        description: The maximum amount of players allowed on the server
+      uptimeTicks:
+        type: integer
+        description: The number of ticks the server has been running
+      hasWhitelist:
+        type: boolean
+        description: True if the server has a whitelist, false otherwise.
+      minecraftVersion:
+        type: string
+        description: The minecraft version running on the server.
+      api:
+        type: object
+        description: Information about the API running on the server.
+  PlayerList:
+    type: object
+    properties:
+      maxPlayers:
+        type: integer
+        description: The maximum amount of players this server supports.
+      players:
+        type: array
+        description: A list of player names.
+        items:
+          type: string
+          description: The name of the player.
+  Player:
+    type: object
+    properties:
+      name:
+        type: string
+        description: The name of the player.
+      uuid:
+        type: string
+        description: The unique identifier of the player.
+      address:
+        type: string
+        description: The address the player is connecting form.
+      position:
+        $ref: '#/definitions/Position'
+      health:
+        type: number
+        format: double
+        description: The current health of the player.
+      maxHealth:
+        type: number
+        format: double
+        description: The maximum health of the player.
+      food:
+        type: integer
+        description: The current food value of the player.
+      exhaustion:
+        type: number
+        format: double
+        description: The exhaustion level of the player.
+      saturation:
+        type: number
+        format: double
+        description: How saturated the player is.
+      gameMode:
+        type: string
+        description: The current gamemode the player is in.
+  Position:
+    type: object
+    description: Describes a location in a world
+    properties:
+      world:
+        type: string
+        description: The name of the world the player is in.
+      x:
+        type: number
+        format: double
+        description: The x-coordinate of the position.
+      y:
+        type: number
+        format: double
+        description: The y-coordinate of the position.
+      z:
+        type: number
+        format: double
+        description: The z-coordinate of the position.
+  WorldList:
+    type: object
+    properties:
+      worlds:
+        type: array
+        description: A list of world names.
+        items:
+          type: string
+          description: The name of the world.
+  World:
+    type: object
+    properties:
+      name:
+        type: string
+        description: The name of the world.
+      uuid:
+        type: string
+        description: The unique id of the world.
+      difficulty:
+        type: string
+        description: The current difficulty of the world.
+      dimension:
+        type: string
+        description: The name of the dimension the world belongs to.

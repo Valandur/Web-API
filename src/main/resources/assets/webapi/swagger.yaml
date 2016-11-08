@@ -23,10 +23,16 @@ produces:
 tags:
   - name: Info
     description: Get general information about the minecraft server
+  - name: Chat
+    description: Provides access to the chat history.
+  - name: Command
+    description: List all commands on the server and execute them.
   - name: Player
-    description: List all players and get detailed information about players.
+    description: List all players and get detailed information about them.
   - name: World
-    description: List all the worlds and get detailed information about the server.
+    description: List all worlds and get detailed information about them.
+  - name: Plugin
+    description: List all plugins and get detailed information about them.
 
 #parameters:
 
@@ -45,6 +51,47 @@ paths:
           description: General information about the server
           schema:
             $ref: '#/definitions/ServerInfo'
+  /chat:
+    get:
+      summary: Chat
+      description: |
+        View a history of the server chat
+      tags:
+        - Chat
+      responses:
+        200:
+          description: A history of the chat.
+          schema:
+            $ref: '#/definitions/ChatList'
+  /cmd:
+    get:
+      summary: Command list
+      description: |
+        Gets a list of all the commands available on the server.
+      tags:
+        - Command
+      responses:
+        200:
+          description: A list of commands
+          schema:
+            $ref: '#/definitions/CommandList'
+    post:
+      summary: Execute command
+      description: |
+        Execute a command on the server.
+      parameters:
+        - name: Request
+          in: body
+          description: The command sent to the server
+          schema:
+            $ref: '#/definitions/CommandRequest'
+      tags:
+        - Command
+      responses:
+        200:
+          description: The command executed successfully.
+          schema:
+            $ref: '#/definitions/CommandResponse'
   /players:
     get:
       summary: Player list
@@ -62,6 +109,11 @@ paths:
       summary: Detailed player info
       description: |
         Get detailed information about a player.
+      parameters:
+        - name: name
+          in: path
+          type: string
+          description: The name of the player to get detailed information about.
       tags:
         - Player
       responses:
@@ -86,6 +138,11 @@ paths:
       summary: Detailed world info
       description: |
         Get detailed information about a world.
+      parameters:
+        - name: name
+          in: path
+          type: string
+          description: The name of the world to get detailed information about.
       tags:
         - World
       responses:
@@ -93,7 +150,35 @@ paths:
           description: Detailed information about the player.
           schema:
             $ref: '#/definitions/World'
-
+  /plugins:
+    get:
+      summary: Plugin list
+      description: |
+        Get a list of all the plugins running on the server
+      tags:
+        - Plugin
+      responses:
+        200:
+          description: A list of all the plugins on the server.
+          schema:
+            $ref: '#/definitions/PluginList'
+  /plugins/{id}:
+    get:
+      summary: Detailed plugin info
+      description: |
+        Gets detailed information about a plugin.
+      parameters:
+        - name: id
+          in: path
+          type: string
+          description: The id of the plugin to get detailed information about.
+      tags:
+        - Plugin
+      responses:
+        200:
+          description: Detailed information about the plugin.
+          schema:
+            $ref: '#/definitions/Plugin'
 
 
 
@@ -133,6 +218,7 @@ definitions:
         type: number
         format: double
         description: The z-coordinate of the position.
+
   ServerInfo:
     type: object
     properties:
@@ -182,6 +268,68 @@ definitions:
             items:
               type: string
               description: The name of the author.
+
+  ChatList:
+    type: object
+    properties:
+      messages:
+        type: array
+        description: A list of chat messages.
+        items:
+          $ref: '#/definitions/ChatMessage'
+  ChatMessage:
+    type: object
+    properties:
+      timestamp:
+        type: string
+        description: The timestamp when the message was sent (server time)
+      sender:
+        type: string
+        description: The name of the player that sent the message
+      message:
+        type: string
+        description: The message that was sent.
+
+  CommandList:
+    type: object
+    properties:
+      commands:
+        type: array
+        description: A list of commands
+        items:
+          $ref: '#/definitions/Command'
+  Command:
+    type: object
+    properties:
+      name:
+        type: string
+        description: The main name of the command.
+      aliases:
+        type: array
+        description: All the aliases with which the command can be executed.
+        items:
+          type: string
+      usage:
+        type: string
+        description: The usage instructions for the command.
+      description:
+        type: string
+        description: Describes what the command does.
+  CommandRequest:
+    type: object
+    properties:
+      command:
+        type: string
+        description: The command and it's arguments that are sent to the server.
+        required: true
+  CommandResponse:
+    type: object
+    properties:
+      response:
+        type: array
+        description: An array of message that were sent in response to the command.
+        items:
+          type: string
 
   PlayerList:
     type: object
@@ -300,3 +448,36 @@ definitions:
       entities:
         type: integer
         description: The number of entities in this chunk.
+  PluginList:
+    type: object
+    properties:
+      plugins:
+        type: array
+        description: A list of plugin ids.
+        items:
+          type: string
+          description: The id of the plugin.
+  Plugin:
+    type: object
+    properties:
+      id:
+        type: string
+        description: The unique id of the plugin.
+      name:
+        type: string
+        description: The name of the plugin.
+      description:
+        type: string
+        description: The description of the plugin.
+      version:
+        type: string
+        description: The version of the plugin.
+      url:
+        type: string
+        description: The website that the plugin belongs to.
+      authors:
+        type: array
+        description: The list of authors that worked on the plugin.
+        items:
+          type: string
+          description: The name of the author.

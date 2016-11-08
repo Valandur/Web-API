@@ -12,7 +12,7 @@ host: <host>
 
 schemes:
   - http
-basePath: /
+basePath: /api
 
 consumes:
   - application/json
@@ -98,6 +98,41 @@ paths:
 
 
 definitions:
+  Position:
+    type: object
+    description: Describes a location in a world
+    properties:
+      world:
+        type: string
+        description: The name of the world the player is in.
+      x:
+        type: number
+        format: double
+        description: The x-coordinate of the position.
+      y:
+        type: number
+        format: double
+        description: The y-coordinate of the position.
+      z:
+        type: number
+        format: double
+        description: The z-coordinate of the position.
+  PositionWithoutWorld:
+    type: object
+    description: Describes a location
+    properties:
+      x:
+        type: number
+        format: double
+        description: The x-coordinate of the position.
+      y:
+        type: number
+        format: double
+        description: The y-coordinate of the position.
+      z:
+        type: number
+        format: double
+        description: The z-coordinate of the position.
   ServerInfo:
     type: object
     properties:
@@ -122,6 +157,32 @@ definitions:
       api:
         type: object
         description: Information about the API running on the server.
+        properties:
+          id:
+            type: string
+            description: The unique id of the api.
+          name:
+            type: string
+            description: The name of the api.
+          version:
+            type: string
+            description: The version of the api.
+          minecraftVersion:
+            type: string
+            description: The supported minecraft version for this api.
+          description:
+            type: string
+            description: The description of the api.
+          url:
+            type: string
+            description: The website of the api.
+          authors:
+            type: array
+            description: The list of authors that worked on the api.
+            items:
+              type: string
+              description: The name of the author.
+
   PlayerList:
     type: object
     properties:
@@ -170,25 +231,6 @@ definitions:
       gameMode:
         type: string
         description: The current gamemode the player is in.
-  Position:
-    type: object
-    description: Describes a location in a world
-    properties:
-      world:
-        type: string
-        description: The name of the world the player is in.
-      x:
-        type: number
-        format: double
-        description: The x-coordinate of the position.
-      y:
-        type: number
-        format: double
-        description: The y-coordinate of the position.
-      z:
-        type: number
-        format: double
-        description: The z-coordinate of the position.
   WorldList:
     type: object
     properties:
@@ -213,3 +255,48 @@ definitions:
       dimension:
         type: string
         description: The name of the dimension the world belongs to.
+      loadedChunks:
+        type: array
+        description: Information about the currently loaded chunks for this world.
+        items:
+          $ref: '#/definitions/LoadedChunk'
+      gameRules:
+        type: object
+        description: The set of game rules active on the server.
+      time:
+        type: integer
+        description: The time of day (modulo 24000 [ticks per day])
+      spawn:
+        $ref: '#/definitions/PositionWithoutWorld'
+      border:
+        type: object
+        description: The border for this world.
+        properties:
+          center:
+            $ref: '#/definitions/PositionWithoutWorld'
+          diameter:
+            type: number
+            format: double
+            description: The diameter of the border (extent in x and z direction)
+          damageAmount:
+            type: number
+            format: double
+            description: The damage per tick done to the player when outside the border.
+          damageThreshold:
+            type: number
+            format: double
+            description: The distance the player may be outside the border before taking damage.
+          warningDistance:
+            type: integer
+            description: Get the distance at which a contracting world border will warn a player.
+          warningTime:
+            type: integer
+            description: Get the time at which a contracting world border will warn a player.
+  LoadedChunk:
+    type: object
+    properties:
+      position:
+        $ref: '#/definitions/PositionWithoutWorld'
+      entities:
+        type: integer
+        description: The number of entities in this chunk.

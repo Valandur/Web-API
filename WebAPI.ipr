@@ -47,6 +47,7 @@
   <component name="GradleSettings">
     <option name="linkedExternalProjectsSettings">
       <GradleProjectSettings>
+        <option name="disableWrapperSourceDistributionNotification" value="true" />
         <option name="distributionType" value="DEFAULT_WRAPPED" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
         <option name="gradleHome" value="$PROJECT_DIR$/../christmas/gradle/wrapper" />
@@ -342,6 +343,15 @@
         <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.eclipse.jetty/jetty-io/9.3.13.v20161014/d239b2ed7a0f871701b45208503368b1816b5b57/jetty-io-9.3.13.v20161014-sources.jar!/" />
       </SOURCES>
     </library>
+    <library name="Gradle: org.eclipse.jetty:jetty-security:9.3.13.v20161014">
+      <CLASSES>
+        <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.eclipse.jetty/jetty-security/9.3.13.v20161014/21eeb13326c78435b432819e201bb32b62e64ac9/jetty-security-9.3.13.v20161014.jar!/" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES>
+        <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.eclipse.jetty/jetty-security/9.3.13.v20161014/5e1ec00136e7ef321229a8c8be43b38f1836c343/jetty-security-9.3.13.v20161014-sources.jar!/" />
+      </SOURCES>
+    </library>
     <library name="Gradle: org.eclipse.jetty:jetty-server:9.3.13.v20161014">
       <CLASSES>
         <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.eclipse.jetty/jetty-server/9.3.13.v20161014/d33bcdcbf7c666cfed83a7f83cb4217ef7f2301/jetty-server-9.3.13.v20161014.jar!/" />
@@ -349,6 +359,15 @@
       <JAVADOC />
       <SOURCES>
         <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.eclipse.jetty/jetty-server/9.3.13.v20161014/33fafea16fa626700b3cdcac0f1a2d49c43ec432/jetty-server-9.3.13.v20161014-sources.jar!/" />
+      </SOURCES>
+    </library>
+    <library name="Gradle: org.eclipse.jetty:jetty-servlet:9.3.13.v20161014">
+      <CLASSES>
+        <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.eclipse.jetty/jetty-servlet/9.3.13.v20161014/3e201145c00f90998e891f48c7cabfc3ae3e8cbb/jetty-servlet-9.3.13.v20161014.jar!/" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES>
+        <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.eclipse.jetty/jetty-servlet/9.3.13.v20161014/df442914dd61b31ef6a6dacaa8a0bbf81b0a50a3/jetty-servlet-9.3.13.v20161014-sources.jar!/" />
       </SOURCES>
     </library>
     <library name="Gradle: org.eclipse.jetty:jetty-util:9.3.13.v20161014">

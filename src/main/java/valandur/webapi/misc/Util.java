@@ -24,8 +24,11 @@ public class Util {
     }
 
     public static JsonObject positionToJson(Location<World> location) {
+        return positionToJson(location, true);
+    }
+    public static JsonObject positionToJson(Location<World> location, boolean includeWorld) {
         JsonObject obj = new JsonObject();
-        obj.addProperty("world", location.getExtent().getName());
+        if (includeWorld) obj.addProperty("world", location.getExtent().getName());
         obj.addProperty("x", location.getX());
         obj.addProperty("y", location.getY());
         obj.addProperty("z", location.getZ());

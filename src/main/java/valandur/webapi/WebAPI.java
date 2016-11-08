@@ -11,6 +11,7 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.handler.ContextHandler;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
+import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.slf4j.Logger;
 import org.spongepowered.api.asset.AssetManager;
 import org.spongepowered.api.config.DefaultConfig;
@@ -23,15 +24,15 @@ import org.spongepowered.api.event.game.state.GameStoppedServerEvent;
 import org.spongepowered.api.event.message.MessageChannelEvent;
 import org.spongepowered.api.plugin.Plugin;
 import org.spongepowered.api.text.Text;
-import valandur.webapi.handlers.*;
+import valandur.webapi.servlets.*;
 
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServlet;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.net.URL;
 import java.util.*;
-
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 @Plugin(
         id = "webapi",
@@ -118,23 +119,32 @@ public class WebAPI {
             http.setIdleTimeout(30000);
             server.addConnector(http);
 
-            // Handlers
+            // Collection of all handlers
             List<ContextHandler> handlers = new ArrayList<ContextHandler>();
-
-            handlers.add(newContext("/", new AssetHandler("redoc.html")));
-            handlers.add(newContext("/api-docs", new AssetHandler(swaggerYaml, "application/json")));
-
-            handlers.add(newContext("/info", new InfoHandler()));
-            handlers.add(newContext("/cmd", new CmdHandler()));
-            handlers.add(newContext("/players", new PlayerHandler()));
-            handlers.add(newContext("/worlds", new WorldHandler()));
-            handlers.add(newContext("/chat", new ChatHandler()));
-            handlers.add(newContext("/plugins", new PluginHandler()));
-
             ContextHandlerCollection contextCollection = new ContextHandlerCollection();
-            contextCollection.setHandlers(handlers.toArray(new Handler[handlers.size()]));
 
+            // Asset handlers
+            handlers.add(newContext("/", new AssetHandler("redoc.html")));
+            handlers.add(newContext("/docs", new AssetHandler(swaggerYaml, "application/json")));
+
+            // Main servlet context
+            ServletContextHandler context = new ServletContextHandler();
+            context.setContextPath("/api");
+
+            context.addServlet(InfoServlet.class, "/info");
+            context.addServlet(PluginServlet.class, "/plugins");
+            context.addServlet(ChatServlet.class, "/chat");
+
+            context.addServlet(CmdServlet.class, "/cmd/*");
+            context.addServlet(WorldServlet.class, "/worlds/*");
+            context.addServlet(PlayerServlet.class, "/players/*");
+
+            handlers.add(context);
+
+            // Add collection of handlers to server
+            contextCollection.setHandlers(handlers.toArray(new Handler[handlers.size()]));
             server.setHandler(contextCollection);
+
             server.start();
 
         } catch (Exception e) {
@@ -142,6 +152,10 @@ public class WebAPI {
         }
 
         logger.info("Web server running on " + server.getURI());
+    }
+
+    private static ServletContext newContext(String path, HttpServlet servlet) {
+        return null;
     }
 
     private static ContextHandler newContext(String path, Handler handler) {

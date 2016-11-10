@@ -1,39 +1,22 @@
 package valandur.webapi.handlers;
 
-import ninja.leaping.configurate.ConfigurationNode;
-import ninja.leaping.configurate.yaml.YAMLConfigurationLoader;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.AbstractHandler;
-import org.spongepowered.api.util.Tuple;
-import valandur.webapi.WebAPI;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.net.URL;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class AuthHandler extends AbstractHandler {
-    private Map<String, Tuple<String, List<String>>> authMap = new HashMap<>();
+    private Map<String, PermissionSet> authMap = new HashMap<>();
 
-    public AuthHandler() {
-        try {
-            URL url = WebAPI.class.getResource("/assets/webapi/permissions.yaml");
-            YAMLConfigurationLoader loader = YAMLConfigurationLoader.builder().setURL(url).build();
-            ConfigurationNode permNode = loader.load();
-            for (ConfigurationNode node : permNode.getChildrenList()) {
-                ArrayList<String> perms = new ArrayList<>();
-                for (ConfigurationNode perm : node.getNode("permissions").getChildrenList()) {
-                    perms.add(perm.getString());
-                }
-                authMap.put(node.getNode("name").getString(), new Tuple<>(node.getNode("token").getString(), perms));
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
+    public AuthHandler(List<PermissionSet> permissionSets) {
+        for (PermissionSet set : permissionSets) {
+            authMap.put(set.getUser(), set);
         }
     }
 
@@ -52,9 +35,31 @@ public class AuthHandler extends AbstractHandler {
             }
         }
 
-        Tuple<String, List<String>> tuple = authMap.get(user);
-        if (tuple != null && tuple.getFirst().equals(token)) {
-            request.setAttribute("perms", tuple.getSecond());
+        PermissionSet set = authMap.get(user);
+        if (set != null && set.getToken().equals(token)) {
+            request.setAttribute("perms", set.getPermissions());
+        }
+    }
+
+    public static class PermissionSet {
+        private String user;
+        private String token;
+        private List<String> permissions;
+
+        public String getUser() {
+            return user;
+        }
+        public String getToken() {
+            return token;
+        }
+        public List<String> getPermissions() {
+            return permissions;
+        }
+
+        public PermissionSet(String user, String token, List<String> permissions) {
+            this.user = user;
+            this.token = token;
+            this.permissions = permissions;
         }
     }
 }

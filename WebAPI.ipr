@@ -21,6 +21,8 @@
     <bytecodeTargetLevel>
       <module name="web-api_main" target="1.8" />
       <module name="web-api_test" target="1.8" />
+      <module name="webapi_main" target="1.8" />
+      <module name="webapi_test" target="1.8" />
     </bytecodeTargetLevel>
   </component>
   <component name="CopyrightManager" default="" />
@@ -78,9 +80,9 @@
   </component>
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/web-api.iml" filepath="$PROJECT_DIR$/.idea/modules/web-api.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/web-api_main.iml" filepath="$PROJECT_DIR$/.idea/modules/web-api_main.iml" group="web-api" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/web-api_test.iml" filepath="$PROJECT_DIR$/.idea/modules/web-api_test.iml" group="web-api" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/webapi.iml" filepath="$PROJECT_DIR$/.idea/modules/webapi.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/webapi_main.iml" filepath="$PROJECT_DIR$/.idea/modules/webapi_main.iml" group="webapi" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/webapi_test.iml" filepath="$PROJECT_DIR$/.idea/modules/webapi_test.iml" group="webapi" />
     </modules>
   </component>
   <component name="ProjectRootManager" version="2" languageLevel="JDK_1_8" default="true" assert-keyword="true" jdk-15="true" project-jdk-name="1.8" project-jdk-type="JavaSDK">

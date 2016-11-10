@@ -24,7 +24,7 @@ public class ChatServlet extends APIServlet {
         resp.setStatus(HttpServletResponse.SC_OK);
 
         JsonArray arr = new JsonArray();
-        for (Triple<Date, Player, Text> msg : WebAPI.getChatMessages()) {
+        for (Triple<Date, Player, Text> msg : WebAPI.getInstance().getChatMessages()) {
             JsonObject obj = new JsonObject();
             obj.addProperty("timestamp", msg.getLeft().toString());
             obj.addProperty("sender", msg.getMiddle().getName());

@@ -18,7 +18,7 @@ public abstract class APIServlet extends HttpServlet {
         return path.substring(1).split("/");
     }
 
-    protected void handleVerb(String verb, HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    private void handleVerb(String verb, HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try {
             Method method = this.getClass().getDeclaredMethod("handle" + verb, HttpServletRequest.class, HttpServletResponse.class);
             if (method.isAnnotationPresent(Permission.class)) {

@@ -3,6 +3,7 @@ package valandur.webapi;
 import com.google.inject.Inject;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
+import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
 import ninja.leaping.configurate.yaml.YAMLConfigurationLoader;
 import org.apache.commons.lang3.tuple.Triple;
@@ -13,10 +14,14 @@ import org.eclipse.jetty.server.handler.ContextHandler;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
 import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.servlet.ServletContextHandler;
+import org.eclipse.jetty.util.PathWatcher;
 import org.slf4j.Logger;
 import org.spongepowered.api.Sponge;
+import org.spongepowered.api.asset.Asset;
 import org.spongepowered.api.asset.AssetManager;
+import org.spongepowered.api.config.ConfigDir;
 import org.spongepowered.api.config.DefaultConfig;
+import org.spongepowered.api.data.type.CookedFish;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.game.state.GameInitializationEvent;
@@ -29,18 +34,21 @@ import org.spongepowered.api.text.Text;
 import valandur.webapi.handlers.AuthHandler;
 import valandur.webapi.servlets.*;
 
+import javax.annotation.Nullable;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServlet;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.net.URL;
+import java.nio.file.Path;
 import java.util.*;
 
 @Plugin(
         id = "webapi",
         name = "Web-API",
-        url = "https://github.com/Valandur",
+        url = "https://github.com/Valandur/Web-API",
         description = "Access Minecraft through a Web API",
         version = "1.0-SNAPSHOT",
         authors = {
@@ -54,27 +62,20 @@ public class WebAPI {
         return WebAPI.instance;
     }
 
-    private static List<Triple<Date, Player, Text>> chatMessages = new ArrayList<>();
-    public static List<Triple<Date, Player, Text>> getChatMessages() {
-        return WebAPI.chatMessages;
+    private List<Triple<Date, Player, Text>> chatMessages = new ArrayList<>();
+    public List<Triple<Date, Player, Text>> getChatMessages() {
+        return chatMessages;
     }
 
     @Inject
     private Logger logger;
-    public static Logger getLogger() {
+    public Logger getLogger() {
         return WebAPI.instance.logger;
     }
 
     @Inject
-    private static AssetManager assets;
-    public static AssetManager getAssetManager() {
-        return WebAPI.assets;
-    }
-
-    @Inject
-    @DefaultConfig(sharedRoot = true)
-    private ConfigurationLoader<CommentedConfigurationNode> configManager;
-    private ConfigurationNode rootNode;
+    @ConfigDir(sharedRoot = false)
+    private Path configPath;
 
     private String serverHost;
     private int serverPort;
@@ -84,33 +85,58 @@ public class WebAPI {
     public void onPreInitialization(GamePreInitializationEvent event) {
         WebAPI.instance = this;
 
+        // Create our config directory if it doesn't exist
+        if (!configPath.toFile().exists())
+            configPath.toFile().mkdirs();
+    }
+
+    @Nullable
+    public ConfigurationNode loadConfigWithDefaults(String configName) {
         try {
-            rootNode = configManager.load();
-            serverHost = rootNode.getNode("server", "host").getString("localhost");
-            serverPort = rootNode.getNode("server", "port").getInt(8080);
-        } catch(IOException e) {
+            URL url = this.getClass().getResource("/assets/webapi/defaults/" + configName);
+            ConfigurationLoader<CommentedConfigurationNode> defaultLoader = HoconConfigurationLoader.builder().setURL(url).build();
+            ConfigurationNode defaults = defaultLoader.load();
+
+            Path filePath = configPath.resolve(configName);
+            if (!filePath.toFile().exists()) filePath.toFile().createNewFile();
+
+            ConfigurationLoader<CommentedConfigurationNode> loader = HoconConfigurationLoader.builder().setPath(filePath).build();
+            ConfigurationNode config = loader.load();
+
+            config.mergeValuesFrom(defaults);
+            loader.save(config);
+
+            return config;
+        } catch (IOException e) {
             e.printStackTrace();
+            return null;
         }
     }
 
     @Listener
     public void onInitialization(GameInitializationEvent event) {
-        logger.info("Starting Web Server...");
-
         //Log.setLog(new JettyLogger());
 
-        // Load and prepare swagger yaml
-        String swaggerYaml = "";
-        try {
-            StringWriter sink = new StringWriter();
-            URL url = this.getClass().getResource("/assets/webapi/swagger.yaml");
-            YAMLConfigurationLoader loader = YAMLConfigurationLoader.builder().setURL(url).setSink(() -> new BufferedWriter(sink)).build();
-            ConfigurationNode swaggerNode = loader.load();
-            loader.save(swaggerNode);
-            swaggerYaml = sink.toString().replaceFirst("<host>", serverHost + ":" + serverPort);
-        } catch (IOException e) {
-            e.printStackTrace();
+
+        logger.info("Loading configuration...");
+
+        // Load main config file
+        ConfigurationNode config = loadConfigWithDefaults("config.conf");
+        serverHost = config.getNode("server", "host").getString("localhost");
+        serverPort = config.getNode("server", "port").getInt(8080);
+
+        // Load permission settings
+        ConfigurationNode configPerms = loadConfigWithDefaults("permissions.conf");
+
+        // Prepare authentication handler
+        List<AuthHandler.PermissionSet> sets = new ArrayList<>();
+        for (ConfigurationNode node : configPerms.getNode("perms").getChildrenList()) {
+            sets.add(new AuthHandler.PermissionSet(node.getNode("name").getString(), node.getNode("token").getString(), node.getNode("permissions").getList(item -> item.toString())));
         }
+        AuthHandler authHandler = new AuthHandler(sets);
+
+
+        logger.info("Starting Web Server...");
 
         try {
             server = new Server();
@@ -126,15 +152,15 @@ public class WebAPI {
             List<Handler> handlers = new ArrayList<Handler>();
 
             // Asset handlers
-            handlers.add(newContext("/", new AssetHandler("redoc.html")));
-            handlers.add(newContext("/docs", new AssetHandler(swaggerYaml, "application/json")));
+            handlers.add(newContext("/", new AssetHandler(loadAssetString("pages/redoc.html"), "text/html; charset=utf-8")));
+            handlers.add(newContext("/docs", new AssetHandler(loadAssetString("swagger.yaml").replaceFirst("<host>", serverHost + ":" + serverPort), "application/x-yaml")));
 
             // Main servlet context
             ServletContextHandler servletsContext = new ServletContextHandler();
             servletsContext.setContextPath("/api");
 
             HandlerList list = new HandlerList();
-            list.setHandlers(new Handler[]{ new AuthHandler(), servletsContext });
+            list.setHandlers(new Handler[]{ authHandler, servletsContext });
             handlers.add(list);
 
             servletsContext.addServlet(InfoServlet.class, "/info");
@@ -159,11 +185,16 @@ public class WebAPI {
         logger.info("Web server running on " + server.getURI());
     }
 
-    private static ServletContext newContext(String path, HttpServlet servlet) {
-        return null;
+    private String loadAssetString(String assetPath) throws IOException {
+        String res = "";
+        Optional<Asset> asset = Sponge.getAssetManager().getAsset(this, assetPath);
+        if (asset.isPresent()) {
+            res = asset.get().readString();
+        }
+        return res;
     }
 
-    private static ContextHandler newContext(String path, Handler handler) {
+    private ContextHandler newContext(String path, Handler handler) {
         ContextHandler context = new ContextHandler();
         context.setContextPath(path);
         context.setHandler(handler);
@@ -191,6 +222,6 @@ public class WebAPI {
         Optional<Player> player = event.getCause().first(Player.class);
         if (!player.isPresent()) return;
 
-        WebAPI.chatMessages.add(Triple.of(new Date(), player.get(), event.getRawMessage()));
+        chatMessages.add(Triple.of(new Date(), player.get(), event.getRawMessage()));
     }
 }

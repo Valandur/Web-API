@@ -23,7 +23,7 @@ import java.util.Set;
 
 public class CmdServlet extends APIServlet {
     @Override
-    @Permission(perm = "get")
+    @Permission(perm = "cmd")
     protected void handleGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         JsonObject json = new JsonObject();
         resp.setContentType("application/json; charset=utf-8");

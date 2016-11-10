@@ -28,6 +28,8 @@ dependencies {
 }
 
 jar {
+    version = "${project.minecraftVersion}-${project.pluginVersion}"
+
     // Include all compile time dependencies in the jar (e.g. Jetty)
     // Sponge is declared compileOnly so that it doesn't get included here
     from configurations.compile.collect {

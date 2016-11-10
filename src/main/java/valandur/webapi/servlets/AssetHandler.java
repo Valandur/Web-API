@@ -18,24 +18,9 @@ public class AssetHandler extends AbstractHandler {
     private String contentType;
     private String assetString;
 
-    public AssetHandler(String asset, String contentType) {
+    public AssetHandler(String assetString, String contentType) {
+        this.assetString = assetString;
         this.contentType = contentType;
-        this.assetString = asset;
-    }
-    public AssetHandler(String assetPath) {
-        Optional<Asset> asset = Sponge.getAssetManager().getAsset(WebAPI.getInstance(), assetPath);
-        try {
-            assetString = asset.get().readString();
-            if (assetPath.endsWith(".html")) {
-                contentType = "text/html";
-            } else if (assetPath.endsWith(".json")) {
-                contentType = "application/json";
-            } else {
-                contentType = "text/plain";
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
     @Override

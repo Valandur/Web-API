@@ -34,6 +34,7 @@ import valandur.webapi.servlets.*;
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 
@@ -78,31 +79,31 @@ public class WebAPI {
         WebAPI.instance = this;
 
         // Create our config directory if it doesn't exist
-        if (!configPath.toFile().exists())
-            configPath.toFile().mkdirs();
+        if (!Files.exists(configPath)) {
+            try {
+                Files.createDirectories(configPath);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     @Nullable
-    public ConfigurationNode loadConfigWithDefaults(String configName) {
-        try {
-            URL url = this.getClass().getResource("/assets/webapi/defaults/" + configName);
-            ConfigurationLoader<CommentedConfigurationNode> defaultLoader = HoconConfigurationLoader.builder().setURL(url).build();
-            ConfigurationNode defaults = defaultLoader.load();
+    public ConfigurationNode loadConfigWithDefaults(String configName) throws IOException {
+        URL url = this.getClass().getResource("/assets/webapi/defaults/" + configName);
+        ConfigurationLoader<CommentedConfigurationNode> defaultLoader = HoconConfigurationLoader.builder().setURL(url).build();
+        ConfigurationNode defaults = defaultLoader.load();
 
-            Path filePath = configPath.resolve(configName);
-            if (!filePath.toFile().exists()) filePath.toFile().createNewFile();
+        Path filePath = configPath.resolve(configName);
+        if (!Files.exists(filePath)) Files.createFile(filePath);
 
-            ConfigurationLoader<CommentedConfigurationNode> loader = HoconConfigurationLoader.builder().setPath(filePath).build();
-            ConfigurationNode config = loader.load();
+        ConfigurationLoader<CommentedConfigurationNode> loader = HoconConfigurationLoader.builder().setPath(filePath).build();
+        ConfigurationNode config = loader.load();
 
-            config.mergeValuesFrom(defaults);
-            loader.save(config);
+        config.mergeValuesFrom(defaults);
+        loader.save(config);
 
-            return config;
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
+        return config;
     }
 
     @Listener
@@ -114,17 +115,23 @@ public class WebAPI {
         logger.info("Loading configuration...");
 
         // Load main config file
-        ConfigurationNode config = loadConfigWithDefaults("config.conf");
-        serverHost = config.getNode("server", "host").getString("localhost");
-        serverPort = config.getNode("server", "port").getInt(8080);
+        try {
+            ConfigurationNode config = loadConfigWithDefaults("config.conf");
+            serverHost = config.getNode("server", "host").getString("localhost");
+            serverPort = config.getNode("server", "port").getInt(8080);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
-        // Load permission settings
-        ConfigurationNode configPerms = loadConfigWithDefaults("permissions.conf");
-
-        // Prepare authentication handler
+        // Load permission config
         List<AuthHandler.PermissionSet> sets = new ArrayList<>();
-        for (ConfigurationNode node : configPerms.getNode("perms").getChildrenList()) {
-            sets.add(new AuthHandler.PermissionSet(node.getNode("name").getString(), node.getNode("token").getString(), node.getNode("permissions").getList(item -> item.toString())));
+        try {
+            ConfigurationNode configPerms = loadConfigWithDefaults("permissions.conf");
+            for (ConfigurationNode node : configPerms.getNode("perms").getChildrenList()) {
+                sets.add(new AuthHandler.PermissionSet(node.getNode("name").getString(), node.getNode("token").getString(), node.getNode("permissions").getList(item -> item.toString())));
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
         AuthHandler authHandler = new AuthHandler(sets);
 

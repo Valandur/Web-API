@@ -1,12 +1,11 @@
-package valandur.webapi.handlers;
+package valandur.webapi.servlets;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import org.apache.commons.lang3.tuple.Triple;
-import org.eclipse.jetty.server.Request;
-import org.eclipse.jetty.server.handler.AbstractHandler;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.text.Text;
+import valandur.webapi.Permission;
 import valandur.webapi.WebAPI;
 
 import javax.servlet.ServletException;
@@ -16,15 +15,16 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Date;
 
-public class ChatHandler extends AbstractHandler {
+public class ChatServlet extends APIServlet {
     @Override
-    public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+    @Permission(perm = "chat")
+    protected void handleGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         JsonObject json = new JsonObject();
-        response.setContentType("application/json; charset=utf-8");
-        response.setStatus(HttpServletResponse.SC_OK);
+        resp.setContentType("application/json; charset=utf-8");
+        resp.setStatus(HttpServletResponse.SC_OK);
 
         JsonArray arr = new JsonArray();
-        for (Triple<Date, Player, Text> msg : WebAPI.getChatMessages()) {
+        for (Triple<Date, Player, Text> msg : WebAPI.getInstance().getChatMessages()) {
             JsonObject obj = new JsonObject();
             obj.addProperty("timestamp", msg.getLeft().toString());
             obj.addProperty("sender", msg.getMiddle().getName());
@@ -33,8 +33,7 @@ public class ChatHandler extends AbstractHandler {
         }
         json.add("messages", arr);
 
-        PrintWriter out = response.getWriter();
+        PrintWriter out = resp.getWriter();
         out.print(json);
-        baseRequest.setHandled(true);
     }
 }

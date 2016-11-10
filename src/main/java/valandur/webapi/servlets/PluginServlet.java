@@ -1,13 +1,12 @@
-package valandur.webapi.handlers;
+package valandur.webapi.servlets;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
-import org.eclipse.jetty.server.Request;
-import org.eclipse.jetty.server.handler.AbstractHandler;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.plugin.PluginContainer;
 import org.spongepowered.api.plugin.PluginManager;
+import valandur.webapi.Permission;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -17,18 +16,18 @@ import java.io.PrintWriter;
 import java.util.Collection;
 import java.util.Optional;
 
-public class PluginHandler extends AbstractHandler {
+public class PluginServlet extends APIServlet {
     @Override
-    public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+    @Permission(perm = "plugin")
+    protected void handleGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         JsonObject json = new JsonObject();
-        response.setContentType("application/json; charset=utf-8");
-        response.setStatus(HttpServletResponse.SC_OK);
+        resp.setContentType("application/json; charset=utf-8");
+        resp.setStatus(HttpServletResponse.SC_OK);
 
         PluginManager pm = Sponge.getGame().getPluginManager();
-        String[] paths = target.substring(1).split("/");
-        String pName = paths[0];
+        String[] paths = this.getPathParts(req);
 
-        if (pName.isEmpty()) {
+        if (paths.length == 0) {
             JsonArray arr = new JsonArray();
             Collection<PluginContainer> plugins = pm.getPlugins();
             for (PluginContainer pc : plugins) {
@@ -36,11 +35,12 @@ public class PluginHandler extends AbstractHandler {
             }
             json.add("plugins", arr);
         } else {
+            String pName = paths[0];
             Optional<PluginContainer> res = pm.getPlugin(pName);
             if (res.isPresent()) {
                 PluginContainer plugin = res.get();
-                json.addProperty("name", plugin.getName());
                 json.addProperty("id", plugin.getId());
+                json.addProperty("name", plugin.getName());
                 Optional<String> descr = plugin.getDescription();
                 json.addProperty("description", descr.isPresent() ? descr.get() : null);
                 Optional<String> version = plugin.getVersion();
@@ -57,8 +57,7 @@ public class PluginHandler extends AbstractHandler {
             }
         }
 
-        PrintWriter out = response.getWriter();
+        PrintWriter out = resp.getWriter();
         out.print(json);
-        baseRequest.setHandled(true);
     }
 }

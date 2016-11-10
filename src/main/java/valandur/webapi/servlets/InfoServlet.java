@@ -1,15 +1,13 @@
-package valandur.webapi.handlers;
+package valandur.webapi.servlets;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
-import org.eclipse.jetty.server.Request;
-import org.eclipse.jetty.server.handler.AbstractHandler;
-import org.spongepowered.api.Game;
 import org.spongepowered.api.Platform;
 import org.spongepowered.api.Server;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.plugin.PluginContainer;
+import valandur.webapi.Permission;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -18,11 +16,12 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Optional;
 
-public class InfoHandler extends AbstractHandler {
+public class InfoServlet extends APIServlet {
     @Override
-    public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-        response.setContentType("application/json; charset=utf-8");
-        response.setStatus(HttpServletResponse.SC_OK);
+    @Permission(perm = "info")
+    protected void handleGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        resp.setContentType("application/json; charset=utf-8");
+        resp.setStatus(HttpServletResponse.SC_OK);
 
         Server server = Sponge.getServer();
         Platform platform = Sponge.getPlatform();
@@ -55,9 +54,7 @@ public class InfoHandler extends AbstractHandler {
 
         json.add("api", obj);
 
-        PrintWriter out = response.getWriter();
+        PrintWriter out = resp.getWriter();
         out.print(json);
-
-        baseRequest.setHandled(true);
     }
 }

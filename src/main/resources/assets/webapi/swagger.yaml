@@ -1,0 +1,483 @@
+swagger: '2.0'
+
+info:
+  title: WebAPI
+  description: |
+    Access Sponge powered Minecraft servers through a WebAPI
+
+    # Introduction
+  version: "1.0.0"
+
+host: <host>
+
+schemes:
+  - http
+basePath: /api
+
+consumes:
+  - application/json
+
+produces:
+  - application/json
+
+tags:
+  - name: Info
+    description: Get general information about the minecraft server
+  - name: Chat
+    description: Provides access to the chat history.
+  - name: Command
+    description: List all commands on the server and execute them.
+  - name: Player
+    description: List all players and get detailed information about them.
+  - name: World
+    description: List all worlds and get detailed information about them.
+  - name: Plugin
+    description: List all plugins and get detailed information about them.
+
+#parameters:
+
+#responses:
+
+paths:
+  /info:
+    get:
+      summary: Server info
+      description: |
+        Get general information about the minecraft server
+      tags:
+        - Info
+      responses:
+        200:
+          description: General information about the server
+          schema:
+            $ref: '#/definitions/ServerInfo'
+  /chat:
+    get:
+      summary: Chat
+      description: |
+        View a history of the server chat
+      tags:
+        - Chat
+      responses:
+        200:
+          description: A history of the chat.
+          schema:
+            $ref: '#/definitions/ChatList'
+  /cmd:
+    get:
+      summary: Command list
+      description: |
+        Gets a list of all the commands available on the server.
+      tags:
+        - Command
+      responses:
+        200:
+          description: A list of commands
+          schema:
+            $ref: '#/definitions/CommandList'
+    post:
+      summary: Execute command
+      description: |
+        Execute a command on the server.
+      parameters:
+        - name: Request
+          in: body
+          description: The command sent to the server
+          schema:
+            $ref: '#/definitions/CommandRequest'
+      tags:
+        - Command
+      responses:
+        200:
+          description: The command executed successfully.
+          schema:
+            $ref: '#/definitions/CommandResponse'
+  /players:
+    get:
+      summary: Player list
+      description: |
+        Get a list of all the players on the server.
+      tags:
+        - Player
+      responses:
+        200:
+          description: A list of all the players on the server
+          schema:
+            $ref: '#/definitions/PlayerList'
+  /players/{name}:
+    get:
+      summary: Detailed player info
+      description: |
+        Get detailed information about a player.
+      parameters:
+        - name: name
+          in: path
+          type: string
+          description: The name of the player to get detailed information about.
+      tags:
+        - Player
+      responses:
+        200:
+          description: Detailed information about the player.
+          schema:
+            $ref: '#/definitions/Player'
+  /worlds:
+    get:
+      summary: World list
+      description: |
+        Get a list of all the worlds on the server.
+      tags:
+        - World
+      responses:
+        200:
+          description: A list of all the worlds on the server
+          schema:
+            $ref: '#/definitions/WorldList'
+  /worlds/{name}:
+    get:
+      summary: Detailed world info
+      description: |
+        Get detailed information about a world.
+      parameters:
+        - name: name
+          in: path
+          type: string
+          description: The name of the world to get detailed information about.
+      tags:
+        - World
+      responses:
+        200:
+          description: Detailed information about the player.
+          schema:
+            $ref: '#/definitions/World'
+  /plugins:
+    get:
+      summary: Plugin list
+      description: |
+        Get a list of all the plugins running on the server
+      tags:
+        - Plugin
+      responses:
+        200:
+          description: A list of all the plugins on the server.
+          schema:
+            $ref: '#/definitions/PluginList'
+  /plugins/{id}:
+    get:
+      summary: Detailed plugin info
+      description: |
+        Gets detailed information about a plugin.
+      parameters:
+        - name: id
+          in: path
+          type: string
+          description: The id of the plugin to get detailed information about.
+      tags:
+        - Plugin
+      responses:
+        200:
+          description: Detailed information about the plugin.
+          schema:
+            $ref: '#/definitions/Plugin'
+
+
+
+definitions:
+  Position:
+    type: object
+    description: Describes a location in a world
+    properties:
+      world:
+        type: string
+        description: The name of the world the player is in.
+      x:
+        type: number
+        format: double
+        description: The x-coordinate of the position.
+      y:
+        type: number
+        format: double
+        description: The y-coordinate of the position.
+      z:
+        type: number
+        format: double
+        description: The z-coordinate of the position.
+  PositionWithoutWorld:
+    type: object
+    description: Describes a location
+    properties:
+      x:
+        type: number
+        format: double
+        description: The x-coordinate of the position.
+      y:
+        type: number
+        format: double
+        description: The y-coordinate of the position.
+      z:
+        type: number
+        format: double
+        description: The z-coordinate of the position.
+
+  ServerInfo:
+    type: object
+    properties:
+      motd:
+        type: string
+        description: The message of the day set on the server.
+      players:
+        type: integer
+        description: The amount of players currently playing on the server
+      maxPlayers:
+        type: integer
+        description: The maximum amount of players allowed on the server
+      uptimeTicks:
+        type: integer
+        description: The number of ticks the server has been running
+      hasWhitelist:
+        type: boolean
+        description: True if the server has a whitelist, false otherwise.
+      minecraftVersion:
+        type: string
+        description: The minecraft version running on the server.
+      api:
+        type: object
+        description: Information about the API running on the server.
+        properties:
+          id:
+            type: string
+            description: The unique id of the api.
+          name:
+            type: string
+            description: The name of the api.
+          version:
+            type: string
+            description: The version of the api.
+          minecraftVersion:
+            type: string
+            description: The supported minecraft version for this api.
+          description:
+            type: string
+            description: The description of the api.
+          url:
+            type: string
+            description: The website of the api.
+          authors:
+            type: array
+            description: The list of authors that worked on the api.
+            items:
+              type: string
+              description: The name of the author.
+
+  ChatList:
+    type: object
+    properties:
+      messages:
+        type: array
+        description: A list of chat messages.
+        items:
+          $ref: '#/definitions/ChatMessage'
+  ChatMessage:
+    type: object
+    properties:
+      timestamp:
+        type: string
+        description: The timestamp when the message was sent (server time)
+      sender:
+        type: string
+        description: The name of the player that sent the message
+      message:
+        type: string
+        description: The message that was sent.
+
+  CommandList:
+    type: object
+    properties:
+      commands:
+        type: array
+        description: A list of commands
+        items:
+          $ref: '#/definitions/Command'
+  Command:
+    type: object
+    properties:
+      name:
+        type: string
+        description: The main name of the command.
+      aliases:
+        type: array
+        description: All the aliases with which the command can be executed.
+        items:
+          type: string
+      usage:
+        type: string
+        description: The usage instructions for the command.
+      description:
+        type: string
+        description: Describes what the command does.
+  CommandRequest:
+    type: object
+    properties:
+      command:
+        type: string
+        description: The command and it's arguments that are sent to the server.
+        required: true
+  CommandResponse:
+    type: object
+    properties:
+      response:
+        type: array
+        description: An array of message that were sent in response to the command.
+        items:
+          type: string
+
+  PlayerList:
+    type: object
+    properties:
+      maxPlayers:
+        type: integer
+        description: The maximum amount of players this server supports.
+      players:
+        type: array
+        description: A list of player names.
+        items:
+          type: string
+          description: The name of the player.
+  Player:
+    type: object
+    properties:
+      name:
+        type: string
+        description: The name of the player.
+      uuid:
+        type: string
+        description: The unique identifier of the player.
+      address:
+        type: string
+        description: The address the player is connecting form.
+      position:
+        $ref: '#/definitions/Position'
+      health:
+        type: number
+        format: double
+        description: The current health of the player.
+      maxHealth:
+        type: number
+        format: double
+        description: The maximum health of the player.
+      food:
+        type: integer
+        description: The current food value of the player.
+      exhaustion:
+        type: number
+        format: double
+        description: The exhaustion level of the player.
+      saturation:
+        type: number
+        format: double
+        description: How saturated the player is.
+      gameMode:
+        type: string
+        description: The current gamemode the player is in.
+  WorldList:
+    type: object
+    properties:
+      worlds:
+        type: array
+        description: A list of world names.
+        items:
+          type: string
+          description: The name of the world.
+  World:
+    type: object
+    properties:
+      name:
+        type: string
+        description: The name of the world.
+      uuid:
+        type: string
+        description: The unique id of the world.
+      difficulty:
+        type: string
+        description: The current difficulty of the world.
+      dimension:
+        type: string
+        description: The name of the dimension the world belongs to.
+      loadedChunks:
+        type: array
+        description: Information about the currently loaded chunks for this world.
+        items:
+          $ref: '#/definitions/LoadedChunk'
+      gameRules:
+        type: object
+        description: The set of game rules active on the server.
+      time:
+        type: integer
+        description: The time of day (modulo 24000 [ticks per day])
+      spawn:
+        $ref: '#/definitions/PositionWithoutWorld'
+      border:
+        type: object
+        description: The border for this world.
+        properties:
+          center:
+            $ref: '#/definitions/PositionWithoutWorld'
+          diameter:
+            type: number
+            format: double
+            description: The diameter of the border (extent in x and z direction)
+          damageAmount:
+            type: number
+            format: double
+            description: The damage per tick done to the player when outside the border.
+          damageThreshold:
+            type: number
+            format: double
+            description: The distance the player may be outside the border before taking damage.
+          warningDistance:
+            type: integer
+            description: Get the distance at which a contracting world border will warn a player.
+          warningTime:
+            type: integer
+            description: Get the time at which a contracting world border will warn a player.
+  LoadedChunk:
+    type: object
+    properties:
+      position:
+        $ref: '#/definitions/PositionWithoutWorld'
+      entities:
+        type: integer
+        description: The number of entities in this chunk.
+  PluginList:
+    type: object
+    properties:
+      plugins:
+        type: array
+        description: A list of plugin ids.
+        items:
+          type: string
+          description: The id of the plugin.
+  Plugin:
+    type: object
+    properties:
+      id:
+        type: string
+        description: The unique id of the plugin.
+      name:
+        type: string
+        description: The name of the plugin.
+      description:
+        type: string
+        description: The description of the plugin.
+      version:
+        type: string
+        description: The version of the plugin.
+      url:
+        type: string
+        description: The website that the plugin belongs to.
+      authors:
+        type: array
+        description: The list of authors that worked on the plugin.
+        items:
+          type: string
+          description: The name of the author.

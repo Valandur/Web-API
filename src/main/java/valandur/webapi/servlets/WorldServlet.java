@@ -1,15 +1,13 @@
-package valandur.webapi.handlers;
+package valandur.webapi.servlets;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
-import org.eclipse.jetty.server.Request;
-import org.eclipse.jetty.server.handler.AbstractHandler;
-import org.spongepowered.api.Server;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.world.Chunk;
 import org.spongepowered.api.world.World;
 import org.spongepowered.api.world.WorldBorder;
+import valandur.webapi.Permission;
 import valandur.webapi.misc.Util;
 
 import javax.servlet.ServletException;
@@ -21,38 +19,38 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
 
-public class WorldHandler extends AbstractHandler {
+public class WorldServlet extends APIServlet {
     @Override
-    public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+    @Permission(perm = "world")
+    protected void handleGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         JsonObject json = new JsonObject();
-        response.setContentType("application/json; charset=utf-8");
-        response.setStatus(HttpServletResponse.SC_OK);
+        resp.setContentType("application/json; charset=utf-8");
+        resp.setStatus(HttpServletResponse.SC_OK);
 
-        Server server = Sponge.getServer();
-        String[] paths = target.substring(1).split("/");
-        String wName = paths[0];
+        String[] paths = this.getPathParts(req);
 
-        if (wName.isEmpty()) {
+        if (paths.length == 0) {
             JsonArray arr = new JsonArray();
-            Collection<World> worlds = server.getWorlds();
+            Collection<World> worlds = Sponge.getServer().getWorlds();
             for (World world : worlds) {
                 arr.add(new JsonPrimitive(world.getName()));
             }
             json.add("worlds", arr);
         } else {
-            Optional<World> res = server.getWorld(wName);
+            String wName = paths[0];
+            Optional<World> res = Sponge.getServer().getWorld(wName);
+
             if (res.isPresent()) {
                 World world = res.get();
                 json.addProperty("name", world.getName());
-                json.addProperty("difficulty", world.getDifficulty().getName());
                 json.addProperty("uuid", world.getUniqueId().toString());
+                json.addProperty("difficulty", world.getDifficulty().getName());
                 json.addProperty("dimension", world.getDimension().toString());
                 JsonArray chunks = new JsonArray();
                 for (Chunk chunk : world.getLoadedChunks()) {
                     JsonObject jsonChunk = new JsonObject();
                     jsonChunk.add("position", Util.positionToJson(chunk.getPosition()));
                     jsonChunk.addProperty("entities", chunk.getEntities().size());
-                    jsonChunk.addProperty("difficulty", chunk.getRegionalDifficultyFactor());
                     chunks.add(jsonChunk);
                 }
                 json.add("loadedChunks", chunks);
@@ -77,8 +75,7 @@ public class WorldHandler extends AbstractHandler {
             }
         }
 
-        PrintWriter out = response.getWriter();
+        PrintWriter out = resp.getWriter();
         out.print(json);
-        baseRequest.setHandled(true);
     }
 }

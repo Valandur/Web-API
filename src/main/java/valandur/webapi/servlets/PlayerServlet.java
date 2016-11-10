@@ -1,17 +1,12 @@
-package valandur.webapi.handlers;
+package valandur.webapi.servlets;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
-import org.eclipse.jetty.server.Request;
-import org.eclipse.jetty.server.handler.AbstractHandler;
 import org.spongepowered.api.Server;
 import org.spongepowered.api.Sponge;
-import org.spongepowered.api.data.key.Key;
-import org.spongepowered.api.data.manipulator.mutable.entity.GameModeData;
 import org.spongepowered.api.entity.living.player.Player;
-import org.spongepowered.api.service.SimpleServiceManager;
-import org.spongepowered.api.world.World;
+import valandur.webapi.Permission;
 import valandur.webapi.misc.Util;
 
 import javax.servlet.ServletException;
@@ -22,19 +17,18 @@ import java.io.PrintWriter;
 import java.util.Collection;
 import java.util.Optional;
 
-public class PlayerHandler extends AbstractHandler {
-
+public class PlayerServlet extends APIServlet {
     @Override
-    public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+    @Permission(perm = "player")
+    protected void handleGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         JsonObject json = new JsonObject();
-        response.setContentType("application/json; charset=utf-8");
-        response.setStatus(HttpServletResponse.SC_OK);
+        resp.setContentType("application/json; charset=utf-8");
+        resp.setStatus(HttpServletResponse.SC_OK);
 
         Server server = Sponge.getServer();
-        String[] paths = target.substring(1).split("/");
-        String pName = paths[0];
+        String[] paths = this.getPathParts(req);
 
-        if (pName.isEmpty()) {
+        if (paths.length == 0) {
             JsonArray arr = new JsonArray();
             Collection<Player> players = server.getOnlinePlayers();
             for (Player player : players) {
@@ -43,6 +37,7 @@ public class PlayerHandler extends AbstractHandler {
             json.addProperty("maxPlayers", server.getMaxPlayers());
             json.add("players", arr);
         } else {
+            String pName = paths[0];
             Optional<Player> res = server.getPlayer(pName);
             if (res.isPresent()) {
                 Player player = res.get();
@@ -61,9 +56,7 @@ public class PlayerHandler extends AbstractHandler {
             }
         }
 
-
-        PrintWriter out = response.getWriter();
+        PrintWriter out = resp.getWriter();
         out.print(json);
-        baseRequest.setHandled(true);
     }
 }

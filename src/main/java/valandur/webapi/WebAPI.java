@@ -42,7 +42,7 @@ import java.util.*;
         name = "Web-API",
         url = "https://github.com/Valandur/Web-API",
         description = "Access Minecraft through a Web API",
-        version = "1.0-SNAPSHOT",
+        version = "1.0",
         authors = {
                 "Valandur"
         }

@@ -18,7 +18,11 @@ Usually this is enough, as you most likely will be running a web server / anothe
 **PLEASE BE CAREFUL WHO YOU GRANT ACCESS TO THE WEB API, AS PEOPLE WITH ACCESS TO THE COMMAND ENDPOINT CAN EXECUTE ARBITRARY COMMANDS
 ON THE MINECRAFT SERVER, INCLUDING SHUTTING IT DOWN AND DELETING WORLDS!**
 
-There is a simple permissions system in place to restrict access to the API. Check out the webapi/permissions.conf file in the config folder.
+There is a simple permissions system in place to restrict access to the API. Check out the webapi/permissions.conf file in the config folder.  
+**REMEMBER TO CHANGE THE DEFAULT TOKENS THAT ARE PROVIDED IN THE CONFIG FILE**  
+You have to provide a "user" and "token" if you want to access any api routes. There are two ways to pass these to the server.
+* Set the headers "x-webapi-user" and "x-webapi-token" in the request
+* Set the query parameters "user" and "token" in the request
 
 ## Request / Response types
 This API uses JSON as requeset and response formats.

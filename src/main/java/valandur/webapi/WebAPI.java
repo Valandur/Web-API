@@ -5,7 +5,6 @@ import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
-import ninja.leaping.configurate.yaml.YAMLConfigurationLoader;
 import org.apache.commons.lang3.tuple.Triple;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
@@ -14,14 +13,11 @@ import org.eclipse.jetty.server.handler.ContextHandler;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
 import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.servlet.ServletContextHandler;
-import org.eclipse.jetty.util.PathWatcher;
+import org.eclipse.jetty.util.log.Log;
 import org.slf4j.Logger;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.asset.Asset;
-import org.spongepowered.api.asset.AssetManager;
 import org.spongepowered.api.config.ConfigDir;
-import org.spongepowered.api.config.DefaultConfig;
-import org.spongepowered.api.data.type.CookedFish;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.game.state.GameInitializationEvent;
@@ -32,15 +28,11 @@ import org.spongepowered.api.event.message.MessageChannelEvent;
 import org.spongepowered.api.plugin.Plugin;
 import org.spongepowered.api.text.Text;
 import valandur.webapi.handlers.AuthHandler;
+import valandur.webapi.misc.JettyLogger;
 import valandur.webapi.servlets.*;
 
 import javax.annotation.Nullable;
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServlet;
-import java.io.BufferedWriter;
-import java.io.File;
 import java.io.IOException;
-import java.io.StringWriter;
 import java.net.URL;
 import java.nio.file.Path;
 import java.util.*;
@@ -115,7 +107,8 @@ public class WebAPI {
 
     @Listener
     public void onInitialization(GameInitializationEvent event) {
-        //Log.setLog(new JettyLogger());
+        logger.info("Setting up jetty logger");
+        Log.setLog(new JettyLogger());
 
 
         logger.info("Loading configuration...");

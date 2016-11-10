@@ -36,18 +36,27 @@ This can be used to perform various administrative tasks through the web, or pro
 <ol>
 <li>Setup a Sponge server (Sponge Vanilla &amp; SpongeForge supported)</li>
 <li>Add this mod to the mods folder</li>
-<li>Configure webapi.conf to your needs</li>
+<li>Start the server</li>
+<li>Configure the config files to your needs.</li>
 </ol>
 
 <h2>
-<a id="access" class="anchor" href="#access" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Access</h2>
+<a id="security" class="anchor" href="#security" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Security</h2>
 
-<p>The default settings run the server <strong>on localhost only</strong>, which means you cannot access it from another server.</p>
+<p>The default settings run the server <strong>on localhost only</strong>, which means you cannot access it from another server.<br>
+Usually this is enough, as you most likely will be running a web server / another application that accesses this data on the same server.  </p>
 
-<p><strong>THIS IS FOR SECURITY REASONS. PLEASE BE CAREFUL WHO YOU GRANT ACCESS TO THE WEB API, AS PEOPLE WITH ACCESS CAN EXECUTE ARBITRARY COMMANDS
+<p><strong>PLEASE BE CAREFUL WHO YOU GRANT ACCESS TO THE WEB API, AS PEOPLE WITH ACCESS TO THE COMMAND ENDPOINT CAN EXECUTE ARBITRARY COMMANDS
 ON THE MINECRAFT SERVER, INCLUDING SHUTTING IT DOWN AND DELETING WORLDS!</strong></p>
 
-<p>Usually this is enough, as you most likely will be running a web server / another application that accesses this data on the same server.</p>
+<p>There is a simple permissions system in place to restrict access to the API. Check out the webapi/permissions.conf file in the config folder.<br>
+<strong>REMEMBER TO CHANGE THE DEFAULT TOKENS THAT ARE PROVIDED IN THE CONFIG FILE</strong><br>
+You have to provide a "user" and "token" if you want to access any api routes. There are two ways to pass these to the server.</p>
+
+<ul>
+<li>Set the headers "x-webapi-user" and "x-webapi-token" in the request</li>
+<li>Set the query parameters "user" and "token" in the request</li>
+</ul>
 
 <h2>
 <a id="request--response-types" class="anchor" href="#request--response-types" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Request / Response types</h2>

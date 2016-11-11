@@ -26,7 +26,7 @@ public class PlayerServlet extends APIServlet {
         resp.setStatus(HttpServletResponse.SC_OK);
 
         Server server = Sponge.getServer();
-        String[] paths = this.getPathParts(req);
+        String[] paths = Util.getPathParts(req);
 
         if (paths.length == 0) {
             JsonArray arr = new JsonArray();

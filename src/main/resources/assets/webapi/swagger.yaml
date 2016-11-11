@@ -38,6 +38,20 @@ tags:
 
 #responses:
 
+securityDefinitions:
+  headerKey:
+    type: apiKey
+    name: x-webapi-key
+    in: header
+  queryKey:
+    type: apiKey
+    name: key
+    in: query
+
+security:
+  - headerKey: []
+  - queryKey: []
+
 paths:
   /info:
     get:

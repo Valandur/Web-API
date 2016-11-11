@@ -1,6 +1,7 @@
 package valandur.webapi.servlets;
 
 import valandur.webapi.Permission;
+import valandur.webapi.WebAPI;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -9,15 +10,11 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public abstract class APIServlet extends HttpServlet {
-    protected String[] getPathParts(HttpServletRequest req) {
-        String path = req.getPathInfo();
-        if (path == null) return new String[] { };
-        return path.substring(1).split("/");
-    }
-
     private void handleVerb(String verb, HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try {
             Method method = this.getClass().getDeclaredMethod("handle" + verb, HttpServletRequest.class, HttpServletResponse.class);
@@ -25,6 +22,7 @@ public abstract class APIServlet extends HttpServlet {
                 Permission perm = method.getAnnotation(Permission.class);
                 List<String> permissions = (List<String>)req.getAttribute("perms");
                 if (permissions == null || (!permissions.contains("*") && !permissions.contains(perm.perm()))) {
+                    WebAPI.getInstance().getLogger().warn(req.getRemoteAddr() + " does not have permisson to access " + req.getRequestURI());
                     resp.sendError(HttpServletResponse.SC_FORBIDDEN);
                     return;
                 }

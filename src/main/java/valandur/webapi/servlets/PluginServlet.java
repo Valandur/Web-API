@@ -7,6 +7,7 @@ import org.spongepowered.api.Sponge;
 import org.spongepowered.api.plugin.PluginContainer;
 import org.spongepowered.api.plugin.PluginManager;
 import valandur.webapi.Permission;
+import valandur.webapi.misc.Util;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -25,7 +26,7 @@ public class PluginServlet extends APIServlet {
         resp.setStatus(HttpServletResponse.SC_OK);
 
         PluginManager pm = Sponge.getGame().getPluginManager();
-        String[] paths = this.getPathParts(req);
+        String[] paths = Util.getPathParts(req);
 
         if (paths.length == 0) {
             JsonArray arr = new JsonArray();

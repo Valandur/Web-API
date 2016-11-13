@@ -6,9 +6,9 @@ info:
     Access Sponge powered Minecraft servers through a WebAPI
 
     # Introduction
-  version: "1.1"
+  version: "<version>"
 
-host: <host>
+host: "<host>"
 
 schemes:
   - http

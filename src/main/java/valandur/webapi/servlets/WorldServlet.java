@@ -29,7 +29,7 @@ public class WorldServlet extends APIServlet {
 
         String[] paths = Util.getPathParts(req);
 
-        if (paths.length == 0) {
+        if (paths.length == 0 || paths[0].isEmpty()) {
             JsonArray arr = new JsonArray();
             Collection<World> worlds = Sponge.getServer().getWorlds();
             for (World world : worlds) {

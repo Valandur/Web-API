@@ -28,7 +28,7 @@ public class PluginServlet extends APIServlet {
         PluginManager pm = Sponge.getGame().getPluginManager();
         String[] paths = Util.getPathParts(req);
 
-        if (paths.length == 0) {
+        if (paths.length == 0 || paths[0].isEmpty()) {
             JsonArray arr = new JsonArray();
             Collection<PluginContainer> plugins = pm.getPlugins();
             for (PluginContainer pc : plugins) {

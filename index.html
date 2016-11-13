@@ -14,8 +14,8 @@
       <h1 class="project-name">Web-API</h1>
       <h2 class="project-tagline">RESTful web server for Minecraft Sponge</h2>
       <a href="https://github.com/Valandur/Web-API" class="btn">View on GitHub</a>
-      <a href="https://valandur.github.io/Web-API/redoc.html" class="btn">View Endpoints</a>
-      <a href="https://github.com/Valandur/Web-API/releases/download/v1.1/webapi-1.10.2-1.1.jar" class="btn">Download v1.1</a>
+      <a href="https://github.com/Valandur/Web-API/zipball/master" class="btn">Download .zip</a>
+      <a href="https://github.com/Valandur/Web-API/tarball/master" class="btn">Download .tar.gz</a>
     </section>
 
     <section class="main-content">
@@ -50,12 +50,12 @@ Usually this is enough, as you most likely will be running a web server / anothe
 ON THE MINECRAFT SERVER, INCLUDING SHUTTING IT DOWN AND DELETING WORLDS!</strong></p>
 
 <p>There is a simple permissions system in place to restrict access to the API. Check out the webapi/permissions.conf file in the config folder.<br>
-<strong>REMEMBER TO CHANGE THE DEFAULT TOKENS THAT ARE PROVIDED IN THE CONFIG FILE</strong><br>
-You have to provide a "user" and "token" if you want to access any api routes. There are two ways to pass these to the server.</p>
+<strong>REMEMBER TO CHANGE THE DEFAULT KEYS THAT ARE PROVIDED IN THE CONFIG FILE</strong><br>
+You have to provide a "key" if you want to access any api routes. There are two ways to pass it to the server.</p>
 
 <ul>
-<li>Set the headers "x-webapi-user" and "x-webapi-token" in the request</li>
-<li>Set the query parameters "user" and "token" in the request</li>
+<li>Set the "x-webapi-key" header in the request</li>
+<li>Set the "key" query parameter in the request</li>
 </ul>
 
 <h2>
@@ -64,10 +64,11 @@ You have to provide a "user" and "token" if you want to access any api routes. T
 <p>This API uses JSON as requeset and response formats.</p>
 
 <h2>
-<a id="urls" class="anchor" href="#urls" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>URLs</h2>
+<a id="routes" class="anchor" href="#routes" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Routes</h2>
 
-<p>When accessing the base site (by default http://localhost:8080/) a documentation of all the methods will show up. [WIP]
-This can be used as a starting point to explore the supported methods.</p>
+<p>When accessing the base site (by default http://localhost:8080/) a documentation of all the methods will show up.
+This can be used as a starting point to explore the supported methods. You can also find the same documentation at
+<a href="https://valandur.github.io/Web-API/redoc.html">https://valandur.github.io/Web-API/redoc.html</a></p>
 
 <table>
 <thead>
@@ -86,23 +87,23 @@ This can be used as a starting point to explore the supported methods.</p>
 <td>Provides basic information about the minecraft server</td>
 </tr>
 <tr>
-<td>/cmd</td>
-<td>Lists all commands &amp; executes individual commands</td>
-</tr>
-<tr>
-<td>/players</td>
-<td>Lists all players &amp; information about individual players</td>
-</tr>
-<tr>
-<td>/worlds</td>
-<td>Lists all worlds &amp; information about individual worlds</td>
-</tr>
-<tr>
 <td>/chat</td>
 <td>Provides access to the chat history</td>
 </tr>
 <tr>
-<td>/plugins</td>
+<td>/cmd</td>
+<td>Lists all commands &amp; executes individual commands</td>
+</tr>
+<tr>
+<td>/player</td>
+<td>Lists all players &amp; information about individual players</td>
+</tr>
+<tr>
+<td>/world</td>
+<td>Lists all worlds &amp; information about individual worlds</td>
+</tr>
+<tr>
+<td>/plugin</td>
 <td>Lists all plugins &amp; information about individual plugins</td>
 </tr>
 </tbody>

@@ -54,6 +54,9 @@ public class AuthHandler extends AbstractHandler {
             config = loader.load();
 
             for (ConfigurationNode node : config.getNode("defaultPermissions").getChildrenList()) {
+                if (node.getString() == "*") {
+                    api.getLogger().warn("DEFAULT PERMISSIONS GRANT UNRESTRICTED ACCESS TO THE API! THIS CAN BE DANGEROUS IF NOT RUNNING ON LOCALHOST!");
+                }
                 defaultPerms.add(node.getString());
             }
 

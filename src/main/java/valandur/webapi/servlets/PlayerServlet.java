@@ -28,7 +28,7 @@ public class PlayerServlet extends APIServlet {
         Server server = Sponge.getServer();
         String[] paths = Util.getPathParts(req);
 
-        if (paths.length == 0) {
+        if (paths.length == 0 || paths[0].isEmpty()) {
             JsonArray arr = new JsonArray();
             Collection<Player> players = server.getOnlinePlayers();
             for (Player player : players) {

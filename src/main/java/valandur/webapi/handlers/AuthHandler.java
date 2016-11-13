@@ -4,6 +4,7 @@ import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.AbstractHandler;
 import org.eclipse.jetty.util.PathWatcher;
@@ -54,11 +55,18 @@ public class AuthHandler extends AbstractHandler {
             config = loader.load();
 
             for (ConfigurationNode node : config.getNode("defaultPermissions").getChildrenList()) {
+                if (node.getString() == "*") {
+                    api.getLogger().warn("DEFAULT PERMISSIONS GRANT UNRESTRICTED ACCESS TO THE API! THIS CAN BE DANGEROUS IF NOT RUNNING ON LOCALHOST!");
+                }
                 defaultPerms.add(node.getString());
             }
 
             for (ConfigurationNode node : config.getNode("keys").getChildrenList()) {
-                String token = node.getNode("token").getString();
+                String token = node.getNode("key").getString();
+                if (token == null || token.isEmpty()) {
+                    api.getLogger().warn("SKIPPING KEY-PERMISSION MAPPING WITH INVALID KEY");
+                    continue;
+                }
                 List<String> perms = node.getNode("permissions").getList(item -> item.toString(), new ArrayList<>());
                 permMap.put(token, perms);
             }

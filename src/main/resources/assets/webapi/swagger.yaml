@@ -6,9 +6,9 @@ info:
     Access Sponge powered Minecraft servers through a WebAPI
 
     # Introduction
-  version: "1.0.0"
+  version: "<version>"
 
-host: <host>
+host: "<host>"
 
 schemes:
   - http
@@ -57,7 +57,9 @@ paths:
     get:
       summary: Server info
       description: |
-        Get general information about the minecraft server
+        Get general information about the minecraft server.
+
+        > Required permission: info
       tags:
         - Info
       responses:
@@ -69,7 +71,9 @@ paths:
     get:
       summary: Chat
       description: |
-        View a history of the server chat
+        View a history of the server chat.
+
+        > Required permission: chat
       tags:
         - Chat
       responses:
@@ -82,6 +86,8 @@ paths:
       summary: Command list
       description: |
         Gets a list of all the commands available on the server.
+
+        > Required permission: cmd
       tags:
         - Command
       responses:
@@ -93,6 +99,8 @@ paths:
       summary: Execute command
       description: |
         Execute a command on the server.
+
+        > Required permission: cmd
       parameters:
         - name: Request
           in: body
@@ -106,11 +114,13 @@ paths:
           description: The command executed successfully.
           schema:
             $ref: '#/definitions/CommandResponse'
-  /players:
+  /player:
     get:
       summary: Player list
       description: |
         Get a list of all the players on the server.
+
+        > Required permission: player
       tags:
         - Player
       responses:
@@ -118,11 +128,13 @@ paths:
           description: A list of all the players on the server
           schema:
             $ref: '#/definitions/PlayerList'
-  /players/{name}:
+  /player/{name}:
     get:
       summary: Detailed player info
       description: |
         Get detailed information about a player.
+
+        > Required permission: player
       parameters:
         - name: name
           in: path
@@ -135,11 +147,13 @@ paths:
           description: Detailed information about the player.
           schema:
             $ref: '#/definitions/Player'
-  /worlds:
+  /world:
     get:
       summary: World list
       description: |
         Get a list of all the worlds on the server.
+
+        > Required permission: world
       tags:
         - World
       responses:
@@ -147,11 +161,13 @@ paths:
           description: A list of all the worlds on the server
           schema:
             $ref: '#/definitions/WorldList'
-  /worlds/{name}:
+  /world/{name}:
     get:
       summary: Detailed world info
       description: |
         Get detailed information about a world.
+
+        > Required permission: world
       parameters:
         - name: name
           in: path
@@ -164,11 +180,13 @@ paths:
           description: Detailed information about the player.
           schema:
             $ref: '#/definitions/World'
-  /plugins:
+  /plugin:
     get:
       summary: Plugin list
       description: |
-        Get a list of all the plugins running on the server
+        Get a list of all the plugins running on the server.
+
+        > Required permission: plugin
       tags:
         - Plugin
       responses:
@@ -176,11 +194,13 @@ paths:
           description: A list of all the plugins on the server.
           schema:
             $ref: '#/definitions/PluginList'
-  /plugins/{id}:
+  /plugin/{id}:
     get:
       summary: Detailed plugin info
       description: |
         Gets detailed information about a plugin.
+
+        > Required permission: plugin
       parameters:
         - name: id
           in: path

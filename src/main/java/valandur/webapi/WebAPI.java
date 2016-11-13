@@ -31,6 +31,7 @@ import org.spongepowered.api.plugin.Plugin;
 import org.spongepowered.api.text.Text;
 import valandur.webapi.command.*;
 import valandur.webapi.handlers.AuthHandler;
+import valandur.webapi.handlers.CustomErrorHandler;
 import valandur.webapi.misc.JettyLogger;
 import valandur.webapi.servlets.*;
 
@@ -42,16 +43,22 @@ import java.nio.file.Path;
 import java.util.*;
 
 @Plugin(
-        id = "webapi",
-        name = "Web-API",
-        url = "https://github.com/Valandur/Web-API",
-        description = "Access Minecraft through a Web API",
-        version = "1.1",
+        id = WebAPI.ID,
+        name = WebAPI.NAME,
+        url = WebAPI.URL,
+        description = WebAPI.DESCRIPTION,
+        version = WebAPI.VERSION,
         authors = {
-                "Valandur"
+                "Valandur "
         }
 )
 public class WebAPI {
+
+    public static final String ID = "webapi";
+    public static final String NAME = "Web-API";
+    public static final String URL = "https://github.com/Valandur/Web-API";
+    public static final String DESCRIPTION = "Access Minecraft through a Web API";
+    public static final String VERSION = "1.2";
 
     private static WebAPI instance;
     public static WebAPI getInstance() {
@@ -218,12 +225,16 @@ public class WebAPI {
             http.setIdleTimeout(30000);
             server.addConnector(http);
 
+            // Add error handler
+            server.addBean(new CustomErrorHandler());
+
             // Collection of all handlers
             List<Handler> handlers = new ArrayList<Handler>();
 
             // Asset handlers
             handlers.add(newContext("/", new AssetHandler(loadAssetString("pages/redoc.html"), "text/html; charset=utf-8")));
-            handlers.add(newContext("/docs", new AssetHandler(loadAssetString("swagger.yaml").replaceFirst("<host>", serverHost + ":" + serverPort), "application/x-yaml")));
+            String swaggerString = loadAssetString("swagger.yaml").replaceFirst("<host>", serverHost + ":" + serverPort).replaceFirst("<version>", WebAPI.VERSION);
+            handlers.add(newContext("/docs", new AssetHandler(swaggerString, "application/x-yaml")));
 
             // Main servlet context
             ServletContextHandler servletsContext = new ServletContextHandler();
@@ -237,9 +248,9 @@ public class WebAPI {
             servletsContext.addServlet(ChatServlet.class, "/chat");
             servletsContext.addServlet(CmdServlet.class, "/cmd");
 
-            servletsContext.addServlet(WorldServlet.class, "/worlds/*");
-            servletsContext.addServlet(PlayerServlet.class, "/players/*");
-            servletsContext.addServlet(PluginServlet.class, "/plugins/*");
+            servletsContext.addServlet(WorldServlet.class, "/world/*");
+            servletsContext.addServlet(PlayerServlet.class, "/player/*");
+            servletsContext.addServlet(PluginServlet.class, "/plugin/*");
 
             // Add collection of handlers to server
             ContextHandlerCollection coll = new ContextHandlerCollection();

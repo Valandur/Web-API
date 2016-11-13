@@ -237,9 +237,9 @@ public class WebAPI {
             servletsContext.addServlet(ChatServlet.class, "/chat");
             servletsContext.addServlet(CmdServlet.class, "/cmd");
 
-            servletsContext.addServlet(WorldServlet.class, "/worlds/*");
-            servletsContext.addServlet(PlayerServlet.class, "/players/*");
-            servletsContext.addServlet(PluginServlet.class, "/plugins/*");
+            servletsContext.addServlet(WorldServlet.class, "/world/*");
+            servletsContext.addServlet(PlayerServlet.class, "/player/*");
+            servletsContext.addServlet(PluginServlet.class, "/plugin/*");
 
             // Add collection of handlers to server
             ContextHandlerCollection coll = new ContextHandlerCollection();

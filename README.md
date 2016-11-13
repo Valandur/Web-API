@@ -27,16 +27,17 @@ You have to provide a "key" if you want to access any api routes. There are two 
 ## Request / Response types
 This API uses JSON as requeset and response formats.
 
-## URLs
-When accessing the base site (by default http://localhost:8080/) a documentation of all the methods will show up. [WIP]
-This can be used as a starting point to explore the supported methods.
+## Routes
+When accessing the base site (by default http://localhost:8080/) a documentation of all the methods will show up.
+This can be used as a starting point to explore the supported methods. You can also find the same documentation at
+https://valandur.github.io/Web-API/redoc.html
 
 | Path        | Description                                              |
 |-------------|----------------------------------------------------------|
 | /           | Base API url, shows a list of all supported paths        |
 | /info       | Provides basic information about the minecraft server    |
-| /cmd        | Lists all commands & executes individual commands        |
-| /players    | Lists all players & information about individual players |
-| /worlds     | Lists all worlds & information about individual worlds   |
 | /chat       | Provides access to the chat history                      |
-| /plugins    | Lists all plugins & information about individual plugins |
+| /cmd        | Lists all commands & executes individual commands        |
+| /player     | Lists all players & information about individual players |
+| /world      | Lists all worlds & information about individual worlds   |
+| /plugin     | Lists all plugins & information about individual plugins |

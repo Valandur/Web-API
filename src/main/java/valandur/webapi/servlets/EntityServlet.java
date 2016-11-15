@@ -3,6 +3,7 @@ package valandur.webapi.servlets;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import org.spongepowered.api.Sponge;
+import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.world.World;
 import valandur.webapi.Permission;
 import valandur.webapi.misc.JsonConverter;
@@ -17,9 +18,9 @@ import java.util.Collection;
 import java.util.Optional;
 import java.util.UUID;
 
-public class WorldServlet extends APIServlet {
+public class EntityServlet extends APIServlet {
     @Override
-    @Permission(perm = "world")
+    @Permission(perm = "entity")
     protected void handleGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         JsonObject json = new JsonObject();
         resp.setContentType("application/json; charset=utf-8");
@@ -31,37 +32,29 @@ public class WorldServlet extends APIServlet {
             JsonArray arr = new JsonArray();
             Collection<World> worlds = Sponge.getServer().getWorlds();
             for (World world : worlds) {
-                arr.add(JsonConverter.toJson(world));
-            }
-            json.add("worlds", arr);
-        } else {
-            String wName = paths[0];
-            Optional<World> res = Sponge.getServer().getWorld(wName);
-            if (!res.isPresent()) {
-                res = Sponge.getServer().getWorld(UUID.fromString(wName));
-            }
-
-            if (res.isPresent()) {
-                if (paths.length == 1 || paths[1].isEmpty()) {
-                    json.add("world", JsonConverter.toJson(res.get(), true));
-                } else {
-                    String detName = paths[1];
-                    switch (detName) {
-                        case "entity":
-                            break;
-
-                        case "chunks":
-                            break;
-
-                        case "rules":
-                            break;
-
-                        case "tileEntity":
-                            break;
-                    }
+                Collection<Entity> entities = world.getEntities();
+                for (Entity entity : entities) {
+                    arr.add(JsonConverter.toJson(entity));
                 }
+            }
+            json.add("entities", arr);
+        } else {
+            String eName = paths[0];
+
+            Entity entity = null;
+            Collection<World> worlds = Sponge.getServer().getWorlds();
+            for (World world : worlds) {
+                Optional<Entity> opt = world.getEntity(UUID.fromString(eName));
+                if (opt.isPresent()) {
+                    entity = opt.get();
+                    break;
+                }
+            }
+
+            if (entity != null) {
+                json.add("entity", JsonConverter.toJson(entity, true));
             } else {
-                json.addProperty("error", "World with name/uuid " + wName + " not found");
+                json.addProperty("error", "Entity with uuid " + eName + " not found");
             }
         }
 

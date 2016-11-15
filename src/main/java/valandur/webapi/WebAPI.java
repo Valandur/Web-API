@@ -37,7 +37,6 @@ import valandur.webapi.servlets.*;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
@@ -251,6 +250,9 @@ public class WebAPI {
             servletsContext.addServlet(WorldServlet.class, "/world/*");
             servletsContext.addServlet(PlayerServlet.class, "/player/*");
             servletsContext.addServlet(PluginServlet.class, "/plugin/*");
+            servletsContext.addServlet(RecipeServlet.class, "/recipe/*");
+            servletsContext.addServlet(EntityServlet.class, "/entity/*");
+            servletsContext.addServlet(TileEntityServlet.class, "/tile-entity/*");
 
             // Add collection of handlers to server
             ContextHandlerCollection coll = new ContextHandlerCollection();

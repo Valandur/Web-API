@@ -32,12 +32,14 @@ When accessing the base site (by default http://localhost:8080/) a documentation
 This can be used as a starting point to explore the supported methods. You can also find the same documentation at
 https://valandur.github.io/Web-API/redoc.html
 
-| Path        | Description                                              |
-|-------------|----------------------------------------------------------|
-| /           | Base API url, shows a list of all supported paths        |
-| /info       | Provides basic information about the minecraft server    |
-| /chat       | Provides access to the chat history                      |
-| /cmd        | Lists all commands & executes individual commands        |
-| /player     | Lists all players & information about individual players |
-| /world      | Lists all worlds & information about individual worlds   |
-| /plugin     | Lists all plugins & information about individual plugins |
+| Path         | Description                                                           |
+|--------------|-----------------------------------------------------------------------|
+| /            | Base API url, shows a list of all supported paths                     |
+| /info        | Provides basic information about the minecraft server                 |
+| /chat        | Provides access to the chat history                                   |
+| /cmd         | Lists all commands & executes individual commands                     |
+| /player      | Lists all players & information about individual players              |
+| /world       | Lists all worlds & information about individual worlds                |
+| /plugin      | Lists all plugins & information about individual plugins              |
+| /entity      | Lists all entities & information about individual entities            |
+| /tile-entity | Lists all tile entities & information about individual tile entities  |

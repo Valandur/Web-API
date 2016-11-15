@@ -1,5 +1,6 @@
 package valandur.webapi.handlers;
 
+import com.google.gson.JsonObject;
 import org.eclipse.jetty.http.HttpStatus;
 import org.eclipse.jetty.server.handler.ErrorHandler;
 
@@ -13,6 +14,9 @@ public class CustomErrorHandler extends ErrorHandler {
         if (message == null)
             message= HttpStatus.getMessage(code);
 
-        writer.write("{ code: " + code + ", message: \"" + message + "\" }");
+        JsonObject obj = new JsonObject();
+        obj.addProperty("code", code);
+        obj.addProperty("message", message);
+        writer.write(obj.toString());
     }
 }

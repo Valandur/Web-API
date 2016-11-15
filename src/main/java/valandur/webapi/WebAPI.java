@@ -37,7 +37,6 @@ import valandur.webapi.servlets.*;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
@@ -58,7 +57,7 @@ public class WebAPI {
     public static final String NAME = "Web-API";
     public static final String URL = "https://github.com/Valandur/Web-API";
     public static final String DESCRIPTION = "Access Minecraft through a Web API";
-    public static final String VERSION = "1.2";
+    public static final String VERSION = "1.3";
 
     private static WebAPI instance;
     public static WebAPI getInstance() {
@@ -251,6 +250,9 @@ public class WebAPI {
             servletsContext.addServlet(WorldServlet.class, "/world/*");
             servletsContext.addServlet(PlayerServlet.class, "/player/*");
             servletsContext.addServlet(PluginServlet.class, "/plugin/*");
+            servletsContext.addServlet(RecipeServlet.class, "/recipe/*");
+            servletsContext.addServlet(EntityServlet.class, "/entity/*");
+            servletsContext.addServlet(TileEntityServlet.class, "/tile-entity/*");
 
             // Add collection of handlers to server
             ContextHandlerCollection coll = new ContextHandlerCollection();

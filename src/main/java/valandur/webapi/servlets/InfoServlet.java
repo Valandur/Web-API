@@ -15,18 +15,18 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 public class InfoServlet extends APIServlet {
     @Override
     @Permission(perm = "info")
-    protected void handleGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        resp.setContentType("application/json; charset=utf-8");
-        resp.setStatus(HttpServletResponse.SC_OK);
+    protected Optional<CompletableFuture> handleGet(ServletData data) throws ServletException, IOException {
+        data.setStatus(HttpServletResponse.SC_OK);
 
         Server server = Sponge.getServer();
         Platform platform = Sponge.getPlatform();
 
-        JsonObject json = new JsonObject();
+        JsonObject json = data.getJson();
         json.addProperty("motd", server.getMotd().toPlain());
         json.addProperty("players", server.getOnlinePlayers().size());
         json.addProperty("maxPlayers", server.getMaxPlayers());
@@ -54,7 +54,6 @@ public class InfoServlet extends APIServlet {
 
         json.add("api", obj);
 
-        PrintWriter out = resp.getWriter();
-        out.print(json);
+        return Optional.empty();
     }
 }

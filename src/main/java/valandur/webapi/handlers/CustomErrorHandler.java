@@ -12,7 +12,7 @@ public class CustomErrorHandler extends ErrorHandler {
     @Override
     protected void handleErrorPage(HttpServletRequest request, Writer writer, int code, String message) throws IOException {
         if (message == null)
-            message= HttpStatus.getMessage(code);
+            message = HttpStatus.getMessage(code);
 
         JsonObject obj = new JsonObject();
         obj.addProperty("code", code);

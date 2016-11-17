@@ -2,16 +2,12 @@ package valandur.webapi.servlets;
 
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.AbstractHandler;
-import org.spongepowered.api.Sponge;
-import org.spongepowered.api.asset.Asset;
-import valandur.webapi.WebAPI;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Optional;
 
 public class AssetHandler extends AbstractHandler {
 

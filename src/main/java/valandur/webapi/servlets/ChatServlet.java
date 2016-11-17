@@ -7,6 +7,8 @@ import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.text.Text;
 import valandur.webapi.Permission;
 import valandur.webapi.WebAPI;
+import valandur.webapi.cache.CachedChatMessage;
+import valandur.webapi.cache.DataCache;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -14,26 +16,25 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Date;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 public class ChatServlet extends APIServlet {
     @Override
     @Permission(perm = "chat")
-    protected void handleGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        JsonObject json = new JsonObject();
-        resp.setContentType("application/json; charset=utf-8");
-        resp.setStatus(HttpServletResponse.SC_OK);
+    protected Optional<CompletableFuture> handleGet(ServletData data) throws ServletException, IOException {
+        data.setStatus(HttpServletResponse.SC_OK);
 
         JsonArray arr = new JsonArray();
-        for (Triple<Date, Player, Text> msg : WebAPI.getInstance().getChatMessages()) {
+        for (CachedChatMessage msg : DataCache.chatMessages) {
             JsonObject obj = new JsonObject();
-            obj.addProperty("timestamp", msg.getLeft().toString());
-            obj.addProperty("sender", msg.getMiddle().getName());
-            obj.addProperty("message", msg.getRight().toPlain());
+            obj.addProperty("timestamp", msg.getDate().toString());
+            obj.addProperty("sender", msg.getSender().getName());
+            obj.addProperty("message", msg.getMessage().toPlain());
             arr.add(obj);
         }
-        json.add("messages", arr);
+        data.getJson().add("messages", arr);
 
-        PrintWriter out = resp.getWriter();
-        out.print(json);
+        return Optional.empty();
     }
 }

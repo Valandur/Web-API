@@ -17,6 +17,9 @@ import org.eclipse.jetty.util.log.Log;
 import org.slf4j.Logger;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.asset.Asset;
+import org.spongepowered.api.command.CommandManager;
+import org.spongepowered.api.command.CommandResult;
+import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.command.args.GenericArguments;
 import org.spongepowered.api.command.spec.CommandSpec;
 import org.spongepowered.api.config.ConfigDir;
@@ -28,18 +31,25 @@ import org.spongepowered.api.event.game.state.GameStartedServerEvent;
 import org.spongepowered.api.event.game.state.GameStoppedServerEvent;
 import org.spongepowered.api.event.message.MessageChannelEvent;
 import org.spongepowered.api.plugin.Plugin;
+import org.spongepowered.api.scheduler.SpongeExecutorService;
 import org.spongepowered.api.text.Text;
+import org.spongepowered.api.world.World;
+import valandur.webapi.cache.CachedChatMessage;
+import valandur.webapi.cache.DataCache;
 import valandur.webapi.command.*;
 import valandur.webapi.handlers.AuthHandler;
 import valandur.webapi.handlers.CustomErrorHandler;
+import valandur.webapi.misc.APICommandSource;
 import valandur.webapi.misc.JettyLogger;
 import valandur.webapi.servlets.*;
 
 import javax.annotation.Nullable;
+import javax.xml.crypto.Data;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 @Plugin(
         id = WebAPI.ID,
@@ -64,11 +74,6 @@ public class WebAPI {
         return WebAPI.instance;
     }
 
-    private List<Triple<Date, Player, Text>> chatMessages = new ArrayList<>();
-    public List<Triple<Date, Player, Text>> getChatMessages() {
-        return chatMessages;
-    }
-
     @Inject
     private Logger logger;
     public Logger getLogger() {
@@ -85,6 +90,8 @@ public class WebAPI {
     private String serverHost;
     private int serverPort;
     private Server server;
+
+    private int chatMessageCacheSize;
 
     private AuthHandler authHandler;
     public AuthHandler getAuthHandler() {
@@ -135,10 +142,10 @@ public class WebAPI {
         ConfigurationNode config = loadConfig("config.conf");
         serverHost = config.getNode("server", "host").getString("localhost");
         serverPort = config.getNode("server", "port").getInt(8080);
+        chatMessageCacheSize = config.getNode("cache", "chat").getInt(100);
 
         // Load permissions
         authHandler = new AuthHandler();
-
 
         logger.info("Registering commands...");
         CommandSpec specWhitelistAdd = CommandSpec.builder()
@@ -286,7 +293,11 @@ public class WebAPI {
 
     @Listener
     public void onServerStart(GameStartedServerEvent event) {
-
+        Sponge.getScheduler().createTaskBuilder()
+                .name("WebAPI - Cache Update Thread")
+                .interval(10, TimeUnit.SECONDS)
+                .execute(DataCache::update)
+                .submit(this);
     }
 
     @Listener
@@ -300,11 +311,21 @@ public class WebAPI {
         }
     }
 
+    public static APICommandSource executeCommand(String command) {
+        APICommandSource src = new APICommandSource();
+        CommandManager cmdManager = Sponge.getGame().getCommandManager();
+        cmdManager.process(src, command);
+        return src;
+    }
+
     @Listener
     public void onMessage(MessageChannelEvent.Chat event) {
         Optional<Player> player = event.getCause().first(Player.class);
         if (!player.isPresent()) return;
 
-        chatMessages.add(Triple.of(new Date(), player.get(), event.getRawMessage()));
+        DataCache.chatMessages.add(new CachedChatMessage(new Date(), player.get(), event.getRawMessage()));
+        while (DataCache.chatMessages.size() > chatMessageCacheSize) {
+            DataCache.chatMessages.poll();
+        }
     }
 }

@@ -15,10 +15,8 @@ import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 
-public abstract class APIServlet extends HttpServlet {
+public abstract class WebAPIServlet extends HttpServlet {
     private void handleVerb(String verb, HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         resp.setContentType("application/json; charset=utf-8");
 
@@ -57,14 +55,9 @@ public abstract class APIServlet extends HttpServlet {
             }
 
             ServletData data = new ServletData(req, resp);
-            Optional<CompletableFuture> obj = (Optional<CompletableFuture>)method.invoke(this, data);
-            if (obj.isPresent()) {
-                obj.get().thenRunAsync(() -> {
-                    this.finishRequest(data);
-                });
-            } else {
-                this.finishRequest(data);
-            }
+            method.invoke(this, data);
+            PrintWriter out = data.getWriter();
+            out.write(data.getJson().toString());
         } catch (NoSuchMethodException e) {
             // Method does not exist (endpoint/verb not supported)
             resp.sendError(HttpServletResponse.SC_NOT_FOUND);
@@ -73,16 +66,6 @@ public abstract class APIServlet extends HttpServlet {
             e.printStackTrace();
             resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         }
-    }
-
-    private void finishRequest(ServletData data) {
-        try {
-            PrintWriter out = data.getWriter();
-            out.write(data.getJson().toString());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        data.getContext().complete();
     }
 
     @Override
@@ -105,23 +88,19 @@ public abstract class APIServlet extends HttpServlet {
         this.handleVerb("Delete", req, resp);
     }
 
-    protected Optional<CompletableFuture> handleGet(ServletData data) throws ServletException, IOException {
+    protected void handleGet(ServletData data) {
         data.sendError(HttpServletResponse.SC_NOT_IMPLEMENTED);
-        return Optional.empty();
     }
 
-    protected Optional<CompletableFuture> handlePost(ServletData data) throws ServletException, IOException {
+    protected void handlePost(ServletData data) {
         data.sendError(HttpServletResponse.SC_NOT_IMPLEMENTED);
-        return Optional.empty();
     }
 
-    protected Optional<CompletableFuture> handlePut(ServletData data) throws ServletException, IOException {
+    protected void handlePut(ServletData data) {
         data.sendError(HttpServletResponse.SC_NOT_IMPLEMENTED);
-        return Optional.empty();
     }
 
-    protected Optional<CompletableFuture> handleDelete(ServletData data) throws ServletException, IOException {
+    protected void handleDelete(ServletData data) {
         data.sendError(HttpServletResponse.SC_NOT_IMPLEMENTED);
-        return Optional.empty();
     }
 }

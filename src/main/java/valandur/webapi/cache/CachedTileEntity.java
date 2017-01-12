@@ -11,7 +11,7 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Optional;
 
-public class CachedTileEntity {
+public class CachedTileEntity extends CachedObject {
     @Expose
     public String type;
 
@@ -44,5 +44,10 @@ public class CachedTileEntity {
             }
         }
         return cache;
+    }
+
+    @Override
+    public int getCacheDuration() {
+        return 0;
     }
 }

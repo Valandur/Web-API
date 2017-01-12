@@ -5,32 +5,27 @@ import valandur.webapi.cache.CachedPlugin;
 import valandur.webapi.cache.DataCache;
 import valandur.webapi.misc.JsonConverter;
 
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 
-public class PluginServlet extends APIServlet {
+public class PluginServlet extends WebAPIServlet {
     @Override
     @Permission(perm = "plugin")
-    protected Optional<CompletableFuture> handleGet(ServletData data) throws ServletException, IOException {
+    protected void handleGet(ServletData data) {
         String[] paths = data.getPathParts();
 
         if (paths.length == 0 || paths[0].isEmpty()) {
             data.setStatus(HttpServletResponse.SC_OK);
-            data.getJson().add("plugins", JsonConverter.toJson(DataCache.getPlugins()));
+            data.getJson().add("plugins", JsonConverter.cacheToJson(DataCache.getPlugins()));
         } else {
             String pName = paths[0];
             Optional<CachedPlugin> plugin = DataCache.getPlugin(pName);
             if (plugin.isPresent()) {
                 data.setStatus(HttpServletResponse.SC_OK);
-                data.getJson().add("plugin", JsonConverter.toJson(plugin.get(), true));
+                data.getJson().add("plugin", JsonConverter.cacheToJson(plugin.get(), true));
             } else {
                 data.sendError(HttpServletResponse.SC_NOT_FOUND);
             }
         }
-
-        return Optional.empty();
     }
 }

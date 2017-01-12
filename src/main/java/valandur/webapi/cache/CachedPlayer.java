@@ -5,7 +5,7 @@ import org.spongepowered.api.entity.living.player.Player;
 
 import java.util.*;
 
-public class CachedPlayer {
+public class CachedPlayer extends CachedObject {
     @Expose
     public String name;
 
@@ -28,6 +28,7 @@ public class CachedPlayer {
         cache.name = player.getName();
         cache.uuid = player.getUniqueId().toString();
         if (details) {
+            cache.details = true;
             cache.location = CachedLocation.copyFrom(player.getLocation());
             cache.velocity = CachedVector3d.copyFrom(player.getVelocity());
             cache.rotation = CachedVector3d.copyFrom(player.getRotation());
@@ -37,5 +38,10 @@ public class CachedPlayer {
             cache.properties = DataCache.propertiesToMap(player);
         }
         return cache;
+    }
+
+    @Override
+    public int getCacheDuration() {
+        return CacheDurations.player;
     }
 }

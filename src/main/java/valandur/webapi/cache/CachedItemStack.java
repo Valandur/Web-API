@@ -3,7 +3,7 @@ package valandur.webapi.cache;
 import com.google.gson.annotations.Expose;
 import org.spongepowered.api.item.inventory.ItemStack;
 
-public class CachedItemStack {
+public class CachedItemStack extends CachedObject {
     @Expose
     public String id;
 
@@ -19,5 +19,10 @@ public class CachedItemStack {
         cache.name = stack.getTranslation().get();
         cache.quantity = stack.getQuantity();
         return cache;
+    }
+
+    @Override
+    public int getCacheDuration() {
+        return 0;
     }
 }

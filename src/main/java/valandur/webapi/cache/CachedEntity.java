@@ -5,7 +5,7 @@ import org.spongepowered.api.entity.Entity;
 
 import java.util.Map;
 
-public class CachedEntity {
+public class CachedEntity extends CachedObject {
     @Expose
     public String type;
 
@@ -26,6 +26,7 @@ public class CachedEntity {
         cache.type = entity.getType().getName();
         cache.uuid = entity.getUniqueId().toString();
         if (details) {
+            cache.details = true;
             cache.location = CachedLocation.copyFrom(entity.getLocation());
             cache.velocity = CachedVector3d.copyFrom(entity.getVelocity());
             cache.rotation = CachedVector3d.copyFrom(entity.getRotation());
@@ -33,5 +34,10 @@ public class CachedEntity {
             cache.properties = DataCache.propertiesToMap(entity);
         }
         return cache;
+    }
+
+    @Override
+    public int getCacheDuration() {
+        return CacheDurations.entity;
     }
 }

@@ -1,11 +1,11 @@
 package valandur.webapi;
 
+import com.google.gson.Gson;
 import com.google.inject.Inject;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
-import org.apache.commons.lang3.tuple.Triple;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
@@ -17,35 +17,47 @@ import org.eclipse.jetty.util.log.Log;
 import org.slf4j.Logger;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.asset.Asset;
+import org.spongepowered.api.block.BlockSnapshot;
+import org.spongepowered.api.block.tileentity.TileEntity;
 import org.spongepowered.api.command.CommandManager;
-import org.spongepowered.api.command.CommandResult;
-import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.command.args.GenericArguments;
 import org.spongepowered.api.command.spec.CommandSpec;
 import org.spongepowered.api.config.ConfigDir;
+import org.spongepowered.api.data.Transaction;
+import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Listener;
+import org.spongepowered.api.event.block.ChangeBlockEvent;
+import org.spongepowered.api.event.entity.DestructEntityEvent;
+import org.spongepowered.api.event.entity.SpawnEntityEvent;
 import org.spongepowered.api.event.game.state.GameInitializationEvent;
 import org.spongepowered.api.event.game.state.GamePreInitializationEvent;
 import org.spongepowered.api.event.game.state.GameStartedServerEvent;
 import org.spongepowered.api.event.game.state.GameStoppedServerEvent;
 import org.spongepowered.api.event.message.MessageChannelEvent;
+import org.spongepowered.api.event.network.ClientConnectionEvent;
+import org.spongepowered.api.event.world.LoadWorldEvent;
+import org.spongepowered.api.event.world.UnloadWorldEvent;
 import org.spongepowered.api.plugin.Plugin;
 import org.spongepowered.api.scheduler.SpongeExecutorService;
 import org.spongepowered.api.text.Text;
-import org.spongepowered.api.world.World;
+import valandur.webapi.cache.CacheDurations;
 import valandur.webapi.cache.CachedChatMessage;
+import valandur.webapi.cache.CachedTileEntity;
 import valandur.webapi.cache.DataCache;
 import valandur.webapi.command.*;
 import valandur.webapi.handlers.AuthHandler;
-import valandur.webapi.handlers.CustomErrorHandler;
-import valandur.webapi.misc.APICommandSource;
+import valandur.webapi.handlers.RateLimitHandler;
+import valandur.webapi.handlers.WebAPIErrorHandler;
+import valandur.webapi.misc.JsonConverter;
+import valandur.webapi.misc.TestClass;
+import valandur.webapi.misc.WebAPICommandSource;
 import valandur.webapi.misc.JettyLogger;
 import valandur.webapi.servlets.*;
 
 import javax.annotation.Nullable;
-import javax.xml.crypto.Data;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
@@ -67,12 +79,14 @@ public class WebAPI {
     public static final String NAME = "Web-API";
     public static final String URL = "https://github.com/Valandur/Web-API";
     public static final String DESCRIPTION = "Access Minecraft through a Web API";
-    public static final String VERSION = "1.3";
+    public static final String VERSION = "1.4";
 
     private static WebAPI instance;
     public static WebAPI getInstance() {
         return WebAPI.instance;
     }
+
+    public SpongeExecutorService syncExecutor;
 
     @Inject
     private Logger logger;
@@ -94,6 +108,7 @@ public class WebAPI {
     private int chatMessageCacheSize;
 
     private AuthHandler authHandler;
+    private RateLimitHandler rateLimitHandler;
     public AuthHandler getAuthHandler() {
         return authHandler;
     }
@@ -110,6 +125,8 @@ public class WebAPI {
                 e.printStackTrace();
             }
         }
+
+        this.syncExecutor = Sponge.getScheduler().createSyncExecutor(this);
     }
 
     @Nullable
@@ -138,16 +155,26 @@ public class WebAPI {
 
         logger.info("Loading configuration...");
 
-        // Load main config file
         ConfigurationNode config = loadConfig("config.conf");
         serverHost = config.getNode("server", "host").getString("localhost");
         serverPort = config.getNode("server", "port").getInt(8080);
         chatMessageCacheSize = config.getNode("cache", "chat").getInt(100);
 
-        // Load permissions
+
+        // Load permissions & auth handler
         authHandler = new AuthHandler();
 
+        // Load rate limit handler;
+        rateLimitHandler = new RateLimitHandler();
+
+
+        // Load cache & cache config
+        CacheDurations.init();
+
+
+        // Register commands
         logger.info("Registering commands...");
+
         CommandSpec specWhitelistAdd = CommandSpec.builder()
                 .description(Text.of("Add an IP to the whitelist"))
                 .permission("webapi.command.whitelist.add")
@@ -219,6 +246,7 @@ public class WebAPI {
         Sponge.getCommandManager().register(this, spec, "webapi");
 
 
+        // Start web server
         logger.info("Starting Web Server...");
 
         try {
@@ -232,7 +260,7 @@ public class WebAPI {
             server.addConnector(http);
 
             // Add error handler
-            server.addBean(new CustomErrorHandler());
+            server.addBean(new WebAPIErrorHandler());
 
             // Collection of all handlers
             List<Handler> handlers = new ArrayList<Handler>();
@@ -246,8 +274,9 @@ public class WebAPI {
             ServletContextHandler servletsContext = new ServletContextHandler();
             servletsContext.setContextPath("/api");
 
+            // Use a list to make request first go through the auth handler and rate-limit handler
             HandlerList list = new HandlerList();
-            list.setHandlers(new Handler[]{ authHandler, servletsContext });
+            list.setHandlers(new Handler[]{ authHandler, rateLimitHandler, servletsContext });
             handlers.add(list);
 
             servletsContext.addServlet(InfoServlet.class, "/info");
@@ -283,7 +312,6 @@ public class WebAPI {
         }
         return res;
     }
-
     private ContextHandler newContext(String path, Handler handler) {
         ContextHandler context = new ContextHandler();
         context.setContextPath(path);
@@ -293,11 +321,7 @@ public class WebAPI {
 
     @Listener
     public void onServerStart(GameStartedServerEvent event) {
-        Sponge.getScheduler().createTaskBuilder()
-                .name("WebAPI - Cache Update Thread")
-                .interval(10, TimeUnit.SECONDS)
-                .execute(DataCache::update)
-                .submit(this);
+        DataCache.updatePlugins();
     }
 
     @Listener
@@ -311,8 +335,48 @@ public class WebAPI {
         }
     }
 
-    public static APICommandSource executeCommand(String command) {
-        APICommandSource src = new APICommandSource();
+    @Listener
+    public void onWorldLoad(LoadWorldEvent e) {
+        DataCache.addWorld(e.getTargetWorld());
+    }
+    @Listener
+    public void onWorldUnload(UnloadWorldEvent e) {
+        DataCache.removeWorld(e.getTargetWorld().getUniqueId());
+    }
+
+    @Listener
+    public void onPlayerJoin(ClientConnectionEvent.Join e) {
+        DataCache.addPlayer(e.getTargetEntity());
+    }
+    @Listener
+    public void onPlayerLeave(ClientConnectionEvent.Disconnect e) {
+        DataCache.removePlayer(e.getTargetEntity().getUniqueId());
+    }
+
+    @Listener
+    public void onEntitySpawn(SpawnEntityEvent e) {
+        for (Entity entity : e.getEntities()) {
+            DataCache.addEntity(entity);
+        }
+    }
+    @Listener
+    public void onEntityDespawn(DestructEntityEvent e) {
+        DataCache.removeEntity(e.getTargetEntity().getUniqueId());
+    }
+
+    @Listener
+    public void onBlockPlace(ChangeBlockEvent.Place e) {
+        Gson gson = new Gson();
+        for (Transaction<BlockSnapshot> trans : e.getTransactions()) {
+            Optional<TileEntity> entity = e.getTargetWorld().getTileEntity(trans.getFinal().getPosition());
+            if (entity.isPresent()) {
+                logger.info(JsonConverter.tileEntityToJson(entity.get()).toString());
+            }
+        }
+    }
+
+    public static WebAPICommandSource executeCommand(String command) {
+        WebAPICommandSource src = new WebAPICommandSource();
         CommandManager cmdManager = Sponge.getGame().getCommandManager();
         cmdManager.process(src, command);
         return src;

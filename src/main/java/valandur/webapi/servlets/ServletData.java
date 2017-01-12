@@ -18,11 +18,6 @@ public class ServletData {
         return resp.getWriter();
     }
 
-    private AsyncContext ctx;
-    public AsyncContext getContext() {
-        return ctx;
-    }
-
     private JsonObject json;
     public JsonObject getJson() {
         return json;
@@ -30,7 +25,6 @@ public class ServletData {
 
     public ServletData(HttpServletRequest req, HttpServletResponse resp) {
         this.req = req;
-        this.ctx = req.startAsync();
         this.resp = resp;
         this.json = new JsonObject();
     }
@@ -51,7 +45,11 @@ public class ServletData {
     public void setStatus(int status) {
         resp.setStatus(status);
     }
-    public void sendError(int error) throws IOException {
-        resp.sendError(error);
+    public void sendError(int error) {
+        try {
+            resp.sendError(error);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

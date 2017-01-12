@@ -5,7 +5,7 @@ import org.spongepowered.api.text.Text;
 
 import java.util.Date;
 
-public class CachedChatMessage {
+public class CachedChatMessage extends CachedObject {
     private Date date;
     public Date getDate() {
         return date;
@@ -25,5 +25,10 @@ public class CachedChatMessage {
         this.date = date;
         this.sender = sender;
         this.message = message;
+    }
+
+    @Override
+    public int getCacheDuration() {
+        return 0;
     }
 }

@@ -5,32 +5,34 @@ import valandur.webapi.cache.CachedPlayer;
 import valandur.webapi.cache.DataCache;
 import valandur.webapi.misc.JsonConverter;
 
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
+import java.util.UUID;
 
-public class PlayerServlet extends APIServlet {
+public class PlayerServlet extends WebAPIServlet {
     @Override
     @Permission(perm = "player")
-    protected Optional<CompletableFuture> handleGet(ServletData data) throws ServletException, IOException {
+    protected void handleGet(ServletData data) {
         String[] paths = data.getPathParts();
 
         if (paths.length == 0 || paths[0].isEmpty()) {
             data.setStatus(HttpServletResponse.SC_OK);
-            data.getJson().add("players", JsonConverter.toJson(DataCache.getPlayers()));
-        } else {
-            String pName = paths[0];
-            Optional<CachedPlayer> player = DataCache.getPlayer(pName);
-            if (player.isPresent()) {
-                data.setStatus(HttpServletResponse.SC_OK);
-                data.getJson().add("player", JsonConverter.toJson(player.get(), true));
-            } else {
-                data.sendError(HttpServletResponse.SC_NOT_FOUND);
-            }
+            data.getJson().add("players", JsonConverter.cacheToJson(DataCache.getPlayers()));
+            return;
         }
 
-        return Optional.empty();
+        String uuid = paths[0];
+        if (uuid.split("-").length != 5) {
+            data.sendError(HttpServletResponse.SC_BAD_REQUEST);
+            return;
+        }
+
+        Optional<CachedPlayer> player = DataCache.getPlayer(UUID.fromString(uuid));
+        if (player.isPresent()) {
+            data.setStatus(HttpServletResponse.SC_OK);
+            data.getJson().add("player", JsonConverter.cacheToJson(player.get(), true));
+        } else {
+            data.sendError(HttpServletResponse.SC_NOT_FOUND);
+        }
     }
 }

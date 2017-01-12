@@ -14,7 +14,6 @@ import org.spongepowered.api.data.value.mutable.CompositeValueStore;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.plugin.PluginContainer;
-import org.spongepowered.api.scheduler.SpongeExecutorService;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.world.World;
 import valandur.webapi.WebAPI;
@@ -22,46 +21,153 @@ import valandur.webapi.misc.Util;
 
 import java.time.Instant;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 public class DataCache {
-    public static SpongeExecutorService syncExecutor = Sponge.getScheduler().createSyncExecutor(WebAPI.getInstance());
 
     public static ConcurrentLinkedQueue<CachedChatMessage> chatMessages = new ConcurrentLinkedQueue<>();
     public static Collection<CachedPlugin> plugins = new LinkedHashSet<>();
-    public static Collection<CachedWorld> worlds = new LinkedHashSet<>();
-    public static Collection<CachedPlayer> players = new LinkedHashSet<>();
-    public static Collection<CachedEntity> entities = new LinkedHashSet<>();
+    public static Map<UUID, CachedWorld> worlds = new ConcurrentHashMap<>();
+    public static Map<UUID, CachedPlayer> players = new ConcurrentHashMap<>();
+    public static Map<UUID, CachedEntity> entities = new ConcurrentHashMap<>();
     public static Collection<CachedTileEntity> tileEntities = new LinkedHashSet<>();
 
-    public static void update() {
-        Collection<World> worlds = Sponge.getServer().getWorlds();
-        Collection<CachedWorld> cachedWorlds = new LinkedHashSet<>();
-        Collection<CachedEntity> cachedEntities = new LinkedHashSet<>();
-        Collection<CachedTileEntity> cachedTileEntities = new LinkedHashSet<>();
-        for (World world : worlds) {
-            cachedWorlds.add(CachedWorld.copyFrom(world, true));
-            Collection<Entity> entities = world.getEntities();
-            for (Entity entity : entities) {
-                cachedEntities.add(CachedEntity.copyFrom(entity, true));
-            }
-            Collection<TileEntity> tes = world.getTileEntities();
-            for (TileEntity te : tes) {
-                cachedTileEntities.add(CachedTileEntity.copyFrom(te, true));
-            }
-        }
-        DataCache.worlds = cachedWorlds;
-        DataCache.entities = cachedEntities;
-        DataCache.tileEntities = cachedTileEntities;
 
-        Collection<Player> players = Sponge.getServer().getOnlinePlayers();
-        Collection<CachedPlayer> cachedPlayers = new LinkedHashSet<>();
-        for (Player player : players) {
-            cachedPlayers.add(CachedPlayer.copyFrom(player, true));
-        }
-        DataCache.players = cachedPlayers;
+    public static void addWorld(World world) {
+        worlds.put(world.getUniqueId(), CachedWorld.copyFrom(world));
+    }
+    public static void removeWorld(UUID uuid) {
+        worlds.remove(uuid);
+    }
+    public static Optional<CachedWorld> updateWorld(UUID uuid) {
+        CompletableFuture<Optional<CachedWorld>> future = CompletableFuture.supplyAsync(() -> {
+            Optional<World> world = Sponge.getServer().getWorld(uuid);
+            if (!world.isPresent()) {
+                return Optional.empty();
+            }
 
+            CachedWorld w = CachedWorld.copyFrom(world.get(), true);
+            worlds.put(world.get().getUniqueId(), w);
+            return Optional.of(w);
+        }, WebAPI.getInstance().syncExecutor);
+
+        try {
+            return future.get();
+        } catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
+            return Optional.empty();
+        }
+    }
+    public static Collection<CachedWorld> getWorlds() {
+        return worlds.values();
+    }
+    public static Optional<CachedWorld> getWorld(UUID uuid) {
+        if (!worlds.containsKey(uuid)) {
+            return Optional.empty();
+        }
+
+        final CachedWorld res = worlds.get(uuid);
+        if (res.isExpired() || !res.hasDetails()) {
+            return updateWorld(uuid);
+        } else {
+            return Optional.of(res);
+        }
+    }
+
+    public static void addPlayer(Player player) {
+        players.put(player.getUniqueId(), CachedPlayer.copyFrom(player));
+    }
+    public static void removePlayer(UUID uuid) {
+        players.remove(uuid);
+    }
+    public static Optional<CachedPlayer> updatePlayer(UUID uuid) {
+        CompletableFuture<Optional<CachedPlayer>> future = CompletableFuture.supplyAsync(() -> {
+            Optional<Player> player = Sponge.getServer().getPlayer(uuid);
+            if (!player.isPresent()) {
+                return Optional.empty();
+            }
+
+            CachedPlayer p = CachedPlayer.copyFrom(player.get(), true);
+            players.put(player.get().getUniqueId(), p);
+            return Optional.of(p);
+        }, WebAPI.getInstance().syncExecutor);
+
+        try {
+            return future.get();
+        } catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
+            return Optional.empty();
+        }
+    }
+    public static Collection<CachedPlayer> getPlayers() {
+        return players.values();
+    }
+    public static Optional<CachedPlayer> getPlayer(UUID uuid) {
+        if (!players.containsKey(uuid)) {
+            return Optional.empty();
+        }
+
+        final CachedPlayer res = players.get(uuid);
+        if (res.isExpired() || !res.hasDetails()) {
+            return updatePlayer(uuid);
+        } else {
+            return Optional.of(res);
+        }
+    }
+
+    public static void addEntity(Entity entity) {
+        entities.put(entity.getUniqueId(), CachedEntity.copyFrom(entity));
+    }
+    public static void removeEntity(UUID uuid) {
+        entities.remove(uuid);
+    }
+    public static Optional<CachedEntity> updateEntity(UUID uuid) {
+        CompletableFuture<Optional<CachedEntity>> future = CompletableFuture.supplyAsync(() -> {
+            Optional<Entity> entity = Optional.empty();
+            for (World world : Sponge.getServer().getWorlds()) {
+                Optional<Entity> ent = world.getEntity(uuid);
+                if (ent.isPresent()) {
+                    entity = ent;
+                    break;
+                }
+            }
+            if (!entity.isPresent()) {
+                return Optional.empty();
+            }
+
+            CachedEntity e = CachedEntity.copyFrom(entity.get(), true);
+            entities.put(entity.get().getUniqueId(), e);
+            return Optional.of(e);
+        }, WebAPI.getInstance().syncExecutor);
+
+        try {
+            return future.get();
+        } catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
+            return Optional.empty();
+        }
+    }
+    public static Collection<CachedEntity> getEntities() {
+        return entities.values();
+    }
+    public static Optional<CachedEntity> getEntity(UUID uuid) {
+        if (!entities.containsKey(uuid)) {
+            return Optional.empty();
+        }
+
+        final CachedEntity res = entities.get(uuid);
+        if (res.isExpired() || !res.hasDetails()) {
+            return updateEntity(uuid);
+        } else {
+            return Optional.of(res);
+        }
+    }
+
+    public static void updatePlugins() {
         Collection<PluginContainer> plugins = Sponge.getPluginManager().getPlugins();
         Collection<CachedPlugin> cachedPlugins = new LinkedHashSet<>();
         for (PluginContainer plugin : plugins) {
@@ -69,7 +175,6 @@ public class DataCache {
         }
         DataCache.plugins = cachedPlugins;
     }
-
     public static Collection<CachedPlugin> getPlugins() {
         return plugins;
     }
@@ -81,44 +186,11 @@ public class DataCache {
         return Optional.empty();
     }
 
-    public static Collection<CachedWorld> getWorlds() {
-        return worlds;
-    }
-    public static Optional<CachedWorld> getWorld(String worldNameOrUUID) {
-        for (CachedWorld world : worlds) {
-            if (world.name.equalsIgnoreCase(worldNameOrUUID) || world.uuid.equals(worldNameOrUUID))
-                return Optional.of(world);
-        }
-        return Optional.empty();
-    }
-
-    public static Collection<CachedPlayer> getPlayers() {
-        return players;
-    }
-    public static Optional<CachedPlayer> getPlayer(String playerNameOrUUID) {
-        for (CachedPlayer player : players) {
-            if (player.name.equalsIgnoreCase(playerNameOrUUID) || player.uuid.equals(playerNameOrUUID))
-                return Optional.of(player);
-        }
-        return Optional.empty();
-    }
-
-    public static Collection<CachedEntity> getEntities() {
-        return entities;
-    }
-    public static Optional<CachedEntity> getEntity(String entityUUID) {
-        for (CachedEntity entity : entities) {
-            if (entity.uuid.equals(entityUUID))
-                return Optional.of(entity);
-        }
-        return Optional.empty();
-    }
-
     public static Collection<CachedTileEntity> getTileEntities() {
         return tileEntities;
     }
     public static Collection<CachedTileEntity> getTileEntities(CachedWorld world) {
-        return tileEntities.stream().filter(item -> item.location.world.uuid.equals(world.uuid)).collect(Collectors.toList());
+        return tileEntities.stream().filter(te -> te.location.world.uuid.equals(world.uuid)).collect(Collectors.toList());
     }
     public static Optional<CachedTileEntity> getTileEntity(CachedWorld world, double x, double y, double z) {
         for (CachedTileEntity te : tileEntities) {

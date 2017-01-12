@@ -5,7 +5,7 @@ import org.spongepowered.api.world.World;
 
 import java.util.Map;
 
-public class CachedWorld {
+public class CachedWorld extends CachedObject {
 
     @Expose
     public String name;
@@ -23,8 +23,14 @@ public class CachedWorld {
         cache.name = world.getName();
         cache.uuid = world.getUniqueId().toString();
         if (details) {
+            cache.details = true;
             cache.properties = DataCache.containerToMap(world.getProperties().toContainer());
         }
         return cache;
+    }
+
+    @Override
+    public int getCacheDuration() {
+        return CacheDurations.world;
     }
 }

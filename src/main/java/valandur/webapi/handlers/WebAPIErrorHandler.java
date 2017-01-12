@@ -8,7 +8,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.io.Writer;
 
-public class CustomErrorHandler extends ErrorHandler {
+public class WebAPIErrorHandler extends ErrorHandler {
     @Override
     protected void handleErrorPage(HttpServletRequest request, Writer writer, int code, String message) throws IOException {
         if (message == null)

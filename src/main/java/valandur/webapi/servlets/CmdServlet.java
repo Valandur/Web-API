@@ -2,39 +2,28 @@ package valandur.webapi.servlets;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
-import javafx.scene.web.WebEngine;
 import org.spongepowered.api.Sponge;
-import org.spongepowered.api.command.CommandManager;
 import org.spongepowered.api.command.CommandMapping;
-import org.spongepowered.api.scheduler.SpongeExecutorService;
 import org.spongepowered.api.text.Text;
 import valandur.webapi.Permission;
 import valandur.webapi.WebAPI;
-import valandur.webapi.cache.DataCache;
-import valandur.webapi.misc.APICommandSource;
+import valandur.webapi.misc.WebAPICommandSource;
 
-import javax.servlet.AsyncContext;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
-public class CmdServlet extends APIServlet {
+public class CmdServlet extends WebAPIServlet {
     @Override
     @Permission(perm = "cmd")
-    protected Optional<CompletableFuture> handleGet(ServletData data) throws ServletException, IOException {
+    protected void handleGet(ServletData data) {
         data.setStatus(HttpServletResponse.SC_OK);
 
-        APICommandSource cmdSource = new APICommandSource();
+        WebAPICommandSource cmdSource = new WebAPICommandSource();
 
         JsonArray arr = new JsonArray();
         Collection<CommandMapping> cmds = Sponge.getCommandManager().getAll().values();
@@ -54,26 +43,28 @@ public class CmdServlet extends APIServlet {
             arr.add(obj);
         }
         data.getJson().add("commands", arr);
-
-        return Optional.empty();
     }
 
     @Override
     @Permission(perm = "cmd")
-    protected Optional<CompletableFuture> handlePost(ServletData data) throws ServletException, IOException {
+    protected void handlePost(ServletData data) {
         data.setStatus(HttpServletResponse.SC_OK);
 
         final JsonObject reqJson = (JsonObject) data.getAttribute("body");
 
-        return Optional.of(CompletableFuture
+        try {
+            CompletableFuture
                 .supplyAsync(() -> reqJson.get("command").getAsString())
-                .thenApplyAsync(WebAPI::executeCommand, DataCache.syncExecutor)
-                .thenAcceptAsync((APICommandSource src) -> {
+                .thenApplyAsync(WebAPI::executeCommand, WebAPI.getInstance().syncExecutor)
+                .thenAcceptAsync((WebAPICommandSource src) -> {
                     JsonArray arr = new JsonArray();
                     for (String line : src.getLines()) {
                         arr.add(new JsonPrimitive(line));
                     }
                     data.getJson().add("response", arr);
-                }));
+                }).get();
+        } catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
+        }
     }
 }

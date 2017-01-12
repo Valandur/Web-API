@@ -9,18 +9,13 @@ import org.spongepowered.api.Sponge;
 import org.spongepowered.api.plugin.PluginContainer;
 import valandur.webapi.Permission;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 
-public class InfoServlet extends APIServlet {
+public class InfoServlet extends WebAPIServlet {
     @Override
     @Permission(perm = "info")
-    protected Optional<CompletableFuture> handleGet(ServletData data) throws ServletException, IOException {
+    protected void handleGet(ServletData data) {
         data.setStatus(HttpServletResponse.SC_OK);
 
         Server server = Sponge.getServer();
@@ -53,7 +48,5 @@ public class InfoServlet extends APIServlet {
         obj.add("authors", arr);
 
         json.add("api", obj);
-
-        return Optional.empty();
     }
 }

@@ -6,7 +6,7 @@ import org.spongepowered.api.plugin.PluginContainer;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CachedPlugin {
+public class CachedPlugin extends CachedObject {
     @Expose
     public String id;
 
@@ -27,5 +27,10 @@ public class CachedPlugin {
         cache.url = plugin.getUrl().isPresent() ? plugin.getUrl().get() : null;
         cache.authors = new ArrayList<String>(plugin.getAuthors());
         return cache;
+    }
+
+    @Override
+    public int getCacheDuration() {
+        return 0;
     }
 }

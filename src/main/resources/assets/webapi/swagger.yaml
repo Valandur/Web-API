@@ -33,6 +33,10 @@ tags:
     description: List all worlds and get detailed information about them.
   - name: Plugin
     description: List all plugins and get detailed information about them.
+  - name: Entity
+    description: List all entities and get detailed information about them.
+  - name: Tile Entity
+    description: List all tile entities and get detailed information about them.
 
 #parameters:
 
@@ -128,7 +132,7 @@ paths:
           description: A list of all the players on the server
           schema:
             $ref: '#/definitions/PlayerList'
-  /player/{name}:
+  /player/{uuid}:
     get:
       summary: Detailed player info
       description: |
@@ -136,10 +140,10 @@ paths:
 
         > Required permission: player
       parameters:
-        - name: name
+        - name: uuid
           in: path
           type: string
-          description: The name of the player to get detailed information about.
+          description: The uuid of the player to get detailed information about.
       tags:
         - Player
       responses:
@@ -161,7 +165,7 @@ paths:
           description: A list of all the worlds on the server
           schema:
             $ref: '#/definitions/WorldList'
-  /world/{name}:
+  /world/{uuid}:
     get:
       summary: Detailed world info
       description: |
@@ -169,15 +173,15 @@ paths:
 
         > Required permission: world
       parameters:
-        - name: name
+        - name: uuid
           in: path
           type: string
-          description: The name of the world to get detailed information about.
+          description: The uuid of the world to get detailed information about.
       tags:
         - World
       responses:
         200:
-          description: Detailed information about the player.
+          description: Detailed information about the world.
           schema:
             $ref: '#/definitions/World'
   /plugin:
@@ -213,11 +217,88 @@ paths:
           description: Detailed information about the plugin.
           schema:
             $ref: '#/definitions/Plugin'
+  /entity:
+    get:
+      summary: Entities list
+      description: |
+        Get a list of all entities on the server (in all worlds).
 
+        > Required permission: entity
+      tags:
+        - Entity
+      responses:
+        200:
+          description: A list of all the entities on the server.
+          schema:
+            $ref: '#/definitions/EntityList'
+  /entity/{uuid}:
+    get:
+      summary: Detailed entity info
+      description: |
+        Get detailed information about an entity.
+
+        > Required permission: entity
+      parameters:
+        - name: uuid
+          in: path
+          type: string
+          description: The uuid of the entity to get detailed information about.
+      tags:
+        - Entity
+      responses:
+        200:
+          description: Detailed information about the entity.
+          schema:
+            $ref: '#/definitions/Entity'
+  /tile-entity:
+    get:
+      summary: Tile entities list
+      description: |
+        Get a list of all tile entities on the server (in all worlds).
+
+        > Required permission: tile-entity
+      tags:
+        - Tile Entity
+      responses:
+        200:
+          description: A list of all the tile entities on the server.
+          schema:
+            $ref: '#/definitions/TileEntityList'
+  /tile-entity/{worldUuid}/{x}/{y}/{z}:
+    get:
+      summary: Detailed tile entity info
+      description: |
+        Get detailed information about a tile entity.
+
+        > Required permission: tile-entity
+      parameters:
+        - name: worldUuid
+          in: path
+          type: string
+          description: The uuid of the world the tile entity is in.
+        - name: x
+          in: path
+          type: string
+          description: The x-coordinate of the tile entity.
+        - name: y
+          in: path
+          type: string
+          description: The y-coordinate of the tile entity.
+        - name: z
+          in: path
+          type: string
+          description: The z-coordinate of the tile entity.
+      tags:
+        - Tile Entity
+      responses:
+        200:
+          description: Detailed information about the tile entity.
+          schema:
+            $ref: '#/definitions/TileEntity'
 
 
 definitions:
-  Position:
+  Location:
     type: object
     description: Describes a location in a world
     properties:
@@ -227,31 +308,31 @@ definitions:
       x:
         type: number
         format: double
-        description: The x-coordinate of the position.
+        description: The x-coordinate of the location.
       y:
         type: number
         format: double
-        description: The y-coordinate of the position.
+        description: The y-coordinate of the location.
       z:
         type: number
         format: double
-        description: The z-coordinate of the position.
-  PositionWithoutWorld:
+        description: The z-coordinate of the location.
+  Vector3:
     type: object
     description: Describes a location
     properties:
       x:
         type: number
         format: double
-        description: The x-coordinate of the position.
+        description: The x-coordinate of the vector.
       y:
         type: number
         format: double
-        description: The y-coordinate of the position.
+        description: The y-coordinate of the vector.
       z:
         type: number
         format: double
-        description: The z-coordinate of the position.
+        description: The z-coordinate of the vector.
 
   ServerInfo:
     type: object
@@ -287,9 +368,6 @@ definitions:
           version:
             type: string
             description: The version of the api.
-          minecraftVersion:
-            type: string
-            description: The supported minecraft version for this api.
           description:
             type: string
             description: The description of the api.
@@ -373,10 +451,16 @@ definitions:
         description: The maximum amount of players this server supports.
       players:
         type: array
-        description: A list of player names.
+        description: A list of players.
         items:
-          type: string
-          description: The name of the player.
+          type: object
+          properties:
+            name:
+              type: string
+              description: The name of the player.
+            uuid:
+              type: string
+              description: The unique identifier of the player.
   Player:
     type: object
     properties:
@@ -388,40 +472,34 @@ definitions:
         description: The unique identifier of the player.
       address:
         type: string
-        description: The address the player is connecting form.
-      position:
-        $ref: '#/definitions/Position'
-      health:
-        type: number
-        format: double
-        description: The current health of the player.
-      maxHealth:
-        type: number
-        format: double
-        description: The maximum health of the player.
-      food:
+        description: The IP address that the player is connecting from.
+      latency:
         type: integer
-        description: The current food value of the player.
-      exhaustion:
-        type: number
-        format: double
-        description: The exhaustion level of the player.
-      saturation:
-        type: number
-        format: double
-        description: How saturated the player is.
-      gameMode:
-        type: string
-        description: The current gamemode the player is in.
+        description: The latency (ping) of the player in ms.
+      location:
+        $ref: '#/definitions/Location'
+      velocity:
+        $ref: '#/definitions/Vector3'
+      rotation:
+        $ref: '#/definitions/Vector3'
+      raw:
+        type: object
+        description: The raw object data attached to the player.
   WorldList:
     type: object
     properties:
       worlds:
         type: array
-        description: A list of world names.
+        description: A list of worlds.
         items:
-          type: string
-          description: The name of the world.
+          type: object
+          properties:
+            name:
+              type: string
+              description: The name of the world.
+            uuid:
+              type: string
+              description: The unique identifier of the world.
   World:
     type: object
     properties:
@@ -431,57 +509,9 @@ definitions:
       uuid:
         type: string
         description: The unique id of the world.
-      difficulty:
-        type: string
-        description: The current difficulty of the world.
-      dimension:
-        type: string
-        description: The name of the dimension the world belongs to.
-      loadedChunks:
-        type: array
-        description: Information about the currently loaded chunks for this world.
-        items:
-          $ref: '#/definitions/LoadedChunk'
-      gameRules:
+      raw:
         type: object
-        description: The set of game rules active on the server.
-      time:
-        type: integer
-        description: The time of day (modulo 24000 [ticks per day])
-      spawn:
-        $ref: '#/definitions/PositionWithoutWorld'
-      border:
-        type: object
-        description: The border for this world.
-        properties:
-          center:
-            $ref: '#/definitions/PositionWithoutWorld'
-          diameter:
-            type: number
-            format: double
-            description: The diameter of the border (extent in x and z direction)
-          damageAmount:
-            type: number
-            format: double
-            description: The damage per tick done to the player when outside the border.
-          damageThreshold:
-            type: number
-            format: double
-            description: The distance the player may be outside the border before taking damage.
-          warningDistance:
-            type: integer
-            description: Get the distance at which a contracting world border will warn a player.
-          warningTime:
-            type: integer
-            description: Get the time at which a contracting world border will warn a player.
-  LoadedChunk:
-    type: object
-    properties:
-      position:
-        $ref: '#/definitions/PositionWithoutWorld'
-      entities:
-        type: integer
-        description: The number of entities in this chunk.
+        description: The raw object data attached to the world.
   PluginList:
     type: object
     properties:
@@ -489,8 +519,14 @@ definitions:
         type: array
         description: A list of plugin ids.
         items:
-          type: string
-          description: The id of the plugin.
+          type: object
+          properties:
+            id:
+              type: string
+              description: The id of the plugin.
+            name:
+              type: string
+              description: The name of the plugin.
   Plugin:
     type: object
     properties:
@@ -515,3 +551,64 @@ definitions:
         items:
           type: string
           description: The name of the author.
+
+  EntityList:
+    type: object
+    properties:
+      entities:
+        type: array
+        description: A list of entities.
+        items:
+          type: object
+          properties:
+            type:
+              type: string
+              description: The type of the entity.
+            uuid:
+              type: string
+              description: The uuid of the entity.
+  Entity:
+    type: object
+    properties:
+      type:
+        type: string
+        description: The type of the entity.
+      uuid:
+        type: string
+        description: The uuid of the entity.
+      location:
+        $ref: '#/definitions/Location'
+      velocity:
+        $ref: '#/definitions/Vector3'
+      rotation:
+        $ref: '#/definitions/Vector3'
+      raw:
+        type: object
+        description: The raw object data attached to the entity.
+
+  TileEntityList:
+    type: object
+    properties:
+      tileEntities:
+        type: array
+        description: A list of tile entities.
+        items:
+          type: object
+          properties:
+            type:
+              type: string
+              description: The type of the tile entity.
+            location:
+              $ref: '#/definitions/Location'
+  TileEntity:
+    type: object
+    properties:
+      type:
+        type: string
+        description: The type of the entity.
+      location:
+        $ref: '#/definitions/Location'
+      raw:
+        type: object
+        description: The raw object data attached to the entity.
+

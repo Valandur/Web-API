@@ -1,10 +1,13 @@
 package valandur.webapi.cache;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.google.gson.annotations.Expose;
 import org.spongepowered.api.block.tileentity.TileEntity;
 import org.spongepowered.api.block.tileentity.carrier.TileEntityCarrier;
 import org.spongepowered.api.item.inventory.Inventory;
 import org.spongepowered.api.item.inventory.ItemStack;
+import valandur.webapi.misc.JsonConverter;
 
 import java.util.Collection;
 import java.util.LinkedHashSet;
@@ -18,10 +21,6 @@ public class CachedTileEntity extends CachedObject {
     @Expose
     public CachedLocation location;
 
-    public Map<String, Object> data;
-    public Map<String, Object> properties;
-    public Collection<CachedItemStack> items;
-
     public static CachedTileEntity copyFrom(TileEntity te) {
         return copyFrom(te, false);
     }
@@ -30,18 +29,8 @@ public class CachedTileEntity extends CachedObject {
         cache.type = te.getType().getId();
         cache.location = CachedLocation.copyFrom(te.getLocation());
         if (details) {
-            cache.data = DataCache.containerToMap(te);
-            cache.properties = DataCache.propertiesToMap(te);
-            if (te instanceof TileEntityCarrier) {
-                cache.items = new LinkedHashSet<>();
-                Inventory inventory = ((TileEntityCarrier)te).getInventory();
-                for (Inventory inv : inventory.slots()) {
-                    Optional<ItemStack> stack = inv.peek();
-                    if (stack.isPresent()) {
-                        cache.items.add(CachedItemStack.copyFrom(stack.get()));
-                    }
-                }
-            }
+            cache.details = true;
+            cache.raw = JsonConverter.toJson(te);
         }
         return cache;
     }

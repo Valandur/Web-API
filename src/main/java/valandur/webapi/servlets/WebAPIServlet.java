@@ -17,6 +17,7 @@ import java.lang.reflect.Method;
 import java.util.List;
 
 public abstract class WebAPIServlet extends HttpServlet {
+
     private void handleVerb(String verb, HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         resp.setContentType("application/json; charset=utf-8");
 

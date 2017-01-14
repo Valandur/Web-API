@@ -36,8 +36,6 @@ public class InfoServlet extends WebAPIServlet {
         Optional<String> version = api.getVersion();
         obj.addProperty("version", version.isPresent() ? version.get() : null);
         Optional<String> descr = api.getDescription();
-        Optional<String> mcVersion = api.getMinecraftVersion();
-        obj.addProperty("minecraftVersion", mcVersion.isPresent() ? mcVersion.get() : null);
         obj.addProperty("description", descr.isPresent() ? descr.get() : null);
         Optional<String> url = api.getVersion();
         obj.addProperty("url", url.isPresent() ? url.get() : null);

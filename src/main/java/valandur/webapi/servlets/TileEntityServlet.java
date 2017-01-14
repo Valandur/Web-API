@@ -32,9 +32,10 @@ public class TileEntityServlet extends WebAPIServlet {
                     Collection<CachedTileEntity> tes = DataCache.getTileEntities(world.get());
                     JsonArray arr = new JsonArray();
                     for (CachedTileEntity te : tes) {
-                        arr.add(JsonConverter.toJson(te));
+                        arr.add(JsonConverter.cacheToJson(te));
                     }
                     data.setStatus(HttpServletResponse.SC_OK);
+                    data.getJson().add("world", JsonConverter.cacheToJson(world.get()));
                     data.getJson().add("tileEntities", arr);
                 } else {
                     data.sendError(HttpServletResponse.SC_NOT_FOUND);
@@ -45,9 +46,9 @@ public class TileEntityServlet extends WebAPIServlet {
             }
         } else {
             String uuid = paths[0];
-            double x = Double.parseDouble(paths[1]);
-            double y = Double.parseDouble(paths[2]);
-            double z = Double.parseDouble(paths[3]);
+            int x = Integer.parseInt(paths[1]);
+            int y = Integer.parseInt(paths[2]);
+            int z = Integer.parseInt(paths[3]);
 
             if (uuid.split("-").length != 5) {
                 data.sendError(HttpServletResponse.SC_BAD_REQUEST);

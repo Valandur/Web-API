@@ -2,30 +2,14 @@ package valandur.webapi.cache;
 
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.block.tileentity.TileEntity;
-import org.spongepowered.api.data.DataContainer;
-import org.spongepowered.api.data.DataQuery;
-import org.spongepowered.api.data.Property;
-import org.spongepowered.api.data.manipulator.mutable.DisplayNameData;
-import org.spongepowered.api.data.manipulator.mutable.entity.FoodData;
-import org.spongepowered.api.data.property.PropertyHolder;
-import org.spongepowered.api.data.value.ValueContainer;
-import org.spongepowered.api.data.value.immutable.ImmutableValue;
-import org.spongepowered.api.data.value.mutable.CompositeValueStore;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.plugin.PluginContainer;
-import org.spongepowered.api.text.Text;
 import org.spongepowered.api.world.World;
 import valandur.webapi.WebAPI;
-import valandur.webapi.misc.Util;
 
-import java.time.Instant;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
+import java.util.concurrent.*;
 
 public class DataCache {
 
@@ -34,7 +18,6 @@ public class DataCache {
     public static Map<UUID, CachedWorld> worlds = new ConcurrentHashMap<>();
     public static Map<UUID, CachedPlayer> players = new ConcurrentHashMap<>();
     public static Map<UUID, CachedEntity> entities = new ConcurrentHashMap<>();
-    public static Collection<CachedTileEntity> tileEntities = new LinkedHashSet<>();
 
 
     public static void addWorld(World world) {
@@ -187,95 +170,63 @@ public class DataCache {
     }
 
     public static Collection<CachedTileEntity> getTileEntities() {
-        return tileEntities;
+        CompletableFuture<Collection<CachedTileEntity>> future = CompletableFuture.supplyAsync(() -> {
+            Collection<CachedTileEntity> entities = new ArrayList<>();
+
+            for (World world : Sponge.getServer().getWorlds()) {
+                Collection<TileEntity> ents = world.getTileEntities();
+                for (TileEntity te : ents) {
+                    entities.add(CachedTileEntity.copyFrom(te));
+                }
+            }
+
+            return entities;
+        }, WebAPI.getInstance().syncExecutor);
+
+        try {
+            return future.get();
+        } catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
     }
     public static Collection<CachedTileEntity> getTileEntities(CachedWorld world) {
-        return tileEntities.stream().filter(te -> te.location.world.uuid.equals(world.uuid)).collect(Collectors.toList());
+        CompletableFuture<Collection<CachedTileEntity>> future = CompletableFuture.supplyAsync(() -> {
+            Collection<CachedTileEntity> entities = new ArrayList<>();
+            World w = Sponge.getServer().getWorld(UUID.fromString(world.uuid)).get();
+
+            Collection<TileEntity> ents = w.getTileEntities();
+            for (TileEntity te : ents) {
+                entities.add(CachedTileEntity.copyFrom(te));
+            }
+
+            return entities;
+        }, WebAPI.getInstance().syncExecutor);
+
+        try {
+            return future.get();
+        } catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
     }
-    public static Optional<CachedTileEntity> getTileEntity(CachedWorld world, double x, double y, double z) {
-        for (CachedTileEntity te : tileEntities) {
-            if (te.location.position.x == x && te.location.position.y == y && te.location.position.z == z)
-                return Optional.of(te);
+    public static Optional<CachedTileEntity> getTileEntity(CachedWorld world, int x, int y, int z) {
+        CompletableFuture<Optional<CachedTileEntity>> future = CompletableFuture.supplyAsync(() -> {
+            World w = Sponge.getServer().getWorld(UUID.fromString(world.uuid)).get();
+
+            Optional<TileEntity> ent = w.getTileEntity(x, y, z);
+            if (!ent.isPresent()) {
+                return Optional.empty();
+            }
+
+            return Optional.of(CachedTileEntity.copyFrom(ent.get(), true));
+        }, WebAPI.getInstance().syncExecutor);
+
+        try {
+            return future.get();
+        } catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
+            return Optional.empty();
         }
-        return Optional.empty();
-    }
-
-    public static Map<String, Object> containerToMap(ValueContainer container) {
-        Map<String, Object> map = new HashMap<>();
-
-        // Workaround for missing data on player
-        if (container instanceof CompositeValueStore) {
-            CompositeValueStore store = (CompositeValueStore)container;
-            if (store.supports(FoodData.class)) {
-                Optional<ValueContainer> subCont = store.get(FoodData.class);
-                if (subCont.isPresent())
-                    map.putAll(containerToMap(subCont.get()));
-            }
-            if (store.supports(DisplayNameData.class)) {
-                Optional<ValueContainer> subCont = store.get(DisplayNameData.class);
-                if (subCont.isPresent())
-                    map.putAll(containerToMap(subCont.get()));
-            }
-
-            /*
-
-            WAITING FOR SPONGE TO IMPLEMENT
-
-            if (store.supports(AchievementData.class)) {
-                ValueContainer subCont = (ValueContainer)store.get(AchievementData.class).get();
-                map.putAll(containerToMap(subCont));
-            }
-            if (store.supports(DamageableData.class)) {
-                ValueContainer subCont = (ValueContainer)store.get(DamageableData.class).get();
-                map.putAll(containerToMap(subCont));
-            }
-            if (store.supports(StatisticData.class)) {
-                ValueContainer subCont = (ValueContainer)store.get(StatisticData.class).get();
-                map.putAll(containerToMap(subCont));
-            }
-            if (store.supports(SubjectData.class)) {
-                ValueContainer subCont = (ValueContainer)store.get(SubjectData.class).get();
-                map.putAll(containerToMap(subCont));
-            }
-
-            */
-        }
-
-        Set<ImmutableValue<?>> values = container.getValues();
-        for (ImmutableValue<?> immutable : values) {
-            String key = Util.lowerFirst(immutable.getKey().getQuery().asString("."));
-            Object val = immutable.get();
-
-            // Do some formatting for special cases so the data is nicer (especially for json)
-            if (val instanceof Text) {
-                val = ((Text)val).toPlain();
-            } else if (val instanceof Instant) {
-                val = ((Instant)val).getEpochSecond();
-            }
-
-            map.put(key, val);
-        }
-
-        return map;
-    }
-    public static Map<String, Object> containerToMap(DataContainer container) {
-        Map<DataQuery, Object> data = container.getValues(false);
-        Map<String, Object> map = new HashMap<>();
-        for (Map.Entry<DataQuery, Object> entry : data.entrySet()) {
-            String key = Util.lowerFirst(entry.getKey().asString("-"));
-            Object value = entry.getValue();
-            map.put(key, value);
-        }
-        return map;
-    }
-    public static Map<String, Object> propertiesToMap(PropertyHolder holder) {
-        Map<String, Object> map = new LinkedHashMap<>();
-        Collection<Property<?, ?>> properties = holder.getApplicableProperties();
-        for (Property<?, ?> prop : properties) {
-            String key = Util.lowerFirst(prop.getKey().toString());
-            Object val = prop.getValue();
-            map.put(key, val);
-        }
-        return map;
     }
 }

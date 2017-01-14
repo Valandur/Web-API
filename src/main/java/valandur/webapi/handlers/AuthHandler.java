@@ -152,8 +152,8 @@ public class AuthHandler extends AbstractHandler {
             request.setAttribute("rate", perms.getRateLimit());
         } else {
             request.setAttribute("key", defaultKey);
-            request.setAttribute("perms", defaultPerms);
-            request.setAttribute("rate", perms.getRateLimit());
+            request.setAttribute("perms", defaultPerms.getPermissions());
+            request.setAttribute("rate", defaultPerms.getRateLimit());
         }
     }
 

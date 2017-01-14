@@ -1,6 +1,5 @@
 package valandur.webapi;
 
-import com.google.gson.Gson;
 import com.google.inject.Inject;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
@@ -17,17 +16,13 @@ import org.eclipse.jetty.util.log.Log;
 import org.slf4j.Logger;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.asset.Asset;
-import org.spongepowered.api.block.BlockSnapshot;
-import org.spongepowered.api.block.tileentity.TileEntity;
 import org.spongepowered.api.command.CommandManager;
 import org.spongepowered.api.command.args.GenericArguments;
 import org.spongepowered.api.command.spec.CommandSpec;
 import org.spongepowered.api.config.ConfigDir;
-import org.spongepowered.api.data.Transaction;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Listener;
-import org.spongepowered.api.event.block.ChangeBlockEvent;
 import org.spongepowered.api.event.entity.DestructEntityEvent;
 import org.spongepowered.api.event.entity.SpawnEntityEvent;
 import org.spongepowered.api.event.game.state.GameInitializationEvent;
@@ -43,25 +38,20 @@ import org.spongepowered.api.scheduler.SpongeExecutorService;
 import org.spongepowered.api.text.Text;
 import valandur.webapi.cache.CacheDurations;
 import valandur.webapi.cache.CachedChatMessage;
-import valandur.webapi.cache.CachedTileEntity;
 import valandur.webapi.cache.DataCache;
 import valandur.webapi.command.*;
 import valandur.webapi.handlers.AuthHandler;
 import valandur.webapi.handlers.RateLimitHandler;
 import valandur.webapi.handlers.WebAPIErrorHandler;
-import valandur.webapi.misc.JsonConverter;
-import valandur.webapi.misc.TestClass;
 import valandur.webapi.misc.WebAPICommandSource;
 import valandur.webapi.misc.JettyLogger;
 import valandur.webapi.servlets.*;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 
 @Plugin(
         id = WebAPI.ID,
@@ -362,17 +352,6 @@ public class WebAPI {
     @Listener
     public void onEntityDespawn(DestructEntityEvent e) {
         DataCache.removeEntity(e.getTargetEntity().getUniqueId());
-    }
-
-    @Listener
-    public void onBlockPlace(ChangeBlockEvent.Place e) {
-        Gson gson = new Gson();
-        for (Transaction<BlockSnapshot> trans : e.getTransactions()) {
-            Optional<TileEntity> entity = e.getTargetWorld().getTileEntity(trans.getFinal().getPosition());
-            if (entity.isPresent()) {
-                logger.info(JsonConverter.tileEntityToJson(entity.get()).toString());
-            }
-        }
     }
 
     public static WebAPICommandSource executeCommand(String command) {

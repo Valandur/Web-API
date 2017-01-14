@@ -1,7 +1,9 @@
 package valandur.webapi.cache;
 
+import com.google.gson.JsonElement;
 import com.google.gson.annotations.Expose;
 import org.spongepowered.api.entity.Entity;
+import valandur.webapi.misc.JsonConverter;
 
 import java.util.Map;
 
@@ -15,8 +17,6 @@ public class CachedEntity extends CachedObject {
     public CachedLocation location;
     public CachedVector3d velocity;
     public CachedVector3d rotation;
-    public Map<String, Object> data;
-    public Map<String, Object> properties;
 
     public static CachedEntity copyFrom(Entity entity) {
         return copyFrom(entity, false);
@@ -30,8 +30,7 @@ public class CachedEntity extends CachedObject {
             cache.location = CachedLocation.copyFrom(entity.getLocation());
             cache.velocity = CachedVector3d.copyFrom(entity.getVelocity());
             cache.rotation = CachedVector3d.copyFrom(entity.getRotation());
-            cache.data = DataCache.containerToMap(entity);
-            cache.properties = DataCache.propertiesToMap(entity);
+            cache.raw  = JsonConverter.toJson(entity);
         }
         return cache;
     }

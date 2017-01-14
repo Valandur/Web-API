@@ -2,19 +2,25 @@ package valandur.webapi.misc;
 
 import com.flowpowered.math.vector.Vector3d;
 import com.flowpowered.math.vector.Vector3i;
+import com.google.common.collect.ImmutableSet;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import org.spongepowered.api.Sponge;
+import org.spongepowered.api.data.manipulator.mutable.entity.FoodData;
+import org.spongepowered.api.data.value.ValueContainer;
+import org.spongepowered.api.data.value.immutable.ImmutableValue;
+import org.spongepowered.api.data.value.mutable.CompositeValueStore;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 public class Util {
+
     public static String[] getPathParts(HttpServletRequest req) {
         String path = req.getPathInfo();
         if (path == null) return new String[] { };
@@ -44,19 +50,5 @@ public class Util {
 
     public static String lowerFirst(String text) {
         return Character.toLowerCase(text.charAt(0)) + text.substring(1);
-    }
-
-    public static Optional<World> getWorldFromString(String worldNameOrUUID) {
-        Optional<World> world = Sponge.getServer().getWorld(worldNameOrUUID);
-        if (world.isPresent()) return world;
-        if (worldNameOrUUID.split("-").length != 5) return Optional.empty();
-        return Sponge.getServer().getWorld(UUID.fromString(worldNameOrUUID));
-    }
-
-    public static Optional<Player> getPlayerFromString(String playerNameOrUUID) {
-        Optional<Player> player = Sponge.getServer().getPlayer(playerNameOrUUID);
-        if (player.isPresent()) return player;
-        if (playerNameOrUUID.split("-").length != 5) return Optional.empty();
-        return Sponge.getServer().getPlayer(UUID.fromString(playerNameOrUUID));
     }
 }

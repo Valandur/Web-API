@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-public class APICommandSource implements CommandSource {
+public class WebAPICommandSource implements CommandSource {
     List<String> lines = new ArrayList<String>();
 
     public List<String> getLines() {

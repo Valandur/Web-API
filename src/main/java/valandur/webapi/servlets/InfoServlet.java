@@ -9,24 +9,19 @@ import org.spongepowered.api.Sponge;
 import org.spongepowered.api.plugin.PluginContainer;
 import valandur.webapi.Permission;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.Optional;
 
-public class InfoServlet extends APIServlet {
+public class InfoServlet extends WebAPIServlet {
     @Override
     @Permission(perm = "info")
-    protected void handleGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        resp.setContentType("application/json; charset=utf-8");
-        resp.setStatus(HttpServletResponse.SC_OK);
+    protected void handleGet(ServletData data) {
+        data.setStatus(HttpServletResponse.SC_OK);
 
         Server server = Sponge.getServer();
         Platform platform = Sponge.getPlatform();
 
-        JsonObject json = new JsonObject();
+        JsonObject json = data.getJson();
         json.addProperty("motd", server.getMotd().toPlain());
         json.addProperty("players", server.getOnlinePlayers().size());
         json.addProperty("maxPlayers", server.getMaxPlayers());
@@ -41,8 +36,6 @@ public class InfoServlet extends APIServlet {
         Optional<String> version = api.getVersion();
         obj.addProperty("version", version.isPresent() ? version.get() : null);
         Optional<String> descr = api.getDescription();
-        Optional<String> mcVersion = api.getMinecraftVersion();
-        obj.addProperty("minecraftVersion", mcVersion.isPresent() ? mcVersion.get() : null);
         obj.addProperty("description", descr.isPresent() ? descr.get() : null);
         Optional<String> url = api.getVersion();
         obj.addProperty("url", url.isPresent() ? url.get() : null);
@@ -53,8 +46,5 @@ public class InfoServlet extends APIServlet {
         obj.add("authors", arr);
 
         json.add("api", obj);
-
-        PrintWriter out = resp.getWriter();
-        out.print(json);
     }
 }

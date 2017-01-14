@@ -4,21 +4,16 @@ import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
-import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.AbstractHandler;
-import org.eclipse.jetty.util.PathWatcher;
-import org.slf4j.Logger;
 import org.spongepowered.api.Sponge;
 import valandur.webapi.WebAPI;
 import valandur.webapi.misc.Util;
-import valandur.webapi.servlets.APIServlet;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -27,14 +22,16 @@ import java.util.List;
 import java.util.Map;
 
 public class AuthHandler extends AbstractHandler {
+
+    private static final String defaultKey = "__DEFAULT__";
     private static final String configFileName = "permissions.conf";
 
     private WebAPI api;
     private ConfigurationLoader<CommentedConfigurationNode> loader;
     private ConfigurationNode config;
 
-    List<String> defaultPerms = new ArrayList<>();
-    private Map<String, List<String>> permMap = new HashMap<>();
+    private PermissionStruct defaultPerms;
+    private Map<String, PermissionStruct> permMap = new HashMap<>();
 
     private boolean useWhitelist;
     private List<String> whitelist = new ArrayList<>();
@@ -54,12 +51,15 @@ public class AuthHandler extends AbstractHandler {
             loader = HoconConfigurationLoader.builder().setPath(configPath).build();
             config = loader.load();
 
-            for (ConfigurationNode node : config.getNode("defaultPermissions").getChildrenList()) {
+            List<String> defs = new ArrayList<>();
+            for (ConfigurationNode node : config.getNode("default", "permissions").getChildrenList()) {
                 if (node.getString() == "*") {
                     api.getLogger().warn("DEFAULT PERMISSIONS GRANT UNRESTRICTED ACCESS TO THE API! THIS CAN BE DANGEROUS IF NOT RUNNING ON LOCALHOST!");
                 }
-                defaultPerms.add(node.getString());
+                defs.add(node.getString());
             }
+            int defLimit = config.getNode("default", "rateLimit").getInt(0);
+            defaultPerms = new PermissionStruct(defs, defLimit);
 
             for (ConfigurationNode node : config.getNode("keys").getChildrenList()) {
                 String token = node.getNode("key").getString();
@@ -68,7 +68,8 @@ public class AuthHandler extends AbstractHandler {
                     continue;
                 }
                 List<String> perms = node.getNode("permissions").getList(item -> item.toString(), new ArrayList<>());
-                permMap.put(token, perms);
+                int rateLimit = node.getNode("rateLimit").getInt(0);
+                permMap.put(token, new PermissionStruct(perms, rateLimit));
             }
 
             useWhitelist = config.getNode("useWhitelist").getBoolean(false);
@@ -144,11 +145,33 @@ public class AuthHandler extends AbstractHandler {
             key = query.get("key");
         }
 
-        List<String> perms = permMap.get(key);
+        PermissionStruct perms = permMap.get(key);
         if (perms != null) {
-            request.setAttribute("perms", perms);
+            request.setAttribute("key", key);
+            request.setAttribute("perms", perms.getPermissions());
+            request.setAttribute("rate", perms.getRateLimit());
         } else {
-            request.setAttribute("perms", defaultPerms);
+            request.setAttribute("key", defaultKey);
+            request.setAttribute("perms", defaultPerms.getPermissions());
+            request.setAttribute("rate", defaultPerms.getRateLimit());
+        }
+    }
+
+
+    public static class PermissionStruct {
+        private List<String> permissions;
+        public List<String> getPermissions() {
+            return permissions;
+        }
+
+        private int rateLimit;
+        public int getRateLimit() {
+            return rateLimit;
+        }
+
+        public PermissionStruct(List<String> permissions, int rateLimit) {
+            this.permissions = permissions;
+            this.rateLimit = rateLimit;
         }
     }
 }

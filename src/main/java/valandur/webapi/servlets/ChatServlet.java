@@ -2,38 +2,23 @@ package valandur.webapi.servlets;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import org.apache.commons.lang3.tuple.Triple;
-import org.spongepowered.api.entity.living.player.Player;
-import org.spongepowered.api.text.Text;
 import valandur.webapi.Permission;
-import valandur.webapi.WebAPI;
+import valandur.webapi.cache.CachedChatMessage;
+import valandur.webapi.cache.DataCache;
+import valandur.webapi.misc.JsonConverter;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.Date;
 
-public class ChatServlet extends APIServlet {
+public class ChatServlet extends WebAPIServlet {
     @Override
     @Permission(perm = "chat")
-    protected void handleGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        JsonObject json = new JsonObject();
-        resp.setContentType("application/json; charset=utf-8");
-        resp.setStatus(HttpServletResponse.SC_OK);
+    protected void handleGet(ServletData data) {
+        data.setStatus(HttpServletResponse.SC_OK);
 
         JsonArray arr = new JsonArray();
-        for (Triple<Date, Player, Text> msg : WebAPI.getInstance().getChatMessages()) {
-            JsonObject obj = new JsonObject();
-            obj.addProperty("timestamp", msg.getLeft().toString());
-            obj.addProperty("sender", msg.getMiddle().getName());
-            obj.addProperty("message", msg.getRight().toPlain());
-            arr.add(obj);
+        for (CachedChatMessage msg : DataCache.chatMessages) {
+            arr.add(JsonConverter.cacheToJson(msg));
         }
-        json.add("messages", arr);
-
-        PrintWriter out = resp.getWriter();
-        out.print(json);
+        data.getJson().add("messages", arr);
     }
 }

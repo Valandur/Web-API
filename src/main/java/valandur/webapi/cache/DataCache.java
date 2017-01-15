@@ -197,6 +197,7 @@ public class DataCache {
 
             Collection<TileEntity> ents = w.getTileEntities();
             for (TileEntity te : ents) {
+                if (!te.isValid()) continue;
                 entities.add(CachedTileEntity.copyFrom(te));
             }
 
@@ -215,7 +216,7 @@ public class DataCache {
             World w = Sponge.getServer().getWorld(UUID.fromString(world.uuid)).get();
 
             Optional<TileEntity> ent = w.getTileEntity(x, y, z);
-            if (!ent.isPresent()) {
+            if (!ent.isPresent() || !ent.get().isValid()) {
                 return Optional.empty();
             }
 

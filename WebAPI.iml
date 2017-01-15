@@ -101,11 +101,11 @@
     <orderEntry type="module-library" scope="PROVIDED">
       <library>
         <CLASSES>
-          <root url="jar://C:/Users/mcres/.gradle/caches/modules-2/files-2.1/org.spongepowered/spongeapi/5.1.0-SNAPSHOT/ea8c8cbee14a94aae0f45bbc844310596a440fca/spongeapi-5.1.0-SNAPSHOT.jar!/"/>
+          <root url="jar://C:/Users/mcres/.gradle/caches/modules-2/files-2.1/org.spongepowered/spongeapi/6.0.0-SNAPSHOT/dc37ddeee2601e93d15548fedd740319257dd55/spongeapi-6.0.0-SNAPSHOT.jar!/"/>
         </CLASSES>
         <JAVADOC/>
         <SOURCES>
-          <root url="jar://C:/Users/mcres/.gradle/caches/modules-2/files-2.1/org.spongepowered/spongeapi/5.1.0-SNAPSHOT/41868d6e5da2269409fd5b6b1a767b489d12ebb0/spongeapi-5.1.0-SNAPSHOT-sources.jar!/"/>
+          <root url="jar://C:/Users/mcres/.gradle/caches/modules-2/files-2.1/org.spongepowered/spongeapi/6.0.0-SNAPSHOT/9ab9eaf1cb12eb07de1cb511c41728bbdeaf3a7e/spongeapi-6.0.0-SNAPSHOT-sources.jar!/"/>
         </SOURCES>
       </library>
     </orderEntry>
@@ -176,33 +176,33 @@
     <orderEntry type="module-library" scope="PROVIDED">
       <library>
         <CLASSES>
-          <root url="jar://C:/Users/mcres/.gradle/caches/modules-2/files-2.1/com.github.ben-manes.caffeine/caffeine/2.3.2/6f9664767932063367a611dcfc239c4efdba9b05/caffeine-2.3.2.jar!/"/>
+          <root url="jar://C:/Users/mcres/.gradle/caches/modules-2/files-2.1/com.github.ben-manes.caffeine/caffeine/2.3.5/672d74bd3fb0611f671ea4bf65e278c8a5d4af3c/caffeine-2.3.5.jar!/"/>
         </CLASSES>
         <JAVADOC/>
         <SOURCES>
-          <root url="jar://C:/Users/mcres/.gradle/caches/modules-2/files-2.1/com.github.ben-manes.caffeine/caffeine/2.3.2/54415c77ab29ccd68af524de623f92b841795090/caffeine-2.3.2-sources.jar!/"/>
+          <root url="jar://C:/Users/mcres/.gradle/caches/modules-2/files-2.1/com.github.ben-manes.caffeine/caffeine/2.3.5/b2b33ca276c8f510ec3f2a8683a451ef0896652e/caffeine-2.3.5-sources.jar!/"/>
         </SOURCES>
       </library>
     </orderEntry>
     <orderEntry type="module-library" scope="PROVIDED">
       <library>
         <CLASSES>
-          <root url="jar://C:/Users/mcres/.gradle/caches/modules-2/files-2.1/com.github.ben-manes.caffeine/guava/2.3.2/f6419041c6d5e7a422bffd0ea57670eb4290fd8f/guava-2.3.2.jar!/"/>
+          <root url="jar://C:/Users/mcres/.gradle/caches/modules-2/files-2.1/com.github.ben-manes.caffeine/guava/2.3.5/5f8433eb312b4eb0d92b65f4c11a11da95ed55fb/guava-2.3.5.jar!/"/>
         </CLASSES>
         <JAVADOC/>
         <SOURCES>
-          <root url="jar://C:/Users/mcres/.gradle/caches/modules-2/files-2.1/com.github.ben-manes.caffeine/guava/2.3.2/1c2efdaf6663db76688b7e678da84396f5a4cbff/guava-2.3.2-sources.jar!/"/>
+          <root url="jar://C:/Users/mcres/.gradle/caches/modules-2/files-2.1/com.github.ben-manes.caffeine/guava/2.3.5/ddf57944109341b0fc00c1f80a966fd6df2eaa02/guava-2.3.5-sources.jar!/"/>
         </SOURCES>
       </library>
     </orderEntry>
     <orderEntry type="module-library" scope="PROVIDED">
       <library>
         <CLASSES>
-          <root url="jar://C:/Users/mcres/.gradle/caches/modules-2/files-2.1/org.spongepowered/plugin-meta/0.2.1-SNAPSHOT/b8c22d921c089156256818b4a6471a2846ba5bca/plugin-meta-0.2.1-SNAPSHOT.jar!/"/>
+          <root url="jar://C:/Users/mcres/.gradle/caches/modules-2/files-2.1/org.spongepowered/plugin-meta/0.4.1/41378ca359e2b4ad935294d1ca3e533e7cdf8f64/plugin-meta-0.4.1.jar!/"/>
         </CLASSES>
         <JAVADOC/>
         <SOURCES>
-          <root url="jar://C:/Users/mcres/.gradle/caches/modules-2/files-2.1/org.spongepowered/plugin-meta/0.2.1-SNAPSHOT/663e859b53c2e805d36d4d36f2fe43ad6702fd23/plugin-meta-0.2.1-SNAPSHOT-sources.jar!/"/>
+          <root url="jar://C:/Users/mcres/.gradle/caches/modules-2/files-2.1/org.spongepowered/plugin-meta/0.4.1/5db3214cc052ea648e0c02fda6fa79d8a669e9c8/plugin-meta-0.4.1-sources.jar!/"/>
         </SOURCES>
       </library>
     </orderEntry>

@@ -36,13 +36,13 @@ import org.spongepowered.api.event.world.UnloadWorldEvent;
 import org.spongepowered.api.plugin.Plugin;
 import org.spongepowered.api.scheduler.SpongeExecutorService;
 import org.spongepowered.api.text.Text;
-import valandur.webapi.cache.CacheDurations;
-import valandur.webapi.cache.CachedChatMessage;
+import valandur.webapi.cache.CacheConfig;
 import valandur.webapi.cache.DataCache;
 import valandur.webapi.command.*;
 import valandur.webapi.handlers.AuthHandler;
 import valandur.webapi.handlers.RateLimitHandler;
 import valandur.webapi.handlers.WebAPIErrorHandler;
+import valandur.webapi.misc.JsonConverter;
 import valandur.webapi.misc.WebAPICommandSource;
 import valandur.webapi.misc.JettyLogger;
 import valandur.webapi.servlets.*;
@@ -69,7 +69,7 @@ public class WebAPI {
     public static final String NAME = "Web-API";
     public static final String URL = "https://github.com/Valandur/Web-API";
     public static final String DESCRIPTION = "Access Minecraft through a Web API";
-    public static final String VERSION = "1.5";
+    public static final String VERSION = "1.6";
 
     private static WebAPI instance;
     public static WebAPI getInstance() {
@@ -94,8 +94,6 @@ public class WebAPI {
     private String serverHost;
     private int serverPort;
     private Server server;
-
-    private int chatMessageCacheSize;
 
     private AuthHandler authHandler;
     private RateLimitHandler rateLimitHandler;
@@ -145,11 +143,10 @@ public class WebAPI {
 
         logger.info("Loading configuration...");
 
-        ConfigurationNode config = loadConfig("config.conf");
-        serverHost = config.getNode("server", "host").getString("localhost");
-        serverPort = config.getNode("server", "port").getInt(8080);
-        chatMessageCacheSize = config.getNode("cache", "chat").getInt(100);
-
+        ConfigurationNode config = loadConfig("config.conf").getNode("server");
+        serverHost = config.getNode("host").getString("localhost");
+        serverPort = config.getNode("port").getInt(8080);
+        JsonConverter.hiddenClasses = config.getNode("hiddenClasses").getList(t -> t.toString().toLowerCase());
 
         // Load permissions & auth handler
         authHandler = new AuthHandler();
@@ -159,7 +156,7 @@ public class WebAPI {
 
 
         // Load cache & cache config
-        CacheDurations.init();
+        CacheConfig.init();
 
 
         // Register commands
@@ -280,6 +277,8 @@ public class WebAPI {
             servletsContext.addServlet(EntityServlet.class, "/entity/*");
             servletsContext.addServlet(TileEntityServlet.class, "/tile-entity/*");
 
+            servletsContext.addServlet(ClassServlet.class, "/class/*");
+
             // Add collection of handlers to server
             ContextHandlerCollection coll = new ContextHandlerCollection();
             coll.setHandlers(handlers.toArray(new Handler[handlers.size()]));
@@ -366,9 +365,6 @@ public class WebAPI {
         Optional<Player> player = event.getCause().first(Player.class);
         if (!player.isPresent()) return;
 
-        DataCache.chatMessages.add(new CachedChatMessage(new Date(), player.get(), event.getRawMessage()));
-        while (DataCache.chatMessages.size() > chatMessageCacheSize) {
-            DataCache.chatMessages.poll();
-        }
+        DataCache.addChatMessage(player.get(), event.getRawMessage());
     }
 }

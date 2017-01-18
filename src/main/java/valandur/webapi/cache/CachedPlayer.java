@@ -1,8 +1,8 @@
 package valandur.webapi.cache;
 
 import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import com.google.gson.annotations.Expose;
+import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.Player;
 import valandur.webapi.misc.JsonConverter;
 
@@ -20,6 +20,8 @@ public class CachedPlayer extends CachedObject {
     public CachedVector3d rotation;
     public String address;
     public int latency;
+    public JsonElement data;
+    public JsonElement properties;
 
     public static CachedPlayer copyFrom(Player player) {
         return copyFrom(player, false);
@@ -35,13 +37,21 @@ public class CachedPlayer extends CachedObject {
             cache.rotation = CachedVector3d.copyFrom(player.getRotation());
             cache.address = player.getConnection().getAddress().toString();
             cache.latency = player.getConnection().getLatency();
-            cache.raw = JsonConverter.toJson(player);
+            cache.data = JsonConverter.containerToJson(player);
+            cache.properties = JsonConverter.propertiesToJson(player);
         }
         return cache;
     }
 
     @Override
     public int getCacheDuration() {
-        return CacheDurations.player;
+        return CacheConfig.player;
+    }
+    @Override
+    public Optional<Object> getLive() {
+        Optional<Player> p = Sponge.getServer().getPlayer(UUID.fromString(uuid));
+        if (!p.isPresent())
+            return Optional.empty();
+        return Optional.of(p.get());
     }
 }

@@ -17,15 +17,28 @@ public class PluginServlet extends WebAPIServlet {
         if (paths.length == 0 || paths[0].isEmpty()) {
             data.setStatus(HttpServletResponse.SC_OK);
             data.getJson().add("plugins", JsonConverter.cacheToJson(DataCache.getPlugins()));
+            return;
+        }
+
+        String pName = paths[0];
+        Optional<CachedPlugin> plugin = DataCache.getPlugin(pName);
+        if (!plugin.isPresent()) {
+            data.sendError(HttpServletResponse.SC_NOT_FOUND);
+            return;
+        }
+
+        if (paths.length == 1 || paths[1].isEmpty()) {
+            data.setStatus(HttpServletResponse.SC_OK);
+            data.getJson().add("plugin", JsonConverter.cacheToJson(plugin.get(), true));
+            return;
+        }
+
+        if (paths[1].equalsIgnoreCase("raw")) {
+            Optional<Object> p = plugin.get().getLive();
+            data.setStatus(HttpServletResponse.SC_OK);
+            data.getJson().add("plugin", JsonConverter.toRawJson(p));
         } else {
-            String pName = paths[0];
-            Optional<CachedPlugin> plugin = DataCache.getPlugin(pName);
-            if (plugin.isPresent()) {
-                data.setStatus(HttpServletResponse.SC_OK);
-                data.getJson().add("plugin", JsonConverter.cacheToJson(plugin.get(), true));
-            } else {
-                data.sendError(HttpServletResponse.SC_NOT_FOUND);
-            }
+            data.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
     }
 }

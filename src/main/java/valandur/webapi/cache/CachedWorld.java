@@ -1,12 +1,13 @@
 package valandur.webapi.cache;
 
 import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import com.google.gson.annotations.Expose;
+import org.spongepowered.api.Sponge;
 import org.spongepowered.api.world.World;
 import valandur.webapi.misc.JsonConverter;
 
-import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 
 public class CachedWorld extends CachedObject {
 
@@ -16,7 +17,7 @@ public class CachedWorld extends CachedObject {
     @Expose
     public String uuid;
 
-    public JsonElement properties;
+    public JsonElement data;
 
     public static CachedWorld copyFrom(World world) {
         return copyFrom(world, false);
@@ -27,13 +28,20 @@ public class CachedWorld extends CachedObject {
         cache.uuid = world.getUniqueId().toString();
         if (details) {
             cache.details = true;
-            cache.raw = JsonConverter.toJson(world);
+            cache.data = JsonConverter.containerToJson(world.getProperties().toContainer());
         }
         return cache;
     }
 
     @Override
     public int getCacheDuration() {
-        return CacheDurations.world;
+        return CacheConfig.world;
+    }
+    @Override
+    public Optional<Object> getLive() {
+        Optional<World> w = Sponge.getServer().getWorld(UUID.fromString(uuid));
+        if (!w.isPresent())
+            return Optional.empty();
+        return Optional.of(w.get());
     }
 }

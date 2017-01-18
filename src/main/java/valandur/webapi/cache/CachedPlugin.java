@@ -1,10 +1,12 @@
 package valandur.webapi.cache;
 
 import com.google.gson.annotations.Expose;
+import org.spongepowered.api.Sponge;
 import org.spongepowered.api.plugin.PluginContainer;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class CachedPlugin extends CachedObject {
     @Expose
@@ -32,5 +34,12 @@ public class CachedPlugin extends CachedObject {
     @Override
     public int getCacheDuration() {
         return 0;
+    }
+    @Override
+    public Optional<Object> getLive() {
+        Optional<PluginContainer> p = Sponge.getPluginManager().getPlugin(id);
+        if (!p.isPresent())
+            return Optional.empty();
+        return Optional.of(p.get());
     }
 }

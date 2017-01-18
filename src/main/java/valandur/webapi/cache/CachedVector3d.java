@@ -3,6 +3,8 @@ package valandur.webapi.cache;
 import com.flowpowered.math.vector.Vector3d;
 import com.google.gson.annotations.Expose;
 
+import java.util.Optional;
+
 public class CachedVector3d extends CachedObject {
     @Expose
     public double x;
@@ -24,5 +26,9 @@ public class CachedVector3d extends CachedObject {
     @Override
     public int getCacheDuration() {
         return 0;
+    }
+    @Override
+    public Optional<Object> getLive() {
+        return Optional.of(new Vector3d(x, y, z));
     }
 }

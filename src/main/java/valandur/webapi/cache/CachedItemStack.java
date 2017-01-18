@@ -1,7 +1,11 @@
 package valandur.webapi.cache;
 
 import com.google.gson.annotations.Expose;
+import org.spongepowered.api.Sponge;
+import org.spongepowered.api.item.ItemType;
 import org.spongepowered.api.item.inventory.ItemStack;
+
+import java.util.Optional;
 
 public class CachedItemStack extends CachedObject {
     @Expose
@@ -24,5 +28,11 @@ public class CachedItemStack extends CachedObject {
     @Override
     public int getCacheDuration() {
         return 0;
+    }
+    @Override
+    public Optional<Object> getLive() {
+        Optional<ItemType> t = Sponge.getRegistry().getType(ItemType.class, id);
+        if (!t.isPresent()) return Optional.empty();
+        return Optional.of(ItemStack.of(t.get(), quantity));
     }
 }

@@ -37,6 +37,8 @@ tags:
     description: List all entities and get detailed information about them.
   - name: Tile Entity
     description: List all tile entities and get detailed information about them.
+  - name: Class
+    description: Provides information about the classes loaded on the server.
 
 #parameters:
 
@@ -118,6 +120,45 @@ paths:
           description: The command executed successfully.
           schema:
             $ref: '#/definitions/CommandResponse'
+  /class:
+    get:
+      summary: Cached classes
+      description: |
+        Get a list of all the classes that have been cached on the server.
+
+        > Required permission: class
+      tags:
+        - Class
+      responses:
+        200:
+          description: A list of all the classes that are cached on the server.
+          schema:
+            type: object
+            properties:
+              classes:
+                type: array
+                items:
+                  type: string
+                  description: The short class name.
+  /class/{classname}:
+    get:
+      summary: Lookup class
+      description: |
+        Get the fields and methods of a specific class loaded on the server.
+        Use either the short name if the class is already cached, or the fully quilified classname.
+
+        > Required permission: class
+      tags:
+        - Class
+      responses:
+        200:
+          description: An object describing the class fields and methods.
+          schema:
+            type: object
+            properties:
+              class:
+                $ref: '#/definitions/Class'
+
   /player:
     get:
       summary: Player list
@@ -151,6 +192,25 @@ paths:
           description: Detailed information about the player.
           schema:
             $ref: '#/definitions/Player'
+  /player/{uuid}/raw:
+    get:
+      summary: Raw player info
+      description: |
+        Get the raw player object
+
+        > Required permission: player
+      parameters:
+        - name: uuid
+          in: path
+          type: string
+          description: The uuid of the player to get raw information about.
+      tags:
+        - Player
+      responses:
+        200:
+          description: Raw information about the player.
+          schema:
+            $ref: '#/definitions/Raw'
   /world:
     get:
       summary: World list
@@ -184,6 +244,25 @@ paths:
           description: Detailed information about the world.
           schema:
             $ref: '#/definitions/World'
+  /world/{uuid}/raw:
+    get:
+      summary: Raw world info
+      description: |
+        Get the raw world object
+
+        > Required permission: world
+      parameters:
+        - name: uuid
+          in: path
+          type: string
+          description: The uuid of the world to get raw information about.
+      tags:
+        - World
+      responses:
+        200:
+          description: Raw information about the world.
+          schema:
+            $ref: '#/definitions/Raw'
   /plugin:
     get:
       summary: Plugin list
@@ -217,6 +296,25 @@ paths:
           description: Detailed information about the plugin.
           schema:
             $ref: '#/definitions/Plugin'
+  /plugin/{id}/raw:
+    get:
+      summary: Raw plugin info
+      description: |
+        Get the raw plugin object
+
+        > Required permission: plugin
+      parameters:
+        - name: id
+          in: path
+          type: string
+          description: The id of the plugin to get raw information about.
+      tags:
+        - Plugin
+      responses:
+        200:
+          description: Raw information about the plugin.
+          schema:
+            $ref: '#/definitions/Raw'
   /entity:
     get:
       summary: Entities list
@@ -250,6 +348,25 @@ paths:
           description: Detailed information about the entity.
           schema:
             $ref: '#/definitions/Entity'
+  /entity/{uuid}/raw:
+    get:
+      summary: Raw entity info
+      description: |
+        Get the raw entity object
+
+        > Required permission: entity
+      parameters:
+        - name: uuid
+          in: path
+          type: string
+          description: The uuid of the entity to get raw information about.
+      tags:
+        - Entity
+      responses:
+        200:
+          description: Raw information about the entity.
+          schema:
+            $ref: '#/definitions/Raw'
   /tile-entity:
     get:
       summary: Tile entities list
@@ -295,9 +412,88 @@ paths:
           description: Detailed information about the tile entity.
           schema:
             $ref: '#/definitions/TileEntity'
+  /tile-entity/{worldUuid}/{x}/{y}/{z}/raw:
+    get:
+      summary: Raw tile entity info
+      description: |
+        Get the raw tile entity object
+
+        > Required permission: tile-entity
+      parameters:
+        - name: worldUuid
+          in: path
+          type: string
+          description: The uuid of the world the tile entity is in.
+        - name: x
+          in: path
+          type: string
+          description: The x-coordinate of the tile entity.
+        - name: y
+          in: path
+          type: string
+          description: The y-coordinate of the tile entity.
+        - name: z
+          in: path
+          type: string
+          description: The z-coordinate of the tile entity.
+      tags:
+        - Tile Entity
+      responses:
+        200:
+          description: Raw information about the tile entity.
+          schema:
+            $ref: '#/definitions/Raw'
 
 
 definitions:
+  Raw:
+    type: object
+    description: A raw java-to-json converted object.
+  Class:
+    type: object
+    description: A class definition that is loaded on the server.
+    properties:
+      fields:
+        type: array
+        items:
+          type: object
+          description: Represents a field from this class.
+          properties:
+            type:
+              type: string
+              description: The type of the field.
+            modifiers:
+              type: array
+              description: The modifiers of the field.
+              items:
+                type: string
+            from:
+              type: string
+              description: The class where this field is from (if from a superclass)
+      methods:
+        type: array
+        items:
+          type: object
+          description: Represents a method from this class.
+          properties:
+            modifiers:
+              type: array
+              decription: The modifiers of the method.
+              items:
+                type: string
+            params:
+              type: array
+              description: The parameters of the method.
+              items:
+                type: string
+                description: The type of the parameter.
+            return:
+              type: string
+              description: The type of the return value.
+            from:
+              type: string
+              description: The class where this field is from (if from a superclass)
+
   Location:
     type: object
     description: Describes a location in a world

@@ -4,6 +4,7 @@ import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.text.Text;
 
 import java.util.Date;
+import java.util.Optional;
 
 public class CachedChatMessage extends CachedObject {
     private Date date;
@@ -30,5 +31,9 @@ public class CachedChatMessage extends CachedObject {
     @Override
     public int getCacheDuration() {
         return 0;
+    }
+    @Override
+    public Optional<Object> getLive() {
+        return Optional.empty();
     }
 }

@@ -1,20 +1,9 @@
 package valandur.webapi.misc;
 
-import com.flowpowered.math.vector.Vector3d;
-import com.flowpowered.math.vector.Vector3i;
-import com.google.common.collect.ImmutableSet;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import org.spongepowered.api.Sponge;
-import org.spongepowered.api.data.manipulator.mutable.entity.FoodData;
-import org.spongepowered.api.data.value.ValueContainer;
-import org.spongepowered.api.data.value.immutable.ImmutableValue;
-import org.spongepowered.api.data.value.mutable.CompositeValueStore;
-import org.spongepowered.api.entity.living.player.Player;
-import org.spongepowered.api.world.Location;
-import org.spongepowered.api.world.World;
+import org.spongepowered.api.util.Tuple;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.*;
@@ -37,18 +26,24 @@ public class Util {
         return map;
     }
 
-    public static String getOptStringOrNull(Optional<String> object) {
-        if (object.isPresent())
-            return object.get();
-        return null;
-    }
-    public static String getOptUUIDOrNull(Optional<UUID> object) {
-        if (object.isPresent())
-            return object.get().toString();
-        return null;
-    }
-
     public static String lowerFirst(String text) {
         return Character.toLowerCase(text.charAt(0)) + text.substring(1);
+    }
+
+    public static Optional<Tuple<Class[], Object[]>> parseParams(JsonArray arr) {
+        Class[] paramTypes = new Class[arr.size()];
+        Object[] paramValues = new Object[arr.size()];
+
+        try {
+            for (int i = 0; i < arr.size(); i++) {
+                ParamDef def = ParamDef.fromJson(arr.get(i).getAsJsonObject());
+                paramTypes[i] = def.type;
+                paramValues[i] = def.value;
+            }
+        } catch (ClassNotFoundException e) {
+            return Optional.empty();
+        }
+
+        return Optional.of(new Tuple<>(paramTypes, paramValues));
     }
 }

@@ -28,9 +28,21 @@ public class EntityServlet extends WebAPIServlet {
         }
 
         Optional<CachedEntity> entity = DataCache.getEntity(UUID.fromString(uuid));
-        if (entity.isPresent()) {
+        if (!entity.isPresent()) {
+            data.sendError(HttpServletResponse.SC_NOT_FOUND);
+            return;
+        }
+
+        if (paths.length == 1 || paths[1].isEmpty()) {
             data.setStatus(HttpServletResponse.SC_OK);
             data.getJson().add("entity", JsonConverter.cacheToJson(entity.get(), true));
+            return;
+        }
+
+        if (paths[1].equalsIgnoreCase("raw")) {
+            Optional<Object> e = entity.get().getLive();
+            data.setStatus(HttpServletResponse.SC_OK);
+            data.getJson().add("entity", JsonConverter.toRawJson(e));
         } else {
             data.sendError(HttpServletResponse.SC_NOT_FOUND);
         }

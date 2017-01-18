@@ -10,7 +10,7 @@ import valandur.webapi.WebAPI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-public class CacheDurations {
+public class CacheConfig {
 
     public static final String configFileName = "cache.conf";
 
@@ -19,6 +19,7 @@ public class CacheDurations {
     public static int player;
     public static int entity;
     public static int tileEntity;
+    public static int chatMessages;
 
     public static void init() {
         WebAPI api = WebAPI.getInstance();
@@ -37,6 +38,7 @@ public class CacheDurations {
             player = cacheNode.getNode("player").getInt();
             entity = cacheNode.getNode("entity").getInt();
             tileEntity = cacheNode.getNode("tileEntity").getInt();
+            chatMessages = config.getNode("cache", "chat").getInt(100);
         } catch (Exception e) {
             e.printStackTrace();
         }

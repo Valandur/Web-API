@@ -100,7 +100,7 @@ public class TileEntityServlet extends WebAPIServlet {
     }
 
     @Override
-    @Permission(perm = "entity")
+    @Permission(perm = "tile-entity")
     protected void handlePost(ServletData data) {
         String[] paths = data.getPathParts();
 

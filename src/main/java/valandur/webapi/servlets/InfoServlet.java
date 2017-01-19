@@ -29,22 +29,26 @@ public class InfoServlet extends WebAPIServlet {
         json.addProperty("hasWhitelist", server.hasWhitelist());
         json.addProperty("minecraftVersion", platform.getMinecraftVersion().getName());
 
-        PluginContainer api = platform.getApi();
+        json.add("game", containerToJson(platform.getContainer(Platform.Component.GAME)));
+        json.add("api", containerToJson(platform.getContainer(Platform.Component.API)));
+        json.add("implementation", containerToJson(platform.getContainer(Platform.Component.IMPLEMENTATION)));
+    }
+
+    private JsonObject containerToJson(PluginContainer container) {
         JsonObject obj = new JsonObject();
-        obj.addProperty("id", api.getId());
-        obj.addProperty("name", api.getName());
-        Optional<String> version = api.getVersion();
+        obj.addProperty("id", container.getId());
+        obj.addProperty("name", container.getName());
+        Optional<String> version = container.getVersion();
         obj.addProperty("version", version.isPresent() ? version.get() : null);
-        Optional<String> descr = api.getDescription();
+        Optional<String> descr = container.getDescription();
         obj.addProperty("description", descr.isPresent() ? descr.get() : null);
-        Optional<String> url = api.getVersion();
+        Optional<String> url = container.getVersion();
         obj.addProperty("url", url.isPresent() ? url.get() : null);
         JsonArray arr = new JsonArray();
-        for (String author : api.getAuthors()) {
+        for (String author : container.getAuthors()) {
             arr.add(new JsonPrimitive(author));
         }
         obj.add("authors", arr);
-
-        json.add("api", obj);
+        return obj;
     }
 }

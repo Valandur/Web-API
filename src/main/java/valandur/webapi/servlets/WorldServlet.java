@@ -45,9 +45,9 @@ public class WorldServlet extends WebAPIServlet {
         }
 
         if (paths[1].equalsIgnoreCase("raw")) {
-            Optional<Object> w = world.get().getLive();
+            JsonElement res = DataCache.getRawLive(world.get());
             data.setStatus(HttpServletResponse.SC_OK);
-            data.getJson().add("world", JsonConverter.toRawJson(w));
+            data.getJson().add("world", res);
         } else {
             data.sendError(HttpServletResponse.SC_NOT_FOUND);
         }

@@ -44,9 +44,9 @@ public class PlayerServlet extends WebAPIServlet {
         }
 
         if (paths[1].equalsIgnoreCase("raw")) {
-            Optional<Object> p = player.get().getLive();
+            JsonElement res = DataCache.getRawLive(player.get());
             data.setStatus(HttpServletResponse.SC_OK);
-            data.getJson().add("player", JsonConverter.toRawJson(p));
+            data.getJson().add("player", res);
         } else {
             data.sendError(HttpServletResponse.SC_NOT_FOUND);
         }

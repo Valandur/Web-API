@@ -14,6 +14,7 @@ import valandur.webapi.misc.JsonConverter;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.function.Supplier;
 
 public class DataCache {
 
@@ -49,31 +50,33 @@ public class DataCache {
         }
     }
 
+    public static JsonElement getRawLive(CachedObject object) {
+        Optional<JsonElement> json = runOnMainThread(() -> {
+            Optional<Object> o = object.getLive();
+            return JsonConverter.toRawJson(o);
+        });
+        if (!json.isPresent())
+            return JsonConverter.toRawJson(Optional.empty());
+        return json.get();
+    }
     public static Optional<JsonElement> executeMethod(CachedObject cache, String methodName, Class[] paramTypes, Object[] paramValues) {
-        CompletableFuture<Optional<JsonElement>> future = CompletableFuture.supplyAsync(() -> {
+        return runOnMainThread(() -> {
             Optional<Object> obj = cache.getLive();
 
             if (!obj.isPresent())
-                return Optional.empty();
+                return null;
 
             Object o = obj.get();
 
             try {
                 Method m = o.getClass().getMethod(methodName, paramTypes);
                 Object res = m.invoke(o, paramValues);
-                return Optional.of(JsonConverter.toRawJson(res));
+                return JsonConverter.toRawJson(res);
             } catch (Exception e) {
                 e.printStackTrace();
-                return Optional.empty();
+                return null;
             }
-        }, WebAPI.getInstance().syncExecutor);
-
-        try {
-            return future.get();
-        } catch (InterruptedException | ExecutionException e) {
-            e.printStackTrace();
-            return Optional.empty();
-        }
+        });
     }
 
     public static void addWorld(World world) {
@@ -83,23 +86,15 @@ public class DataCache {
         worlds.remove(uuid);
     }
     private static Optional<CachedWorld> updateWorld(UUID uuid) {
-        CompletableFuture<Optional<CachedWorld>> future = CompletableFuture.supplyAsync(() -> {
+        return runOnMainThread(() -> {
             Optional<World> world = Sponge.getServer().getWorld(uuid);
-            if (!world.isPresent()) {
-                return Optional.empty();
-            }
+            if (!world.isPresent())
+                return null;
 
             CachedWorld w = CachedWorld.copyFrom(world.get(), true);
             worlds.put(world.get().getUniqueId(), w);
-            return Optional.of(w);
-        }, WebAPI.getInstance().syncExecutor);
-
-        try {
-            return future.get();
-        } catch (InterruptedException | ExecutionException e) {
-            e.printStackTrace();
-            return Optional.empty();
-        }
+            return w;
+        });
     }
     public static Collection<CachedWorld> getWorlds() {
         return worlds.values();
@@ -124,23 +119,15 @@ public class DataCache {
         players.remove(uuid);
     }
     private static Optional<CachedPlayer> updatePlayer(UUID uuid) {
-        CompletableFuture<Optional<CachedPlayer>> future = CompletableFuture.supplyAsync(() -> {
+        return runOnMainThread(() -> {
             Optional<Player> player = Sponge.getServer().getPlayer(uuid);
-            if (!player.isPresent()) {
-                return Optional.empty();
-            }
+            if (!player.isPresent())
+                return null;
 
             CachedPlayer p = CachedPlayer.copyFrom(player.get(), true);
             players.put(player.get().getUniqueId(), p);
-            return Optional.of(p);
-        }, WebAPI.getInstance().syncExecutor);
-
-        try {
-            return future.get();
-        } catch (InterruptedException | ExecutionException e) {
-            e.printStackTrace();
-            return Optional.empty();
-        }
+            return p;
+        });
     }
     public static Collection<CachedPlayer> getPlayers() {
         return players.values();
@@ -165,7 +152,7 @@ public class DataCache {
         entities.remove(uuid);
     }
     private static Optional<CachedEntity> updateEntity(UUID uuid) {
-        CompletableFuture<Optional<CachedEntity>> future = CompletableFuture.supplyAsync(() -> {
+        return runOnMainThread(() -> {
             Optional<Entity> entity = Optional.empty();
             for (World world : Sponge.getServer().getWorlds()) {
                 Optional<Entity> ent = world.getEntity(uuid);
@@ -175,20 +162,13 @@ public class DataCache {
                 }
             }
             if (!entity.isPresent()) {
-                return Optional.empty();
+                return null;
             }
 
             CachedEntity e = CachedEntity.copyFrom(entity.get(), true);
             entities.put(entity.get().getUniqueId(), e);
-            return Optional.of(e);
-        }, WebAPI.getInstance().syncExecutor);
-
-        try {
-            return future.get();
-        } catch (InterruptedException | ExecutionException e) {
-            e.printStackTrace();
-            return Optional.empty();
-        }
+            return e;
+        });
     }
     public static Collection<CachedEntity> getEntities() {
         return entities.values();
@@ -207,12 +187,15 @@ public class DataCache {
     }
 
     public static void updatePlugins() {
-        Collection<PluginContainer> plugins = Sponge.getPluginManager().getPlugins();
-        Collection<CachedPlugin> cachedPlugins = new LinkedHashSet<>();
-        for (PluginContainer plugin : plugins) {
-            cachedPlugins.add(CachedPlugin.copyFrom(plugin));
-        }
-        DataCache.plugins = cachedPlugins;
+        runOnMainThread(() -> {
+            Collection<PluginContainer> plugins = Sponge.getPluginManager().getPlugins();
+            Collection<CachedPlugin> cachedPlugins = new LinkedHashSet<>();
+            for (PluginContainer plugin : plugins) {
+                cachedPlugins.add(CachedPlugin.copyFrom(plugin));
+            }
+            DataCache.plugins = cachedPlugins;
+            return null;
+        });
     }
     public static Collection<CachedPlugin> getPlugins() {
         return plugins;
@@ -225,8 +208,8 @@ public class DataCache {
         return Optional.empty();
     }
 
-    public static Collection<CachedTileEntity> getTileEntities() {
-        CompletableFuture<Collection<CachedTileEntity>> future = CompletableFuture.supplyAsync(() -> {
+    public static Optional<Collection<CachedTileEntity>> getTileEntities() {
+        return runOnMainThread(() -> {
             Collection<CachedTileEntity> entities = new ArrayList<>();
 
             for (World world : Sponge.getServer().getWorlds()) {
@@ -237,20 +220,13 @@ public class DataCache {
             }
 
             return entities;
-        }, WebAPI.getInstance().syncExecutor);
-
-        try {
-            return future.get();
-        } catch (InterruptedException | ExecutionException e) {
-            e.printStackTrace();
-            return new ArrayList<>();
-        }
+        });
     }
     public static Optional<Collection<CachedTileEntity>> getTileEntities(CachedWorld world) {
-        CompletableFuture<Optional<Collection<CachedTileEntity>>> future = CompletableFuture.supplyAsync(() -> {
+        return runOnMainThread(() -> {
             Optional<Object> w = world.getLive();
             if (!w.isPresent())
-                return Optional.empty();
+                return null;
 
             Collection<CachedTileEntity> entities = new ArrayList<>();
             Collection<TileEntity> ents = ((World)w.get()).getTileEntities();
@@ -259,32 +235,31 @@ public class DataCache {
                 entities.add(CachedTileEntity.copyFrom(te));
             }
 
-            return Optional.of(entities);
-        }, WebAPI.getInstance().syncExecutor);
-
-        try {
-            return future.get();
-        } catch (InterruptedException | ExecutionException e) {
-            e.printStackTrace();
-            return Optional.empty();
-        }
+            return entities;
+        });
     }
     public static Optional<CachedTileEntity> getTileEntity(CachedWorld world, int x, int y, int z) {
-        CompletableFuture<Optional<CachedTileEntity>> future = CompletableFuture.supplyAsync(() -> {
+        return runOnMainThread(() -> {
             Optional<Object> w = world.getLive();
             if (!w.isPresent())
-                return Optional.empty();
+                return null;
 
             Optional<TileEntity> ent = ((World)w.get()).getTileEntity(x, y, z);
             if (!ent.isPresent() || !ent.get().isValid()) {
-                return Optional.empty();
+                return null;
             }
 
-            return Optional.of(CachedTileEntity.copyFrom(ent.get(), true));
-        }, WebAPI.getInstance().syncExecutor);
+            return CachedTileEntity.copyFrom(ent.get(), true);
+        });
+    }
 
+    private static <T> Optional<T> runOnMainThread(Supplier<T> supplier) {
+        CompletableFuture<T> future = CompletableFuture.supplyAsync(supplier, WebAPI.getInstance().syncExecutor);
         try {
-            return future.get();
+            T obj = future.get();
+            if (obj == null)
+                return Optional.empty();
+            return Optional.of(obj);
         } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace();
             return Optional.empty();

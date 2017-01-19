@@ -1,5 +1,6 @@
 package valandur.webapi.servlets;
 
+import com.google.gson.JsonElement;
 import valandur.webapi.Permission;
 import valandur.webapi.cache.CachedPlugin;
 import valandur.webapi.cache.DataCache;
@@ -34,9 +35,9 @@ public class PluginServlet extends WebAPIServlet {
         }
 
         if (paths[1].equalsIgnoreCase("raw")) {
-            Optional<Object> p = plugin.get().getLive();
+            JsonElement res = DataCache.getRawLive(plugin.get());
             data.setStatus(HttpServletResponse.SC_OK);
-            data.getJson().add("plugin", JsonConverter.toRawJson(p));
+            data.getJson().add("plugin", res);
         } else {
             data.sendError(HttpServletResponse.SC_NOT_FOUND);
         }

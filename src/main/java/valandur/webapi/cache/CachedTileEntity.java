@@ -2,6 +2,7 @@ package valandur.webapi.cache;
 
 import com.google.gson.JsonElement;
 import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
 import org.spongepowered.api.block.tileentity.TileEntity;
 import org.spongepowered.api.item.inventory.Inventory;
 import org.spongepowered.api.world.Location;
@@ -15,7 +16,12 @@ public class CachedTileEntity extends CachedObject {
     public String type;
 
     @Expose
+    @SerializedName("class")
+    public String clazz;
+
+    @Expose
     public CachedLocation location;
+
     public JsonElement data;
     public JsonElement properties;
     public JsonElement inventory;
@@ -25,7 +31,8 @@ public class CachedTileEntity extends CachedObject {
     }
     public static CachedTileEntity copyFrom(TileEntity te, boolean details) {
         CachedTileEntity cache = new CachedTileEntity();
-        cache.type = te.getType() != null ? te.getType().getId() : te.getClass().getName();
+        cache.type = te.getType() != null ? te.getType().getId() : null;
+        cache.clazz = te.getClass().getName();
         cache.location = CachedLocation.copyFrom(te.getLocation());
         if (details) {
             cache.details = true;

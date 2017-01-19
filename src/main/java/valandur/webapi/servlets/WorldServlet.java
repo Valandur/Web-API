@@ -54,7 +54,7 @@ public class WorldServlet extends WebAPIServlet {
     }
 
     @Override
-    @Permission(perm = "player")
+    @Permission(perm = "world")
     protected void handlePost(ServletData data) {
         String[] paths = data.getPathParts();
 

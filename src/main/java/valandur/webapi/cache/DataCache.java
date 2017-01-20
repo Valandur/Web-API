@@ -187,15 +187,12 @@ public class DataCache {
     }
 
     public static void updatePlugins() {
-        runOnMainThread(() -> {
-            Collection<PluginContainer> plugins = Sponge.getPluginManager().getPlugins();
-            Collection<CachedPlugin> cachedPlugins = new LinkedHashSet<>();
-            for (PluginContainer plugin : plugins) {
-                cachedPlugins.add(CachedPlugin.copyFrom(plugin));
-            }
-            DataCache.plugins = cachedPlugins;
-            return null;
-        });
+        Collection<PluginContainer> plugins = Sponge.getPluginManager().getPlugins();
+        Collection<CachedPlugin> cachedPlugins = new LinkedHashSet<>();
+        for (PluginContainer plugin : plugins) {
+            cachedPlugins.add(CachedPlugin.copyFrom(plugin));
+        }
+        DataCache.plugins = cachedPlugins;
     }
     public static Collection<CachedPlugin> getPlugins() {
         return plugins;

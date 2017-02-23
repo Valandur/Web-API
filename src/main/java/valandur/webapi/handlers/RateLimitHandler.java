@@ -13,7 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class RateLimitHandler extends AbstractHandler {
 
-    private Map<String, Long> lastCall = new ConcurrentHashMap<>();
+    private Map<String, Double> lastCall = new ConcurrentHashMap<>();
 
     public RateLimitHandler() {
     }
@@ -24,7 +24,7 @@ public class RateLimitHandler extends AbstractHandler {
         int limit = (int)request.getAttribute("rate");
 
         if (limit > 0) {
-            long time = 0;
+            double time = System.nanoTime() / 1000000000d;
 
             if (lastCall.containsKey(key) && time - lastCall.get(key) < 1d / limit) {
                 WebAPI.getInstance().getLogger().warn(request.getRemoteAddr() + " has exceeded the rate limit when requesting " + request.getRequestURI());

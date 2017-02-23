@@ -51,11 +51,12 @@ public class CmdServlet extends WebAPIServlet {
         data.setStatus(HttpServletResponse.SC_OK);
 
         final JsonObject reqJson = (JsonObject) data.getAttribute("body");
+        final String cmd = reqJson.get("command").getAsString();
+        final String name = reqJson.has("name") ? reqJson.get("name").getAsString() : WebAPI.NAME;
 
         try {
             CompletableFuture
-                .supplyAsync(() -> reqJson.get("command").getAsString())
-                .thenApplyAsync(WebAPI::executeCommand, WebAPI.getInstance().syncExecutor)
+                .supplyAsync(() -> WebAPI.executeCommand(cmd, name), WebAPI.getInstance().syncExecutor)
                 .thenAcceptAsync((WebAPICommandSource src) -> {
                     JsonArray arr = new JsonArray();
                     for (String line : src.getLines()) {

@@ -353,8 +353,8 @@ public class WebAPI {
         DataCache.removeEntity(e.getTargetEntity().getUniqueId());
     }
 
-    public static WebAPICommandSource executeCommand(String command) {
-        WebAPICommandSource src = new WebAPICommandSource();
+    public static WebAPICommandSource executeCommand(String command, String name) {
+        WebAPICommandSource src = new WebAPICommandSource(name);
         CommandManager cmdManager = Sponge.getGame().getCommandManager();
         cmdManager.process(src, command);
         return src;

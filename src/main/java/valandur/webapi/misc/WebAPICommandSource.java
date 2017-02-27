@@ -8,6 +8,7 @@ import org.spongepowered.api.service.permission.SubjectData;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.channel.MessageChannel;
 import org.spongepowered.api.util.Tristate;
+import valandur.webapi.WebAPI;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,7 +16,13 @@ import java.util.Optional;
 import java.util.Set;
 
 public class WebAPICommandSource implements CommandSource {
-    List<String> lines = new ArrayList<String>();
+    private String name = WebAPI.NAME;
+    private List<String> lines = new ArrayList<String>();
+
+    public WebAPICommandSource() { }
+    public WebAPICommandSource(String name) {
+        this.name = name;
+    }
 
     public List<String> getLines() {
         return this.lines;
@@ -23,7 +30,7 @@ public class WebAPICommandSource implements CommandSource {
 
     @Override
     public String getName() {
-        return "Web-API";
+        return name;
     }
 
     @Override

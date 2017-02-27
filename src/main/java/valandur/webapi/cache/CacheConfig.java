@@ -20,6 +20,7 @@ public class CacheConfig {
     public static int entity;
     public static int tileEntity;
     public static int chatMessages;
+    public static int commandCalls;
 
     public static void init() {
         WebAPI api = WebAPI.getInstance();
@@ -39,6 +40,7 @@ public class CacheConfig {
             entity = cacheNode.getNode("entity").getInt();
             tileEntity = cacheNode.getNode("tileEntity").getInt();
             chatMessages = config.getNode("cache", "chat").getInt(100);
+            commandCalls = config.getNode("cache", "commandCalls").getInt(100);
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -6,6 +6,14 @@ info:
     Access Sponge powered Minecraft servers through a WebAPI
 
     # Introduction
+    This is the documentation of the various API routes offered by the WebAPI plugin.
+
+    This documentation assumes that you are familiar with the basic concepts of Web API's, such as GET, PUT, POST and DELETE methods, request HEADERS and RESPONSE CODES and JSON data.
+
+    By default this documentation can be found at http://localhost:8080 (while your minecraft server is running) and the various routes start with http://localhost:8080/api/...
+
+    As a quick test try reaching the route http://localhost:8080/api/info (remember that you can only access "localhost" routes on the server on which you are running minecraft).
+    This route should show you basic information about your server, like the motd and player count.
   version: "<version>"
 
 host: "<host>"
@@ -626,6 +634,10 @@ definitions:
   CommandRequest:
     type: object
     properties:
+      name:
+        type: string
+        description: The name that is displayed as the executor.
+        default: Web-API
       command:
         type: string
         description: The command and it's arguments that are sent to the server.

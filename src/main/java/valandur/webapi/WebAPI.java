@@ -1,5 +1,6 @@
 package valandur.webapi;
 
+import com.google.gson.JsonElement;
 import com.google.inject.Inject;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
@@ -23,6 +24,9 @@ import org.spongepowered.api.config.ConfigDir;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Listener;
+import org.spongepowered.api.event.cause.Cause;
+import org.spongepowered.api.event.cause.NamedCause;
+import org.spongepowered.api.event.command.SendCommandEvent;
 import org.spongepowered.api.event.entity.DestructEntityEvent;
 import org.spongepowered.api.event.entity.SpawnEntityEvent;
 import org.spongepowered.api.event.game.state.GameInitializationEvent;
@@ -30,6 +34,7 @@ import org.spongepowered.api.event.game.state.GamePreInitializationEvent;
 import org.spongepowered.api.event.game.state.GameStartedServerEvent;
 import org.spongepowered.api.event.game.state.GameStoppedServerEvent;
 import org.spongepowered.api.event.message.MessageChannelEvent;
+import org.spongepowered.api.event.message.MessageEvent;
 import org.spongepowered.api.event.network.ClientConnectionEvent;
 import org.spongepowered.api.event.world.LoadWorldEvent;
 import org.spongepowered.api.event.world.UnloadWorldEvent;
@@ -37,6 +42,7 @@ import org.spongepowered.api.plugin.Plugin;
 import org.spongepowered.api.scheduler.SpongeExecutorService;
 import org.spongepowered.api.text.Text;
 import valandur.webapi.cache.CacheConfig;
+import valandur.webapi.cache.CachedPlayer;
 import valandur.webapi.cache.DataCache;
 import valandur.webapi.command.*;
 import valandur.webapi.handlers.AuthHandler;
@@ -69,7 +75,7 @@ public class WebAPI {
     public static final String NAME = "Web-API";
     public static final String URL = "https://github.com/Valandur/Web-API";
     public static final String DESCRIPTION = "Access Minecraft through a Web API";
-    public static final String VERSION = "1.8";
+    public static final String VERSION = "1.9";
 
     private static WebAPI instance;
     public static WebAPI getInstance() {
@@ -268,8 +274,8 @@ public class WebAPI {
 
             servletsContext.addServlet(InfoServlet.class, "/info");
             servletsContext.addServlet(ChatServlet.class, "/chat");
-            servletsContext.addServlet(CmdServlet.class, "/cmd");
 
+            servletsContext.addServlet(CmdServlet.class, "/cmd/*");
             servletsContext.addServlet(WorldServlet.class, "/world/*");
             servletsContext.addServlet(PlayerServlet.class, "/player/*");
             servletsContext.addServlet(PluginServlet.class, "/plugin/*");
@@ -353,18 +359,31 @@ public class WebAPI {
         DataCache.removeEntity(e.getTargetEntity().getUniqueId());
     }
 
-    public static WebAPICommandSource executeCommand(String command) {
-        WebAPICommandSource src = new WebAPICommandSource();
+    public static WebAPICommandSource executeCommand(String command, String name) {
+        WebAPICommandSource src = new WebAPICommandSource(name);
         CommandManager cmdManager = Sponge.getGame().getCommandManager();
         cmdManager.process(src, command);
         return src;
     }
 
     @Listener
-    public void onMessage(MessageChannelEvent.Chat event) {
+    public void onMessage(MessageEvent event) {
         Optional<Player> player = event.getCause().first(Player.class);
         if (!player.isPresent()) return;
 
-        DataCache.addChatMessage(player.get(), event.getRawMessage());
+        DataCache.addChatMessage(player.get(), event.getMessage());
+    }
+
+    @Listener
+    public void onCommand(SendCommandEvent event) {
+        JsonElement source = null;
+        Optional<Object> src = event.getCause().get(NamedCause.SOURCE, Object.class);
+        if (src.isPresent()) {
+            if (src.get() instanceof Player)
+                source = JsonConverter.cacheToJson(CachedPlayer.copyFrom((Player) src.get()));
+            else
+                source = JsonConverter.toRawJson(src.get().getClass().getName());
+        }
+        DataCache.addCommandCall(event.getCommand(), event.getArguments(), source, event.getResult());
     }
 }

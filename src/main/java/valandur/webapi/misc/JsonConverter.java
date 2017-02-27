@@ -111,7 +111,8 @@ public class JsonConverter {
         JsonObject json = new JsonObject();
         seen.put(obj, json);
 
-        String n = obj.getClass().getName();
+        String name = obj.getClass().getName();
+        json.addProperty("class", name);
 
         // Add all the fields of the class
         Field[] fs = isRoot ? getAllFields(obj.getClass()) : obj.getClass().getDeclaredFields();

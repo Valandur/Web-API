@@ -3,6 +3,7 @@ package valandur.webapi.cache;
 import com.google.gson.JsonElement;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.block.tileentity.TileEntity;
+import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.plugin.PluginContainer;
@@ -19,6 +20,7 @@ import java.util.function.Supplier;
 public class DataCache {
 
     private static ConcurrentLinkedQueue<CachedChatMessage> chatMessages = new ConcurrentLinkedQueue<>();
+    private static ConcurrentLinkedQueue<CachedCommandCall> commandCalls = new ConcurrentLinkedQueue<>();
     private static Collection<CachedPlugin> plugins = new LinkedHashSet<>();
     private static Map<UUID, CachedWorld> worlds = new ConcurrentHashMap<>();
     private static Map<UUID, CachedPlayer> players = new ConcurrentHashMap<>();
@@ -28,6 +30,7 @@ public class DataCache {
     public static ConcurrentLinkedQueue<CachedChatMessage> getChatMessages() {
         return chatMessages;
     }
+    public static ConcurrentLinkedQueue<CachedCommandCall> getCommandCalls() { return commandCalls; }
     public static Map<Class, JsonElement> getClasses() {
         return classes;
     }
@@ -43,10 +46,18 @@ public class DataCache {
     }
 
     public static void addChatMessage(Player sender, Text text) {
-        chatMessages.add(new CachedChatMessage(new Date(), sender, text));
+        chatMessages.add(CachedChatMessage.copyFrom(new Date(), sender, text));
 
         while (chatMessages.size() > CacheConfig.chatMessages) {
             chatMessages.poll();
+        }
+    }
+
+    public static void addCommandCall(String command, String arguments, JsonElement source, CommandResult result) {
+        commandCalls.add(CachedCommandCall.copyFrom(command, arguments, source, result));
+
+        while (commandCalls.size() > CacheConfig.commandCalls) {
+            commandCalls.poll();
         }
     }
 

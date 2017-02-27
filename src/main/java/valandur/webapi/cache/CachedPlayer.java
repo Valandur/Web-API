@@ -19,7 +19,7 @@ public class CachedPlayer extends CachedObject {
     public CachedVector3d velocity;
     public CachedVector3d rotation;
     public String address;
-    public int latency;
+    public Integer latency;
     public JsonElement data;
     public JsonElement properties;
 

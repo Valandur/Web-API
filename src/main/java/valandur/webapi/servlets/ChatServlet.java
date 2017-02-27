@@ -17,7 +17,7 @@ public class ChatServlet extends WebAPIServlet {
 
         JsonArray arr = new JsonArray();
         for (CachedChatMessage msg : DataCache.getChatMessages()) {
-            arr.add(JsonConverter.cacheToJson(msg));
+            arr.add(JsonConverter.cacheToJson(msg, true));
         }
         data.getJson().add("messages", arr);
     }

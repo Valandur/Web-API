@@ -642,6 +642,13 @@ definitions:
         type: string
         description: The command and it's arguments that are sent to the server.
         required: true
+      waitLines:
+        type: integer
+        description: The minimum amount of lines of text to wait for before returning the response.
+        default: 0
+      waitTime:
+        type: integer
+        description: The amount of time in milliseconds to wait for response messages from the server.
   CommandResponse:
     type: object
     properties:

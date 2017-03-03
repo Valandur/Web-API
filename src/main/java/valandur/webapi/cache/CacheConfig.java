@@ -25,24 +25,15 @@ public class CacheConfig {
     public static void init() {
         WebAPI api = WebAPI.getInstance();
 
-        try {
-            Path configPath = api.getConfigPath().resolve(configFileName);
-            if (!Files.exists(configPath))
-                Sponge.getAssetManager().getAsset(api, "defaults/" + configFileName).get().copyToDirectory(api.getConfigPath());
+        ConfigurationNode config = api.loadWithDefaults(configFileName, "defaults/" + configFileName);
+        chatMessages = config.getNode("chat").getInt();
+        commandCalls = config.getNode("command").getInt();
 
-            ConfigurationLoader<CommentedConfigurationNode> loader = HoconConfigurationLoader.builder().setPath(configPath).build();
-            ConfigurationNode config = loader.load();
-
-            ConfigurationNode cacheNode = config.getNode("cache", "duration");
-            plugin = cacheNode.getNode("plugin").getInt();
-            world = cacheNode.getNode("world").getInt();
-            player = cacheNode.getNode("player").getInt();
-            entity = cacheNode.getNode("entity").getInt();
-            tileEntity = cacheNode.getNode("tileEntity").getInt();
-            chatMessages = config.getNode("cache", "chat").getInt(100);
-            commandCalls = config.getNode("cache", "commandCalls").getInt(100);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        ConfigurationNode cacheNode = config.getNode("duration");
+        plugin = cacheNode.getNode("plugin").getInt();
+        world = cacheNode.getNode("world").getInt();
+        player = cacheNode.getNode("player").getInt();
+        entity = cacheNode.getNode("entity").getInt();
+        tileEntity = cacheNode.getNode("tileEntity").getInt();
     }
 }

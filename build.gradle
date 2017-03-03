@@ -3,6 +3,9 @@ plugins {
     id "com.qixalite.spongestart" version "1.6.0"
 }
 
+group = project.group;
+version = project.version;
+
 repositories {
     mavenCentral()
     maven {
@@ -23,7 +26,7 @@ dependencies {
 }
 
 jar {
-    version = "${project.pluginVersion}-sponge-${project.spongeVersion}"
+    version = "${project.version}-sponge-${project.spongeVersion}"
 
     // Include all compile time dependencies in the jar (e.g. Jetty)
     // Sponge is declared compileOnly so that it doesn't get included here

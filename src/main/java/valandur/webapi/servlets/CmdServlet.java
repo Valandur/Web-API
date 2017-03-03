@@ -17,8 +17,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
+import java.util.concurrent.*;
 
 public class CmdServlet extends WebAPIServlet {
     @Override
@@ -65,17 +64,28 @@ public class CmdServlet extends WebAPIServlet {
         final JsonObject reqJson = (JsonObject) data.getAttribute("body");
         final String cmd = reqJson.get("command").getAsString();
         final String name = reqJson.has("name") ? reqJson.get("name").getAsString() : WebAPI.NAME;
+        final int waitTime = reqJson.has("waitTime") ? reqJson.get("waitTime").getAsInt() : 0;
+        final int waitLines = reqJson.has("waitLines") ? reqJson.get("waitLines").getAsInt() : 0;
+
+        final WebAPICommandSource src = new WebAPICommandSource(name, waitLines);
 
         try {
             CompletableFuture
-                .supplyAsync(() -> WebAPI.executeCommand(cmd, name), WebAPI.getInstance().syncExecutor)
-                .thenAcceptAsync((WebAPICommandSource src) -> {
-                    JsonArray arr = new JsonArray();
-                    for (String line : src.getLines()) {
-                        arr.add(new JsonPrimitive(line));
-                    }
-                    data.getJson().add("response", arr);
-                }).get();
+                .runAsync(() -> WebAPI.executeCommand(cmd, src), WebAPI.syncExecutor)
+                .get();
+
+            if (waitLines > 0 || waitTime > 0) {
+                synchronized (src) {
+                    src.wait(waitTime > 0 ? waitTime : WebAPI.cmdWaitTime);
+                }
+            }
+
+            JsonArray arr = new JsonArray();
+            for (String line : src.getLines()) {
+                arr.add(new JsonPrimitive(line));
+            }
+            data.getJson().add("response", arr);
+
         } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace();
         }

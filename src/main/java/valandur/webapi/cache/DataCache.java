@@ -262,7 +262,7 @@ public class DataCache {
     }
 
     private static <T> Optional<T> runOnMainThread(Supplier<T> supplier) {
-        CompletableFuture<T> future = CompletableFuture.supplyAsync(supplier, WebAPI.getInstance().syncExecutor);
+        CompletableFuture<T> future = CompletableFuture.supplyAsync(supplier, WebAPI.syncExecutor);
         try {
             T obj = future.get();
             if (obj == null)

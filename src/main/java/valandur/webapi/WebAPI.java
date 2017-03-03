@@ -24,7 +24,6 @@ import org.spongepowered.api.config.ConfigDir;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Listener;
-import org.spongepowered.api.event.cause.Cause;
 import org.spongepowered.api.event.cause.NamedCause;
 import org.spongepowered.api.event.command.SendCommandEvent;
 import org.spongepowered.api.event.entity.DestructEntityEvent;
@@ -33,12 +32,12 @@ import org.spongepowered.api.event.game.state.GameInitializationEvent;
 import org.spongepowered.api.event.game.state.GamePreInitializationEvent;
 import org.spongepowered.api.event.game.state.GameStartedServerEvent;
 import org.spongepowered.api.event.game.state.GameStoppedServerEvent;
-import org.spongepowered.api.event.message.MessageChannelEvent;
 import org.spongepowered.api.event.message.MessageEvent;
 import org.spongepowered.api.event.network.ClientConnectionEvent;
 import org.spongepowered.api.event.world.LoadWorldEvent;
 import org.spongepowered.api.event.world.UnloadWorldEvent;
 import org.spongepowered.api.plugin.Plugin;
+import org.spongepowered.api.plugin.PluginContainer;
 import org.spongepowered.api.scheduler.SpongeExecutorService;
 import org.spongepowered.api.text.Text;
 import valandur.webapi.cache.CacheConfig;
@@ -53,36 +52,36 @@ import valandur.webapi.misc.WebAPICommandSource;
 import valandur.webapi.misc.JettyLogger;
 import valandur.webapi.servlets.*;
 
-import javax.annotation.Nullable;
 import java.io.IOException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 
 @Plugin(
         id = WebAPI.ID,
+        version = WebAPI.VERSION,
         name = WebAPI.NAME,
         url = WebAPI.URL,
         description = WebAPI.DESCRIPTION,
-        version = WebAPI.VERSION,
         authors = {
-                "Valandur "
+                "Valandur"
         }
 )
 public class WebAPI {
 
     public static final String ID = "webapi";
     public static final String NAME = "Web-API";
-    public static final String URL = "https://github.com/Valandur/Web-API";
-    public static final String DESCRIPTION = "Access Minecraft through a Web API";
     public static final String VERSION = "1.10";
+    public static final String DESCRIPTION = "Access Minecraft through a Web API";
+    public static final String URL = "https://github.com/Valandur/Web-API";
 
     private static WebAPI instance;
     public static WebAPI getInstance() {
         return WebAPI.instance;
     }
 
-    public SpongeExecutorService syncExecutor;
+    public static SpongeExecutorService syncExecutor;
 
     @Inject
     private Logger logger;
@@ -107,6 +106,8 @@ public class WebAPI {
         return authHandler;
     }
 
+    public static int cmdWaitTime;
+
     @Listener
     public void onPreInitialization(GamePreInitializationEvent event) {
         WebAPI.instance = this;
@@ -123,36 +124,19 @@ public class WebAPI {
         this.syncExecutor = Sponge.getScheduler().createSyncExecutor(this);
     }
 
-    @Nullable
-    public ConfigurationNode loadConfig(String configName) {
-        try {
-            Path filePath = configPath.resolve(configName);
-            if (!Files.exists(filePath))
-                Sponge.getAssetManager().getAsset(this, "defaults/" + configName).get().copyToDirectory(configPath);
-
-            ConfigurationLoader<CommentedConfigurationNode> loader = HoconConfigurationLoader.builder().setPath(filePath).build();
-            ConfigurationNode config = loader.load();
-            loader.save(config);
-
-            return config;
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
     @Listener
     public void onInitialization(GameInitializationEvent event) {
         logger.info("Setting up jetty logger");
         Log.setLog(new JettyLogger());
 
-
         logger.info("Loading configuration...");
 
-        ConfigurationNode config = loadConfig("config.conf").getNode("server");
-        serverHost = config.getNode("host").getString("localhost");
-        serverPort = config.getNode("port").getInt(8080);
+        ConfigurationNode config = loadWithDefaults("config.conf", "defaults/config.conf");
+
+        serverHost = config.getNode("host").getString();
+        serverPort = config.getNode("port").getInt();
         JsonConverter.hiddenClasses = config.getNode("hiddenClasses").getList(t -> t.toString().toLowerCase());
+        cmdWaitTime = config.getNode("cmdWaitTime").getInt();
 
         // Load permissions & auth handler
         authHandler = new AuthHandler();
@@ -314,6 +298,35 @@ public class WebAPI {
         return context;
     }
 
+    public ConfigurationNode loadWithDefaults(String path, String defaultPath) {
+        try {
+            Path filePath = configPath.resolve(path);
+            if (!Files.exists(filePath))
+                Sponge.getAssetManager().getAsset(this, defaultPath).get().copyToDirectory(configPath);
+
+            URL defUrl = Sponge.getAssetManager().getAsset(this, defaultPath).get().getUrl();
+            ConfigurationLoader<CommentedConfigurationNode> defLoader = HoconConfigurationLoader.builder().setURL(defUrl).build();
+            ConfigurationNode defConfig = defLoader.load();
+
+            ConfigurationLoader<CommentedConfigurationNode> loader = HoconConfigurationLoader.builder().setPath(filePath).build();
+            ConfigurationNode config = loader.load();
+
+            config.mergeValuesFrom(defConfig);
+            loader.save(config);
+
+            return config;
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public static void executeCommand(String command, WebAPICommandSource source) {
+        CommandManager cmdManager = Sponge.getGame().getCommandManager();
+        cmdManager.process(source, command);
+    }
+
     @Listener
     public void onServerStart(GameStartedServerEvent event) {
         DataCache.updatePlugins();
@@ -357,13 +370,6 @@ public class WebAPI {
     @Listener
     public void onEntityDespawn(DestructEntityEvent e) {
         DataCache.removeEntity(e.getTargetEntity().getUniqueId());
-    }
-
-    public static WebAPICommandSource executeCommand(String command, String name) {
-        WebAPICommandSource src = new WebAPICommandSource(name);
-        CommandManager cmdManager = Sponge.getGame().getCommandManager();
-        cmdManager.process(src, command);
-        return src;
     }
 
     @Listener

@@ -16,6 +16,7 @@ import org.spongepowered.api.world.World;
 import valandur.webapi.WebAPI;
 import valandur.webapi.json.JsonConverter;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.*;
@@ -93,8 +94,39 @@ public class DataCache {
 
             try {
                 Method m = o.getClass().getMethod(methodName, paramTypes);
+                m.setAccessible(true);
                 Object res = m.invoke(o, paramValues);
-                return JsonConverter.toJson(res);
+                return JsonConverter.toJson(res, true);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return null;
+            }
+        });
+
+        if (!node.isPresent())
+            return JsonConverter.toJson(null);
+        return node.get();
+    }
+    public static JsonNode getField(CachedObject cache, String fieldName) {
+        Optional<JsonNode> node = runOnMainThread(() -> {
+            Optional<Object> obj = cache.getLive();
+
+            if (!obj.isPresent())
+                return null;
+
+            Object o = obj.get();
+            Field[] fs = JsonConverter.getAllFields(o.getClass());
+            Optional<Field> optField = Arrays.stream(fs).filter(f -> f.getName().equalsIgnoreCase(fieldName)).findAny();
+
+            if (!optField.isPresent()) {
+                return null;
+            }
+
+            try {
+                Field field = optField.get();
+                field.setAccessible(true);
+                Object res = field.get(o);
+                return JsonConverter.toJson(res, true);
             } catch (Exception e) {
                 e.printStackTrace();
                 return null;

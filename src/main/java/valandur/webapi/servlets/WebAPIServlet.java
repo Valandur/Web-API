@@ -1,5 +1,7 @@
 package valandur.webapi.servlets;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import valandur.webapi.Permission;
@@ -33,26 +35,14 @@ public abstract class WebAPIServlet extends HttpServlet {
                 }
             }
 
-            if (verb == "Post" || verb == "Put") {
-                StringBuffer jb = new StringBuffer();
+            if (verb.equalsIgnoreCase("Post") || verb.equalsIgnoreCase("Put")) {
                 try {
-                    BufferedReader reader = req.getReader();
-                    String line = null;
-                    while ((line = reader.readLine()) != null)
-                        jb.append(line);
-                    reader.close();
-                } catch (Exception e) {
-                    throw new IOException("Error reading JSON request string");
-                }
-
-                JsonObject jsonBody = null;
-                try {
-                    jsonBody = new JsonParser().parse(jb.toString()).getAsJsonObject();
+                    ObjectMapper mapper = new ObjectMapper();
+                    JsonNode node = mapper.readTree(req.getReader());
+                    req.setAttribute("body", node);
                 } catch (Exception e) {
                     throw new IOException("Error parsing JSON request string");
                 }
-
-                req.setAttribute("body", jsonBody);
             }
 
             ServletData data = new ServletData(req, resp);

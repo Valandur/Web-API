@@ -377,7 +377,7 @@ public class JsonConverter {
 
         return json;
     }
-    private static Field[] getAllFields(Class c) {
+    public static Field[] getAllFields(Class c) {
         Field[] fs = new Field[]{};
         while (c != null) {
             fs = ArrayUtils.addAll(c.getDeclaredFields(), fs);
@@ -385,7 +385,7 @@ public class JsonConverter {
         }
         return fs;
     }
-    private static Method[] getAllMethods(Class c) {
+    public static Method[] getAllMethods(Class c) {
         Method[] ms = new Method[]{};
         while (c != null) {
             ms = ArrayUtils.addAll(c.getDeclaredMethods(), ms);

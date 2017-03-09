@@ -63,10 +63,10 @@ public class PlayerServlet extends WebAPIServlet {
             return;
         }
 
-        final JsonObject reqJson = (JsonObject) data.getAttribute("body");
+        final JsonNode reqJson = (JsonNode) data.getAttribute("body");
 
-        String mName = reqJson.get("method").getAsString();
-        Optional<Tuple<Class[], Object[]>> params = Util.parseParams(reqJson.getAsJsonArray("params"));
+        String mName = reqJson.get("method").asText();
+        Optional<Tuple<Class[], Object[]>> params = Util.parseParams(reqJson.get("params"));
 
         if (!params.isPresent()) {
             data.sendError(HttpServletResponse.SC_BAD_REQUEST);

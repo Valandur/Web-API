@@ -63,17 +63,25 @@ public class WorldServlet extends WebAPIServlet {
             return;
         }
 
-        final JsonObject reqJson = (JsonObject) data.getAttribute("body");
+        final JsonNode reqJson = (JsonNode) data.getAttribute("body");
 
-        String mName = reqJson.get("method").getAsString();
-        Optional<Tuple<Class[], Object[]>> params = Util.parseParams(reqJson.getAsJsonArray("params"));
+        if (reqJson.has("method")) {
+            String mName = reqJson.get("method").asText();
+            Optional<Tuple<Class[], Object[]>> params = Util.parseParams(reqJson.get("params"));
 
-        if (!params.isPresent()) {
+            if (!params.isPresent()) {
+                data.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                return;
+            }
+
+            JsonNode res = DataCache.executeMethod(world.get(), mName, params.get().getFirst(), params.get().getSecond());
+            data.addJson("result", res);
+        } else if (reqJson.has("field")) {
+            String fName = reqJson.get("field").asText();
+            JsonNode res = DataCache.getField(world.get(), fName);
+            data.addJson("result", res);
+        } else {
             data.sendError(HttpServletResponse.SC_BAD_REQUEST);
-            return;
         }
-
-        JsonNode res = DataCache.executeMethod(world.get(), mName, params.get().getFirst(), params.get().getSecond());
-        data.addJson("result", res);
     }
 }

@@ -1,5 +1,8 @@
 package valandur.webapi.servlets;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.google.gson.JsonObject;
 import valandur.webapi.Permission;
 import valandur.webapi.WebAPI;
@@ -40,18 +43,33 @@ public class CmdServlet extends WebAPIServlet {
     protected void handlePost(ServletData data) {
         data.setStatus(HttpServletResponse.SC_OK);
 
-        final JsonObject reqJson = (JsonObject) data.getAttribute("body");
-        final String cmd = reqJson.get("command").getAsString();
-        final String name = reqJson.has("name") ? reqJson.get("name").getAsString() : WebAPI.NAME;
-        final int waitTime = reqJson.has("waitTime") ? reqJson.get("waitTime").getAsInt() : 0;
-        final int waitLines = reqJson.has("waitLines") ? reqJson.get("waitLines").getAsInt() : 0;
+        final JsonNode reqJson = (JsonNode) data.getAttribute("body");
+
+        if (!reqJson.isArray()) {
+            data.addJson("result", runCommand(reqJson));
+            return;
+        }
+
+        ArrayNode arr = JsonNodeFactory.instance.arrayNode();
+        for (JsonNode node : reqJson) {
+            JsonNode res = runCommand(node);
+            arr.add(res);
+        }
+        data.addJson("results", arr);
+    }
+
+    private JsonNode runCommand(JsonNode node) {
+        final String cmd = node.get("command").asText();
+        final String name = node.has("name") ? node.get("name").asText() : WebAPI.NAME;
+        final int waitTime = node.has("waitTime") ? node.get("waitTime").asInt() : 0;
+        final int waitLines = node.has("waitLines") ? node.get("waitLines").asInt() : 0;
 
         final WebAPICommandSource src = new WebAPICommandSource(name, waitLines);
 
         try {
             CompletableFuture
-                .runAsync(() -> WebAPI.executeCommand(cmd, src), WebAPI.syncExecutor)
-                .get();
+                    .runAsync(() -> WebAPI.executeCommand(cmd, src), WebAPI.syncExecutor)
+                    .get();
 
             if (waitLines > 0 || waitTime > 0) {
                 synchronized (src) {
@@ -59,10 +77,10 @@ public class CmdServlet extends WebAPIServlet {
                 }
             }
 
-            data.addJson("response", JsonConverter.toJson(src.getLines(), true));
-
+            return JsonConverter.toJson(src.getLines(), true);
         } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace();
+            return null;
         }
     }
 }

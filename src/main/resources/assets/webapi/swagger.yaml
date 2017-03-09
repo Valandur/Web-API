@@ -313,6 +313,28 @@ paths:
           description: Detailed information about the entity.
           schema:
             $ref: '#/definitions/Entity'
+    post:
+      summary: Call entity function
+      description: |
+        Provides direct access to the underlaying entity object and can execute any function on it.
+
+        > Required permission: entity
+      parameters:
+        - name: uuid
+          in: path
+          type: string
+          description: The uuid of the entity to get detailed information about.
+      tags:
+        - Entity
+      responses:
+        200:
+          description: The result of executing the function.
+          schema:
+            type: object
+            properties:
+              result:
+                type: object
+                description: The result of the function.
   /entity/{uuid}/raw:
     get:
       summary: Raw entity info

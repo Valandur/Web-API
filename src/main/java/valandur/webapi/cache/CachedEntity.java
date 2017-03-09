@@ -16,8 +16,13 @@ public class CachedEntity extends CachedObject {
 
     @JsonProperty
     public String type;
+
+    @JsonProperty("class")
+    public String clazz;
+
     @JsonProperty
     public String uuid;
+
     @JsonProperty
     public CachedLocation location;
 
@@ -32,6 +37,7 @@ public class CachedEntity extends CachedObject {
     public static CachedEntity copyFrom(Entity entity, boolean details) {
         CachedEntity cache = new CachedEntity();
         cache.type = entity.getType().getName();
+        cache.clazz = entity.getClass().getName();
         cache.uuid = entity.getUniqueId().toString();
         cache.location = CachedLocation.copyFrom(entity.getLocation());
 

@@ -31,8 +31,8 @@ produces:
 tags:
   - name: Info
     description: Get general information about the minecraft server
-  - name: Chat
-    description: Provides access to the chat history.
+  - name: History
+    description: Provides access to the command and chat history.
   - name: Command
     description: List all commands on the server and execute them.
   - name: Player
@@ -81,20 +81,34 @@ paths:
           description: General information about the server
           schema:
             $ref: '#/definitions/ServerInfo'
-  /chat:
+  /history/chat:
     get:
       summary: Chat
       description: |
         View a history of the server chat.
 
-        > Required permission: chat
+        > Required permission: history
       tags:
-        - Chat
+        - History
       responses:
         200:
           description: A history of the chat.
           schema:
-            $ref: '#/definitions/ChatList'
+            $ref: '#/definitions/ChatHistory'
+  /history/cmd:
+    get:
+      summary: Command
+      description: |
+        View a history of the server commands.
+
+        > Required permission: history
+      tags:
+        - History
+      responses:
+        200:
+          description: A history of the chat.
+          schema:
+            $ref: '#/definitions/CommandHistory'
   /cmd:
     get:
       summary: Command list
@@ -200,25 +214,6 @@ paths:
           description: Detailed information about the player.
           schema:
             $ref: '#/definitions/Player'
-  /player/{uuid}/raw:
-    get:
-      summary: Raw player info
-      description: |
-        Get the raw player object
-
-        > Required permission: player
-      parameters:
-        - name: uuid
-          in: path
-          type: string
-          description: The uuid of the player to get raw information about.
-      tags:
-        - Player
-      responses:
-        200:
-          description: Raw information about the player.
-          schema:
-            $ref: '#/definitions/Raw'
   /world:
     get:
       summary: World list
@@ -252,25 +247,6 @@ paths:
           description: Detailed information about the world.
           schema:
             $ref: '#/definitions/World'
-  /world/{uuid}/raw:
-    get:
-      summary: Raw world info
-      description: |
-        Get the raw world object
-
-        > Required permission: world
-      parameters:
-        - name: uuid
-          in: path
-          type: string
-          description: The uuid of the world to get raw information about.
-      tags:
-        - World
-      responses:
-        200:
-          description: Raw information about the world.
-          schema:
-            $ref: '#/definitions/Raw'
   /plugin:
     get:
       summary: Plugin list
@@ -304,25 +280,6 @@ paths:
           description: Detailed information about the plugin.
           schema:
             $ref: '#/definitions/Plugin'
-  /plugin/{id}/raw:
-    get:
-      summary: Raw plugin info
-      description: |
-        Get the raw plugin object
-
-        > Required permission: plugin
-      parameters:
-        - name: id
-          in: path
-          type: string
-          description: The id of the plugin to get raw information about.
-      tags:
-        - Plugin
-      responses:
-        200:
-          description: Raw information about the plugin.
-          schema:
-            $ref: '#/definitions/Raw'
   /entity:
     get:
       summary: Entities list
@@ -585,7 +542,7 @@ definitions:
               type: string
               description: The name of the author.
 
-  ChatList:
+  ChatHistory:
     type: object
     properties:
       messages:
@@ -598,13 +555,58 @@ definitions:
     properties:
       timestamp:
         type: string
-        description: The timestamp when the message was sent (server time)
+        description: The timestamp when the message was sent (server time).
       sender:
         type: string
-        description: The name of the player that sent the message
+        description: The name of the player that sent the message.
       message:
         type: string
         description: The message that was sent.
+  CommandHistory:
+    type: object
+    properties:
+      messages:
+        type: array
+        description: A list of command calls.
+        items:
+          $ref: '#/definitions/CommandCall'
+  CommandCall:
+    type: object
+    properties:
+      timestamp:
+        type: string
+        description: The timestamp when the message was sent (server time).
+      command:
+        type: string
+        description: The name of the command that was executed.
+      args:
+        type: array
+        description: The command arguments passed to the command.
+        items:
+          type: string
+      source:
+        type: object
+        description: An object describing the source (executor) of the command. Usually a player or the console.
+      result:
+        $ref: '#/definitions/CommandResult'
+  CommandResult:
+    type: object
+    properties:
+      affectedBlocks:
+        type: number
+        description: The number of blocks that were affected.
+      affectedEntities:
+        type: number
+        description: The number of entities that were affected.
+      affectedItems:
+        type: number
+        description: The number of items that were affected.
+      queryResult:
+        type: number
+        description: The query result number.
+      successCount:
+        type: number
+        description: The success count.
 
   CommandList:
     type: object

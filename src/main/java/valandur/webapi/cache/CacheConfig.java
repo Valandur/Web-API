@@ -5,6 +5,7 @@ import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
 import org.spongepowered.api.Sponge;
+import org.spongepowered.api.util.Tuple;
 import valandur.webapi.WebAPI;
 
 import java.nio.file.Files;
@@ -25,7 +26,9 @@ public class CacheConfig {
     public static void init() {
         WebAPI api = WebAPI.getInstance();
 
-        ConfigurationNode config = api.loadWithDefaults(configFileName, "defaults/" + configFileName);
+        Tuple<ConfigurationLoader, ConfigurationNode> tup = api.loadWithDefaults(configFileName, "defaults/" + configFileName);
+        ConfigurationNode config = tup.getSecond();
+
         chatMessages = config.getNode("chat").getInt();
         commandCalls = config.getNode("command").getInt();
 

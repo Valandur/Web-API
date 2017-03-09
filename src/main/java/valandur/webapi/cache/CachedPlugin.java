@@ -1,6 +1,6 @@
 package valandur.webapi.cache;
 
-import com.google.gson.annotations.Expose;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.plugin.PluginContainer;
 
@@ -9,14 +9,14 @@ import java.util.List;
 import java.util.Optional;
 
 public class CachedPlugin extends CachedObject {
-    @Expose
+
+    @JsonProperty
     public String id;
-
-    @Expose
+    @JsonProperty
     public String name;
-
-    public String description;
+    @JsonProperty
     public String version;
+    public String description;
     public String url;
     public List<String> authors;
 
@@ -24,9 +24,9 @@ public class CachedPlugin extends CachedObject {
         CachedPlugin cache = new CachedPlugin();
         cache.id = plugin.getId();
         cache.name = plugin.getName();
-        cache.description = plugin.getDescription().isPresent() ? plugin.getDescription().get() : null;
-        cache.version = plugin.getVersion().isPresent() ? plugin.getVersion().get() : null;
-        cache.url = plugin.getUrl().isPresent() ? plugin.getUrl().get() : null;
+        cache.description = plugin.getDescription().orElse(null);
+        cache.version = plugin.getVersion().orElse(null);
+        cache.url = plugin.getUrl().orElse(null);
         cache.authors = new ArrayList<String>(plugin.getAuthors());
         return cache;
     }
@@ -41,5 +41,11 @@ public class CachedPlugin extends CachedObject {
         if (!p.isPresent())
             return Optional.empty();
         return Optional.of(p.get());
+    }
+
+    @Override
+    @JsonProperty
+    public String getLink() {
+        return "/api/plugin/" + id;
     }
 }

@@ -1,8 +1,9 @@
 package valandur.webapi.servlets;
 
-import com.google.gson.*;
+import com.fasterxml.jackson.databind.JsonNode;
 import valandur.webapi.Permission;
 import valandur.webapi.cache.DataCache;
+import valandur.webapi.json.JsonConverter;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.Map;
@@ -15,27 +16,22 @@ public class ClassServlet extends WebAPIServlet {
         String[] paths = data.getPathParts();
 
         if (paths.length == 0 || paths[0].isEmpty()) {
-            JsonArray arr = new JsonArray();
-            for (Map.Entry<Class, JsonElement> entry : DataCache.getClasses().entrySet()) {
-                arr.add(new JsonPrimitive(entry.getKey().getSimpleName()));
-            }
-            data.getJson().add("classes", arr);
+            data.addJson("classes", JsonConverter.toJson(DataCache.getClasses()));
             return;
         }
 
         String className = paths[0];
-        for (Map.Entry<Class, JsonElement> entry : DataCache.getClasses().entrySet()) {
+        for (Map.Entry<Class, JsonNode> entry : DataCache.getClasses().entrySet()) {
             if (entry.getKey().getSimpleName().equalsIgnoreCase(className)) {
-                data.getJson().add("class", entry.getValue());
+                data.addJson("class", entry.getValue());
                 return;
             }
         }
 
         try {
             Class c = Class.forName(className);
-            data.getJson().add("class", DataCache.getClass(c));
+            data.addJson("class", DataCache.getClass(c));
         } catch (ClassNotFoundException e) {
-            e.printStackTrace();
             data.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
     }

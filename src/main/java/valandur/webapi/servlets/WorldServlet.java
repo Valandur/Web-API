@@ -1,16 +1,15 @@
 package valandur.webapi.servlets;
 
-import com.google.gson.JsonElement;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.gson.JsonObject;
 import org.spongepowered.api.util.Tuple;
 import valandur.webapi.Permission;
 import valandur.webapi.cache.CachedWorld;
 import valandur.webapi.cache.DataCache;
-import valandur.webapi.misc.JsonConverter;
+import valandur.webapi.json.JsonConverter;
 import valandur.webapi.misc.Util;
 
 import javax.servlet.http.HttpServletResponse;
-import java.lang.reflect.Method;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -22,7 +21,7 @@ public class WorldServlet extends WebAPIServlet {
 
         if (paths.length == 0 || paths[0].isEmpty()) {
             data.setStatus(HttpServletResponse.SC_OK);
-            data.getJson().add("worlds", JsonConverter.cacheToJson(DataCache.getWorlds()));
+            data.addJson("worlds", JsonConverter.toJson(DataCache.getWorlds()));
             return;
         }
 
@@ -38,19 +37,8 @@ public class WorldServlet extends WebAPIServlet {
             return;
         }
 
-        if (paths.length == 1 || paths[1].isEmpty()) {
-            data.setStatus(HttpServletResponse.SC_OK);
-            data.getJson().add("world", JsonConverter.cacheToJson(world.get(), true));
-            return;
-        }
-
-        if (paths[1].equalsIgnoreCase("raw")) {
-            JsonElement res = DataCache.getRawLive(world.get());
-            data.setStatus(HttpServletResponse.SC_OK);
-            data.getJson().add("world", res);
-        } else {
-            data.sendError(HttpServletResponse.SC_NOT_FOUND);
-        }
+        data.setStatus(HttpServletResponse.SC_OK);
+        data.addJson("world", JsonConverter.toJson(world.get(), true));
     }
 
     @Override
@@ -85,12 +73,7 @@ public class WorldServlet extends WebAPIServlet {
             return;
         }
 
-        Optional<JsonElement> res = DataCache.executeMethod(world.get(), mName, params.get().getFirst(), params.get().getSecond());
-        if (!res.isPresent()) {
-            data.sendError(HttpServletResponse.SC_BAD_REQUEST);
-            return;
-        }
-
-        data.getJson().add("result", res.get());
+        JsonNode res = DataCache.executeMethod(world.get(), mName, params.get().getFirst(), params.get().getSecond());
+        data.addJson("result", res);
     }
 }

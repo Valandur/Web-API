@@ -1,12 +1,12 @@
 package valandur.webapi.servlets;
 
-import com.google.gson.JsonElement;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.gson.JsonObject;
 import org.spongepowered.api.util.Tuple;
 import valandur.webapi.Permission;
 import valandur.webapi.cache.CachedEntity;
 import valandur.webapi.cache.DataCache;
-import valandur.webapi.misc.JsonConverter;
+import valandur.webapi.json.JsonConverter;
 import valandur.webapi.misc.Util;
 
 import javax.servlet.http.HttpServletResponse;
@@ -21,7 +21,7 @@ public class EntityServlet extends WebAPIServlet {
 
         if (paths.length == 0 || paths[0].isEmpty()) {
             data.setStatus(HttpServletResponse.SC_OK);
-            data.getJson().add("entities", JsonConverter.cacheToJson(DataCache.getEntities()));
+            data.addJson("entities", JsonConverter.toJson(DataCache.getEntities()));
             return;
         }
 
@@ -39,14 +39,14 @@ public class EntityServlet extends WebAPIServlet {
 
         if (paths.length == 1 || paths[1].isEmpty()) {
             data.setStatus(HttpServletResponse.SC_OK);
-            data.getJson().add("entity", JsonConverter.cacheToJson(entity.get(), true));
+            data.addJson("entity", JsonConverter.toJson(entity.get(), true));
             return;
         }
 
         if (paths[1].equalsIgnoreCase("raw")) {
-            JsonElement res = DataCache.getRawLive(entity.get());
+            JsonNode res = DataCache.getJacksonLive(entity.get());
             data.setStatus(HttpServletResponse.SC_OK);
-            data.getJson().add("entity", res);
+            data.addJson("entity", res);
         } else {
             data.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
@@ -84,12 +84,7 @@ public class EntityServlet extends WebAPIServlet {
             return;
         }
 
-        Optional<JsonElement> res = DataCache.executeMethod(entity.get(), mName, params.get().getFirst(), params.get().getSecond());
-        if (!res.isPresent()) {
-            data.sendError(HttpServletResponse.SC_BAD_REQUEST);
-            return;
-        }
-
-        data.getJson().add("result", res.get());
+        JsonNode res = DataCache.executeMethod(entity.get(), mName, params.get().getFirst(), params.get().getSecond());
+        data.addJson("result", res);
     }
 }

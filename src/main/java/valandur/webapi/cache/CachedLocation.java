@@ -1,7 +1,7 @@
 package valandur.webapi.cache;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.flowpowered.math.vector.Vector3d;
-import com.google.gson.annotations.Expose;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 
@@ -9,16 +9,16 @@ import java.util.Optional;
 
 public class CachedLocation extends CachedObject {
 
-    @Expose
+    @JsonProperty
     public CachedWorld world;
 
-    @Expose
-    public CachedVector3d position;
+    @JsonProperty
+    public Vector3d position;
 
     public static CachedLocation copyFrom(Location<World> location) {
         CachedLocation cache = new CachedLocation();
         cache.world = CachedWorld.copyFrom(location.getExtent());
-        cache.position = CachedVector3d.copyFrom(location.getPosition());
+        cache.position = location.getPosition().clone();
         return cache;
     }
 
@@ -31,9 +31,6 @@ public class CachedLocation extends CachedObject {
         Optional<Object> w = world.getLive();
         if (!w.isPresent())
             return Optional.empty();
-        Optional<Object> p = position.getLive();
-        if (!p.isPresent())
-            return Optional.empty();
-        return Optional.of(new Location<World>((World)w.get(), (Vector3d)p.get()));
+        return Optional.of(new Location<World>((World)w.get(), position));
     }
 }

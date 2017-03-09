@@ -28,6 +28,7 @@ public class ParamDef {
 
         switch (type) {
             case "int":
+            case "integer":
                 return new ParamDef(int.class, e.getAsInt());
             case "float":
                 return new ParamDef(float.class, e.getAsFloat());
@@ -54,11 +55,11 @@ public class ParamDef {
 
             case "world":
                 Optional<World> w = Sponge.getServer().getWorld(UUID.fromString(e.getAsString()));
-                return new ParamDef(World.class, w.isPresent() ? w.get() : null);
+                return new ParamDef(World.class, w.orElse(null));
 
             case "player":
                 Optional<Player> p = Sponge.getServer().getPlayer(UUID.fromString(e.getAsString()));
-                return new ParamDef(World.class, p.isPresent() ? p.get() : null);
+                return new ParamDef(World.class, p.orElse(null));
 
             case "itemstack":
                 JsonObject sub = e.getAsJsonObject();

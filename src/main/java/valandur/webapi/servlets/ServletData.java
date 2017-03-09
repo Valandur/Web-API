@@ -1,10 +1,11 @@
 package valandur.webapi.servlets;
 
-import com.google.gson.JsonArray;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.gson.JsonObject;
 import valandur.webapi.misc.Util;
 
-import javax.servlet.AsyncContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -13,29 +14,37 @@ import java.io.PrintWriter;
 public class ServletData {
     private HttpServletRequest req;
     private HttpServletResponse resp;
+    private boolean errorSent = false;
 
     public PrintWriter getWriter() throws IOException {
         return resp.getWriter();
     }
 
-    private JsonObject json;
-    public JsonObject getJson() {
-        return json;
+    private ObjectNode node;
+    public ObjectNode getNode() {
+        return node;
+    }
+
+    public boolean isErrorSent() {
+        return errorSent;
     }
 
     public ServletData(HttpServletRequest req, HttpServletResponse resp) {
         this.req = req;
         this.resp = resp;
-        this.json = new JsonObject();
+        this.node = JsonNodeFactory.instance.objectNode();
     }
 
     public Object getAttribute(String name) {
         return req.getAttribute(name);
     }
 
-    public JsonObject addJson(String key, JsonArray arr) {
-        this.json.add(key, arr);
-        return json;
+    public void addJson(String key, Object value) {
+        if (value instanceof JsonNode) {
+            node.replace(key, (JsonNode)value);
+        } else {
+            node.putPOJO(key, value);
+        }
     }
 
     public String[] getPathParts() {
@@ -46,8 +55,11 @@ public class ServletData {
         resp.setStatus(status);
     }
     public void sendError(int error) {
+        if (errorSent) return;
+
         try {
             resp.sendError(error);
+            errorSent = true;
         } catch (IOException e) {
             e.printStackTrace();
         }

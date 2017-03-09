@@ -58,7 +58,10 @@ public abstract class WebAPIServlet extends HttpServlet {
             ServletData data = new ServletData(req, resp);
             method.invoke(this, data);
             PrintWriter out = data.getWriter();
-            out.write(data.getJson().toString());
+
+            if (!data.isErrorSent()) {
+                out.write(data.getNode().toString());
+            }
         } catch (NoSuchMethodException e) {
             // Method does not exist (endpoint/verb not supported)
             resp.sendError(HttpServletResponse.SC_NOT_FOUND);

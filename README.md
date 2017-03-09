@@ -11,6 +11,9 @@ This can be used to perform various administrative tasks through the web, or pro
 3. Start the server
 4. Configure the config files to your needs.
 
+## Tutorial
+To learn more about how to interact with the API, go [here](docs/TUTORIAL.md)
+
 ## Security
 The default settings run the server **on localhost only**, which means you cannot access it from another server.  
 Usually this is enough, as you most likely will be running a web server / another application that accesses this data on the same server.  

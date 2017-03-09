@@ -1,8 +1,12 @@
 package valandur.webapi.cache;
 
-import com.google.gson.JsonElement;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.block.tileentity.TileEntity;
+import org.spongepowered.api.command.CommandMapping;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.living.player.Player;
@@ -10,7 +14,7 @@ import org.spongepowered.api.plugin.PluginContainer;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.world.World;
 import valandur.webapi.WebAPI;
-import valandur.webapi.misc.JsonConverter;
+import valandur.webapi.json.JsonConverter;
 
 import java.lang.reflect.Method;
 import java.util.*;
@@ -22,38 +26,39 @@ public class DataCache {
     private static ConcurrentLinkedQueue<CachedChatMessage> chatMessages = new ConcurrentLinkedQueue<>();
     private static ConcurrentLinkedQueue<CachedCommandCall> commandCalls = new ConcurrentLinkedQueue<>();
     private static Collection<CachedPlugin> plugins = new LinkedHashSet<>();
+    private static Collection<CachedCommand> commands = new LinkedHashSet<>();
     private static Map<UUID, CachedWorld> worlds = new ConcurrentHashMap<>();
     private static Map<UUID, CachedPlayer> players = new ConcurrentHashMap<>();
     private static Map<UUID, CachedEntity> entities = new ConcurrentHashMap<>();
-    private static Map<Class, JsonElement> classes = new ConcurrentHashMap<>();
+    private static Map<Class, JsonNode> classes = new ConcurrentHashMap<>();
 
     public static ConcurrentLinkedQueue<CachedChatMessage> getChatMessages() {
         return chatMessages;
     }
     public static ConcurrentLinkedQueue<CachedCommandCall> getCommandCalls() { return commandCalls; }
-    public static Map<Class, JsonElement> getClasses() {
+    public static Map<Class, JsonNode> getClasses() {
         return classes;
     }
 
 
-    public static JsonElement getClass(Class type) {
+    public static JsonNode getClass(Class type) {
         if (classes.containsKey(type))
             return classes.get(type);
 
-        JsonElement e = JsonConverter.classToJson(type);
+        JsonNode e = JsonConverter.classToJson(type);
         classes.put(type, e);
         return e;
     }
 
     public static void addChatMessage(Player sender, Text text) {
-        chatMessages.add(CachedChatMessage.copyFrom(new Date(), sender, text));
+        chatMessages.add(CachedChatMessage.copyFrom(sender, text));
 
         while (chatMessages.size() > CacheConfig.chatMessages) {
             chatMessages.poll();
         }
     }
 
-    public static void addCommandCall(String command, String arguments, JsonElement source, CommandResult result) {
+    public static void addCommandCall(String command, String arguments, JsonNode source, CommandResult result) {
         commandCalls.add(CachedCommandCall.copyFrom(command, arguments, source, result));
 
         while (commandCalls.size() > CacheConfig.commandCalls) {
@@ -61,17 +66,24 @@ public class DataCache {
         }
     }
 
-    public static JsonElement getRawLive(CachedObject object) {
-        Optional<JsonElement> json = runOnMainThread(() -> {
+    public static JsonNode getJacksonLive(CachedObject object) {
+        if (object == null)
+            return JsonConverter.toJson(null);
+
+        Optional<JsonNode> json = runOnMainThread(() -> {
             Optional<Object> o = object.getLive();
-            return JsonConverter.toRawJson(o);
+            if (!o.isPresent())
+                return JsonConverter.toJson(null);
+            return JsonConverter.toJson(o.get(), true);
         });
+
         if (!json.isPresent())
-            return JsonConverter.toRawJson(Optional.empty());
+            return JsonConverter.toJson(null);
+
         return json.get();
     }
-    public static Optional<JsonElement> executeMethod(CachedObject cache, String methodName, Class[] paramTypes, Object[] paramValues) {
-        return runOnMainThread(() -> {
+    public static JsonNode executeMethod(CachedObject cache, String methodName, Class[] paramTypes, Object[] paramValues) {
+        Optional<JsonNode> node = runOnMainThread(() -> {
             Optional<Object> obj = cache.getLive();
 
             if (!obj.isPresent())
@@ -82,12 +94,16 @@ public class DataCache {
             try {
                 Method m = o.getClass().getMethod(methodName, paramTypes);
                 Object res = m.invoke(o, paramValues);
-                return JsonConverter.toRawJson(res);
+                return JsonConverter.toJson(res);
             } catch (Exception e) {
                 e.printStackTrace();
                 return null;
             }
         });
+
+        if (!node.isPresent())
+            return JsonConverter.toJson(null);
+        return node.get();
     }
 
     public static void addWorld(World world) {
@@ -212,6 +228,25 @@ public class DataCache {
         for (CachedPlugin plugin : plugins) {
             if (plugin.id.equalsIgnoreCase(id))
                 return Optional.of(plugin);
+        }
+        return Optional.empty();
+    }
+
+    public static void updateCommands() {
+        Collection<CommandMapping> commands = Sponge.getCommandManager().getAll().values();
+        Collection<CachedCommand> cachedCommands = new LinkedHashSet<>();
+        for (CommandMapping cmd : commands) {
+            cachedCommands.add(CachedCommand.copyFrom(cmd));
+        }
+        DataCache.commands = cachedCommands;
+    }
+    public static Collection<CachedCommand> getCommands() {
+        return commands;
+    }
+    public static Optional<CachedCommand> getCommand(String name) {
+        for (CachedCommand cmd : commands) {
+            if (cmd.name.equalsIgnoreCase(name))
+                return Optional.of(cmd);
         }
         return Optional.empty();
     }

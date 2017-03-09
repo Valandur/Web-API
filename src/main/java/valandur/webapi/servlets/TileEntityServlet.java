@@ -1,14 +1,14 @@
 package valandur.webapi.servlets;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.google.gson.JsonObject;
 import org.spongepowered.api.util.Tuple;
 import valandur.webapi.Permission;
 import valandur.webapi.cache.CachedTileEntity;
 import valandur.webapi.cache.CachedWorld;
 import valandur.webapi.cache.DataCache;
-import valandur.webapi.misc.JsonConverter;
+import valandur.webapi.json.JsonConverter;
 import valandur.webapi.misc.Util;
 
 import javax.servlet.http.HttpServletResponse;
@@ -27,9 +27,9 @@ public class TileEntityServlet extends WebAPIServlet {
                 data.setStatus(HttpServletResponse.SC_OK);
                 Optional<Collection<CachedTileEntity>> coll = DataCache.getTileEntities();
                 if (!coll.isPresent())
-                    data.getJson().add("tileEntities", new JsonArray());
+                    data.addJson("tileEntities", JsonNodeFactory.instance.objectNode());
                 else
-                    data.getJson().add("tileEntities", JsonConverter.cacheToJson(coll.get()));
+                    data.addJson("tileEntities", JsonConverter.toJson(coll.get()));
                 return;
             }
 
@@ -52,13 +52,9 @@ public class TileEntityServlet extends WebAPIServlet {
                 return;
             }
 
-            JsonArray arr = new JsonArray();
-            for (CachedTileEntity te : tes.get()) {
-                arr.add(JsonConverter.cacheToJson(te));
-            }
             data.setStatus(HttpServletResponse.SC_OK);
-            data.getJson().add("world", JsonConverter.cacheToJson(world.get()));
-            data.getJson().add("tileEntities", arr);
+            data.addJson("world", JsonConverter.toJson(world.get()));
+            data.addJson("tileEntities", JsonConverter.toJson(tes, true));
         } else {
             String uuid = paths[0];
             int x = Integer.parseInt(paths[1]);
@@ -83,16 +79,16 @@ public class TileEntityServlet extends WebAPIServlet {
                 return;
             }
 
-            if (paths.length == 4 || paths[4].isEmpty()) {
+            if (paths.length <= 4 || paths[4].isEmpty()) {
                 data.setStatus(HttpServletResponse.SC_OK);
-                data.getJson().add("tileEntity", JsonConverter.cacheToJson(te.get(), true));
+                data.addJson("tileEntity", JsonConverter.toJson(te.get(), true));
                 return;
             }
 
             if (paths[4].equalsIgnoreCase("raw")) {
-                JsonElement res = DataCache.getRawLive(te.get());
+                JsonNode res = DataCache.getJacksonLive(te.get());
                 data.setStatus(HttpServletResponse.SC_OK);
-                data.getJson().add("tileEntity", res);
+                data.addJson("tileEntity", res);
             } else {
                 data.sendError(HttpServletResponse.SC_NOT_FOUND);
             }
@@ -137,12 +133,7 @@ public class TileEntityServlet extends WebAPIServlet {
             return;
         }
 
-        Optional<JsonElement> res = DataCache.executeMethod(te.get(), mName, params.get().getFirst(), params.get().getSecond());
-        if (!res.isPresent()) {
-            data.sendError(HttpServletResponse.SC_BAD_REQUEST);
-            return;
-        }
-
-        data.getJson().add("result", res.get());
+        JsonNode res = DataCache.executeMethod(te.get(), mName, params.get().getFirst(), params.get().getSecond());
+        data.addJson("result", res);
     }
 }

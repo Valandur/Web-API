@@ -1,30 +1,27 @@
 package valandur.webapi.cache;
 
-import com.google.gson.JsonElement;
-import com.google.gson.annotations.Expose;
-import com.google.gson.annotations.SerializedName;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonNode;
 import org.spongepowered.api.block.tileentity.TileEntity;
-import org.spongepowered.api.item.inventory.Inventory;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
-import valandur.webapi.misc.JsonConverter;
+import valandur.webapi.json.JsonConverter;
 
+import java.lang.reflect.Field;
 import java.util.*;
 
 public class CachedTileEntity extends CachedObject {
-    @Expose
+    @JsonProperty
     public String type;
 
-    @Expose
-    @SerializedName("class")
+    @JsonProperty("class")
     public String clazz;
 
-    @Expose
+    @JsonProperty
     public CachedLocation location;
 
-    public JsonElement data;
-    public JsonElement properties;
-    public JsonElement inventory;
+    public JsonNode data;
+    public JsonNode properties;
 
     public static CachedTileEntity copyFrom(TileEntity te) {
         return copyFrom(te, false);
@@ -34,19 +31,23 @@ public class CachedTileEntity extends CachedObject {
         cache.type = te.getType() != null ? te.getType().getId() : null;
         cache.clazz = te.getClass().getName();
         cache.location = CachedLocation.copyFrom(te.getLocation());
+
         if (details) {
             cache.details = true;
-            cache.data = JsonConverter.containerToJson(te);
-            cache.properties = JsonConverter.propertiesToJson(te);
-            if (te instanceof Inventory)
-                cache.inventory = JsonConverter.inventoryToJson((Inventory)te);
+            cache.properties = JsonConverter.toJson(te.getApplicableProperties(), true);
+            try {
+                cache.data = JsonConverter.toJson(te.toContainer(), true);
+            } catch (Exception ex) {
+                cache.data = JsonConverter.toJson(ex, true);
+            }
+            Field[] fs = JsonConverter.getAllFields(te.getClass());
         }
         return cache;
     }
 
     @Override
     public int getCacheDuration() {
-        return 0;
+        return CacheConfig.durationTileEntity;
     }
     @Override
     public Optional<Object> getLive() {
@@ -59,5 +60,11 @@ public class CachedTileEntity extends CachedObject {
         if (!te.isPresent())
             return Optional.empty();
         return Optional.of(te.get());
+    }
+
+    @Override
+    @JsonProperty
+    public String getLink() {
+        return "/api/tile-entity/" + location.world.uuid + "/" + location.position.getFloorX() + "/" + location.position.getFloorY() + "/" + location.position.getFloorZ();
     }
 }

@@ -1,15 +1,23 @@
 package valandur.webapi.cache;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.spongepowered.api.command.CommandResult;
-
-import java.util.Optional;
 
 public class CachedCommandResult extends CachedObject {
 
+    @JsonProperty
     public Integer affectedBlocks;
+
+    @JsonProperty
     public Integer affectedEntities;
+
+    @JsonProperty
     public Integer affectedItems;
+
+    @JsonProperty
     public Integer queryResult;
+
+    @JsonProperty
     public Integer successCount;
 
     public static CachedCommandResult copyFrom(CommandResult result) {
@@ -20,15 +28,5 @@ public class CachedCommandResult extends CachedObject {
         if (result.getQueryResult().isPresent()) res.queryResult = result.getQueryResult().get();
         if (result.getSuccessCount().isPresent()) res.successCount = result.getSuccessCount().get();
         return res;
-    }
-
-    @Override
-    public int getCacheDuration() {
-        return 0;
-    }
-
-    @Override
-    public Optional<Object> getLive() {
-        return Optional.empty();
     }
 }

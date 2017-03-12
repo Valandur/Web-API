@@ -1,15 +1,14 @@
 package valandur.webapi.servlets;
 
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import valandur.webapi.Permission;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import valandur.webapi.misc.Permission;
 import valandur.webapi.WebAPI;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
@@ -33,32 +32,23 @@ public abstract class WebAPIServlet extends HttpServlet {
                 }
             }
 
-            if (verb == "Post" || verb == "Put") {
-                StringBuffer jb = new StringBuffer();
+            if (verb.equalsIgnoreCase("Post") || verb.equalsIgnoreCase("Put")) {
                 try {
-                    BufferedReader reader = req.getReader();
-                    String line = null;
-                    while ((line = reader.readLine()) != null)
-                        jb.append(line);
-                    reader.close();
-                } catch (Exception e) {
-                    throw new IOException("Error reading JSON request string");
-                }
-
-                JsonObject jsonBody = null;
-                try {
-                    jsonBody = new JsonParser().parse(jb.toString()).getAsJsonObject();
+                    ObjectMapper mapper = new ObjectMapper();
+                    JsonNode node = mapper.readTree(req.getReader());
+                    req.setAttribute("body", node);
                 } catch (Exception e) {
                     throw new IOException("Error parsing JSON request string");
                 }
-
-                req.setAttribute("body", jsonBody);
             }
 
             ServletData data = new ServletData(req, resp);
             method.invoke(this, data);
             PrintWriter out = data.getWriter();
-            out.write(data.getJson().toString());
+
+            if (!data.isErrorSent()) {
+                out.write(data.getNode().toString());
+            }
         } catch (NoSuchMethodException e) {
             // Method does not exist (endpoint/verb not supported)
             resp.sendError(HttpServletResponse.SC_NOT_FOUND);

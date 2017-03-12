@@ -3,6 +3,9 @@ plugins {
     id "com.qixalite.spongestart" version "1.6.0"
 }
 
+group = project.group;
+version = "${project.version}-sponge-${project.spongeVersion}";
+
 repositories {
     mavenCentral()
     maven {
@@ -17,14 +20,15 @@ spongestart {
 
 dependencies {
     compileOnly group: 'org.spongepowered', name: 'spongeapi', version: project.spongeVersion
-    compile group: 'org.eclipse.jetty', name: 'jetty-server', version: '9.4.0.v20161208'
-    compile group: 'org.eclipse.jetty', name: 'jetty-servlet', version: '9.4.0.v20161208'
-    compile group: 'org.eclipse.jetty', name: 'jetty-http', version: '9.4.0.v20161208'
+    compile group: 'org.eclipse.jetty', name: 'jetty-server', version: '9.4.2.v20170220'
+    compile group: 'org.eclipse.jetty', name: 'jetty-servlet', version: '9.4.2.v20170220'
+    compile group: 'org.eclipse.jetty', name: 'jetty-http', version: '9.4.2.v20170220'
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.8.7'
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.8.7'
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: '2.8.7'
 }
 
 jar {
-    version = "${project.pluginVersion}-sponge-${project.spongeVersion}"
-
     // Include all compile time dependencies in the jar (e.g. Jetty)
     // Sponge is declared compileOnly so that it doesn't get included here
     from configurations.compile.collect {

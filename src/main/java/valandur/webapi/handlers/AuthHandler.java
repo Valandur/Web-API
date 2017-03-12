@@ -7,6 +7,7 @@ import ninja.leaping.configurate.loader.ConfigurationLoader;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.AbstractHandler;
 import org.spongepowered.api.Sponge;
+import org.spongepowered.api.util.Tuple;
 import valandur.webapi.WebAPI;
 import valandur.webapi.misc.Util;
 
@@ -27,7 +28,7 @@ public class AuthHandler extends AbstractHandler {
     private static final String configFileName = "permissions.conf";
 
     private WebAPI api;
-    private ConfigurationLoader<CommentedConfigurationNode> loader;
+    private ConfigurationLoader loader;
     private ConfigurationNode config;
 
     private PermissionStruct defaultPerms;
@@ -42,54 +43,48 @@ public class AuthHandler extends AbstractHandler {
 
     public AuthHandler() {
         api = WebAPI.getInstance();
+    }
 
-        try {
-            Path configPath = api.getConfigPath().resolve(configFileName);
-            if (!Files.exists(configPath))
-                Sponge.getAssetManager().getAsset(api, "defaults/" + configFileName).get().copyToDirectory(api.getConfigPath());
+    public void reloadConfig() {
+        Tuple<ConfigurationLoader, ConfigurationNode> tup = api.loadWithDefaults(configFileName, "defaults/" + configFileName);
+        loader = tup.getFirst();
+        config = tup.getSecond();
 
-            loader = HoconConfigurationLoader.builder().setPath(configPath).build();
-            config = loader.load();
-
-            List<String> defs = new ArrayList<>();
-            for (ConfigurationNode node : config.getNode("default", "permissions").getChildrenList()) {
-                if (node.getString() == "*") {
-                    api.getLogger().warn("DEFAULT PERMISSIONS GRANT UNRESTRICTED ACCESS TO THE API! THIS CAN BE DANGEROUS IF NOT RUNNING ON LOCALHOST!");
-                }
-                defs.add(node.getString());
+        List<String> defs = new ArrayList<>();
+        for (ConfigurationNode node : config.getNode("default", "permissions").getChildrenList()) {
+            if (node.getString().equalsIgnoreCase("*")) {
+                api.getLogger().warn("DEFAULT PERMISSIONS GRANT UNRESTRICTED ACCESS TO THE API! THIS CAN BE DANGEROUS IF NOT RUNNING ON LOCALHOST!");
             }
-            int defLimit = config.getNode("default", "rateLimit").getInt(0);
-            defaultPerms = new PermissionStruct(defs, defLimit);
+            defs.add(node.getString());
+        }
+        int defLimit = config.getNode("default", "rateLimit").getInt();
+        defaultPerms = new PermissionStruct(defs, defLimit);
 
-            for (ConfigurationNode node : config.getNode("keys").getChildrenList()) {
-                String token = node.getNode("key").getString();
-                if (token == null || token.isEmpty()) {
-                    api.getLogger().warn("SKIPPING KEY-PERMISSION MAPPING WITH INVALID KEY");
-                    continue;
-                }
-                List<String> perms = node.getNode("permissions").getList(item -> item.toString(), new ArrayList<>());
-                int rateLimit = node.getNode("rateLimit").getInt(0);
-                permMap.put(token, new PermissionStruct(perms, rateLimit));
+        for (ConfigurationNode node : config.getNode("keys").getChildrenList()) {
+            String token = node.getNode("key").getString();
+            if (token == null || token.isEmpty()) {
+                api.getLogger().warn("SKIPPING KEY-PERMISSION MAPPING WITH INVALID KEY");
+                continue;
             }
+            List<String> perms = node.getNode("permissions").getList(Object::toString, new ArrayList<>());
+            int rateLimit = node.getNode("rateLimit").getInt();
+            permMap.put(token, new PermissionStruct(perms, rateLimit));
+        }
 
-            useWhitelist = config.getNode("useWhitelist").getBoolean(false);
-            for (ConfigurationNode node : config.getNode("whitelist").getChildrenList()) {
-                whitelist.add(node.getString());
-            }
+        useWhitelist = config.getNode("useWhitelist").getBoolean();
+        for (ConfigurationNode node : config.getNode("whitelist").getChildrenList()) {
+            whitelist.add(node.getString());
+        }
 
-            useBlacklist = config.getNode("useBlacklist").getBoolean(true);
-            for (ConfigurationNode node : config.getNode("blacklist").getChildrenList()) {
-                blacklist.add(node.getString());
-            }
-
-            loader.save(config);
-        } catch (IOException e) {
-            e.printStackTrace();
+        useBlacklist = config.getNode("useBlacklist").getBoolean();
+        for (ConfigurationNode node : config.getNode("blacklist").getChildrenList()) {
+            blacklist.add(node.getString());
         }
     }
 
     private void setAndSaveConfig(String node, Object value) {
         config.getNode(node).setValue(value);
+
         try {
             loader.save(config);
         } catch (IOException e) {

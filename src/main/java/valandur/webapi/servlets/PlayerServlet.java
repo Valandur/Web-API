@@ -1,12 +1,11 @@
 package valandur.webapi.servlets;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
+import com.fasterxml.jackson.databind.JsonNode;
 import org.spongepowered.api.util.Tuple;
-import valandur.webapi.Permission;
+import valandur.webapi.misc.Permission;
 import valandur.webapi.cache.CachedPlayer;
 import valandur.webapi.cache.DataCache;
-import valandur.webapi.misc.JsonConverter;
+import valandur.webapi.json.JsonConverter;
 import valandur.webapi.misc.Util;
 
 import javax.servlet.http.HttpServletResponse;
@@ -21,7 +20,7 @@ public class PlayerServlet extends WebAPIServlet {
 
         if (paths.length == 0 || paths[0].isEmpty()) {
             data.setStatus(HttpServletResponse.SC_OK);
-            data.getJson().add("players", JsonConverter.cacheToJson(DataCache.getPlayers()));
+            data.addJson("players", JsonConverter.toJson(DataCache.getPlayers()));
             return;
         }
 
@@ -31,25 +30,14 @@ public class PlayerServlet extends WebAPIServlet {
             return;
         }
 
-        Optional<CachedPlayer> player = DataCache.getPlayer(UUID.fromString(uuid));
+        Optional<CachedPlayer> player = DataCache.getPlayer(UUID.fromString(uuid), true);
         if (!player.isPresent()) {
             data.sendError(HttpServletResponse.SC_NOT_FOUND);
             return;
         }
 
-        if (paths.length == 1 || paths[1].isEmpty()) {
-            data.setStatus(HttpServletResponse.SC_OK);
-            data.getJson().add("player", JsonConverter.cacheToJson(player.get(), true));
-            return;
-        }
-
-        if (paths[1].equalsIgnoreCase("raw")) {
-            JsonElement res = DataCache.getRawLive(player.get());
-            data.setStatus(HttpServletResponse.SC_OK);
-            data.getJson().add("player", res);
-        } else {
-            data.sendError(HttpServletResponse.SC_NOT_FOUND);
-        }
+        data.setStatus(HttpServletResponse.SC_OK);
+        data.addJson("player", JsonConverter.toJson(player.get(), true));
     }
 
     @Override
@@ -68,28 +56,23 @@ public class PlayerServlet extends WebAPIServlet {
             return;
         }
 
-        Optional<CachedPlayer> player = DataCache.getPlayer(UUID.fromString(uuid));
+        Optional<CachedPlayer> player = DataCache.getPlayer(UUID.fromString(uuid), false);
         if (!player.isPresent()) {
             data.sendError(HttpServletResponse.SC_NOT_FOUND);
             return;
         }
 
-        final JsonObject reqJson = (JsonObject) data.getAttribute("body");
+        final JsonNode reqJson = (JsonNode) data.getAttribute("body");
 
-        String mName = reqJson.get("method").getAsString();
-        Optional<Tuple<Class[], Object[]>> params = Util.parseParams(reqJson.getAsJsonArray("params"));
+        String mName = reqJson.get("method").asText();
+        Optional<Tuple<Class[], Object[]>> params = Util.parseParams(reqJson.get("params"));
 
         if (!params.isPresent()) {
             data.sendError(HttpServletResponse.SC_BAD_REQUEST);
             return;
         }
 
-        Optional<JsonElement> res = DataCache.executeMethod(player.get(), mName, params.get().getFirst(), params.get().getSecond());
-        if (!res.isPresent()) {
-            data.sendError(HttpServletResponse.SC_BAD_REQUEST);
-            return;
-        }
-
-        data.getJson().add("result", res.get());
+        JsonNode res = DataCache.executeMethod(player.get(), mName, params.get().getFirst(), params.get().getSecond());
+        data.addJson("result", res);
     }
 }

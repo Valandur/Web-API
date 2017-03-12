@@ -31,8 +31,8 @@ produces:
 tags:
   - name: Info
     description: Get general information about the minecraft server
-  - name: Chat
-    description: Provides access to the chat history.
+  - name: History
+    description: Provides access to the command and chat history.
   - name: Command
     description: List all commands on the server and execute them.
   - name: Player
@@ -81,20 +81,34 @@ paths:
           description: General information about the server
           schema:
             $ref: '#/definitions/ServerInfo'
-  /chat:
+  /history/chat:
     get:
       summary: Chat
       description: |
         View a history of the server chat.
 
-        > Required permission: chat
+        > Required permission: history
       tags:
-        - Chat
+        - History
       responses:
         200:
           description: A history of the chat.
           schema:
-            $ref: '#/definitions/ChatList'
+            $ref: '#/definitions/ChatHistory'
+  /history/cmd:
+    get:
+      summary: Command
+      description: |
+        View a history of the server commands.
+
+        > Required permission: history
+      tags:
+        - History
+      responses:
+        200:
+          description: A history of the chat.
+          schema:
+            $ref: '#/definitions/CommandHistory'
   /cmd:
     get:
       summary: Command list
@@ -141,13 +155,10 @@ paths:
         200:
           description: A list of all the classes that are cached on the server.
           schema:
-            type: object
-            properties:
-              classes:
-                type: array
-                items:
-                  type: string
-                  description: The short class name.
+            type: array
+              items:
+                type: string
+                description: The name of the class
   /class/{classname}:
     get:
       summary: Lookup class
@@ -200,25 +211,6 @@ paths:
           description: Detailed information about the player.
           schema:
             $ref: '#/definitions/Player'
-  /player/{uuid}/raw:
-    get:
-      summary: Raw player info
-      description: |
-        Get the raw player object
-
-        > Required permission: player
-      parameters:
-        - name: uuid
-          in: path
-          type: string
-          description: The uuid of the player to get raw information about.
-      tags:
-        - Player
-      responses:
-        200:
-          description: Raw information about the player.
-          schema:
-            $ref: '#/definitions/Raw'
   /world:
     get:
       summary: World list
@@ -252,25 +244,6 @@ paths:
           description: Detailed information about the world.
           schema:
             $ref: '#/definitions/World'
-  /world/{uuid}/raw:
-    get:
-      summary: Raw world info
-      description: |
-        Get the raw world object
-
-        > Required permission: world
-      parameters:
-        - name: uuid
-          in: path
-          type: string
-          description: The uuid of the world to get raw information about.
-      tags:
-        - World
-      responses:
-        200:
-          description: Raw information about the world.
-          schema:
-            $ref: '#/definitions/Raw'
   /plugin:
     get:
       summary: Plugin list
@@ -304,25 +277,6 @@ paths:
           description: Detailed information about the plugin.
           schema:
             $ref: '#/definitions/Plugin'
-  /plugin/{id}/raw:
-    get:
-      summary: Raw plugin info
-      description: |
-        Get the raw plugin object
-
-        > Required permission: plugin
-      parameters:
-        - name: id
-          in: path
-          type: string
-          description: The id of the plugin to get raw information about.
-      tags:
-        - Plugin
-      responses:
-        200:
-          description: Raw information about the plugin.
-          schema:
-            $ref: '#/definitions/Raw'
   /entity:
     get:
       summary: Entities list
@@ -356,25 +310,28 @@ paths:
           description: Detailed information about the entity.
           schema:
             $ref: '#/definitions/Entity'
-  /entity/{uuid}/raw:
-    get:
-      summary: Raw entity info
+    post:
+      summary: Call entity function
       description: |
-        Get the raw entity object
+        Provides direct access to the underlaying entity object and can execute any function on it.
 
         > Required permission: entity
       parameters:
         - name: uuid
           in: path
           type: string
-          description: The uuid of the entity to get raw information about.
+          description: The uuid of the entity to get detailed information about.
       tags:
         - Entity
       responses:
         200:
-          description: Raw information about the entity.
+          description: The result of executing the function.
           schema:
-            $ref: '#/definitions/Raw'
+            type: object
+            properties:
+              result:
+                type: object
+                description: The result of the function.
   /tile-entity:
     get:
       summary: Tile entities list
@@ -420,43 +377,9 @@ paths:
           description: Detailed information about the tile entity.
           schema:
             $ref: '#/definitions/TileEntity'
-  /tile-entity/{worldUuid}/{x}/{y}/{z}/raw:
-    get:
-      summary: Raw tile entity info
-      description: |
-        Get the raw tile entity object
-
-        > Required permission: tile-entity
-      parameters:
-        - name: worldUuid
-          in: path
-          type: string
-          description: The uuid of the world the tile entity is in.
-        - name: x
-          in: path
-          type: string
-          description: The x-coordinate of the tile entity.
-        - name: y
-          in: path
-          type: string
-          description: The y-coordinate of the tile entity.
-        - name: z
-          in: path
-          type: string
-          description: The z-coordinate of the tile entity.
-      tags:
-        - Tile Entity
-      responses:
-        200:
-          description: Raw information about the tile entity.
-          schema:
-            $ref: '#/definitions/Raw'
 
 
 definitions:
-  Raw:
-    type: object
-    description: A raw java-to-json converted object.
   Class:
     type: object
     description: A class definition that is loaded on the server.
@@ -585,7 +508,7 @@ definitions:
               type: string
               description: The name of the author.
 
-  ChatList:
+  ChatHistory:
     type: object
     properties:
       messages:
@@ -598,13 +521,58 @@ definitions:
     properties:
       timestamp:
         type: string
-        description: The timestamp when the message was sent (server time)
+        description: The timestamp when the message was sent (server time).
       sender:
         type: string
-        description: The name of the player that sent the message
+        description: The name of the player that sent the message.
       message:
         type: string
         description: The message that was sent.
+  CommandHistory:
+    type: object
+    properties:
+      messages:
+        type: array
+        description: A list of command calls.
+        items:
+          $ref: '#/definitions/CommandCall'
+  CommandCall:
+    type: object
+    properties:
+      timestamp:
+        type: string
+        description: The timestamp when the message was sent (server time).
+      command:
+        type: string
+        description: The name of the command that was executed.
+      args:
+        type: array
+        description: The command arguments passed to the command.
+        items:
+          type: string
+      source:
+        type: object
+        description: An object describing the source (executor) of the command. Usually a player or the console.
+      result:
+        $ref: '#/definitions/CommandResult'
+  CommandResult:
+    type: object
+    properties:
+      affectedBlocks:
+        type: number
+        description: The number of blocks that were affected.
+      affectedEntities:
+        type: number
+        description: The number of entities that were affected.
+      affectedItems:
+        type: number
+        description: The number of items that were affected.
+      queryResult:
+        type: number
+        description: The query result number.
+      successCount:
+        type: number
+        description: The success count.
 
   CommandList:
     type: object
@@ -642,6 +610,13 @@ definitions:
         type: string
         description: The command and it's arguments that are sent to the server.
         required: true
+      waitLines:
+        type: integer
+        description: The minimum amount of lines of text to wait for before returning the response.
+        default: 0
+      waitTime:
+        type: integer
+        description: The amount of time in milliseconds to wait for response messages from the server.
   CommandResponse:
     type: object
     properties:
@@ -690,9 +665,6 @@ definitions:
         $ref: '#/definitions/Vector3'
       rotation:
         $ref: '#/definitions/Vector3'
-      raw:
-        type: object
-        description: The raw object data attached to the player.
   WorldList:
     type: object
     properties:
@@ -717,9 +689,6 @@ definitions:
       uuid:
         type: string
         description: The unique id of the world.
-      raw:
-        type: object
-        description: The raw object data attached to the world.
   PluginList:
     type: object
     properties:
@@ -790,9 +759,6 @@ definitions:
         $ref: '#/definitions/Vector3'
       rotation:
         $ref: '#/definitions/Vector3'
-      raw:
-        type: object
-        description: The raw object data attached to the entity.
 
   TileEntityList:
     type: object
@@ -816,7 +782,4 @@ definitions:
         description: The type of the entity.
       location:
         $ref: '#/definitions/Location'
-      raw:
-        type: object
-        description: The raw object data attached to the entity.
 

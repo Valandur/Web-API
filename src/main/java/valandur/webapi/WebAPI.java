@@ -1,8 +1,10 @@
 package valandur.webapi;
 
-import com.google.gson.JsonElement;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.inject.Inject;
+import com.sun.media.jfxmedia.events.PlayerEvent;
 import ninja.leaping.configurate.ConfigurationNode;
+import ninja.leaping.configurate.ConfigurationOptions;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
@@ -18,71 +20,73 @@ import org.slf4j.Logger;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.asset.Asset;
 import org.spongepowered.api.command.CommandManager;
-import org.spongepowered.api.command.args.GenericArguments;
-import org.spongepowered.api.command.spec.CommandSpec;
 import org.spongepowered.api.config.ConfigDir;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Listener;
-import org.spongepowered.api.event.cause.Cause;
+import org.spongepowered.api.event.achievement.GrantAchievementEvent;
 import org.spongepowered.api.event.cause.NamedCause;
+import org.spongepowered.api.event.cause.entity.damage.source.EntityDamageSource;
 import org.spongepowered.api.event.command.SendCommandEvent;
 import org.spongepowered.api.event.entity.DestructEntityEvent;
 import org.spongepowered.api.event.entity.SpawnEntityEvent;
+import org.spongepowered.api.event.game.GameReloadEvent;
 import org.spongepowered.api.event.game.state.GameInitializationEvent;
 import org.spongepowered.api.event.game.state.GamePreInitializationEvent;
 import org.spongepowered.api.event.game.state.GameStartedServerEvent;
 import org.spongepowered.api.event.game.state.GameStoppedServerEvent;
-import org.spongepowered.api.event.message.MessageChannelEvent;
 import org.spongepowered.api.event.message.MessageEvent;
 import org.spongepowered.api.event.network.ClientConnectionEvent;
 import org.spongepowered.api.event.world.LoadWorldEvent;
 import org.spongepowered.api.event.world.UnloadWorldEvent;
 import org.spongepowered.api.plugin.Plugin;
 import org.spongepowered.api.scheduler.SpongeExecutorService;
+import org.spongepowered.api.statistic.achievement.Achievement;
 import org.spongepowered.api.text.Text;
-import valandur.webapi.cache.CacheConfig;
-import valandur.webapi.cache.CachedPlayer;
-import valandur.webapi.cache.DataCache;
+import org.spongepowered.api.text.format.TextColors;
+import org.spongepowered.api.util.Tuple;
+import valandur.webapi.cache.*;
 import valandur.webapi.command.*;
 import valandur.webapi.handlers.AuthHandler;
 import valandur.webapi.handlers.RateLimitHandler;
 import valandur.webapi.handlers.WebAPIErrorHandler;
-import valandur.webapi.misc.JsonConverter;
+import valandur.webapi.hooks.WebHook;
+import valandur.webapi.hooks.WebHooks;
+import valandur.webapi.json.JsonConverter;
 import valandur.webapi.misc.WebAPICommandSource;
 import valandur.webapi.misc.JettyLogger;
 import valandur.webapi.servlets.*;
 
-import javax.annotation.Nullable;
 import java.io.IOException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 
 @Plugin(
         id = WebAPI.ID,
+        version = WebAPI.VERSION,
         name = WebAPI.NAME,
         url = WebAPI.URL,
         description = WebAPI.DESCRIPTION,
-        version = WebAPI.VERSION,
         authors = {
-                "Valandur "
+                "Valandur"
         }
 )
 public class WebAPI {
 
     public static final String ID = "webapi";
     public static final String NAME = "Web-API";
-    public static final String URL = "https://github.com/Valandur/Web-API";
+    public static final String VERSION = "2.0";
     public static final String DESCRIPTION = "Access Minecraft through a Web API";
-    public static final String VERSION = "1.9";
+    public static final String URL = "https://github.com/Valandur/Web-API";
 
     private static WebAPI instance;
     public static WebAPI getInstance() {
         return WebAPI.instance;
     }
 
-    public SpongeExecutorService syncExecutor;
+    public static SpongeExecutorService syncExecutor;
 
     @Inject
     private Logger logger;
@@ -102,10 +106,11 @@ public class WebAPI {
     private Server server;
 
     private AuthHandler authHandler;
-    private RateLimitHandler rateLimitHandler;
     public AuthHandler getAuthHandler() {
         return authHandler;
     }
+
+    public static int cmdWaitTime;
 
     @Listener
     public void onPreInitialization(GamePreInitializationEvent event) {
@@ -123,122 +128,43 @@ public class WebAPI {
         this.syncExecutor = Sponge.getScheduler().createSyncExecutor(this);
     }
 
-    @Nullable
-    public ConfigurationNode loadConfig(String configName) {
-        try {
-            Path filePath = configPath.resolve(configName);
-            if (!Files.exists(filePath))
-                Sponge.getAssetManager().getAsset(this, "defaults/" + configName).get().copyToDirectory(configPath);
-
-            ConfigurationLoader<CommentedConfigurationNode> loader = HoconConfigurationLoader.builder().setPath(filePath).build();
-            ConfigurationNode config = loader.load();
-            loader.save(config);
-
-            return config;
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
     @Listener
     public void onInitialization(GameInitializationEvent event) {
+        logger.info(WebAPI.NAME + " v" + WebAPI.VERSION + " is starting...");
+
         logger.info("Setting up jetty logger");
         Log.setLog(new JettyLogger());
 
-
-        logger.info("Loading configuration...");
-
-        ConfigurationNode config = loadConfig("config.conf").getNode("server");
-        serverHost = config.getNode("host").getString("localhost");
-        serverPort = config.getNode("port").getInt(8080);
-        JsonConverter.hiddenClasses = config.getNode("hiddenClasses").getList(t -> t.toString().toLowerCase());
-
-        // Load permissions & auth handler
+        // Create permission handler
         authHandler = new AuthHandler();
 
-        // Load rate limit handler;
-        rateLimitHandler = new RateLimitHandler();
+        loadConfig(null);
 
+        CommandRegistry.init();
 
-        // Load cache & cache config
+        logger.info(WebAPI.NAME + " ready");
+    }
+
+    private void loadConfig(Player player) {
+        logger.info("Loading configuration...");
+
+        Tuple<ConfigurationLoader, ConfigurationNode> tup = loadWithDefaults("config.conf", "defaults/config.conf");
+        ConfigurationNode config = tup.getSecond();
+
+        serverHost = config.getNode("host").getString();
+        serverPort = config.getNode("port").getInt();
+        cmdWaitTime = config.getNode("cmdWaitTime").getInt();
+
+        authHandler.reloadConfig();
+
+        WebHooks.reloadConfig();
+
         CacheConfig.init();
 
+        if (player != null) player.sendMessage(Text.builder().color(TextColors.AQUA).append(Text.of("[" + WebAPI.NAME + "] The configuration files have been reloaded!")).toText());
+    }
 
-        // Register commands
-        logger.info("Registering commands...");
-
-        CommandSpec specWhitelistAdd = CommandSpec.builder()
-                .description(Text.of("Add an IP to the whitelist"))
-                .permission("webapi.command.whitelist.add")
-                .arguments(new CmdIpElement(Text.of("ip")))
-                .executor(new CmdAuthListAdd(true))
-                .build();
-        CommandSpec specWhitelistRemove = CommandSpec.builder()
-                .description(Text.of("Remove an IP from the whitelist"))
-                .permission("webapi.command.whitelist.remove")
-                .arguments(new CmdIpElement(Text.of("ip")))
-                .executor(new CmdAuthListRemove(true))
-                .build();
-        CommandSpec specWhitelistEnable = CommandSpec.builder()
-                .description(Text.of("Enable the whitelist"))
-                .permission("webapi.command.whitelist.enable")
-                .executor(new CmdAuthListEnable(true))
-                .build();
-        CommandSpec specWhitelistDisable = CommandSpec.builder()
-                .description(Text.of("Disable the whitelist"))
-                .permission("webapi.command.whitelist.disable")
-                .executor(new CmdAuthListDisable(true))
-                .build();
-        CommandSpec specWhitelist = CommandSpec.builder()
-                .description(Text.of("Manage the whitelist"))
-                .permission("webapi.command.whitelist")
-                .child(specWhitelistAdd, "add")
-                .child(specWhitelistRemove, "remove")
-                .child(specWhitelistEnable, "enable")
-                .child(specWhitelistDisable, "disable")
-                .build();
-
-        CommandSpec specBlacklistAdd = CommandSpec.builder()
-                .description(Text.of("Add an IP to the blacklist"))
-                .permission("webapi.command.blacklist.add")
-                .arguments(GenericArguments.string(Text.of("ip")))
-                .executor(new CmdAuthListAdd(false))
-                .build();
-        CommandSpec specBlaclistRemove = CommandSpec.builder()
-                .description(Text.of("Remove an IP from the blacklist"))
-                .permission("webapi.command.blacklist.remove")
-                .arguments(GenericArguments.string(Text.of("ip")))
-                .executor(new CmdAuthListRemove(false))
-                .build();
-        CommandSpec specBlacklistEnable = CommandSpec.builder()
-                .description(Text.of("Enable the blacklist"))
-                .permission("webapi.command.blacklist.enable")
-                .executor(new CmdAuthListEnable(false))
-                .build();
-        CommandSpec specBlacklistDisable = CommandSpec.builder()
-                .description(Text.of("Disable the blacklist"))
-                .permission("webapi.command.blacklist.disable")
-                .executor(new CmdAuthListDisable(false))
-                .build();
-        CommandSpec specBlacklist = CommandSpec.builder()
-                .description(Text.of("Manage the blacklist"))
-                .permission("webapi.command.blacklist")
-                .child(specBlacklistAdd, "add")
-                .child(specBlaclistRemove, "remove")
-                .child(specBlacklistEnable, "enable")
-                .child(specBlacklistDisable, "disable")
-                .build();
-
-        CommandSpec spec = CommandSpec.builder()
-                .description(Text.of("Manage Web-API settings"))
-                .permission("webapi.command")
-                .child(specWhitelist, "whitelist")
-                .child(specBlacklist, "blacklist")
-                .build();
-        Sponge.getCommandManager().register(this, spec, "webapi");
-
-
+    private void startWebServer(Player player) {
         // Start web server
         logger.info("Starting Web Server...");
 
@@ -256,7 +182,7 @@ public class WebAPI {
             server.addBean(new WebAPIErrorHandler());
 
             // Collection of all handlers
-            List<Handler> handlers = new ArrayList<Handler>();
+            List<Handler> handlers = new LinkedList<>();
 
             // Asset handlers
             handlers.add(newContext("/", new AssetHandler(loadAssetString("pages/redoc.html"), "text/html; charset=utf-8")));
@@ -267,14 +193,14 @@ public class WebAPI {
             ServletContextHandler servletsContext = new ServletContextHandler();
             servletsContext.setContextPath("/api");
 
-            // Use a list to make request first go through the auth handler and rate-limit handler
+            // Use a list to make requests first go through the auth handler and rate-limit handler
             HandlerList list = new HandlerList();
-            list.setHandlers(new Handler[]{ authHandler, rateLimitHandler, servletsContext });
+            list.setHandlers(new Handler[]{ authHandler, new RateLimitHandler(), servletsContext });
             handlers.add(list);
 
             servletsContext.addServlet(InfoServlet.class, "/info");
-            servletsContext.addServlet(ChatServlet.class, "/chat");
 
+            servletsContext.addServlet(HistoryServlet.class, "/history/*");
             servletsContext.addServlet(CmdServlet.class, "/cmd/*");
             servletsContext.addServlet(WorldServlet.class, "/world/*");
             servletsContext.addServlet(PlayerServlet.class, "/player/*");
@@ -297,6 +223,20 @@ public class WebAPI {
         }
 
         logger.info("Web server running on " + server.getURI());
+
+        if (player != null) {
+            player.sendMessage(Text.builder().color(TextColors.AQUA).append(Text.of("[" + WebAPI.NAME + "] The web server has been restarted!")).toText());
+        }
+    }
+    private void stopWebServer() {
+        if (server != null) {
+            try {
+                server.stop();
+                server = null;
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     private String loadAssetString(String assetPath) throws IOException {
@@ -314,56 +254,101 @@ public class WebAPI {
         return context;
     }
 
+    public Tuple<ConfigurationLoader, ConfigurationNode> loadWithDefaults(String path, String defaultPath) {
+        try {
+            Path filePath = configPath.resolve(path);
+            if (!Files.exists(filePath))
+                Sponge.getAssetManager().getAsset(this, defaultPath).get().copyToDirectory(configPath);
+
+            URL defUrl = Sponge.getAssetManager().getAsset(this, defaultPath).get().getUrl();
+            ConfigurationLoader<CommentedConfigurationNode> defLoader = HoconConfigurationLoader.builder().setURL(defUrl).build();
+            ConfigurationNode defConfig = defLoader.load();
+
+            ConfigurationLoader<CommentedConfigurationNode> loader = HoconConfigurationLoader.builder().setPath(filePath).build();
+            ConfigurationNode config = loader.load();
+
+            config.mergeValuesFrom(defConfig);
+            loader.save(config);
+
+            return new Tuple<>(loader, config);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public static void executeCommand(String command, WebAPICommandSource source) {
+        CommandManager cmdManager = Sponge.getGame().getCommandManager();
+        cmdManager.process(source, command);
+    }
+
     @Listener
     public void onServerStart(GameStartedServerEvent event) {
         DataCache.updatePlugins();
+        DataCache.updateCommands();
+
+        startWebServer(null);
     }
 
     @Listener
     public void onServerStop(GameStoppedServerEvent event) {
-        if (server != null) {
-            try {
-                server.stop();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
+        stopWebServer();
     }
 
     @Listener
-    public void onWorldLoad(LoadWorldEvent e) {
-        DataCache.addWorld(e.getTargetWorld());
-    }
-    @Listener
-    public void onWorldUnload(UnloadWorldEvent e) {
-        DataCache.removeWorld(e.getTargetWorld().getUniqueId());
+    public void onReload(GameReloadEvent event) {
+        Optional<Player> p = event.getCause().first(Player.class);
+
+        logger.info("Reloading " + WebAPI.NAME + " v" + WebAPI.VERSION + "...");
+
+        stopWebServer();
+
+        loadConfig(p.orElse(null));
+
+        startWebServer(p.orElse(null));
+
+        logger.info("Reloaded " + WebAPI.NAME);
     }
 
     @Listener
-    public void onPlayerJoin(ClientConnectionEvent.Join e) {
-        DataCache.addPlayer(e.getTargetEntity());
+    public void onWorldLoad(LoadWorldEvent event) {
+        DataCache.addWorld(event.getTargetWorld());
     }
     @Listener
-    public void onPlayerLeave(ClientConnectionEvent.Disconnect e) {
-        DataCache.removePlayer(e.getTargetEntity().getUniqueId());
+    public void onWorldUnload(UnloadWorldEvent event) {
+        DataCache.removeWorld(event.getTargetWorld().getUniqueId());
     }
 
     @Listener
-    public void onEntitySpawn(SpawnEntityEvent e) {
-        for (Entity entity : e.getEntities()) {
+    public void onPlayerJoin(ClientConnectionEvent.Join event) {
+        DataCache.addPlayer(event.getTargetEntity());
+    }
+    @Listener
+    public void onPlayerLeave(ClientConnectionEvent.Disconnect event) {
+        DataCache.removePlayer(event.getTargetEntity().getUniqueId());
+    }
+
+    @Listener
+    public void onEntitySpawn(SpawnEntityEvent event) {
+        for (Entity entity : event.getEntities()) {
             DataCache.addEntity(entity);
         }
     }
     @Listener
-    public void onEntityDespawn(DestructEntityEvent e) {
-        DataCache.removeEntity(e.getTargetEntity().getUniqueId());
-    }
+    public void onEntityDespawn(DestructEntityEvent event) {
+        DataCache.removeEntity(event.getTargetEntity().getUniqueId());
 
-    public static WebAPICommandSource executeCommand(String command, String name) {
-        WebAPICommandSource src = new WebAPICommandSource(name);
-        CommandManager cmdManager = Sponge.getGame().getCommandManager();
-        cmdManager.process(src, command);
-        return src;
+        Entity source = null;
+        Entity ent = event.getTargetEntity();
+        Player target = (Player)event.getTargetEntity();
+
+        Optional<EntityDamageSource> dmgSource = event.getCause().first(EntityDamageSource.class);
+        if (dmgSource.isPresent()) source = dmgSource.get().getSource();
+        String sourceStr = source != null ? JsonConverter.toString(CachedEntity.copyFrom(source)) : "null";
+
+        String message = "{\"killer\":" + sourceStr + ",\"target\":" + JsonConverter.toString(CachedPlayer.copyFrom(target)) + "}";
+        WebHooks.notifyHooks(WebHooks.WebHookType.PLAYER_DEATH, null, message);
     }
 
     @Listener
@@ -371,18 +356,28 @@ public class WebAPI {
         Optional<Player> player = event.getCause().first(Player.class);
         if (!player.isPresent()) return;
 
-        DataCache.addChatMessage(player.get(), event.getMessage());
+        CachedChatMessage msg = DataCache.addChatMessage(player.get(), event.getMessage());
+        String message = JsonConverter.toString(msg, true);
+        WebHooks.notifyHooks(WebHooks.WebHookType.CHAT, msg.sender.uuid, message);
+    }
+
+    @Listener
+    public void onPlayerAchievement(GrantAchievementEvent.TargetPlayer event) {
+        Optional<CachedPlayer> p = DataCache.getPlayer(event.getTargetEntity().getUniqueId(), false);
+        if (!p.isPresent()) return;
+
+        Achievement a = event.getAchievement();
+
+        String message = "{\"player\":" + JsonConverter.toString(p.get()) + ",\"achievement\":" + JsonConverter.toString(a, true) + "}";
+        WebHooks.notifyHooks(WebHooks.WebHookType.ACHIEVEMENT, null, message);
     }
 
     @Listener
     public void onCommand(SendCommandEvent event) {
-        JsonElement source = null;
+        JsonNode source = null;
         Optional<Object> src = event.getCause().get(NamedCause.SOURCE, Object.class);
         if (src.isPresent()) {
-            if (src.get() instanceof Player)
-                source = JsonConverter.cacheToJson(CachedPlayer.copyFrom((Player) src.get()));
-            else
-                source = JsonConverter.toRawJson(src.get().getClass().getName());
+            source = JsonConverter.toJson(src.get());
         }
         DataCache.addCommandCall(event.getCommand(), event.getArguments(), source, event.getResult());
     }

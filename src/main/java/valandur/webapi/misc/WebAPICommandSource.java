@@ -10,22 +10,24 @@ import org.spongepowered.api.text.channel.MessageChannel;
 import org.spongepowered.api.util.Tristate;
 import valandur.webapi.WebAPI;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class WebAPICommandSource implements CommandSource {
     private String name = WebAPI.NAME;
-    private List<String> lines = new ArrayList<String>();
+    private int waitLines = 0;
+    private Queue<String> lines = new ConcurrentLinkedQueue<>();
+
+    public static WebAPICommandSource instance = new WebAPICommandSource();
 
     public WebAPICommandSource() { }
-    public WebAPICommandSource(String name) {
+    public WebAPICommandSource(String name, int waitLines) {
         this.name = name;
+        this.waitLines = waitLines;
     }
 
     public List<String> getLines() {
-        return this.lines;
+        return new ArrayList(this.lines);
     }
 
     @Override
@@ -90,15 +92,20 @@ public class WebAPICommandSource implements CommandSource {
 
     @Override
     public void sendMessage(Text message) {
-        this.lines.add(message.toPlain());
+        lines.add(message.toPlain());
+        if (waitLines > 0 && lines.size() >= waitLines) {
+            waitLines = 0;
+            synchronized (this) {
+                notify();
+            }
+        }
     }
 
     @Override
     public MessageChannel getMessageChannel() {
-        return MessageChannel.TO_NONE;
+        return MessageChannel.TO_CONSOLE;
     }
 
     @Override
-    public void setMessageChannel(MessageChannel channel) {
-    }
+    public void setMessageChannel(MessageChannel channel) { }
 }

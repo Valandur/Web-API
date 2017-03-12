@@ -1,12 +1,11 @@
 package valandur.webapi.servlets;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
+import com.fasterxml.jackson.databind.JsonNode;
 import org.spongepowered.api.util.Tuple;
-import valandur.webapi.Permission;
+import valandur.webapi.misc.Permission;
 import valandur.webapi.cache.CachedEntity;
 import valandur.webapi.cache.DataCache;
-import valandur.webapi.misc.JsonConverter;
+import valandur.webapi.json.JsonConverter;
 import valandur.webapi.misc.Util;
 
 import javax.servlet.http.HttpServletResponse;
@@ -21,7 +20,7 @@ public class EntityServlet extends WebAPIServlet {
 
         if (paths.length == 0 || paths[0].isEmpty()) {
             data.setStatus(HttpServletResponse.SC_OK);
-            data.getJson().add("entities", JsonConverter.cacheToJson(DataCache.getEntities()));
+            data.addJson("entities", JsonConverter.toJson(DataCache.getEntities()));
             return;
         }
 
@@ -31,25 +30,14 @@ public class EntityServlet extends WebAPIServlet {
             return;
         }
 
-        Optional<CachedEntity> entity = DataCache.getEntity(UUID.fromString(uuid));
+        Optional<CachedEntity> entity = DataCache.getEntity(UUID.fromString(uuid), true);
         if (!entity.isPresent()) {
             data.sendError(HttpServletResponse.SC_NOT_FOUND);
             return;
         }
 
-        if (paths.length == 1 || paths[1].isEmpty()) {
-            data.setStatus(HttpServletResponse.SC_OK);
-            data.getJson().add("entity", JsonConverter.cacheToJson(entity.get(), true));
-            return;
-        }
-
-        if (paths[1].equalsIgnoreCase("raw")) {
-            JsonElement res = DataCache.getRawLive(entity.get());
-            data.setStatus(HttpServletResponse.SC_OK);
-            data.getJson().add("entity", res);
-        } else {
-            data.sendError(HttpServletResponse.SC_NOT_FOUND);
-        }
+        data.setStatus(HttpServletResponse.SC_OK);
+        data.addJson("entity", JsonConverter.toJson(entity.get(), true));
     }
 
     @Override
@@ -68,28 +56,31 @@ public class EntityServlet extends WebAPIServlet {
             return;
         }
 
-        Optional<CachedEntity> entity = DataCache.getEntity(UUID.fromString(uuid));
+        Optional<CachedEntity> entity = DataCache.getEntity(UUID.fromString(uuid), false);
         if (!entity.isPresent()) {
             data.sendError(HttpServletResponse.SC_NOT_FOUND);
             return;
         }
 
-        final JsonObject reqJson = (JsonObject) data.getAttribute("body");
+        final JsonNode reqJson = (JsonNode) data.getAttribute("body");
 
-        String mName = reqJson.get("method").getAsString();
-        Optional<Tuple<Class[], Object[]>> params = Util.parseParams(reqJson.getAsJsonArray("params"));
+        if (reqJson.has("method")) {
+            String mName = reqJson.get("method").asText();
+            Optional<Tuple<Class[], Object[]>> params = Util.parseParams(reqJson.get("params"));
 
-        if (!params.isPresent()) {
+            if (!params.isPresent()) {
+                data.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                return;
+            }
+
+            JsonNode res = DataCache.executeMethod(entity.get(), mName, params.get().getFirst(), params.get().getSecond());
+            data.addJson("result", res);
+        } else if (reqJson.has("field")) {
+            String fName = reqJson.get("field").asText();
+            JsonNode res = DataCache.getField(entity.get(), fName);
+            data.addJson("result", res);
+        } else {
             data.sendError(HttpServletResponse.SC_BAD_REQUEST);
-            return;
         }
-
-        Optional<JsonElement> res = DataCache.executeMethod(entity.get(), mName, params.get().getFirst(), params.get().getSecond());
-        if (!res.isPresent()) {
-            data.sendError(HttpServletResponse.SC_BAD_REQUEST);
-            return;
-        }
-
-        data.getJson().add("result", res.get());
     }
 }

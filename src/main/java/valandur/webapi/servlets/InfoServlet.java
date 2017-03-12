@@ -1,13 +1,12 @@
 package valandur.webapi.servlets;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.spongepowered.api.Platform;
 import org.spongepowered.api.Server;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.plugin.PluginContainer;
-import valandur.webapi.Permission;
+import valandur.webapi.misc.Permission;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.Optional;
@@ -21,34 +20,29 @@ public class InfoServlet extends WebAPIServlet {
         Server server = Sponge.getServer();
         Platform platform = Sponge.getPlatform();
 
-        JsonObject json = data.getJson();
-        json.addProperty("motd", server.getMotd().toPlain());
-        json.addProperty("players", server.getOnlinePlayers().size());
-        json.addProperty("maxPlayers", server.getMaxPlayers());
-        json.addProperty("uptimeTicks", server.getRunningTimeTicks());
-        json.addProperty("hasWhitelist", server.hasWhitelist());
-        json.addProperty("minecraftVersion", platform.getMinecraftVersion().getName());
+        data.addJson("motd", server.getMotd().toPlain());
+        data.addJson("players", server.getOnlinePlayers().size());
+        data.addJson("maxPlayers", server.getMaxPlayers());
+        data.addJson("uptimeTicks", server.getRunningTimeTicks());
+        data.addJson("hasWhitelist", server.hasWhitelist());
+        data.addJson("minecraftVersion", platform.getMinecraftVersion().getName());
 
-        json.add("game", containerToJson(platform.getContainer(Platform.Component.GAME)));
-        json.add("api", containerToJson(platform.getContainer(Platform.Component.API)));
-        json.add("implementation", containerToJson(platform.getContainer(Platform.Component.IMPLEMENTATION)));
+        data.addJson("game", containerToJson(platform.getContainer(Platform.Component.GAME)));
+        data.addJson("api", containerToJson(platform.getContainer(Platform.Component.API)));
+        data.addJson("implementation", containerToJson(platform.getContainer(Platform.Component.IMPLEMENTATION)));
     }
 
-    private JsonObject containerToJson(PluginContainer container) {
-        JsonObject obj = new JsonObject();
-        obj.addProperty("id", container.getId());
-        obj.addProperty("name", container.getName());
+    private ObjectNode containerToJson(PluginContainer container) {
+        ObjectNode obj = JsonNodeFactory.instance.objectNode();
+        obj.put("id", container.getId());
+        obj.put("name", container.getName());
         Optional<String> version = container.getVersion();
-        obj.addProperty("version", version.isPresent() ? version.get() : null);
+        obj.put("version", version.isPresent() ? version.get() : null);
         Optional<String> descr = container.getDescription();
-        obj.addProperty("description", descr.isPresent() ? descr.get() : null);
+        obj.put("description", descr.isPresent() ? descr.get() : null);
         Optional<String> url = container.getVersion();
-        obj.addProperty("url", url.isPresent() ? url.get() : null);
-        JsonArray arr = new JsonArray();
-        for (String author : container.getAuthors()) {
-            arr.add(new JsonPrimitive(author));
-        }
-        obj.add("authors", arr);
+        obj.put("url", url.isPresent() ? url.get() : null);
+        obj.putPOJO("authors", container.getAuthors());
         return obj;
     }
 }

@@ -18,6 +18,8 @@ public class WebAPICommandSource implements CommandSource {
     private int waitLines = 0;
     private Queue<String> lines = new ConcurrentLinkedQueue<>();
 
+    public static WebAPICommandSource instance = new WebAPICommandSource();
+
     public WebAPICommandSource() { }
     public WebAPICommandSource(String name, int waitLines) {
         this.name = name;

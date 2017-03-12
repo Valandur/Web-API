@@ -1,49 +1,62 @@
 package valandur.webapi.cache;
 
-import com.google.gson.JsonElement;
-import com.google.gson.annotations.Expose;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.flowpowered.math.vector.Vector3d;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.Entity;
+import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.world.World;
-import valandur.webapi.misc.JsonConverter;
+import valandur.webapi.json.JsonConverter;
 
 import java.util.Optional;
 import java.util.UUID;
 
 public class CachedEntity extends CachedObject {
-    @Expose
+
+    @JsonProperty
     public String type;
 
-    @Expose
+    @JsonProperty("class")
+    public String clazz;
+
+    @JsonProperty
     public String uuid;
 
+    @JsonProperty
     public CachedLocation location;
-    public CachedVector3d velocity;
-    public CachedVector3d rotation;
-    public JsonElement data;
-    public JsonElement properties;
+
+    public Vector3d velocity;
+    public Vector3d rotation;
+    public JsonNode properties;
+    public JsonNode data;
 
     public static CachedEntity copyFrom(Entity entity) {
         return copyFrom(entity, false);
     }
     public static CachedEntity copyFrom(Entity entity, boolean details) {
+        if (entity instanceof Player)
+            return CachedPlayer.copyFrom((Player)entity, details);
+
         CachedEntity cache = new CachedEntity();
-        cache.type = entity.getType().getName();
+        cache.type = entity.getType() != null ? entity.getType().getName() : null;
+        cache.clazz = entity.getClass().getName();
         cache.uuid = entity.getUniqueId().toString();
+        cache.location = CachedLocation.copyFrom(entity.getLocation());
+
         if (details) {
             cache.details = true;
-            cache.location = CachedLocation.copyFrom(entity.getLocation());
-            cache.velocity = CachedVector3d.copyFrom(entity.getVelocity());
-            cache.rotation = CachedVector3d.copyFrom(entity.getRotation());
-            cache.data = JsonConverter.containerToJson(entity);
-            cache.properties = JsonConverter.propertiesToJson(entity);
+            cache.velocity = entity.getVelocity().clone();
+            cache.rotation = entity.getRotation().clone();
+            cache.properties = JsonConverter.toJson(entity.getApplicableProperties(), true);
+            cache.data = JsonConverter.toJson(entity.toContainer(), true);
         }
         return cache;
     }
 
     @Override
     public int getCacheDuration() {
-        return CacheConfig.entity;
+        return CacheConfig.durationEntity;
     }
     @Override
     public Optional<Object> getLive() {
@@ -53,5 +66,11 @@ public class CachedEntity extends CachedObject {
                 return Optional.of(e.get());
         }
         return Optional.empty();
+    }
+
+    @Override
+    @JsonProperty
+    public String getLink() {
+        return "/api/entity/" + uuid;
     }
 }

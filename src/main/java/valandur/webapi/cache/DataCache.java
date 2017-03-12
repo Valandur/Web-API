@@ -1,8 +1,9 @@
 package valandur.webapi.cache;
 
-import com.google.gson.JsonElement;
+import com.fasterxml.jackson.databind.JsonNode;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.block.tileentity.TileEntity;
+import org.spongepowered.api.command.CommandMapping;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.living.player.Player;
@@ -10,8 +11,9 @@ import org.spongepowered.api.plugin.PluginContainer;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.world.World;
 import valandur.webapi.WebAPI;
-import valandur.webapi.misc.JsonConverter;
+import valandur.webapi.json.JsonConverter;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.*;
@@ -22,72 +24,111 @@ public class DataCache {
     private static ConcurrentLinkedQueue<CachedChatMessage> chatMessages = new ConcurrentLinkedQueue<>();
     private static ConcurrentLinkedQueue<CachedCommandCall> commandCalls = new ConcurrentLinkedQueue<>();
     private static Collection<CachedPlugin> plugins = new LinkedHashSet<>();
+    private static Collection<CachedCommand> commands = new LinkedHashSet<>();
     private static Map<UUID, CachedWorld> worlds = new ConcurrentHashMap<>();
     private static Map<UUID, CachedPlayer> players = new ConcurrentHashMap<>();
     private static Map<UUID, CachedEntity> entities = new ConcurrentHashMap<>();
-    private static Map<Class, JsonElement> classes = new ConcurrentHashMap<>();
+    private static Map<Class, JsonNode> classes = new ConcurrentHashMap<>();
 
     public static ConcurrentLinkedQueue<CachedChatMessage> getChatMessages() {
         return chatMessages;
     }
     public static ConcurrentLinkedQueue<CachedCommandCall> getCommandCalls() { return commandCalls; }
-    public static Map<Class, JsonElement> getClasses() {
+    public static Map<Class, JsonNode> getClasses() {
         return classes;
     }
 
 
-    public static JsonElement getClass(Class type) {
+    public static JsonNode getClass(Class type) {
         if (classes.containsKey(type))
             return classes.get(type);
 
-        JsonElement e = JsonConverter.classToJson(type);
+        JsonNode e = JsonConverter.classToJson(type);
         classes.put(type, e);
         return e;
     }
 
-    public static void addChatMessage(Player sender, Text text) {
-        chatMessages.add(CachedChatMessage.copyFrom(new Date(), sender, text));
+    public static CachedChatMessage addChatMessage(Player sender, Text text) {
+        CachedChatMessage cache = CachedChatMessage.copyFrom(sender, text);
+        chatMessages.add(cache);
 
-        while (chatMessages.size() > CacheConfig.chatMessages) {
+        while (chatMessages.size() > CacheConfig.numChatMessages) {
             chatMessages.poll();
         }
+
+        return cache;
     }
 
-    public static void addCommandCall(String command, String arguments, JsonElement source, CommandResult result) {
-        commandCalls.add(CachedCommandCall.copyFrom(command, arguments, source, result));
+    public static CachedCommandCall addCommandCall(String command, String arguments, JsonNode source, CommandResult result) {
+        CachedCommandCall cache = CachedCommandCall.copyFrom(command, arguments, source, result);
+        commandCalls.add(cache);
 
-        while (commandCalls.size() > CacheConfig.commandCalls) {
+        while (commandCalls.size() > CacheConfig.numCommandCalls) {
             commandCalls.poll();
         }
+
+        return cache;
     }
 
-    public static JsonElement getRawLive(CachedObject object) {
-        Optional<JsonElement> json = runOnMainThread(() -> {
-            Optional<Object> o = object.getLive();
-            return JsonConverter.toRawJson(o);
-        });
-        if (!json.isPresent())
-            return JsonConverter.toRawJson(Optional.empty());
-        return json.get();
-    }
-    public static Optional<JsonElement> executeMethod(CachedObject cache, String methodName, Class[] paramTypes, Object[] paramValues) {
-        return runOnMainThread(() -> {
+    public static JsonNode executeMethod(CachedObject cache, String methodName, Class[] paramTypes, Object[] paramValues) {
+        Optional<JsonNode> node = runOnMainThread(() -> {
             Optional<Object> obj = cache.getLive();
 
             if (!obj.isPresent())
                 return null;
 
             Object o = obj.get();
+            Method[] ms = JsonConverter.getAllMethods(o.getClass());
+            Optional<Method> optMethod = Arrays.stream(ms).filter(m -> m.getName().equalsIgnoreCase(methodName)).findAny();
+
+            if (!optMethod.isPresent()) {
+                return null;
+            }
 
             try {
-                Method m = o.getClass().getMethod(methodName, paramTypes);
+                Method m = optMethod.get(); o.getClass().getMethod(methodName, paramTypes);
+                m.setAccessible(true);
                 Object res = m.invoke(o, paramValues);
-                return JsonConverter.toRawJson(res);
+                return JsonConverter.toJson(res, true);
             } catch (Exception e) {
                 e.printStackTrace();
                 return null;
             }
         });
+
+        if (!node.isPresent())
+            return JsonConverter.toJson(null);
+        return node.get();
+    }
+    public static JsonNode getField(CachedObject cache, String fieldName) {
+        Optional<JsonNode> node = runOnMainThread(() -> {
+            Optional<Object> obj = cache.getLive();
+
+            if (!obj.isPresent())
+                return null;
+
+            Object o = obj.get();
+            Field[] fs = JsonConverter.getAllFields(o.getClass());
+            Optional<Field> optField = Arrays.stream(fs).filter(f -> f.getName().equalsIgnoreCase(fieldName)).findAny();
+
+            if (!optField.isPresent()) {
+                return null;
+            }
+
+            try {
+                Field field = optField.get();
+                field.setAccessible(true);
+                Object res = field.get(o);
+                return JsonConverter.toJson(res, true);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return null;
+            }
+        });
+
+        if (!node.isPresent())
+            return JsonConverter.toJson(null);
+        return node.get();
     }
 
     public static void addWorld(World world) {
@@ -110,16 +151,16 @@ public class DataCache {
     public static Collection<CachedWorld> getWorlds() {
         return worlds.values();
     }
-    public static Optional<CachedWorld> getWorld(UUID uuid) {
+    public static Optional<CachedWorld> getWorld(UUID uuid, boolean details) {
         if (!worlds.containsKey(uuid)) {
             return Optional.empty();
         }
 
         final CachedWorld res = worlds.get(uuid);
-        if (res.isExpired() || !res.hasDetails()) {
-            return updateWorld(uuid);
-        } else {
+        if (!details || (res.hasDetails() && !res.isExpired())) {
             return Optional.of(res);
+        } else {
+            return updateWorld(uuid);
         }
     }
 
@@ -143,16 +184,16 @@ public class DataCache {
     public static Collection<CachedPlayer> getPlayers() {
         return players.values();
     }
-    public static Optional<CachedPlayer> getPlayer(UUID uuid) {
+    public static Optional<CachedPlayer> getPlayer(UUID uuid, boolean details) {
         if (!players.containsKey(uuid)) {
             return Optional.empty();
         }
 
         final CachedPlayer res = players.get(uuid);
-        if (res.isExpired() || !res.hasDetails()) {
-            return updatePlayer(uuid);
-        } else {
+        if (!details || (res.hasDetails() && !res.isExpired())) {
             return Optional.of(res);
+        } else {
+            return updatePlayer(uuid);
         }
     }
 
@@ -184,16 +225,16 @@ public class DataCache {
     public static Collection<CachedEntity> getEntities() {
         return entities.values();
     }
-    public static Optional<CachedEntity> getEntity(UUID uuid) {
+    public static Optional<CachedEntity> getEntity(UUID uuid, boolean details) {
         if (!entities.containsKey(uuid)) {
             return Optional.empty();
         }
 
         final CachedEntity res = entities.get(uuid);
-        if (res.isExpired() || !res.hasDetails()) {
-            return updateEntity(uuid);
-        } else {
+        if (!details || (res.hasDetails() && !res.isExpired())) {
             return Optional.of(res);
+        } else {
+            return updateEntity(uuid);
         }
     }
 
@@ -216,9 +257,28 @@ public class DataCache {
         return Optional.empty();
     }
 
+    public static void updateCommands() {
+        Collection<CommandMapping> commands = Sponge.getCommandManager().getAll().values();
+        Collection<CachedCommand> cachedCommands = new LinkedHashSet<>();
+        for (CommandMapping cmd : commands) {
+            cachedCommands.add(CachedCommand.copyFrom(cmd));
+        }
+        DataCache.commands = cachedCommands;
+    }
+    public static Collection<CachedCommand> getCommands() {
+        return commands;
+    }
+    public static Optional<CachedCommand> getCommand(String name) {
+        for (CachedCommand cmd : commands) {
+            if (cmd.name.equalsIgnoreCase(name))
+                return Optional.of(cmd);
+        }
+        return Optional.empty();
+    }
+
     public static Optional<Collection<CachedTileEntity>> getTileEntities() {
         return runOnMainThread(() -> {
-            Collection<CachedTileEntity> entities = new ArrayList<>();
+            Collection<CachedTileEntity> entities = new LinkedList<>();
 
             for (World world : Sponge.getServer().getWorlds()) {
                 Collection<TileEntity> ents = world.getTileEntities();
@@ -236,7 +296,7 @@ public class DataCache {
             if (!w.isPresent())
                 return null;
 
-            Collection<CachedTileEntity> entities = new ArrayList<>();
+            Collection<CachedTileEntity> entities = new LinkedList<>();
             Collection<TileEntity> ents = ((World)w.get()).getTileEntities();
             for (TileEntity te : ents) {
                 if (!te.isValid()) continue;

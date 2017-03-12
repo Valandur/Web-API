@@ -1,10 +1,9 @@
 package valandur.webapi.servlets;
 
-import com.google.gson.JsonElement;
-import valandur.webapi.Permission;
+import valandur.webapi.misc.Permission;
 import valandur.webapi.cache.CachedPlugin;
 import valandur.webapi.cache.DataCache;
-import valandur.webapi.misc.JsonConverter;
+import valandur.webapi.json.JsonConverter;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.Optional;
@@ -17,7 +16,7 @@ public class PluginServlet extends WebAPIServlet {
 
         if (paths.length == 0 || paths[0].isEmpty()) {
             data.setStatus(HttpServletResponse.SC_OK);
-            data.getJson().add("plugins", JsonConverter.cacheToJson(DataCache.getPlugins()));
+            data.addJson("plugins", JsonConverter.toJson(DataCache.getPlugins()));
             return;
         }
 
@@ -28,18 +27,7 @@ public class PluginServlet extends WebAPIServlet {
             return;
         }
 
-        if (paths.length == 1 || paths[1].isEmpty()) {
-            data.setStatus(HttpServletResponse.SC_OK);
-            data.getJson().add("plugin", JsonConverter.cacheToJson(plugin.get(), true));
-            return;
-        }
-
-        if (paths[1].equalsIgnoreCase("raw")) {
-            JsonElement res = DataCache.getRawLive(plugin.get());
-            data.setStatus(HttpServletResponse.SC_OK);
-            data.getJson().add("plugin", res);
-        } else {
-            data.sendError(HttpServletResponse.SC_NOT_FOUND);
-        }
+        data.setStatus(HttpServletResponse.SC_OK);
+        data.addJson("plugin", JsonConverter.toJson(plugin.get(), true));
     }
 }

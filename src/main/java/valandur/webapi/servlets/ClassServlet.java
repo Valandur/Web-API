@@ -1,7 +1,9 @@
 package valandur.webapi.servlets;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import valandur.webapi.Permission;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import valandur.webapi.misc.Permission;
 import valandur.webapi.cache.DataCache;
 import valandur.webapi.json.JsonConverter;
 
@@ -16,7 +18,8 @@ public class ClassServlet extends WebAPIServlet {
         String[] paths = data.getPathParts();
 
         if (paths.length == 0 || paths[0].isEmpty()) {
-            data.addJson("classes", JsonConverter.toJson(DataCache.getClasses()));
+            ArrayNode node = JsonNodeFactory.instance.arrayNode();
+            data.addJson("classes", JsonConverter.toJson(DataCache.getClasses().keySet().stream().map(Class::getName).toArray(String[]::new)));
             return;
         }
 

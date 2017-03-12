@@ -1,7 +1,7 @@
 package valandur.webapi.servlets;
 
 import org.eclipse.jetty.http.HttpStatus;
-import valandur.webapi.Permission;
+import valandur.webapi.misc.Permission;
 
 import javax.servlet.http.HttpServletResponse;
 

@@ -155,13 +155,10 @@ paths:
         200:
           description: A list of all the classes that are cached on the server.
           schema:
-            type: object
-            properties:
-              classes:
-                type: array
-                items:
-                  type: string
-                  description: The short class name.
+            type: array
+              items:
+                type: string
+                description: The name of the class
   /class/{classname}:
     get:
       summary: Lookup class
@@ -335,25 +332,6 @@ paths:
               result:
                 type: object
                 description: The result of the function.
-  /entity/{uuid}/raw:
-    get:
-      summary: Raw entity info
-      description: |
-        Get the raw entity object
-
-        > Required permission: entity
-      parameters:
-        - name: uuid
-          in: path
-          type: string
-          description: The uuid of the entity to get raw information about.
-      tags:
-        - Entity
-      responses:
-        200:
-          description: Raw information about the entity.
-          schema:
-            $ref: '#/definitions/Raw'
   /tile-entity:
     get:
       summary: Tile entities list
@@ -399,43 +377,9 @@ paths:
           description: Detailed information about the tile entity.
           schema:
             $ref: '#/definitions/TileEntity'
-  /tile-entity/{worldUuid}/{x}/{y}/{z}/raw:
-    get:
-      summary: Raw tile entity info
-      description: |
-        Get the raw tile entity object
-
-        > Required permission: tile-entity
-      parameters:
-        - name: worldUuid
-          in: path
-          type: string
-          description: The uuid of the world the tile entity is in.
-        - name: x
-          in: path
-          type: string
-          description: The x-coordinate of the tile entity.
-        - name: y
-          in: path
-          type: string
-          description: The y-coordinate of the tile entity.
-        - name: z
-          in: path
-          type: string
-          description: The z-coordinate of the tile entity.
-      tags:
-        - Tile Entity
-      responses:
-        200:
-          description: Raw information about the tile entity.
-          schema:
-            $ref: '#/definitions/Raw'
 
 
 definitions:
-  Raw:
-    type: object
-    description: A raw java-to-json converted object.
   Class:
     type: object
     description: A class definition that is loaded on the server.
@@ -721,9 +665,6 @@ definitions:
         $ref: '#/definitions/Vector3'
       rotation:
         $ref: '#/definitions/Vector3'
-      raw:
-        type: object
-        description: The raw object data attached to the player.
   WorldList:
     type: object
     properties:
@@ -748,9 +689,6 @@ definitions:
       uuid:
         type: string
         description: The unique id of the world.
-      raw:
-        type: object
-        description: The raw object data attached to the world.
   PluginList:
     type: object
     properties:
@@ -821,9 +759,6 @@ definitions:
         $ref: '#/definitions/Vector3'
       rotation:
         $ref: '#/definitions/Vector3'
-      raw:
-        type: object
-        description: The raw object data attached to the entity.
 
   TileEntityList:
     type: object
@@ -847,7 +782,4 @@ definitions:
         description: The type of the entity.
       location:
         $ref: '#/definitions/Location'
-      raw:
-        type: object
-        description: The raw object data attached to the entity.
 

@@ -7,7 +7,6 @@ import org.spongepowered.api.command.CommandResult;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 
 public class CachedCommandCall extends CachedObject {
 
@@ -34,14 +33,5 @@ public class CachedCommandCall extends CachedObject {
         call.source = source;
         call.result = CachedCommandResult.copyFrom(result);
         return call;
-    }
-
-    @Override
-    public int getCacheDuration() {
-        return 0;
-    }
-    @Override
-    public Optional<Object> getLive() {
-        return Optional.empty();
     }
 }

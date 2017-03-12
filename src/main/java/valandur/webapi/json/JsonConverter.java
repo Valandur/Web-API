@@ -6,9 +6,9 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.flowpowered.math.vector.Vector3d;
-import org.apache.commons.lang3.ArrayUtils;
 import org.spongepowered.api.data.DataContainer;
 import org.spongepowered.api.data.Property;
+import org.spongepowered.api.statistic.achievement.Achievement;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -18,295 +18,69 @@ import java.util.*;
 
 public class JsonConverter {
 
-    public static List<String> hiddenClasses = new ArrayList<String>();
+    public static String toString(Object obj) {
+        return toJson(obj).toString();
+    }
 
+    public static String toString(Object obj, boolean details) {
+        return toJson(obj, details).toString();
+    }
+
+    /**
+     * Converts an object to json using the default object mapper without details.
+     * @param obj The object to convert to json.
+     * @return The json representation of the object.
+     */
     public static JsonNode toJson(Object obj) {
         return toJson(obj, false);
     }
+
+    /**
+     * Converts an object to json using the default object mapper. Includes details if specified.
+     * @param obj The object to convert to json
+     * @param details False if only marked properties/methods should be included, true otherwise.
+     * @return The json representation of the object.
+     */
     public static JsonNode toJson(Object obj, boolean details) {
+        ObjectMapper om = getDefaultObjectMapper();
+        if (!details) {
+            om.disable(MapperFeature.AUTO_DETECT_CREATORS, MapperFeature.AUTO_DETECT_FIELDS, MapperFeature.AUTO_DETECT_GETTERS, MapperFeature.AUTO_DETECT_IS_GETTERS);
+        }
+        return om.valueToTree(obj);
+    }
+
+    /**
+     * Get the default object mapper which contains some custom serializers and doesn't fail on empty beans.
+     * .@return The default object mapper
+     */
+    private static ObjectMapper getDefaultObjectMapper() {
         ObjectMapper om = new ObjectMapper();
+        om.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
 
         addSerializer(om, Vector3d.class, new VectorSerializer());
         addSerializer(om, Property.class, new PropertySerializer());
         addSerializer(om, Map.class, new MapSerializer());
         addSerializer(om, DataContainer.class, new DataContainerSerializer());
+        addSerializer(om, Achievement.class, new AchievementSerializer());
 
-        if (!details) {
-            om.disable(MapperFeature.AUTO_DETECT_CREATORS, MapperFeature.AUTO_DETECT_FIELDS, MapperFeature.AUTO_DETECT_GETTERS, MapperFeature.AUTO_DETECT_IS_GETTERS);
-            om.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
-        }
-
-        return om.valueToTree(obj);
+        return om;
     }
-
     private static void addSerializer(ObjectMapper mapper, Class attachClass, JsonSerializer serializer) {
         SimpleModule mod = new SimpleModule();
         mod.addSerializer(attachClass, serializer);
         mapper.registerModule(mod);
     }
 
-
-    /*
-    // Convert general elements
-    public static JsonElement toRawJson(Object obj) {
-        return toRawJson(obj, new IdentityHashMap<>(), true);
-    }
-    private static JsonElement toRawJson(Object obj, Map<Object, JsonObject> seen) {
-        return toRawJson(obj, seen, false);
-    }
-    private static JsonElement toRawJson(Object obj, Map<Object, JsonObject> seen, boolean isRoot) {
-        if (obj == null)
-            return JsonNull.INSTANCE;
-
-        String cName = obj.getClass().getName();
-
-        if (hiddenClasses.contains(cName.toLowerCase()))
-            return JsonNull.INSTANCE;
-        else if (obj instanceof Number)
-            return new JsonPrimitive((Number)obj);
-        else if (obj instanceof Boolean)
-            return new JsonPrimitive((Boolean)obj);
-        else if (obj instanceof Enum<?> || obj instanceof String)
-            return new JsonPrimitive(obj.toString());
-        else if (obj instanceof Text)
-            return new JsonPrimitive(((Text)obj).toPlain());
-        else if (obj instanceof Instant)
-            return new JsonPrimitive(((Instant)obj).getEpochSecond());
-        else if (obj instanceof Class)
-            return new JsonPrimitive(((Class)obj).getName());
-
-        else if (obj instanceof Vector3i)
-            return vectorToJson((Vector3i)obj);
-        else if (obj instanceof Vector3d)
-            return vectorToJson((Vector3d)obj);
-        else if (obj instanceof Location<?>)
-            return locationToJson((Location<World>)obj);
-        else if (obj instanceof ItemStack)
-            return itemStackToJson((ItemStack)obj);
-
-        else if (obj instanceof Optional)
-            return optionalToJson((Optional)obj, seen, isRoot);
-
-        else if (obj instanceof Collection<?>)
-            return collectionToJson((Collection<?>)obj, seen);
-        else if (obj instanceof Map<?,?>)
-            return mapToJson((Map<?,?>)obj, seen);
-        else if (obj.getClass().isArray())
-            return listToJson((Object[])obj, seen);
-
-        else
-            return objectToJson(obj, seen, isRoot);
-    }
-
-    private static JsonElement optionalToJson(Optional o, Map<Object, JsonObject> seen, boolean isRoot) {
-        JsonObject obj = new JsonObject();
-        obj.addProperty("present", o.isPresent());
-        obj.add("value", o.isPresent() ? toRawJson(o.get(), seen, isRoot) : null);
-        return obj;
-    }
-
-    private static JsonObject objectToJson(Object obj, Map<Object, JsonObject> seen, boolean isRoot) {
-        JsonObject json = new JsonObject();
-        seen.put(obj, json);
-
-        String name = obj.getClass().getName();
-        json.addProperty("class", name);
-
-        // Add all the fields of the class
-        Field[] fs = isRoot ? getAllFields(obj.getClass()) : obj.getClass().getDeclaredFields();
-        for (Field f : fs) {
-            if (f.getName().startsWith("field_"))
-                continue;
-
-            f.setAccessible(true);
-
-            try {
-                Object val = f.get(obj);
-                if (seen.containsKey(val)) {
-                    JsonObject seenObj = seen.get(val);
-                    if (!seenObj.has("@id"))
-                        seenObj.addProperty("@id", System.identityHashCode(val));
-                    json.addProperty(f.getName(), "id@" + System.identityHashCode(val));
-                    continue;
-                }
-
-                json.add(f.getName(), toRawJson(val, seen));
-            } catch (Exception e) {
-                json.add(f.getName(), new JsonPrimitive(e.toString()));
-            }
-        }
-
-        // Additional data & properties
-        if (obj instanceof ValueContainer)
-            json.add("data", containerToJson((ValueContainer) obj));
-        else if (obj instanceof DataContainer)
-            json.add("data", containerToJson((DataContainer) obj));
-
-        if (obj instanceof PropertyHolder)
-            json.add("properties", propertiesToJson((PropertyHolder) obj));
-        else if (obj instanceof World)
-            json.add("properties", containerToJson(((World) obj).getProperties().toContainer()));
-
-        if (obj instanceof Inventory) {
-            json.add("inventory", inventoryToJson((Inventory)obj));
-        }
-
-        seen.remove(obj);
-        return json;
-    }
-    private static JsonElement listToJson(Object[] list, Map<Object, JsonObject> seen) {
-        JsonArray arr = new JsonArray();
-
-        for (Object e : list) {
-            if (seen.containsKey(e)) {
-                JsonObject seenObj = seen.get(e);
-                if (!seenObj.has("@id"))
-                    seenObj.addProperty("@id", System.identityHashCode(e));
-                arr.add(new JsonPrimitive("id@" + System.identityHashCode(e)));
-                continue;
-            }
-
-            arr.add(toRawJson(e, seen));
-        }
-
-        return arr;
-    }
-    private static JsonElement collectionToJson(Collection<?> coll, Map<Object, JsonObject> seen) {
-        JsonArray arr = new JsonArray();
-
-        for (Object e : coll) {
-            if (seen.containsKey(e)) {
-                JsonObject seenObj = seen.get(e);
-                if (!seenObj.has("@id"))
-                    seenObj.addProperty("@id", System.identityHashCode(e));
-                arr.add(new JsonPrimitive("id@" + System.identityHashCode(e)));
-                continue;
-            }
-
-            arr.add(toRawJson(e, seen));
-        }
-
-        return arr;
-    }
-    private static JsonElement mapToJson(Map<?, ?> map, Map<Object, JsonObject> seen) {
-        JsonObject obj = new JsonObject();
-
-        for (Map.Entry<?, ?> e : map.entrySet()) {
-            if (seen.containsKey(e)) {
-                JsonObject seenObj = seen.get(e);
-                if (!seenObj.has("@id"))
-                    seenObj.addProperty("@id", System.identityHashCode(e));
-                obj.addProperty(e.getKey().toString(), "id@" + System.identityHashCode(e));
-                continue;
-            }
-
-            obj.add(e.getKey().toString(), toRawJson(e.getValue(), seen));
-        }
-
-        return obj;
-    }
-
-    public static JsonElement inventoryToJson(Inventory inventory) {
-        Collection<Object> objs = new ArrayList<>();
-        inventory.slots().forEach(i -> { if (i.peek().isPresent()) objs.add(i.peek().get()); });
-        return JsonConverter.toRawJson(objs);
-    }
-    public static JsonElement containerToJson(ValueContainer container) {
-        JsonObject obj = new JsonObject();
-
-        if (container instanceof CompositeValueStore) {
-            CompositeValueStore store = (CompositeValueStore)container;
-            if (store.supports(FoodData.class)) {
-                ValueContainer subCont = (ValueContainer)store.get(FoodData.class).get();
-                obj = (JsonObject)containerToJson(subCont);
-            }
-        }
-
-        Set<ImmutableValue<?>> values = container.getValues();
-        for (ImmutableValue<?> immutable : values) {
-            String key = Util.lowerFirst(immutable.getKey().getQuery().asString("."));
-            Object val = immutable.get();
-
-            if (val instanceof ImmutableSet) {
-                JsonArray subArr = new JsonArray();
-                for (Object o : ((ImmutableSet)val)) {
-                    subArr.add(toRawJson(o));
-                }
-                obj.add(key, subArr);
-            } else if (val instanceof ImmutableList) {
-                JsonArray subArr = new JsonArray();
-                for (Object o : ((ImmutableList)val)) {
-                    subArr.add(toRawJson(o));
-                }
-                obj.add(key, subArr);
-            } else {
-                obj.add(key, toRawJson(val));
-            }
-        }
-        return obj;
-    }
-    public static JsonElement containerToJson(DataContainer container) {
-        JsonObject obj = new JsonObject();
-
-        Map<DataQuery, Object> data = container.getValues(false);
-        for (Map.Entry<DataQuery, Object> entry : data.entrySet()) {
-            obj.add(Util.lowerFirst(entry.getKey().asString("-")), toRawJson(entry.getValue()));
-        }
-
-        return obj;
-    }
-    public static JsonElement propertiesToJson(PropertyHolder holder) {
-        JsonObject obj = new JsonObject();
-        Collection<Property<?, ?>> properties = holder.getApplicableProperties();
-        for (Property<?, ?> prop : properties) {
-            obj.add(Util.lowerFirst(prop.getKey().toString()), toRawJson(prop.getValue()));
-        }
-        return obj;
-    }
-
-    private static JsonElement vectorToJson(Vector3i vector) {
-        JsonObject obj = new JsonObject();
-        obj.addProperty("x", vector.getX());
-        obj.addProperty("y", vector.getX());
-        obj.addProperty("z", vector.getX());
-        return obj;
-    }
-    private static JsonElement vectorToJson(Vector3d vector) {
-        JsonObject obj = new JsonObject();
-        obj.addProperty("x", vector.getX());
-        obj.addProperty("y", vector.getY());
-        obj.addProperty("z", vector.getZ());
-        return obj;
-    }
-    private static JsonElement locationToJson(Location<World> location) {
-        JsonObject obj = new JsonObject();
-        obj.add("world", worldToJson(location.getExtent()));
-        obj.addProperty("x", location.getX());
-        obj.addProperty("y", location.getY());
-        obj.addProperty("z", location.getZ());
-        return obj;
-    }
-    private static JsonElement worldToJson(World world) {
-        JsonObject obj = new JsonObject();
-        obj.addProperty("name", world.getName());
-        obj.addProperty("uuid", world.getUniqueId().toString());
-        return obj;
-    }
-    private static JsonElement itemStackToJson(ItemStack stack) {
-        JsonObject obj = new JsonObject();
-        obj.addProperty("id", stack.getItem().getId());
-        obj.addProperty("name", stack.getTranslation().get());
-        obj.addProperty("quantity", stack.getQuantity());
-        return obj;
-    }
-    */
-
-    // Convert class overview
+    /**
+     * Converts a class structure to json. This includes all the fields and methods of the class
+     * @param c The class for which to get the json representation.
+     * @return A JsonNode representing the class.
+     */
     public static JsonNode classToJson(Class c) {
         ObjectNode json = JsonNodeFactory.instance.objectNode();
 
         ObjectNode jsonFields = JsonNodeFactory.instance.objectNode();
-        Field[] fs = Arrays.stream(getAllFields(c)).filter(m -> !m.getName().startsWith("field_")).toArray(Field[]::new);
+        Field[] fs = getAllFields(c);
         for (Field f : fs) {
             ObjectNode jsonField = JsonNodeFactory.instance.objectNode();
 
@@ -339,7 +113,7 @@ public class JsonConverter {
         json.set("fields", jsonFields);
 
         ObjectNode jsonMethods = JsonNodeFactory.instance.objectNode();
-        Method[] ms = Arrays.stream(getAllMethods(c)).filter(m -> !m.getName().startsWith("func_")).toArray(Method[]::new);
+        Method[] ms = getAllMethods(c);
         for (Method m : ms) {
             ObjectNode jsonMethod = JsonNodeFactory.instance.objectNode();
 
@@ -377,20 +151,32 @@ public class JsonConverter {
 
         return json;
     }
+
+    /**
+     * Returns all NON MINECRAFT NATIVE fields from a class and it's ancestors. (The fields that don't start with "field_")
+     * @param c The class for which to get the fields.
+     * @return The array of fields of that class and all inherited fields.
+     */
     public static Field[] getAllFields(Class c) {
-        Field[] fs = new Field[]{};
+        List<Field> fs = new LinkedList<>();
         while (c != null) {
-            fs = ArrayUtils.addAll(c.getDeclaredFields(), fs);
+            fs.addAll(Arrays.asList(c.getDeclaredFields()));
             c = c.getSuperclass();
         }
-        return fs;
+        return fs.stream().filter(f -> !f.getName().startsWith("field_")).toArray(Field[]::new);
     }
+
+    /**
+     * Returns all NON MINECRAFT NATIVE methods from a class and it's ancestors. (The methods that don't start with "func_")
+     * @param c The class for which to get the methods
+     * @return The array of methods of that class and all inherited methods.
+     */
     public static Method[] getAllMethods(Class c) {
-        Method[] ms = new Method[]{};
+        List<Method> ms = new LinkedList<>();
         while (c != null) {
-            ms = ArrayUtils.addAll(c.getDeclaredMethods(), ms);
+            ms.addAll(Arrays.asList(c.getDeclaredMethods()));
             c = c.getSuperclass();
         }
-        return ms;
+        return ms.stream().filter(m -> !m.getName().startsWith("func_")).toArray(Method[]::new);
     }
 }

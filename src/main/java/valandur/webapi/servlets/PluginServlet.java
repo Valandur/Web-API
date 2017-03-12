@@ -1,6 +1,6 @@
 package valandur.webapi.servlets;
 
-import valandur.webapi.Permission;
+import valandur.webapi.misc.Permission;
 import valandur.webapi.cache.CachedPlugin;
 import valandur.webapi.cache.DataCache;
 import valandur.webapi.json.JsonConverter;

@@ -23,14 +23,10 @@ public class CachedLocation extends CachedObject {
     }
 
     @Override
-    public int getCacheDuration() {
-        return 0;
-    }
-    @Override
     public Optional<Object> getLive() {
         Optional<Object> w = world.getLive();
         if (!w.isPresent())
             return Optional.empty();
-        return Optional.of(new Location<World>((World)w.get(), position));
+        return Optional.of(new Location<>((World)w.get(), position));
     }
 }

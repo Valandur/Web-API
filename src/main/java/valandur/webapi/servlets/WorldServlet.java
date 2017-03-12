@@ -1,9 +1,8 @@
 package valandur.webapi.servlets;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.gson.JsonObject;
 import org.spongepowered.api.util.Tuple;
-import valandur.webapi.Permission;
+import valandur.webapi.misc.Permission;
 import valandur.webapi.cache.CachedWorld;
 import valandur.webapi.cache.DataCache;
 import valandur.webapi.json.JsonConverter;
@@ -31,7 +30,7 @@ public class WorldServlet extends WebAPIServlet {
             return;
         }
 
-        Optional<CachedWorld> world = DataCache.getWorld(UUID.fromString(uuid));
+        Optional<CachedWorld> world = DataCache.getWorld(UUID.fromString(uuid), true);
         if (!world.isPresent()) {
             data.sendError(HttpServletResponse.SC_NOT_FOUND);
             return;
@@ -57,7 +56,7 @@ public class WorldServlet extends WebAPIServlet {
             return;
         }
 
-        Optional<CachedWorld> world = DataCache.getWorld(UUID.fromString(uuid));
+        Optional<CachedWorld> world = DataCache.getWorld(UUID.fromString(uuid), false);
         if (!world.isPresent()) {
             data.sendError(HttpServletResponse.SC_NOT_FOUND);
             return;

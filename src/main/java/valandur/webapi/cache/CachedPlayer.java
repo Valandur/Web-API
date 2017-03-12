@@ -3,27 +3,18 @@ package valandur.webapi.cache;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.flowpowered.math.vector.Vector3d;
-import com.google.gson.JsonElement;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.Player;
 import valandur.webapi.json.JsonConverter;
 
 import java.util.*;
 
-public class CachedPlayer extends CachedObject {
+public class CachedPlayer extends CachedEntity {
     @JsonProperty
     public String name;
 
-    @JsonProperty
-    public String uuid;
-
-    public CachedLocation location;
-    public Vector3d velocity;
-    public Vector3d rotation;
     public String address;
     public Integer latency;
-    public JsonNode data;
-    public JsonNode properties;
 
     public static CachedPlayer copyFrom(Player player) {
         return copyFrom(player, false);
@@ -32,10 +23,10 @@ public class CachedPlayer extends CachedObject {
         CachedPlayer cache = new CachedPlayer();
         cache.name = player.getName();
         cache.uuid = player.getUniqueId().toString();
+        cache.location = CachedLocation.copyFrom(player.getLocation());
 
         if (details) {
             cache.details = true;
-            cache.location = CachedLocation.copyFrom(player.getLocation());
             cache.velocity = player.getVelocity().clone();
             cache.rotation = player.getRotation().clone();
             cache.address = player.getConnection().getAddress().toString();
@@ -48,7 +39,7 @@ public class CachedPlayer extends CachedObject {
 
     @Override
     public int getCacheDuration() {
-        return CacheConfig.player;
+        return CacheConfig.durationPlayer;
     }
     @Override
     public Optional<Object> getLive() {

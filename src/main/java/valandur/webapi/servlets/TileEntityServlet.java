@@ -2,9 +2,8 @@ package valandur.webapi.servlets;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.google.gson.JsonObject;
 import org.spongepowered.api.util.Tuple;
-import valandur.webapi.Permission;
+import valandur.webapi.misc.Permission;
 import valandur.webapi.cache.CachedTileEntity;
 import valandur.webapi.cache.CachedWorld;
 import valandur.webapi.cache.DataCache;
@@ -39,7 +38,7 @@ public class TileEntityServlet extends WebAPIServlet {
                 return;
             }
 
-            Optional<CachedWorld> world = DataCache.getWorld(UUID.fromString(uuid));
+            Optional<CachedWorld> world = DataCache.getWorld(UUID.fromString(uuid), false);
             if (!world.isPresent()) {
                 data.sendError(HttpServletResponse.SC_NOT_FOUND);
                 return;
@@ -66,7 +65,7 @@ public class TileEntityServlet extends WebAPIServlet {
                 return;
             }
 
-            Optional<CachedWorld> world = DataCache.getWorld(UUID.fromString(uuid));
+            Optional<CachedWorld> world = DataCache.getWorld(UUID.fromString(uuid), false);
             if (!world.isPresent()) {
                 data.sendError(HttpServletResponse.SC_NOT_FOUND);
                 return;
@@ -79,19 +78,8 @@ public class TileEntityServlet extends WebAPIServlet {
                 return;
             }
 
-            if (paths.length <= 4 || paths[4].isEmpty()) {
-                data.setStatus(HttpServletResponse.SC_OK);
-                data.addJson("tileEntity", JsonConverter.toJson(te.get(), true));
-                return;
-            }
-
-            if (paths[4].equalsIgnoreCase("raw")) {
-                JsonNode res = DataCache.getJacksonLive(te.get());
-                data.setStatus(HttpServletResponse.SC_OK);
-                data.addJson("tileEntity", res);
-            } else {
-                data.sendError(HttpServletResponse.SC_NOT_FOUND);
-            }
+            data.setStatus(HttpServletResponse.SC_OK);
+            data.addJson("tileEntity", JsonConverter.toJson(te.get(), true));
         }
     }
 
@@ -111,7 +99,7 @@ public class TileEntityServlet extends WebAPIServlet {
             return;
         }
 
-        Optional<CachedWorld> world = DataCache.getWorld(UUID.fromString(uuid));
+        Optional<CachedWorld> world = DataCache.getWorld(UUID.fromString(uuid), false);
         if (!world.isPresent()) {
             data.sendError(HttpServletResponse.SC_NOT_FOUND);
             return;

@@ -7,6 +7,7 @@ import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 import valandur.webapi.json.JsonConverter;
 
+import java.lang.reflect.Field;
 import java.util.*;
 
 public class CachedTileEntity extends CachedObject {
@@ -39,13 +40,14 @@ public class CachedTileEntity extends CachedObject {
             } catch (Exception ex) {
                 cache.data = JsonConverter.toJson(ex, true);
             }
+            Field[] fs = JsonConverter.getAllFields(te.getClass());
         }
         return cache;
     }
 
     @Override
     public int getCacheDuration() {
-        return 0;
+        return CacheConfig.durationTileEntity;
     }
     @Override
     public Optional<Object> getLive() {

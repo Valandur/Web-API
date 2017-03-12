@@ -15,6 +15,9 @@ public class CachedWorld extends CachedObject {
     public String name;
 
     @JsonProperty
+    public String dimension;
+
+    @JsonProperty
     public String uuid;
 
     public JsonNode data;
@@ -27,6 +30,8 @@ public class CachedWorld extends CachedObject {
         CachedWorld cache = new CachedWorld();
         cache.name = world.getName();
         cache.uuid = world.getUniqueId().toString();
+        cache.dimension = world.getDimension().getType().getName();
+
         if (details) {
             cache.details = true;
             cache.data = JsonConverter.toJson(world.getProperties().toContainer(), true);
@@ -37,7 +42,7 @@ public class CachedWorld extends CachedObject {
 
     @Override
     public int getCacheDuration() {
-        return CacheConfig.world;
+        return CacheConfig.durationWorld;
     }
     @Override
     public Optional<Object> getLive() {

@@ -5,10 +5,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.flowpowered.math.vector.Vector3d;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.Entity;
+import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.world.World;
 import valandur.webapi.json.JsonConverter;
 
-import java.util.Collection;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -35,8 +35,11 @@ public class CachedEntity extends CachedObject {
         return copyFrom(entity, false);
     }
     public static CachedEntity copyFrom(Entity entity, boolean details) {
+        if (entity instanceof Player)
+            return CachedPlayer.copyFrom((Player)entity, details);
+
         CachedEntity cache = new CachedEntity();
-        cache.type = entity.getType().getName();
+        cache.type = entity.getType() != null ? entity.getType().getName() : null;
         cache.clazz = entity.getClass().getName();
         cache.uuid = entity.getUniqueId().toString();
         cache.location = CachedLocation.copyFrom(entity.getLocation());
@@ -53,7 +56,7 @@ public class CachedEntity extends CachedObject {
 
     @Override
     public int getCacheDuration() {
-        return CacheConfig.entity;
+        return CacheConfig.durationEntity;
     }
     @Override
     public Optional<Object> getLive() {

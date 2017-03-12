@@ -1,9 +1,6 @@
 package valandur.webapi.cache;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.block.tileentity.TileEntity;
 import org.spongepowered.api.command.CommandMapping;
@@ -51,38 +48,28 @@ public class DataCache {
         return e;
     }
 
-    public static void addChatMessage(Player sender, Text text) {
-        chatMessages.add(CachedChatMessage.copyFrom(sender, text));
+    public static CachedChatMessage addChatMessage(Player sender, Text text) {
+        CachedChatMessage cache = CachedChatMessage.copyFrom(sender, text);
+        chatMessages.add(cache);
 
-        while (chatMessages.size() > CacheConfig.chatMessages) {
+        while (chatMessages.size() > CacheConfig.numChatMessages) {
             chatMessages.poll();
         }
+
+        return cache;
     }
 
-    public static void addCommandCall(String command, String arguments, JsonNode source, CommandResult result) {
-        commandCalls.add(CachedCommandCall.copyFrom(command, arguments, source, result));
+    public static CachedCommandCall addCommandCall(String command, String arguments, JsonNode source, CommandResult result) {
+        CachedCommandCall cache = CachedCommandCall.copyFrom(command, arguments, source, result);
+        commandCalls.add(cache);
 
-        while (commandCalls.size() > CacheConfig.commandCalls) {
+        while (commandCalls.size() > CacheConfig.numCommandCalls) {
             commandCalls.poll();
         }
+
+        return cache;
     }
 
-    public static JsonNode getJacksonLive(CachedObject object) {
-        if (object == null)
-            return JsonConverter.toJson(null);
-
-        Optional<JsonNode> json = runOnMainThread(() -> {
-            Optional<Object> o = object.getLive();
-            if (!o.isPresent())
-                return JsonConverter.toJson(null);
-            return JsonConverter.toJson(o.get(), true);
-        });
-
-        if (!json.isPresent())
-            return JsonConverter.toJson(null);
-
-        return json.get();
-    }
     public static JsonNode executeMethod(CachedObject cache, String methodName, Class[] paramTypes, Object[] paramValues) {
         Optional<JsonNode> node = runOnMainThread(() -> {
             Optional<Object> obj = cache.getLive();
@@ -91,9 +78,15 @@ public class DataCache {
                 return null;
 
             Object o = obj.get();
+            Method[] ms = JsonConverter.getAllMethods(o.getClass());
+            Optional<Method> optMethod = Arrays.stream(ms).filter(m -> m.getName().equalsIgnoreCase(methodName)).findAny();
+
+            if (!optMethod.isPresent()) {
+                return null;
+            }
 
             try {
-                Method m = o.getClass().getMethod(methodName, paramTypes);
+                Method m = optMethod.get(); o.getClass().getMethod(methodName, paramTypes);
                 m.setAccessible(true);
                 Object res = m.invoke(o, paramValues);
                 return JsonConverter.toJson(res, true);
@@ -158,16 +151,16 @@ public class DataCache {
     public static Collection<CachedWorld> getWorlds() {
         return worlds.values();
     }
-    public static Optional<CachedWorld> getWorld(UUID uuid) {
+    public static Optional<CachedWorld> getWorld(UUID uuid, boolean details) {
         if (!worlds.containsKey(uuid)) {
             return Optional.empty();
         }
 
         final CachedWorld res = worlds.get(uuid);
-        if (res.isExpired() || !res.hasDetails()) {
-            return updateWorld(uuid);
-        } else {
+        if (!details || (res.hasDetails() && !res.isExpired())) {
             return Optional.of(res);
+        } else {
+            return updateWorld(uuid);
         }
     }
 
@@ -191,16 +184,16 @@ public class DataCache {
     public static Collection<CachedPlayer> getPlayers() {
         return players.values();
     }
-    public static Optional<CachedPlayer> getPlayer(UUID uuid) {
+    public static Optional<CachedPlayer> getPlayer(UUID uuid, boolean details) {
         if (!players.containsKey(uuid)) {
             return Optional.empty();
         }
 
         final CachedPlayer res = players.get(uuid);
-        if (res.isExpired() || !res.hasDetails()) {
-            return updatePlayer(uuid);
-        } else {
+        if (!details || (res.hasDetails() && !res.isExpired())) {
             return Optional.of(res);
+        } else {
+            return updatePlayer(uuid);
         }
     }
 
@@ -232,16 +225,16 @@ public class DataCache {
     public static Collection<CachedEntity> getEntities() {
         return entities.values();
     }
-    public static Optional<CachedEntity> getEntity(UUID uuid) {
+    public static Optional<CachedEntity> getEntity(UUID uuid, boolean details) {
         if (!entities.containsKey(uuid)) {
             return Optional.empty();
         }
 
         final CachedEntity res = entities.get(uuid);
-        if (res.isExpired() || !res.hasDetails()) {
-            return updateEntity(uuid);
-        } else {
+        if (!details || (res.hasDetails() && !res.isExpired())) {
             return Optional.of(res);
+        } else {
+            return updateEntity(uuid);
         }
     }
 
@@ -285,7 +278,7 @@ public class DataCache {
 
     public static Optional<Collection<CachedTileEntity>> getTileEntities() {
         return runOnMainThread(() -> {
-            Collection<CachedTileEntity> entities = new ArrayList<>();
+            Collection<CachedTileEntity> entities = new LinkedList<>();
 
             for (World world : Sponge.getServer().getWorlds()) {
                 Collection<TileEntity> ents = world.getTileEntities();
@@ -303,7 +296,7 @@ public class DataCache {
             if (!w.isPresent())
                 return null;
 
-            Collection<CachedTileEntity> entities = new ArrayList<>();
+            Collection<CachedTileEntity> entities = new LinkedList<>();
             Collection<TileEntity> ents = ((World)w.get()).getTileEntities();
             for (TileEntity te : ents) {
                 if (!te.isValid()) continue;

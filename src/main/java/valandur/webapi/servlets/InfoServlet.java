@@ -6,7 +6,7 @@ import org.spongepowered.api.Platform;
 import org.spongepowered.api.Server;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.plugin.PluginContainer;
-import valandur.webapi.Permission;
+import valandur.webapi.misc.Permission;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.Optional;

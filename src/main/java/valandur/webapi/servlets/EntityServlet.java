@@ -1,9 +1,8 @@
 package valandur.webapi.servlets;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.gson.JsonObject;
 import org.spongepowered.api.util.Tuple;
-import valandur.webapi.Permission;
+import valandur.webapi.misc.Permission;
 import valandur.webapi.cache.CachedEntity;
 import valandur.webapi.cache.DataCache;
 import valandur.webapi.json.JsonConverter;
@@ -31,25 +30,14 @@ public class EntityServlet extends WebAPIServlet {
             return;
         }
 
-        Optional<CachedEntity> entity = DataCache.getEntity(UUID.fromString(uuid));
+        Optional<CachedEntity> entity = DataCache.getEntity(UUID.fromString(uuid), true);
         if (!entity.isPresent()) {
             data.sendError(HttpServletResponse.SC_NOT_FOUND);
             return;
         }
 
-        if (paths.length == 1 || paths[1].isEmpty()) {
-            data.setStatus(HttpServletResponse.SC_OK);
-            data.addJson("entity", JsonConverter.toJson(entity.get(), true));
-            return;
-        }
-
-        if (paths[1].equalsIgnoreCase("raw")) {
-            JsonNode res = DataCache.getJacksonLive(entity.get());
-            data.setStatus(HttpServletResponse.SC_OK);
-            data.addJson("entity", res);
-        } else {
-            data.sendError(HttpServletResponse.SC_NOT_FOUND);
-        }
+        data.setStatus(HttpServletResponse.SC_OK);
+        data.addJson("entity", JsonConverter.toJson(entity.get(), true));
     }
 
     @Override
@@ -68,7 +56,7 @@ public class EntityServlet extends WebAPIServlet {
             return;
         }
 
-        Optional<CachedEntity> entity = DataCache.getEntity(UUID.fromString(uuid));
+        Optional<CachedEntity> entity = DataCache.getEntity(UUID.fromString(uuid), false);
         if (!entity.isPresent()) {
             data.sendError(HttpServletResponse.SC_NOT_FOUND);
             return;

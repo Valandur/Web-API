@@ -2,7 +2,9 @@ package valandur.webapi;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.inject.Inject;
+import com.sun.media.jfxmedia.events.PlayerEvent;
 import ninja.leaping.configurate.ConfigurationNode;
+import ninja.leaping.configurate.ConfigurationOptions;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
@@ -22,7 +24,9 @@ import org.spongepowered.api.config.ConfigDir;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Listener;
+import org.spongepowered.api.event.achievement.GrantAchievementEvent;
 import org.spongepowered.api.event.cause.NamedCause;
+import org.spongepowered.api.event.cause.entity.damage.source.EntityDamageSource;
 import org.spongepowered.api.event.command.SendCommandEvent;
 import org.spongepowered.api.event.entity.DestructEntityEvent;
 import org.spongepowered.api.event.entity.SpawnEntityEvent;
@@ -37,13 +41,17 @@ import org.spongepowered.api.event.world.LoadWorldEvent;
 import org.spongepowered.api.event.world.UnloadWorldEvent;
 import org.spongepowered.api.plugin.Plugin;
 import org.spongepowered.api.scheduler.SpongeExecutorService;
+import org.spongepowered.api.statistic.achievement.Achievement;
+import org.spongepowered.api.text.Text;
+import org.spongepowered.api.text.format.TextColors;
 import org.spongepowered.api.util.Tuple;
-import valandur.webapi.cache.CacheConfig;
-import valandur.webapi.cache.DataCache;
+import valandur.webapi.cache.*;
 import valandur.webapi.command.*;
 import valandur.webapi.handlers.AuthHandler;
 import valandur.webapi.handlers.RateLimitHandler;
 import valandur.webapi.handlers.WebAPIErrorHandler;
+import valandur.webapi.hooks.WebHook;
+import valandur.webapi.hooks.WebHooks;
 import valandur.webapi.json.JsonConverter;
 import valandur.webapi.misc.WebAPICommandSource;
 import valandur.webapi.misc.JettyLogger;
@@ -69,7 +77,7 @@ public class WebAPI {
 
     public static final String ID = "webapi";
     public static final String NAME = "Web-API";
-    public static final String VERSION = "1.10";
+    public static final String VERSION = "2.0";
     public static final String DESCRIPTION = "Access Minecraft through a Web API";
     public static final String URL = "https://github.com/Valandur/Web-API";
 
@@ -122,7 +130,7 @@ public class WebAPI {
 
     @Listener
     public void onInitialization(GameInitializationEvent event) {
-        logger.info(WebAPI.NAME + " v." + WebAPI.VERSION + " is starting...");
+        logger.info(WebAPI.NAME + " v" + WebAPI.VERSION + " is starting...");
 
         logger.info("Setting up jetty logger");
         Log.setLog(new JettyLogger());
@@ -130,14 +138,14 @@ public class WebAPI {
         // Create permission handler
         authHandler = new AuthHandler();
 
-        loadConfig();
+        loadConfig(null);
 
         CommandRegistry.init();
 
         logger.info(WebAPI.NAME + " ready");
     }
 
-    private void loadConfig() {
+    private void loadConfig(Player player) {
         logger.info("Loading configuration...");
 
         Tuple<ConfigurationLoader, ConfigurationNode> tup = loadWithDefaults("config.conf", "defaults/config.conf");
@@ -145,15 +153,18 @@ public class WebAPI {
 
         serverHost = config.getNode("host").getString();
         serverPort = config.getNode("port").getInt();
-        JsonConverter.hiddenClasses = config.getNode("hiddenClasses").getList(t -> t.toString().toLowerCase());
         cmdWaitTime = config.getNode("cmdWaitTime").getInt();
 
         authHandler.reloadConfig();
 
+        WebHooks.reloadConfig();
+
         CacheConfig.init();
+
+        if (player != null) player.sendMessage(Text.builder().color(TextColors.AQUA).append(Text.of("[" + WebAPI.NAME + "] The configuration files have been reloaded!")).toText());
     }
 
-    private void startWebServer() {
+    private void startWebServer(Player player) {
         // Start web server
         logger.info("Starting Web Server...");
 
@@ -171,7 +182,7 @@ public class WebAPI {
             server.addBean(new WebAPIErrorHandler());
 
             // Collection of all handlers
-            List<Handler> handlers = new ArrayList<Handler>();
+            List<Handler> handlers = new LinkedList<>();
 
             // Asset handlers
             handlers.add(newContext("/", new AssetHandler(loadAssetString("pages/redoc.html"), "text/html; charset=utf-8")));
@@ -212,6 +223,10 @@ public class WebAPI {
         }
 
         logger.info("Web server running on " + server.getURI());
+
+        if (player != null) {
+            player.sendMessage(Text.builder().color(TextColors.AQUA).append(Text.of("[" + WebAPI.NAME + "] The web server has been restarted!")).toText());
+        }
     }
     private void stopWebServer() {
         if (server != null) {
@@ -273,7 +288,7 @@ public class WebAPI {
         DataCache.updatePlugins();
         DataCache.updateCommands();
 
-        startWebServer();
+        startWebServer(null);
     }
 
     @Listener
@@ -283,44 +298,57 @@ public class WebAPI {
 
     @Listener
     public void onReload(GameReloadEvent event) {
-        logger.info("Reloading " + WebAPI.NAME + " v." + WebAPI.VERSION + "...");
+        Optional<Player> p = event.getCause().first(Player.class);
+
+        logger.info("Reloading " + WebAPI.NAME + " v" + WebAPI.VERSION + "...");
 
         stopWebServer();
 
-        loadConfig();
+        loadConfig(p.orElse(null));
 
-        startWebServer();
+        startWebServer(p.orElse(null));
 
         logger.info("Reloaded " + WebAPI.NAME);
     }
 
     @Listener
-    public void onWorldLoad(LoadWorldEvent e) {
-        DataCache.addWorld(e.getTargetWorld());
+    public void onWorldLoad(LoadWorldEvent event) {
+        DataCache.addWorld(event.getTargetWorld());
     }
     @Listener
-    public void onWorldUnload(UnloadWorldEvent e) {
-        DataCache.removeWorld(e.getTargetWorld().getUniqueId());
-    }
-
-    @Listener
-    public void onPlayerJoin(ClientConnectionEvent.Join e) {
-        DataCache.addPlayer(e.getTargetEntity());
-    }
-    @Listener
-    public void onPlayerLeave(ClientConnectionEvent.Disconnect e) {
-        DataCache.removePlayer(e.getTargetEntity().getUniqueId());
+    public void onWorldUnload(UnloadWorldEvent event) {
+        DataCache.removeWorld(event.getTargetWorld().getUniqueId());
     }
 
     @Listener
-    public void onEntitySpawn(SpawnEntityEvent e) {
-        for (Entity entity : e.getEntities()) {
+    public void onPlayerJoin(ClientConnectionEvent.Join event) {
+        DataCache.addPlayer(event.getTargetEntity());
+    }
+    @Listener
+    public void onPlayerLeave(ClientConnectionEvent.Disconnect event) {
+        DataCache.removePlayer(event.getTargetEntity().getUniqueId());
+    }
+
+    @Listener
+    public void onEntitySpawn(SpawnEntityEvent event) {
+        for (Entity entity : event.getEntities()) {
             DataCache.addEntity(entity);
         }
     }
     @Listener
-    public void onEntityDespawn(DestructEntityEvent e) {
-        DataCache.removeEntity(e.getTargetEntity().getUniqueId());
+    public void onEntityDespawn(DestructEntityEvent event) {
+        DataCache.removeEntity(event.getTargetEntity().getUniqueId());
+
+        Entity source = null;
+        Entity ent = event.getTargetEntity();
+        Player target = (Player)event.getTargetEntity();
+
+        Optional<EntityDamageSource> dmgSource = event.getCause().first(EntityDamageSource.class);
+        if (dmgSource.isPresent()) source = dmgSource.get().getSource();
+        String sourceStr = source != null ? JsonConverter.toString(CachedEntity.copyFrom(source)) : "null";
+
+        String message = "{\"killer\":" + sourceStr + ",\"target\":" + JsonConverter.toString(CachedPlayer.copyFrom(target)) + "}";
+        WebHooks.notifyHooks(WebHooks.WebHookType.PLAYER_DEATH, null, message);
     }
 
     @Listener
@@ -328,7 +356,20 @@ public class WebAPI {
         Optional<Player> player = event.getCause().first(Player.class);
         if (!player.isPresent()) return;
 
-        DataCache.addChatMessage(player.get(), event.getMessage());
+        CachedChatMessage msg = DataCache.addChatMessage(player.get(), event.getMessage());
+        String message = JsonConverter.toString(msg, true);
+        WebHooks.notifyHooks(WebHooks.WebHookType.CHAT, msg.sender.uuid, message);
+    }
+
+    @Listener
+    public void onPlayerAchievement(GrantAchievementEvent.TargetPlayer event) {
+        Optional<CachedPlayer> p = DataCache.getPlayer(event.getTargetEntity().getUniqueId(), false);
+        if (!p.isPresent()) return;
+
+        Achievement a = event.getAchievement();
+
+        String message = "{\"player\":" + JsonConverter.toString(p.get()) + ",\"achievement\":" + JsonConverter.toString(a, true) + "}";
+        WebHooks.notifyHooks(WebHooks.WebHookType.ACHIEVEMENT, null, message);
     }
 
     @Listener

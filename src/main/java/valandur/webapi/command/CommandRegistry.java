@@ -2,10 +2,16 @@ package valandur.webapi.command;
 
 import org.slf4j.Logger;
 import org.spongepowered.api.Sponge;
+import org.spongepowered.api.command.args.CommandElement;
 import org.spongepowered.api.command.args.GenericArguments;
 import org.spongepowered.api.command.spec.CommandSpec;
 import org.spongepowered.api.text.Text;
 import valandur.webapi.WebAPI;
+import valandur.webapi.hooks.WebHook;
+import valandur.webapi.hooks.WebHookParam;
+import valandur.webapi.hooks.WebHooks;
+
+import java.util.*;
 
 public class CommandRegistry {
     public static void init() {
@@ -76,11 +82,35 @@ public class CommandRegistry {
                 .child(specBlacklistDisable, "disable")
                 .build();
 
+        Map<List<String>, CommandSpec> hookSpecs = new HashMap<>();
+        for (WebHook hook : WebHooks.getCommandHooks().values()) {
+            List<CommandElement> args = new ArrayList<>();
+
+            for (WebHookParam param : hook.getParams()) {
+                Optional<CommandElement> e = param.getCommandElement();
+                e.ifPresent(args::add);
+            }
+
+            CommandSpec hookCmd = CommandSpec.builder()
+                    .description(Text.of("Notify the " + hook.getName() + " hook"))
+                    .permission("webapi.command.notify." + hook.getName())
+                    .arguments(args.toArray(new CommandElement[args.size()]))
+                    .executor(new CmdNotifyHook(hook))
+                    .build();
+            hookSpecs.put(Collections.singletonList(hook.getName()), hookCmd);
+        }
+        CommandSpec specNotifyHook = CommandSpec.builder()
+                .description(Text.of("Notify a hook"))
+                .permission("webapi.command.notify")
+                .children(hookSpecs)
+                .build();
+
         CommandSpec spec = CommandSpec.builder()
                 .description(Text.of("Manage Web-API settings"))
                 .permission("webapi.command")
                 .child(specWhitelist, "whitelist")
                 .child(specBlacklist, "blacklist")
+                .child(specNotifyHook, "notify")
                 .build();
         Sponge.getCommandManager().register(WebAPI.getInstance(), spec, "webapi");
     }

@@ -2,6 +2,7 @@ package valandur.webapi.cache;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.spongepowered.api.command.CommandMapping;
+import org.spongepowered.api.text.Text;
 import valandur.webapi.misc.WebAPICommandSource;
 
 import java.util.Optional;
@@ -25,8 +26,8 @@ public class CachedCommand extends CachedObject {
         cache.name = cmd.getPrimaryAlias();
         cache.aliases = cmd.getAllAliases().toArray();
         cache.usage = cmd.getCallable().getUsage(WebAPICommandSource.instance).toPlain();
-        cache.description = cmd.getCallable().getShortDescription(WebAPICommandSource.instance).orElse(null).toPlain();
-        cache.help = cmd.getCallable().getHelp(WebAPICommandSource.instance).orElse(null).toPlain();
+        cache.description = cmd.getCallable().getShortDescription(WebAPICommandSource.instance).orElse(Text.EMPTY).toPlain();
+        cache.help = cmd.getCallable().getHelp(WebAPICommandSource.instance).orElse(Text.EMPTY).toPlain();
 
         return cache;
     }

@@ -6,9 +6,14 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.flowpowered.math.vector.Vector3d;
+import org.spongepowered.api.block.tileentity.TileEntity;
 import org.spongepowered.api.data.DataContainer;
 import org.spongepowered.api.data.Property;
+import org.spongepowered.api.entity.Entity;
+import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.statistic.achievement.Achievement;
+import org.spongepowered.api.world.Location;
+import org.spongepowered.api.world.World;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -62,6 +67,12 @@ public class JsonConverter {
         addSerializer(om, Map.class, new MapSerializer());
         addSerializer(om, DataContainer.class, new DataContainerSerializer());
         addSerializer(om, Achievement.class, new AchievementSerializer());
+
+        addSerializer(om, Player.class, new PlayerSerializer());
+        addSerializer(om, Entity.class, new EntitySerializer());
+        addSerializer(om, World.class, new WorldSerializer());
+        addSerializer(om, TileEntity.class, new TileEntitySerializer());
+        addSerializer(om, Location.class, new LocationSerializer());
 
         return om;
     }

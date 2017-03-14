@@ -16,6 +16,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
@@ -23,7 +24,7 @@ import java.util.stream.Collectors;
 public class WebHooks {
 
     public enum WebHookType {
-        CHAT, ACHIEVEMENT, PLAYER_DEATH,
+        CHAT, ACHIEVEMENT, PLAYER_JOIN, PLAYER_LEAVE, PLAYER_DEATH, COMMAND,
     }
 
     private static Map<String, WebHook> commandHooks = new HashMap<>();
@@ -54,8 +55,9 @@ public class WebHooks {
                 commandHooks.put(hook.getName(), hook);
             }
 
+            ConfigurationNode eventNode = config.getNode("events");
             for (WebHookType type : WebHookType.values()) {
-                List<WebHook> typeHooks = config.getNode(type.toString().toLowerCase()).getList(TypeToken.of(WebHook.class));
+                List<WebHook> typeHooks = eventNode.getNode(type.toString().toLowerCase()).getList(TypeToken.of(WebHook.class));
                 hooks.put(type, typeHooks.stream().filter(WebHook::isEnabled).collect(Collectors.toList()));
             }
         } catch (ObjectMappingException e) {
@@ -63,10 +65,10 @@ public class WebHooks {
         }
     }
 
-    public static void notifyHooks(WebHookType type, String source, String message) {
+    public static void notifyHooks(WebHookType type, String message) {
         List<WebHook> typeHooks = hooks.get(type);
         for (WebHook hook : typeHooks) {
-            notifyHook(hook, source, message);
+            notifyHook(hook, null, new HashMap<>(), message);
         }
     }
 
@@ -75,48 +77,57 @@ public class WebHooks {
         String content = JsonConverter.toString(contentMap, true);
         notifyHook(hook, source, params, content);
     }
-    public static void notifyHook(WebHook hook, String source, String content) {
-        notifyHook(hook, source, new HashMap<>(), content);
-    }
     private static void notifyHook(WebHook hook, String source, Map<String, Tuple<String, String>> params, String content) {
         List<WebHookParam> reqParams = hook.getParams();
         if (reqParams.size() != params.size()) return;
 
+        // Add source parameter
+        if (source != null) params.put("source", new Tuple<>(source, source));
+
         String address = hook.getAddress();
-        if (source != null) address = address.replace("{source}", source);
         for (Map.Entry<String, Tuple<String, String>> entry : params.entrySet()) {
             address = address.replace("{" + entry.getKey() + "}", entry.getValue().getFirst());
         }
-        final String addr = address;
+        final String finalAddress = address;
+
+        String data = null;
+        if (content != null) {
+            try {
+                data = hook.getDataType() == WebHook.WebHookDataType.JSON ? content : "body=" + URLEncoder.encode(content, "UTF-8");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        final String finalData = data;
 
         CompletableFuture.runAsync(() -> {
             HttpURLConnection connection = null;
             try {
                 //Create connection
-                URL url = new URL(addr);
+                URL url = new URL(finalAddress);
                 connection = (HttpURLConnection) url.openConnection();
                 connection.setRequestMethod(hook.getMethod().toString());
                 for (WebHookHeader header : hook.getHeaders()) {
                     String val = header.getValue();
-                    if (source != null) val = val.replace("{source}", source);
                     for (Map.Entry<String, Tuple<String, String>> entry : params.entrySet()) {
                         val = val.replace("{" + entry.getKey() + "}", entry.getValue().getFirst());
                     }
                     connection.setRequestProperty(header.getName(), val);
                 }
                 connection.setRequestProperty("User-Agent", userAgent);
-                if (content != null && hook.getMethod() != WebHook.WebHookMethod.GET) {
-                    connection.setRequestProperty("Content-Type", "application/json");
-                    connection.setRequestProperty("Content-Length", Integer.toString(content.getBytes().length));
+                connection.setRequestProperty("charset", "utf-8");
+                if (finalData != null && hook.getMethod() != WebHook.WebHookMethod.GET) {
+                    connection.setRequestProperty("Content-Type", hook.getDataTypeHeader());
+                    connection.setRequestProperty("Content-Length", Integer.toString(finalData.getBytes().length));
                 }
                 connection.setUseCaches(false);
 
                 //Send request
-                if (content != null && hook.getMethod() != WebHook.WebHookMethod.GET) {
+                if (finalData != null && hook.getMethod() != WebHook.WebHookMethod.GET) {
                     connection.setDoOutput(true);
 
                     DataOutputStream wr = new DataOutputStream(connection.getOutputStream());
-                    wr.writeBytes(content);
+                    wr.writeBytes(finalData);
                     wr.close();
                 }
 

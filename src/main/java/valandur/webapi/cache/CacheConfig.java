@@ -23,13 +23,14 @@ public class CacheConfig {
         Tuple<ConfigurationLoader, ConfigurationNode> tup = api.loadWithDefaults(configFileName, "defaults/" + configFileName);
         ConfigurationNode config = tup.getSecond();
 
-        numChatMessages = config.getNode("chat").getInt();
-        numCommandCalls = config.getNode("command").getInt();
+        ConfigurationNode amountNode = config.getNode("amount");
+        numChatMessages = amountNode.getNode("chat").getInt();
+        numCommandCalls = amountNode.getNode("command").getInt();
 
-        ConfigurationNode cacheNode = config.getNode("duration");
-        durationWorld = cacheNode.getNode("world").getInt();
-        durationPlayer = cacheNode.getNode("player").getInt();
-        durationEntity = cacheNode.getNode("entity").getInt();
-        durationTileEntity = cacheNode.getNode("tileEntity").getInt();
+        ConfigurationNode durationNode = config.getNode("duration");
+        durationWorld = durationNode.getNode("world").getInt();
+        durationPlayer = durationNode.getNode("player").getInt();
+        durationEntity = durationNode.getNode("entity").getInt();
+        durationTileEntity = durationNode.getNode("tileEntity").getInt();
     }
 }

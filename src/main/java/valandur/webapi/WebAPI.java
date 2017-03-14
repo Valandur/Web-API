@@ -302,6 +302,9 @@ public class WebAPI {
 
         logger.info("Reloading " + WebAPI.NAME + " v" + WebAPI.VERSION + "...");
 
+        DataCache.updatePlugins();
+        DataCache.updateCommands();
+
         stopWebServer();
 
         loadConfig(p.orElse(null));

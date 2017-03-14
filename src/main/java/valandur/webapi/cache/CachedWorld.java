@@ -15,11 +15,9 @@ public class CachedWorld extends CachedObject {
     public String name;
 
     @JsonProperty
-    public String dimension;
-
-    @JsonProperty
     public String uuid;
 
+    public String dimension;
     public JsonNode data;
     public JsonNode generator;
 
@@ -30,10 +28,10 @@ public class CachedWorld extends CachedObject {
         CachedWorld cache = new CachedWorld();
         cache.name = world.getName();
         cache.uuid = world.getUniqueId().toString();
-        cache.dimension = world.getDimension().getType().getName();
 
         if (details) {
             cache.details = true;
+            cache.dimension = world.getDimension().getType().getName();
             cache.data = JsonConverter.toJson(world.getProperties().toContainer(), true);
             cache.generator = JsonConverter.toJson(world.getProperties().getGeneratorType(), true);
         }

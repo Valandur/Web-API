@@ -156,9 +156,9 @@ paths:
           description: A list of all the classes that are cached on the server.
           schema:
             type: array
-              items:
-                type: string
-                description: The name of the class
+            items:
+              type: string
+              description: The name of the class
   /class/{classname}:
     get:
       summary: Lookup class

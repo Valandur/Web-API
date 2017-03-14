@@ -131,11 +131,13 @@ public class DataCache {
         return node.get();
     }
 
-    public static void addWorld(World world) {
-        worlds.put(world.getUniqueId(), CachedWorld.copyFrom(world));
+    public static CachedWorld addWorld(World world) {
+        CachedWorld w = CachedWorld.copyFrom(world);
+        worlds.put(world.getUniqueId(), w);
+        return w;
     }
-    public static void removeWorld(UUID uuid) {
-        worlds.remove(uuid);
+    public static CachedWorld removeWorld(UUID uuid) {
+        return worlds.remove(uuid);
     }
     private static Optional<CachedWorld> updateWorld(UUID uuid) {
         return runOnMainThread(() -> {
@@ -164,11 +166,13 @@ public class DataCache {
         }
     }
 
-    public static void addPlayer(Player player) {
-        players.put(player.getUniqueId(), CachedPlayer.copyFrom(player));
+    public static CachedPlayer addPlayer(Player player) {
+        CachedPlayer p = CachedPlayer.copyFrom(player);
+        players.put(player.getUniqueId(), p);
+        return p;
     }
-    public static void removePlayer(UUID uuid) {
-        players.remove(uuid);
+    public static CachedPlayer removePlayer(UUID uuid) {
+        return players.remove(uuid);
     }
     private static Optional<CachedPlayer> updatePlayer(UUID uuid) {
         return runOnMainThread(() -> {
@@ -197,11 +201,13 @@ public class DataCache {
         }
     }
 
-    public static void addEntity(Entity entity) {
-        entities.put(entity.getUniqueId(), CachedEntity.copyFrom(entity));
+    public static CachedEntity addEntity(Entity entity) {
+        CachedEntity e = CachedEntity.copyFrom(entity);
+        entities.put(entity.getUniqueId(), e);
+        return e;
     }
-    public static void removeEntity(UUID uuid) {
-        entities.remove(uuid);
+    public static CachedEntity removeEntity(UUID uuid) {
+        return entities.remove(uuid);
     }
     private static Optional<CachedEntity> updateEntity(UUID uuid) {
         return runOnMainThread(() -> {

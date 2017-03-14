@@ -77,7 +77,7 @@ public class WebAPI {
 
     public static final String ID = "webapi";
     public static final String NAME = "Web-API";
-    public static final String VERSION = "2.0.1";
+    public static final String VERSION = "2.0.2-S6.0";
     public static final String DESCRIPTION = "Access Minecraft through a Web API";
     public static final String URL = "https://github.com/Valandur/Web-API";
 
@@ -97,9 +97,6 @@ public class WebAPI {
     @Inject
     @ConfigDir(sharedRoot = false)
     private Path configPath;
-    public Path getConfigPath() {
-        return configPath;
-    }
 
     private String serverHost;
     private int serverPort;
@@ -260,15 +257,13 @@ public class WebAPI {
             if (!Files.exists(filePath))
                 Sponge.getAssetManager().getAsset(this, defaultPath).get().copyToDirectory(configPath);
 
-            URL defUrl = Sponge.getAssetManager().getAsset(this, defaultPath).get().getUrl();
-            ConfigurationLoader<CommentedConfigurationNode> defLoader = HoconConfigurationLoader.builder().setURL(defUrl).build();
-            ConfigurationNode defConfig = defLoader.load();
-
             ConfigurationLoader<CommentedConfigurationNode> loader = HoconConfigurationLoader.builder().setPath(filePath).build();
             ConfigurationNode config = loader.load();
 
+            ConfigurationLoader<CommentedConfigurationNode> defLoader = HoconConfigurationLoader.builder().setPath(filePath).build();
+            ConfigurationNode defConfig = loader.load();
+
             config.mergeValuesFrom(defConfig);
-            loader.save(config);
 
             return new Tuple<>(loader, config);
 
@@ -302,6 +297,9 @@ public class WebAPI {
 
         logger.info("Reloading " + WebAPI.NAME + " v" + WebAPI.VERSION + "...");
 
+        DataCache.updatePlugins();
+        DataCache.updateCommands();
+
         stopWebServer();
 
         loadConfig(p.orElse(null));
@@ -322,11 +320,15 @@ public class WebAPI {
 
     @Listener
     public void onPlayerJoin(ClientConnectionEvent.Join event) {
-        DataCache.addPlayer(event.getTargetEntity());
+        CachedPlayer p = DataCache.addPlayer(event.getTargetEntity());
+
+        WebHooks.notifyHooks(WebHooks.WebHookType.PLAYER_JOIN, JsonConverter.toString(p));
     }
     @Listener
     public void onPlayerLeave(ClientConnectionEvent.Disconnect event) {
-        DataCache.removePlayer(event.getTargetEntity().getUniqueId());
+        CachedPlayer p = DataCache.removePlayer(event.getTargetEntity().getUniqueId());
+
+        WebHooks.notifyHooks(WebHooks.WebHookType.PLAYER_LEAVE, JsonConverter.toString(p));
     }
 
     @Listener
@@ -339,16 +341,18 @@ public class WebAPI {
     public void onEntityDespawn(DestructEntityEvent event) {
         DataCache.removeEntity(event.getTargetEntity().getUniqueId());
 
-        Entity source = null;
         Entity ent = event.getTargetEntity();
-        Player target = (Player)event.getTargetEntity();
+        if (ent instanceof Player) {
+            Entity source = null;
+            Player target = (Player)event.getTargetEntity();
 
-        Optional<EntityDamageSource> dmgSource = event.getCause().first(EntityDamageSource.class);
-        if (dmgSource.isPresent()) source = dmgSource.get().getSource();
-        String sourceStr = source != null ? JsonConverter.toString(CachedEntity.copyFrom(source)) : "null";
+            Optional<EntityDamageSource> dmgSource = event.getCause().first(EntityDamageSource.class);
+            if (dmgSource.isPresent()) source = dmgSource.get().getSource();
+            String sourceStr = source != null ? JsonConverter.toString(source) : "null";
 
-        String message = "{\"killer\":" + sourceStr + ",\"target\":" + JsonConverter.toString(CachedPlayer.copyFrom(target)) + "}";
-        WebHooks.notifyHooks(WebHooks.WebHookType.PLAYER_DEATH, null, message);
+            String message = "{\"killer\":" + sourceStr + ",\"target\":" + JsonConverter.toString(target) + "}";
+            WebHooks.notifyHooks(WebHooks.WebHookType.PLAYER_DEATH, message);
+        }
     }
 
     @Listener
@@ -357,8 +361,8 @@ public class WebAPI {
         if (!player.isPresent()) return;
 
         CachedChatMessage msg = DataCache.addChatMessage(player.get(), event.getMessage());
-        String message = JsonConverter.toString(msg, true);
-        WebHooks.notifyHooks(WebHooks.WebHookType.CHAT, msg.sender.uuid, message);
+        String message = JsonConverter.toString(msg);
+        WebHooks.notifyHooks(WebHooks.WebHookType.CHAT, message);
     }
 
     @Listener
@@ -368,8 +372,8 @@ public class WebAPI {
 
         Achievement a = event.getAchievement();
 
-        String message = "{\"player\":" + JsonConverter.toString(p.get()) + ",\"achievement\":" + JsonConverter.toString(a, true) + "}";
-        WebHooks.notifyHooks(WebHooks.WebHookType.ACHIEVEMENT, null, message);
+        String message = "{\"player\":" + JsonConverter.toString(p.get()) + ",\"achievement\":" + JsonConverter.toString(a) + "}";
+        WebHooks.notifyHooks(WebHooks.WebHookType.ACHIEVEMENT, message);
     }
 
     @Listener
@@ -379,6 +383,9 @@ public class WebAPI {
         if (src.isPresent()) {
             source = JsonConverter.toJson(src.get());
         }
-        DataCache.addCommandCall(event.getCommand(), event.getArguments(), source, event.getResult());
+        CachedCommandCall call = DataCache.addCommandCall(event.getCommand(), event.getArguments(), source, event.getResult());
+
+        String message = JsonConverter.toString(call);
+        WebHooks.notifyHooks(WebHooks.WebHookType.COMMAND, message);
     }
 }

@@ -13,6 +13,10 @@ public class WebHook {
         GET, PUT, POST, DELETE
     }
 
+    public enum WebHookDataType {
+        JSON, FORM
+    }
+
     @Setting(comment = "The name of the hook (used when referring to it in commands)")
     private String name;
     public String getName() {
@@ -34,6 +38,15 @@ public class WebHook {
     @Setting(comment = "The method which is used when notifying this hook (GET/PUT/POST/DELETE)")
     private WebHookMethod method = WebHookMethod.GET;
     public WebHookMethod getMethod() { return method; }
+
+    @Setting(comment = "Choose to either send the body as application/json directly, or as application/x-www-form-urlencoded")
+    private WebHookDataType dataType = WebHookDataType.JSON;
+    public WebHookDataType getDataType() {
+        return dataType;
+    }
+    public String getDataTypeHeader() {
+        return "application/" + (dataType == WebHookDataType.JSON ? "json" : "x-www-form-urlencoded");
+    }
 
     @Setting(comment = "The headers that are sent along with the request. You can use this for example to pass along a secret key to ensure the requests are coming from the Web-API")
     private List<WebHookHeader> headers = new ArrayList<>();

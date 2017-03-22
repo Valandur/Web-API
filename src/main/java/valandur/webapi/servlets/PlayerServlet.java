@@ -30,7 +30,7 @@ public class PlayerServlet extends WebAPIServlet {
             return;
         }
 
-        Optional<CachedPlayer> player = DataCache.getPlayer(UUID.fromString(uuid), true);
+        Optional<CachedPlayer> player = DataCache.getPlayer(UUID.fromString(uuid));
         if (!player.isPresent()) {
             data.sendError(HttpServletResponse.SC_NOT_FOUND);
             return;
@@ -56,7 +56,7 @@ public class PlayerServlet extends WebAPIServlet {
             return;
         }
 
-        Optional<CachedPlayer> player = DataCache.getPlayer(UUID.fromString(uuid), false);
+        Optional<CachedPlayer> player = DataCache.getPlayer(UUID.fromString(uuid));
         if (!player.isPresent()) {
             data.sendError(HttpServletResponse.SC_NOT_FOUND);
             return;

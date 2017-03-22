@@ -6,6 +6,7 @@ import org.spongepowered.api.Platform;
 import org.spongepowered.api.Server;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.plugin.PluginContainer;
+import valandur.webapi.json.JsonConverter;
 import valandur.webapi.misc.Permission;
 
 import javax.servlet.http.HttpServletResponse;
@@ -42,7 +43,7 @@ public class InfoServlet extends WebAPIServlet {
         obj.put("description", descr.isPresent() ? descr.get() : null);
         Optional<String> url = container.getVersion();
         obj.put("url", url.isPresent() ? url.get() : null);
-        obj.putPOJO("authors", container.getAuthors());
+        obj.set("authors", JsonConverter.toJson(container.getAuthors()));
         return obj;
     }
 }

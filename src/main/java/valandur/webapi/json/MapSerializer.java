@@ -8,24 +8,29 @@ import valandur.webapi.misc.Util;
 import java.io.IOException;
 import java.util.Map;
 
-public class MapSerializer extends StdSerializer<Map<?, ?>> {
+public class MapSerializer extends StdSerializer<Map> {
 
     public MapSerializer() {
         this(null);
     }
 
-    public MapSerializer(Class<Map<?, ?>> t) {
+    public MapSerializer(Class<Map> t) {
         super(t);
     }
 
     @Override
-    public void serialize(Map<?, ?> value, JsonGenerator gen, SerializerProvider provider) throws IOException {
+    public void serialize(Map value, JsonGenerator gen, SerializerProvider provider) throws IOException {
         gen.writeStartObject();
-        for (Map.Entry entry : value.entrySet()) {
-            String key = Util.lowerFirst(entry.getKey().toString());
+        for (Object entry : value.entrySet()) {
+            if (!(entry instanceof Map.Entry)) {
+                continue;
+            }
+
+            Map.Entry e = (Map.Entry)entry;
+            String key = Util.lowerFirst(e.getKey().toString());
             if (key.equalsIgnoreCase("contentVersion"))
                 continue;
-            gen.writeObjectField(key, entry.getValue());
+            gen.writeObjectField(key, e.getValue());
         }
         gen.writeEndObject();
     }

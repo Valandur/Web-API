@@ -13,7 +13,7 @@ public class HistoryServlet extends WebAPIServlet {
         String[] paths = data.getPathParts();
 
         if (paths.length == 0 || paths[0].isEmpty()) {
-            data.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            data.sendError(HttpServletResponse.SC_NOT_FOUND);
             return;
         }
 

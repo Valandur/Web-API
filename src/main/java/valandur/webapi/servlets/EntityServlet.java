@@ -30,7 +30,7 @@ public class EntityServlet extends WebAPIServlet {
             return;
         }
 
-        Optional<CachedEntity> entity = DataCache.getEntity(UUID.fromString(uuid), true);
+        Optional<CachedEntity> entity = DataCache.getEntity(UUID.fromString(uuid));
         if (!entity.isPresent()) {
             data.sendError(HttpServletResponse.SC_NOT_FOUND);
             return;
@@ -56,7 +56,7 @@ public class EntityServlet extends WebAPIServlet {
             return;
         }
 
-        Optional<CachedEntity> entity = DataCache.getEntity(UUID.fromString(uuid), false);
+        Optional<CachedEntity> entity = DataCache.getEntity(UUID.fromString(uuid));
         if (!entity.isPresent()) {
             data.sendError(HttpServletResponse.SC_NOT_FOUND);
             return;

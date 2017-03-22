@@ -12,23 +12,25 @@ public class CachedPlugin extends CachedObject {
 
     @JsonProperty
     public String id;
+
     @JsonProperty
     public String name;
+
     @JsonProperty
     public String version;
+
     public String description;
     public String url;
     public List<String> authors;
 
-    public static CachedPlugin copyFrom(PluginContainer plugin) {
-        CachedPlugin cache = new CachedPlugin();
-        cache.id = plugin.getId();
-        cache.name = plugin.getName();
-        cache.description = plugin.getDescription().orElse(null);
-        cache.version = plugin.getVersion().orElse(null);
-        cache.url = plugin.getUrl().orElse(null);
-        cache.authors = new ArrayList<String>(plugin.getAuthors());
-        return cache;
+
+    public CachedPlugin(PluginContainer plugin) {
+        this.id = plugin.getId();
+        this.name = plugin.getName();
+        this.description = plugin.getDescription().orElse(null);
+        this.version = plugin.getVersion().orElse(null);
+        this.url = plugin.getUrl().orElse(null);
+        this.authors = new ArrayList<String>(plugin.getAuthors());
     }
 
     @Override

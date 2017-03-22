@@ -2,9 +2,7 @@ package valandur.webapi;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.inject.Inject;
-import com.sun.media.jfxmedia.events.PlayerEvent;
 import ninja.leaping.configurate.ConfigurationNode;
-import ninja.leaping.configurate.ConfigurationOptions;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
@@ -15,6 +13,7 @@ import org.eclipse.jetty.server.handler.ContextHandler;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
 import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.servlet.ServletContextHandler;
+import org.eclipse.jetty.util.DateCache;
 import org.eclipse.jetty.util.log.Log;
 import org.slf4j.Logger;
 import org.spongepowered.api.Sponge;
@@ -24,12 +23,14 @@ import org.spongepowered.api.config.ConfigDir;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Listener;
+import org.spongepowered.api.event.Order;
 import org.spongepowered.api.event.achievement.GrantAchievementEvent;
-import org.spongepowered.api.event.cause.NamedCause;
+import org.spongepowered.api.event.action.FishingEvent;
 import org.spongepowered.api.event.cause.entity.damage.source.EntityDamageSource;
 import org.spongepowered.api.event.command.SendCommandEvent;
 import org.spongepowered.api.event.entity.DestructEntityEvent;
 import org.spongepowered.api.event.entity.SpawnEntityEvent;
+import org.spongepowered.api.event.entity.living.humanoid.player.KickPlayerEvent;
 import org.spongepowered.api.event.game.GameReloadEvent;
 import org.spongepowered.api.event.game.state.GameInitializationEvent;
 import org.spongepowered.api.event.game.state.GamePreInitializationEvent;
@@ -37,6 +38,7 @@ import org.spongepowered.api.event.game.state.GameStartedServerEvent;
 import org.spongepowered.api.event.game.state.GameStoppedServerEvent;
 import org.spongepowered.api.event.message.MessageEvent;
 import org.spongepowered.api.event.network.ClientConnectionEvent;
+import org.spongepowered.api.event.user.BanUserEvent;
 import org.spongepowered.api.event.world.LoadWorldEvent;
 import org.spongepowered.api.event.world.UnloadWorldEvent;
 import org.spongepowered.api.plugin.Plugin;
@@ -50,7 +52,6 @@ import valandur.webapi.command.*;
 import valandur.webapi.handlers.AuthHandler;
 import valandur.webapi.handlers.RateLimitHandler;
 import valandur.webapi.handlers.WebAPIErrorHandler;
-import valandur.webapi.hooks.WebHook;
 import valandur.webapi.hooks.WebHooks;
 import valandur.webapi.json.JsonConverter;
 import valandur.webapi.misc.WebAPICommandSource;
@@ -58,7 +59,6 @@ import valandur.webapi.misc.JettyLogger;
 import valandur.webapi.servlets.*;
 
 import java.io.IOException;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
@@ -176,7 +176,7 @@ public class WebAPI {
             server.addConnector(http);
 
             // Add error handler
-            server.addBean(new WebAPIErrorHandler());
+            server.addBean(new WebAPIErrorHandler(server));
 
             // Collection of all handlers
             List<Handler> handlers = new LinkedList<>();
@@ -318,72 +318,85 @@ public class WebAPI {
         DataCache.removeWorld(event.getTargetWorld().getUniqueId());
     }
 
-    @Listener
+    @Listener(order = Order.POST)
     public void onPlayerJoin(ClientConnectionEvent.Join event) {
         CachedPlayer p = DataCache.addPlayer(event.getTargetEntity());
 
         WebHooks.notifyHooks(WebHooks.WebHookType.PLAYER_JOIN, JsonConverter.toString(p));
     }
-    @Listener
+    @Listener(order = Order.POST)
     public void onPlayerLeave(ClientConnectionEvent.Disconnect event) {
         CachedPlayer p = DataCache.removePlayer(event.getTargetEntity().getUniqueId());
 
         WebHooks.notifyHooks(WebHooks.WebHookType.PLAYER_LEAVE, JsonConverter.toString(p));
     }
 
-    @Listener
+
+    @Listener(order = Order.POST)
+    public void onUserKick(KickPlayerEvent event) {
+        CachedPlayer p = DataCache.getPlayer(event.getTargetEntity());
+        String msg = event.getMessage().toPlain();
+        String cause = JsonConverter.toString(event.getCause());
+
+        String message = "{\"player\":" + JsonConverter.toString(p) + ",\"message\":\"" + msg + "\",\"cause\":" + cause + "}";
+        WebHooks.notifyHooks(WebHooks.WebHookType.PLAYER_KICK, message);
+    }
+    @Listener(order = Order.POST)
+    public void onUserBan(BanUserEvent event) {
+        String ban = JsonConverter.toString(event.getBan());
+        String cause = JsonConverter.toString(event.getCause());
+        String user = JsonConverter.toString(event.getTargetUser());
+
+        String message = "{\"user\":" + user + ",\"ban\":" + ban + ",\"cause\":" + cause + "}";
+        WebHooks.notifyHooks(WebHooks.WebHookType.PLAYER_BAN, message);
+    }
+
+    @Listener(order = Order.POST)
     public void onEntitySpawn(SpawnEntityEvent event) {
         for (Entity entity : event.getEntities()) {
             DataCache.addEntity(entity);
         }
     }
-    @Listener
+    @Listener(order = Order.POST)
     public void onEntityDespawn(DestructEntityEvent event) {
         DataCache.removeEntity(event.getTargetEntity().getUniqueId());
 
         Entity ent = event.getTargetEntity();
         if (ent instanceof Player) {
             Entity source = null;
-            Player target = (Player)event.getTargetEntity();
+            CachedPlayer player = DataCache.getPlayer((Player)event.getTargetEntity());
 
             Optional<EntityDamageSource> dmgSource = event.getCause().first(EntityDamageSource.class);
             if (dmgSource.isPresent()) source = dmgSource.get().getSource();
             String sourceStr = source != null ? JsonConverter.toString(source) : "null";
 
-            String message = "{\"killer\":" + sourceStr + ",\"target\":" + JsonConverter.toString(target) + "}";
+            String message = "{\"killer\":" + sourceStr + ",\"target\":" + JsonConverter.toString(player) + "}";
             WebHooks.notifyHooks(WebHooks.WebHookType.PLAYER_DEATH, message);
         }
     }
 
-    @Listener
+    @Listener(order = Order.POST)
     public void onMessage(MessageEvent event) {
         Optional<Player> player = event.getCause().first(Player.class);
         if (!player.isPresent()) return;
 
-        CachedChatMessage msg = DataCache.addChatMessage(player.get(), event.getMessage());
-        String message = JsonConverter.toString(msg);
-        WebHooks.notifyHooks(WebHooks.WebHookType.CHAT, message);
+        CachedChatMessage msg = DataCache.addChatMessage(player.get(), event);
+        WebHooks.notifyHooks(WebHooks.WebHookType.CHAT, JsonConverter.toString(msg));
     }
 
-    @Listener
+    @Listener(order = Order.POST)
     public void onPlayerAchievement(GrantAchievementEvent.TargetPlayer event) {
-        Optional<CachedPlayer> p = DataCache.getPlayer(event.getTargetEntity().getUniqueId(), false);
-        if (!p.isPresent()) return;
-
+        CachedPlayer p = DataCache.getPlayer(event.getTargetEntity());
         Achievement a = event.getAchievement();
 
-        String message = "{\"player\":" + JsonConverter.toString(p.get()) + ",\"achievement\":" + JsonConverter.toString(a) + "}";
+        String message = "{\"player\":" + JsonConverter.toString(p) + ",\"achievement\":" + JsonConverter.toString(a) + ",\"wasCancelled\":" + event.isCancelled() + "}";
         WebHooks.notifyHooks(WebHooks.WebHookType.ACHIEVEMENT, message);
     }
 
-    @Listener
+    @Listener(order = Order.POST)
     public void onCommand(SendCommandEvent event) {
-        JsonNode source = null;
-        Optional<Object> src = event.getCause().get(NamedCause.SOURCE, Object.class);
-        if (src.isPresent()) {
-            source = JsonConverter.toJson(src.get());
-        }
-        CachedCommandCall call = DataCache.addCommandCall(event.getCommand(), event.getArguments(), source, event.getResult());
+        JsonNode cause = JsonConverter.toJson(event.getCause());
+        CachedCommandCall call = DataCache.addCommandCall(event, cause);
 
         String message = JsonConverter.toString(call);
         WebHooks.notifyHooks(WebHooks.WebHookType.COMMAND, message);

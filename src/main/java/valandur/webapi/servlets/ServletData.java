@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.gson.JsonObject;
+import valandur.webapi.json.JsonConverter;
 import valandur.webapi.misc.Util;
 
 import javax.servlet.http.HttpServletRequest;
@@ -43,7 +44,7 @@ public class ServletData {
         if (value instanceof JsonNode) {
             node.replace(key, (JsonNode)value);
         } else {
-            node.putPOJO(key, value);
+            node.set(key, JsonConverter.toJson(value, true));
         }
     }
 

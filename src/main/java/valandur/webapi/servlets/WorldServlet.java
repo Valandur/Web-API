@@ -30,7 +30,7 @@ public class WorldServlet extends WebAPIServlet {
             return;
         }
 
-        Optional<CachedWorld> world = DataCache.getWorld(UUID.fromString(uuid), true);
+        Optional<CachedWorld> world = DataCache.getWorld(UUID.fromString(uuid));
         if (!world.isPresent()) {
             data.sendError(HttpServletResponse.SC_NOT_FOUND);
             return;
@@ -56,7 +56,7 @@ public class WorldServlet extends WebAPIServlet {
             return;
         }
 
-        Optional<CachedWorld> world = DataCache.getWorld(UUID.fromString(uuid), false);
+        Optional<CachedWorld> world = DataCache.getWorld(UUID.fromString(uuid));
         if (!world.isPresent()) {
             data.sendError(HttpServletResponse.SC_NOT_FOUND);
             return;

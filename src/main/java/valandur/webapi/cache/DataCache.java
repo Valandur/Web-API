@@ -7,12 +7,17 @@ import org.spongepowered.api.command.CommandMapping;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.living.player.Player;
+import org.spongepowered.api.event.command.SendCommandEvent;
+import org.spongepowered.api.event.message.MessageEvent;
 import org.spongepowered.api.plugin.PluginContainer;
 import org.spongepowered.api.text.Text;
+import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
+import sun.util.resources.el.LocaleNames_el_CY;
 import valandur.webapi.WebAPI;
 import valandur.webapi.json.JsonConverter;
 
+import javax.swing.text.html.Option;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.*;
@@ -48,8 +53,8 @@ public class DataCache {
         return e;
     }
 
-    public static CachedChatMessage addChatMessage(Player sender, Text text) {
-        CachedChatMessage cache = CachedChatMessage.copyFrom(sender, text);
+    public static CachedChatMessage addChatMessage(Player sender, MessageEvent event) {
+        CachedChatMessage cache = new CachedChatMessage(sender, event);
         chatMessages.add(cache);
 
         while (chatMessages.size() > CacheConfig.numChatMessages) {
@@ -59,8 +64,8 @@ public class DataCache {
         return cache;
     }
 
-    public static CachedCommandCall addCommandCall(String command, String arguments, JsonNode source, CommandResult result) {
-        CachedCommandCall cache = CachedCommandCall.copyFrom(command, arguments, source, result);
+    public static CachedCommandCall addCommandCall(SendCommandEvent event, JsonNode cause) {
+        CachedCommandCall cache = new CachedCommandCall(event, cause);
         commandCalls.add(cache);
 
         while (commandCalls.size() > CacheConfig.numCommandCalls) {
@@ -131,8 +136,14 @@ public class DataCache {
         return node.get();
     }
 
+    public static CachedWorld getWorld(World world) {
+        Optional<CachedWorld> w = getWorld(world.getUniqueId());
+        if (w.isPresent())
+            return w.get();
+        return addWorld(world);
+    }
     public static CachedWorld addWorld(World world) {
-        CachedWorld w = CachedWorld.copyFrom(world);
+        CachedWorld w = new CachedWorld(world);
         worlds.put(world.getUniqueId(), w);
         return w;
     }
@@ -141,33 +152,35 @@ public class DataCache {
     }
     private static Optional<CachedWorld> updateWorld(UUID uuid) {
         return runOnMainThread(() -> {
+            WebAPI.getInstance().getLogger().info("Running world on main");
             Optional<World> world = Sponge.getServer().getWorld(uuid);
-            if (!world.isPresent())
-                return null;
-
-            CachedWorld w = CachedWorld.copyFrom(world.get(), true);
-            worlds.put(world.get().getUniqueId(), w);
-            return w;
+            return world.map(DataCache::addWorld).orElse(null);
         });
     }
     public static Collection<CachedWorld> getWorlds() {
         return worlds.values();
     }
-    public static Optional<CachedWorld> getWorld(UUID uuid, boolean details) {
+    public static Optional<CachedWorld> getWorld(UUID uuid) {
         if (!worlds.containsKey(uuid)) {
             return Optional.empty();
         }
 
         final CachedWorld res = worlds.get(uuid);
-        if (!details || (res.hasDetails() && !res.isExpired())) {
-            return Optional.of(res);
-        } else {
+        if (res.isExpired()) {
             return updateWorld(uuid);
+        } else {
+            return Optional.of(res);
         }
     }
 
+    public static CachedPlayer getPlayer(Player player) {
+        Optional<CachedPlayer> p = getPlayer(player.getUniqueId());
+        if (p.isPresent())
+            return p.get();
+        return addPlayer(player);
+    }
     public static CachedPlayer addPlayer(Player player) {
-        CachedPlayer p = CachedPlayer.copyFrom(player);
+        CachedPlayer p = new CachedPlayer(player);
         players.put(player.getUniqueId(), p);
         return p;
     }
@@ -177,32 +190,34 @@ public class DataCache {
     private static Optional<CachedPlayer> updatePlayer(UUID uuid) {
         return runOnMainThread(() -> {
             Optional<Player> player = Sponge.getServer().getPlayer(uuid);
-            if (!player.isPresent())
-                return null;
+            return player.map(DataCache::addPlayer).orElse(null);
 
-            CachedPlayer p = CachedPlayer.copyFrom(player.get(), true);
-            players.put(player.get().getUniqueId(), p);
-            return p;
         });
     }
     public static Collection<CachedPlayer> getPlayers() {
         return players.values();
     }
-    public static Optional<CachedPlayer> getPlayer(UUID uuid, boolean details) {
+    public static Optional<CachedPlayer> getPlayer(UUID uuid) {
         if (!players.containsKey(uuid)) {
             return Optional.empty();
         }
 
         final CachedPlayer res = players.get(uuid);
-        if (!details || (res.hasDetails() && !res.isExpired())) {
-            return Optional.of(res);
-        } else {
+        if (res.isExpired()) {
             return updatePlayer(uuid);
+        } else {
+            return Optional.of(res);
         }
     }
 
+    public static CachedEntity getEntity(Entity entity) {
+        Optional<CachedEntity> e = getEntity(entity.getUniqueId());
+        if (e.isPresent())
+            return e.get();
+        return addEntity(entity);
+    }
     public static CachedEntity addEntity(Entity entity) {
-        CachedEntity e = CachedEntity.copyFrom(entity);
+        CachedEntity e = new CachedEntity(entity);
         entities.put(entity.getUniqueId(), e);
         return e;
     }
@@ -219,28 +234,22 @@ public class DataCache {
                     break;
                 }
             }
-            if (!entity.isPresent()) {
-                return null;
-            }
-
-            CachedEntity e = CachedEntity.copyFrom(entity.get(), true);
-            entities.put(entity.get().getUniqueId(), e);
-            return e;
+            return entity.map(DataCache::addEntity).orElse(null);
         });
     }
     public static Collection<CachedEntity> getEntities() {
         return entities.values();
     }
-    public static Optional<CachedEntity> getEntity(UUID uuid, boolean details) {
+    public static Optional<CachedEntity> getEntity(UUID uuid) {
         if (!entities.containsKey(uuid)) {
             return Optional.empty();
         }
 
         final CachedEntity res = entities.get(uuid);
-        if (!details || (res.hasDetails() && !res.isExpired())) {
-            return Optional.of(res);
-        } else {
+        if (res.isExpired()) {
             return updateEntity(uuid);
+        } else {
+            return Optional.of(res);
         }
     }
 
@@ -248,7 +257,7 @@ public class DataCache {
         Collection<PluginContainer> plugins = Sponge.getPluginManager().getPlugins();
         Collection<CachedPlugin> cachedPlugins = new LinkedHashSet<>();
         for (PluginContainer plugin : plugins) {
-            cachedPlugins.add(CachedPlugin.copyFrom(plugin));
+            cachedPlugins.add(new CachedPlugin(plugin));
         }
         DataCache.plugins = cachedPlugins;
     }
@@ -267,7 +276,7 @@ public class DataCache {
         Collection<CommandMapping> commands = Sponge.getCommandManager().getAll().values();
         Collection<CachedCommand> cachedCommands = new LinkedHashSet<>();
         for (CommandMapping cmd : commands) {
-            cachedCommands.add(CachedCommand.copyFrom(cmd));
+            cachedCommands.add(new CachedCommand(cmd));
         }
         DataCache.commands = cachedCommands;
     }
@@ -289,7 +298,7 @@ public class DataCache {
             for (World world : Sponge.getServer().getWorlds()) {
                 Collection<TileEntity> ents = world.getTileEntities();
                 for (TileEntity te : ents) {
-                    entities.add(CachedTileEntity.copyFrom(te));
+                    entities.add(new CachedTileEntity(te));
                 }
             }
 
@@ -306,11 +315,18 @@ public class DataCache {
             Collection<TileEntity> ents = ((World)w.get()).getTileEntities();
             for (TileEntity te : ents) {
                 if (!te.isValid()) continue;
-                entities.add(CachedTileEntity.copyFrom(te));
+                entities.add(new CachedTileEntity(te));
             }
 
             return entities;
         });
+    }
+    public static Optional<CachedTileEntity> getTileEntity(Location<World> location) {
+        Optional<CachedWorld> w = DataCache.getWorld(location.getExtent().getUniqueId());
+        if (!w.isPresent())
+            return Optional.empty();
+
+        return getTileEntity(w.get(), location.getBlockX(), location.getBlockY(), location.getBlockZ());
     }
     public static Optional<CachedTileEntity> getTileEntity(CachedWorld world, int x, int y, int z) {
         return runOnMainThread(() -> {
@@ -323,20 +339,25 @@ public class DataCache {
                 return null;
             }
 
-            return CachedTileEntity.copyFrom(ent.get(), true);
+            return new CachedTileEntity(ent.get());
         });
     }
 
     private static <T> Optional<T> runOnMainThread(Supplier<T> supplier) {
-        CompletableFuture<T> future = CompletableFuture.supplyAsync(supplier, WebAPI.syncExecutor);
-        try {
-            T obj = future.get();
-            if (obj == null)
+        if (Sponge.getServer().isMainThread()) {
+            T obj = supplier.get();
+            return obj == null ? Optional.empty() : Optional.of(obj);
+        } else {
+            CompletableFuture<T> future = CompletableFuture.supplyAsync(supplier, WebAPI.syncExecutor);
+            try {
+                T obj = future.get();
+                if (obj == null)
+                    return Optional.empty();
+                return Optional.of(obj);
+            } catch (InterruptedException | ExecutionException e) {
+                e.printStackTrace();
                 return Optional.empty();
-            return Optional.of(obj);
-        } catch (InterruptedException | ExecutionException e) {
-            e.printStackTrace();
-            return Optional.empty();
+            }
         }
     }
 }

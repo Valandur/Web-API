@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 public class WebHooks {
 
     public enum WebHookType {
-        CHAT, ACHIEVEMENT, PLAYER_JOIN, PLAYER_LEAVE, PLAYER_DEATH, COMMAND,
+        ALL, CUSTOM, CHAT, ACHIEVEMENT, PLAYER_JOIN, PLAYER_LEAVE, PLAYER_DEATH, PLAYER_KICK, PLAYER_BAN, COMMAND,
     }
 
     private static Map<String, WebHook> commandHooks = new HashMap<>();
@@ -49,35 +49,41 @@ public class WebHooks {
         ConfigurationNode config = tup.getSecond();
 
         try {
+            // Add command hooks
             List<WebHook> cmds = config.getNode("command").getList(TypeToken.of(WebHook.class));
             for (WebHook hook : cmds) {
                 if (!hook.isEnabled()) continue;
                 commandHooks.put(hook.getName(), hook);
             }
 
+            // Add event hooks
             ConfigurationNode eventNode = config.getNode("events");
             for (WebHookType type : WebHookType.values()) {
                 List<WebHook> typeHooks = eventNode.getNode(type.toString().toLowerCase()).getList(TypeToken.of(WebHook.class));
                 hooks.put(type, typeHooks.stream().filter(WebHook::isEnabled).collect(Collectors.toList()));
             }
+
+            // Add "all" hooks
+            List<WebHook> allHooks = eventNode.getNode("all").getList(TypeToken.of(WebHook.class));
+            hooks.put(WebHookType.ALL, allHooks.stream().filter(WebHook::isEnabled).collect(Collectors.toList()));
         } catch (ObjectMappingException e) {
             e.printStackTrace();
         }
     }
 
     public static void notifyHooks(WebHookType type, String message) {
-        List<WebHook> typeHooks = hooks.get(type);
-        for (WebHook hook : typeHooks) {
-            notifyHook(hook, null, new HashMap<>(), message);
+        List<WebHook> notifyHooks = new ArrayList<>(hooks.get(type));
+        notifyHooks.addAll(hooks.get(WebHookType.ALL));
+        for (WebHook hook : notifyHooks) {
+            notifyHook(hook, type, null, new HashMap<>(), message);
         }
     }
 
     public static void notifyHook(WebHook hook, String source, Map<String, Tuple<String, String>> params) {
         Map<String, String> contentMap = params.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, v -> v.getValue().getSecond()));
-        String content = JsonConverter.toString(contentMap, true);
-        notifyHook(hook, source, params, content);
+        notifyHook(hook, WebHookType.CUSTOM, source, params, JsonConverter.toString(contentMap, true));
     }
-    private static void notifyHook(WebHook hook, String source, Map<String, Tuple<String, String>> params, String content) {
+    private static void notifyHook(WebHook hook, WebHookType eventType, String source, Map<String, Tuple<String, String>> params, String content) {
         List<WebHookParam> reqParams = hook.getParams();
         if (reqParams.size() != params.size()) return;
 
@@ -115,6 +121,7 @@ public class WebHooks {
                     connection.setRequestProperty(header.getName(), val);
                 }
                 connection.setRequestProperty("User-Agent", userAgent);
+                connection.setRequestProperty("X-WebAPI-Event", eventType.toString());
                 connection.setRequestProperty("charset", "utf-8");
                 if (finalData != null && hook.getMethod() != WebHook.WebHookMethod.GET) {
                     connection.setRequestProperty("Content-Type", hook.getDataTypeHeader());

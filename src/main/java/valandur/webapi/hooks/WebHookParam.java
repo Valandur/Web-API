@@ -1,5 +1,6 @@
 package valandur.webapi.hooks;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import ninja.leaping.configurate.objectmapping.Setting;
 import ninja.leaping.configurate.objectmapping.serialize.ConfigSerializable;
 import org.spongepowered.api.command.args.CommandContext;
@@ -70,7 +71,7 @@ public class WebHookParam {
         return Optional.empty();
     }
 
-    public Optional<Tuple<String, String>> getValue(CommandContext args) {
+    public Optional<Tuple<String, JsonNode>> getValue(CommandContext args) {
         Optional<String> arg = args.getOne(name);
         if (!arg.isPresent()) return Optional.empty();
 
@@ -81,27 +82,25 @@ public class WebHookParam {
             case BOOL:
             case INTEGER:
             case DOUBLE:
-                String base = obj.toString();
-                return Optional.of(new Tuple<>(base, base));
+                return Optional.of(new Tuple<>(obj.toString(), JsonConverter.toJson(obj)));
 
             case PLAYER:
                 UUID pUuid = ((Player)obj).getUniqueId();
                 CachedPlayer p = DataCache.getPlayer(pUuid).orElse(null);
-                return Optional.of(new Tuple<>(p.uuid, JsonConverter.toString(p)));
+                return Optional.of(new Tuple<>(p.uuid, JsonConverter.toJson(p)));
 
             case WORLD:
                 UUID wUuid = ((WorldProperties)obj).getUniqueId();
                 CachedWorld w = DataCache.getWorld(wUuid).orElse(null);
-                return Optional.of(new Tuple<>(w.uuid, JsonConverter.toString(w)));
+                return Optional.of(new Tuple<>(w.uuid, JsonConverter.toJson(w)));
 
             case DIMENSION:
                 String t = ((DimensionType)obj).getName();
-                return Optional.of(new Tuple<>(t, t));
+                return Optional.of(new Tuple<>(t, JsonConverter.toJson(t)));
 
             case LOCATION:
             case VECTOR3D:
-                String str = JsonConverter.toString(obj);
-                return Optional.of(new Tuple<>(str, str));
+                return Optional.of(new Tuple<>(JsonConverter.toString(obj), JsonConverter.toJson(obj)));
         }
 
         return Optional.empty();

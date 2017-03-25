@@ -78,7 +78,7 @@ public class JsonConverter {
         om.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
 
         addSerializer(om, Achievement.class, new AchievementSerializer());
-        addSerializer(om, Ban.class, new BanSerializer());
+        addSerializer(om, Ban.Profile.class, new BanSerializer());
         addSerializer(om, Cause.class, new CauseSerializer());
         addSerializer(om, DataContainer.class, new DataContainerSerializer());
         addSerializer(om, Dimension.class, new DimensionSerializer());
@@ -90,7 +90,7 @@ public class JsonConverter {
         addSerializer(om, Player.class, new PlayerSerializer());
         addSerializer(om, Property.class, new PropertySerializer());
         addSerializer(om, TileEntity.class, new TileEntitySerializer());
-        addSerializer(om, User.class, new UserSerializer());
+        //addSerializer(om, User.class, new UserSerializer());
         addSerializer(om, Vector3d.class, new VectorSerializer());
         addSerializer(om, World.class, new WorldSerializer());
 

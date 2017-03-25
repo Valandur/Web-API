@@ -41,15 +41,9 @@ public class CachedTileEntity extends CachedObject {
         return CacheConfig.durationTileEntity;
     }
     @Override
-    public Optional<Object> getLive() {
-        Optional<Object> obj = _location.getLive();
-        if (!obj.isPresent()) return Optional.empty();
-
-        Optional<TileEntity> te = ((Location<World>)obj.get()).getTileEntity();
-
-        if (!te.isPresent())
-            return Optional.empty();
-        return Optional.of(te.get());
+    public Optional<?> getLive() {
+        Optional<?> obj = _location.getLive();
+        return obj.flatMap(o -> ((Location<World>) o).getTileEntity());
     }
 
     @Override

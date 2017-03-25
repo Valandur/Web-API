@@ -4,20 +4,16 @@ import com.fasterxml.jackson.databind.JsonNode;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.block.tileentity.TileEntity;
 import org.spongepowered.api.command.CommandMapping;
-import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.command.SendCommandEvent;
 import org.spongepowered.api.event.message.MessageEvent;
 import org.spongepowered.api.plugin.PluginContainer;
-import org.spongepowered.api.text.Text;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
-import sun.util.resources.el.LocaleNames_el_CY;
 import valandur.webapi.WebAPI;
 import valandur.webapi.json.JsonConverter;
 
-import javax.swing.text.html.Option;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.*;
@@ -77,7 +73,7 @@ public class DataCache {
 
     public static JsonNode executeMethod(CachedObject cache, String methodName, Class[] paramTypes, Object[] paramValues) {
         Optional<JsonNode> node = runOnMainThread(() -> {
-            Optional<Object> obj = cache.getLive();
+            Optional<?> obj = cache.getLive();
 
             if (!obj.isPresent())
                 return null;
@@ -101,13 +97,11 @@ public class DataCache {
             }
         });
 
-        if (!node.isPresent())
-            return JsonConverter.toJson(null);
-        return node.get();
+        return node.orElseGet(() -> JsonConverter.toJson(null));
     }
     public static JsonNode getField(CachedObject cache, String fieldName) {
         Optional<JsonNode> node = runOnMainThread(() -> {
-            Optional<Object> obj = cache.getLive();
+            Optional<?> obj = cache.getLive();
 
             if (!obj.isPresent())
                 return null;
@@ -131,16 +125,12 @@ public class DataCache {
             }
         });
 
-        if (!node.isPresent())
-            return JsonConverter.toJson(null);
-        return node.get();
+        return node.orElseGet(() -> JsonConverter.toJson(null));
     }
 
     public static CachedWorld getWorld(World world) {
         Optional<CachedWorld> w = getWorld(world.getUniqueId());
-        if (w.isPresent())
-            return w.get();
-        return addWorld(world);
+        return w.orElseGet(() -> addWorld(world));
     }
     public static CachedWorld addWorld(World world) {
         CachedWorld w = new CachedWorld(world);
@@ -175,9 +165,7 @@ public class DataCache {
 
     public static CachedPlayer getPlayer(Player player) {
         Optional<CachedPlayer> p = getPlayer(player.getUniqueId());
-        if (p.isPresent())
-            return p.get();
-        return addPlayer(player);
+        return p.orElseGet(() -> addPlayer(player));
     }
     public static CachedPlayer addPlayer(Player player) {
         CachedPlayer p = new CachedPlayer(player);
@@ -212,9 +200,7 @@ public class DataCache {
 
     public static CachedEntity getEntity(Entity entity) {
         Optional<CachedEntity> e = getEntity(entity.getUniqueId());
-        if (e.isPresent())
-            return e.get();
-        return addEntity(entity);
+        return e.orElseGet(() -> addEntity(entity));
     }
     public static CachedEntity addEntity(Entity entity) {
         CachedEntity e = new CachedEntity(entity);
@@ -307,7 +293,7 @@ public class DataCache {
     }
     public static Optional<Collection<CachedTileEntity>> getTileEntities(CachedWorld world) {
         return runOnMainThread(() -> {
-            Optional<Object> w = world.getLive();
+            Optional<?> w = world.getLive();
             if (!w.isPresent())
                 return null;
 
@@ -330,7 +316,7 @@ public class DataCache {
     }
     public static Optional<CachedTileEntity> getTileEntity(CachedWorld world, int x, int y, int z) {
         return runOnMainThread(() -> {
-            Optional<Object> w = world.getLive();
+            Optional<?> w = world.getLive();
             if (!w.isPresent())
                 return null;
 

@@ -50,8 +50,6 @@ tags:
 
 #parameters:
 
-#responses:
-
 securityDefinitions:
   headerKey:
     type: apiKey
@@ -66,6 +64,20 @@ security:
   - headerKey: []
   - queryKey: []
 
+responses:
+  400:
+    description: A provided parameter is invalid (e.g. not a valid UUID).
+    schema:
+      type: object
+  403:
+    description: The provided api key is invalid or you do not have the permissions to access this endpoint.
+    schema:
+      type: object
+  404:
+    description: A required object could not be found (e.g. UUID of world is invalid).
+    schema:
+      type: object
+
 paths:
   /info:
     get:
@@ -77,13 +89,15 @@ paths:
       tags:
         - Info
       responses:
+        403:
+          $ref: '#/responses/403'
         200:
           description: General information about the server
           schema:
             $ref: '#/definitions/ServerInfo'
   /history/chat:
     get:
-      summary: Chat
+      summary: Chat History
       description: |
         View a history of the server chat.
 
@@ -91,13 +105,15 @@ paths:
       tags:
         - History
       responses:
+        403:
+          $ref: '#/responses/403'
         200:
           description: A history of the chat.
           schema:
             $ref: '#/definitions/ChatHistory'
   /history/cmd:
     get:
-      summary: Command
+      summary: Command History
       description: |
         View a history of the server commands.
 
@@ -105,6 +121,8 @@ paths:
       tags:
         - History
       responses:
+        403:
+          $ref: '#/responses/403'
         200:
           description: A history of the chat.
           schema:
@@ -119,6 +137,8 @@ paths:
       tags:
         - Command
       responses:
+        403:
+          $ref: '#/responses/403'
         200:
           description: A list of commands
           schema:
@@ -126,22 +146,49 @@ paths:
     post:
       summary: Execute command
       description: |
-        Execute a command on the server.
+        Execute a command on the server. (Almost the same as running it from the console).
+        Pass a list of commands to execute them in succession, if only passing one command the
+        array is not required.
 
         > Required permission: cmd
       parameters:
         - name: Request
           in: body
-          description: The command sent to the server
+          description: The command and arguments sent to the server
+          required: true
           schema:
-            $ref: '#/definitions/CommandRequest'
+            $ref: '#/definitions/CommandRequestList'
       tags:
         - Command
       responses:
+        403:
+          $ref: '#/responses/403'
         200:
-          description: The command executed successfully.
+          description: A list of text lines sent in response to the command.
           schema:
             $ref: '#/definitions/CommandResponse'
+  /cmd/{name}:
+    get:
+      summary: Detailed command info
+      description: |
+        Get detailed information about a command.
+
+        > Required permission: cmd
+      parameters:
+        - name: name
+          in: path
+          description: The name (main alias) of the command
+          type: string
+          required: true
+      tags:
+        - Command
+      responses:
+        403:
+          $ref: '#/responses/403'
+        200:
+          description: Detailed info about the command.
+          schema:
+            $ref: '#/definitions/CommandFull'
   /class:
     get:
       summary: Cached classes
@@ -152,6 +199,8 @@ paths:
       tags:
         - Class
       responses:
+        403:
+          $ref: '#/responses/403'
         200:
           description: A list of all the classes that are cached on the server.
           schema:
@@ -164,12 +213,20 @@ paths:
       summary: Lookup class
       description: |
         Get the fields and methods of a specific class loaded on the server.
-        Use either the short name if the class is already cached, or the fully quilified classname.
+        Use the fully quilified classname (e.g. "net.minecraft.tileentity.TileEntityChest").
 
         > Required permission: class
+      parameters:
+        - name: classname
+          in: path
+          type: string
+          description: The classname of the class to show.
+          required: true
       tags:
         - Class
       responses:
+        403:
+          $ref: '#/responses/403'
         200:
           description: An object describing the class fields and methods.
           schema:
@@ -188,6 +245,8 @@ paths:
       tags:
         - Player
       responses:
+        403:
+          $ref: '#/responses/403'
         200:
           description: A list of all the players on the server
           schema:
@@ -204,13 +263,53 @@ paths:
           in: path
           type: string
           description: The uuid of the player to get detailed information about.
+          required: true
       tags:
         - Player
       responses:
+        400:
+          $ref: '#/responses/400'
+        403:
+          $ref: '#/responses/403'
+        404:
+          $ref: '#/responses/404'
         200:
           description: Detailed information about the player.
           schema:
-            $ref: '#/definitions/Player'
+            $ref: '#/definitions/PlayerFull'
+    post:
+      summary: Player methods & fields
+      description: |
+        Provides direct access to the underlaying player object and can execute
+        any method on it or access any field.
+
+        > Required permission: player
+      parameters:
+        - name: uuid
+          in: path
+          type: string
+          description: The uuid of the player.
+          required: true
+        - name: Request
+          in: body
+          description: Information about which method/field to execute/get.
+          required: true
+          schema:
+            $ref: '#/definitions/RawRequest'
+      tags:
+        - Player
+      responses:
+        400:
+          $ref: '#/responses/400'
+        403:
+          $ref: '#/responses/403'
+        404:
+          $ref: '#/responses/404'
+        200:
+          description: The result of executing/getting the method/field.
+          schema:
+            $ref: '#/definitions/RawResponse'
+
   /world:
     get:
       summary: World list
@@ -221,6 +320,8 @@ paths:
       tags:
         - World
       responses:
+        403:
+          $ref: '#/responses/403'
         200:
           description: A list of all the worlds on the server
           schema:
@@ -237,13 +338,53 @@ paths:
           in: path
           type: string
           description: The uuid of the world to get detailed information about.
+          required: true
       tags:
         - World
       responses:
+        400:
+          $ref: '#/responses/400'
+        403:
+          $ref: '#/responses/403'
+        404:
+          $ref: '#/responses/404'
         200:
           description: Detailed information about the world.
           schema:
-            $ref: '#/definitions/World'
+            $ref: '#/definitions/WorldFull'
+    post:
+      summary: World methods & fields
+      description: |
+        Provides direct access to the underlaying world object and can execute
+        any method on it or access any field.
+
+        > Required permission: world
+      parameters:
+        - name: uuid
+          in: path
+          type: string
+          description: The uuid of the world.
+          required: true
+        - name: Request
+          in: body
+          description: Information about which method/field to execute/get.
+          required: true
+          schema:
+            $ref: '#/definitions/RawRequest'
+      tags:
+        - World
+      responses:
+        400:
+          $ref: '#/responses/400'
+        403:
+          $ref: '#/responses/403'
+        404:
+          $ref: '#/responses/404'
+        200:
+          description: The result of executing/getting the method/field.
+          schema:
+            $ref: '#/definitions/RawResponse'
+
   /plugin:
     get:
       summary: Plugin list
@@ -254,6 +395,8 @@ paths:
       tags:
         - Plugin
       responses:
+        403:
+          $ref: '#/responses/403'
         200:
           description: A list of all the plugins on the server.
           schema:
@@ -270,13 +413,18 @@ paths:
           in: path
           type: string
           description: The id of the plugin to get detailed information about.
+          required: true
       tags:
         - Plugin
       responses:
+        403:
+          $ref: '#/responses/403'
+        404:
+          $ref: '#/responses/404'
         200:
           description: Detailed information about the plugin.
           schema:
-            $ref: '#/definitions/Plugin'
+            $ref: '#/definitions/PluginFull'
   /entity:
     get:
       summary: Entities list
@@ -287,6 +435,8 @@ paths:
       tags:
         - Entity
       responses:
+        403:
+          $ref: '#/responses/403'
         200:
           description: A list of all the entities on the server.
           schema:
@@ -303,35 +453,53 @@ paths:
           in: path
           type: string
           description: The uuid of the entity to get detailed information about.
+          required: true
       tags:
         - Entity
       responses:
+        400:
+          $ref: '#/responses/400'
+        403:
+          $ref: '#/responses/403'
+        404:
+          $ref: '#/responses/404'
         200:
           description: Detailed information about the entity.
           schema:
-            $ref: '#/definitions/Entity'
+            $ref: '#/definitions/EntityFull'
     post:
-      summary: Call entity function
+      summary: Entity methods & fields
       description: |
-        Provides direct access to the underlaying entity object and can execute any function on it.
+        Provides direct access to the underlaying entity object and can execute
+        any method on it or access any field.
 
         > Required permission: entity
       parameters:
         - name: uuid
           in: path
           type: string
-          description: The uuid of the entity to get detailed information about.
+          description: The uuid of the entity.
+          required: true
+        - name: Request
+          in: body
+          description: Information about which method/field to execute/get.
+          required: true
+          schema:
+            $ref: '#/definitions/RawRequest'
       tags:
         - Entity
       responses:
+        400:
+          $ref: '#/responses/400'
+        403:
+          $ref: '#/responses/403'
+        404:
+          $ref: '#/responses/404'
         200:
-          description: The result of executing the function.
+          description: The result of executing/getting the method/field.
           schema:
-            type: object
-            properties:
-              result:
-                type: object
-                description: The result of the function.
+            $ref: '#/definitions/RawResponse'
+
   /tile-entity:
     get:
       summary: Tile entities list
@@ -342,6 +510,8 @@ paths:
       tags:
         - Tile Entity
       responses:
+        403:
+          $ref: '#/responses/403'
         200:
           description: A list of all the tile entities on the server.
           schema:
@@ -358,28 +528,178 @@ paths:
           in: path
           type: string
           description: The uuid of the world the tile entity is in.
+          required: true
         - name: x
           in: path
           type: string
           description: The x-coordinate of the tile entity.
+          required: true
         - name: y
           in: path
           type: string
           description: The y-coordinate of the tile entity.
+          required: true
         - name: z
           in: path
           type: string
           description: The z-coordinate of the tile entity.
+          required: true
       tags:
         - Tile Entity
       responses:
+        400:
+          $ref: '#/responses/400'
+        403:
+          $ref: '#/responses/403'
+        404:
+          $ref: '#/responses/404'
         200:
           description: Detailed information about the tile entity.
           schema:
-            $ref: '#/definitions/TileEntity'
+            $ref: '#/definitions/TileEntityFull'
+    post:
+      summary: Tile-Entity methods & fields
+      description: |
+        Provides direct access to the underlaying tile entity object and can execute
+        any method on it or access any field.
+
+        > Required permission: tile-entity
+      parameters:
+        - name: worldUuid
+          in: path
+          type: string
+          description: The uuid of the world the tile entity is in.
+          required: true
+        - name: x
+          in: path
+          type: string
+          description: The x-coordinate of the tile entity.
+          required: true
+        - name: y
+          in: path
+          type: string
+          description: The y-coordinate of the tile entity.
+          required: true
+        - name: z
+          in: path
+          type: string
+          description: The z-coordinate of the tile entity.
+          required: true
+        - name: Request
+          in: body
+          description: Information about which method/field to execute/get.
+          required: true
+          schema:
+            $ref: '#/definitions/RawRequest'
+      tags:
+        - Tile Entity
+      responses:
+        400:
+          $ref: '#/responses/400'
+        403:
+          $ref: '#/responses/403'
+        404:
+          $ref: '#/responses/404'
+        200:
+          description: The result of executing/getting the method/field.
+          schema:
+            $ref: '#/definitions/RawResponse'
 
 
 definitions:
+  DataContainer:
+    type: object
+    description: A container of various properties.
+  Properties:
+    type: array
+    description: A list of properties belonging to the object.
+    items:
+      type: object
+
+  Location:
+    type: object
+    description: Describes a location in a world
+    properties:
+      world:
+        $ref: '#/definitions/World'
+      position:
+        $ref: '#/definitions/Vector3'
+  Vector3:
+    type: object
+    description: Describes a location
+    properties:
+      x:
+        type: number
+        format: double
+        description: The x-coordinate of the vector.
+      y:
+        type: number
+        format: double
+        description: The y-coordinate of the vector.
+      z:
+        type: number
+        format: double
+        description: The z-coordinate of the vector.
+
+  RawRequest:
+    type: object
+    description: |
+      This data defines what method to execute or which field of the object to get.
+
+      Note that either "method" or "field" is required.
+    properties:
+      method:
+        type: string
+        description: The name of the method to execute
+      params:
+        type: array
+        description: The parameters passed to the method.
+        items:
+          $ref: '#/definitions/RawRequestParam'
+      field:
+        type: string
+        description: The name of the field to get.
+  RawRequestParam:
+    type: object
+    description: A parameter that is interpreted by the server and passed to the method.
+    properties:
+      type:
+        type: string
+        description: The type of the parameter. This defines how the value is interpreted.
+        enum:
+          - int
+          - integer
+          - float
+          - double
+          - bool
+          - boolean
+          - byte
+          - char
+          - long
+          - short
+          - string
+          - class
+          - vector3d
+          - text
+          - world
+          - player
+          - itemstack
+      value:
+        type: object
+        description: |
+          The value of the parameter. Base types (like integer, float, boolean, etc.) are converted
+          to the correct type and then passed to the method. Some parameters are handled differently,
+          they are listed below along with their usage:
+
+          - class: Interpreted as the fully qualified classname of a class which is loaded and passed |
+          - vector3d: Converted to a Vector3d object. Requires the properties "x", "y" and "z"
+          - text: Converted to a sponge text
+          - world: Assumed to be the UUID of a world which is fetched and passed
+          - player: Assumed to be the UUID of the player which is fetched and passed.
+          - itemstack: Converted to a new item stack. Requires the properties "itemType" and "amount"
+  RawResponse:
+    type: object
+
   Class:
     type: object
     description: A class definition that is loaded on the server.
@@ -409,7 +729,6 @@ definitions:
           properties:
             modifiers:
               type: array
-              decription: The modifiers of the method.
               items:
                 type: string
             params:
@@ -424,42 +743,6 @@ definitions:
             from:
               type: string
               description: The class where this field is from (if from a superclass)
-
-  Location:
-    type: object
-    description: Describes a location in a world
-    properties:
-      world:
-        type: string
-        description: The name of the world the player is in.
-      x:
-        type: number
-        format: double
-        description: The x-coordinate of the location.
-      y:
-        type: number
-        format: double
-        description: The y-coordinate of the location.
-      z:
-        type: number
-        format: double
-        description: The z-coordinate of the location.
-  Vector3:
-    type: object
-    description: Describes a location
-    properties:
-      x:
-        type: number
-        format: double
-        description: The x-coordinate of the vector.
-      y:
-        type: number
-        format: double
-        description: The y-coordinate of the vector.
-      z:
-        type: number
-        format: double
-        description: The z-coordinate of the vector.
 
   ServerInfo:
     type: object
@@ -482,31 +765,38 @@ definitions:
       minecraftVersion:
         type: string
         description: The minecraft version running on the server.
+      game:
+        $ref: '#/definitions/ServerInfoDetail'
       api:
-        type: object
-        description: Information about the API running on the server.
-        properties:
-          id:
-            type: string
-            description: The unique id of the api.
-          name:
-            type: string
-            description: The name of the api.
-          version:
-            type: string
-            description: The version of the api.
-          description:
-            type: string
-            description: The description of the api.
-          url:
-            type: string
-            description: The website of the api.
-          authors:
-            type: array
-            description: The list of authors that worked on the api.
-            items:
-              type: string
-              description: The name of the author.
+        $ref: '#/definitions/ServerInfoDetail'
+      implementation:
+        $ref: '#/definitions/ServerInfoDetail'
+
+  ServerInfoDetail:
+    type: object
+    description: Information about the Game/API/Implementation running on the server.
+    properties:
+      id:
+        type: string
+        description: The unique id of the api.
+      name:
+        type: string
+        description: The name of the api.
+      version:
+        type: string
+        description: The version of the api.
+      description:
+        type: string
+        description: The description of the api.
+      url:
+        type: string
+        description: The website of the api.
+      authors:
+        type: array
+        description: The list of authors that worked on the api.
+        items:
+          type: string
+          description: The name of the author.
 
   ChatHistory:
     type: object
@@ -588,19 +878,33 @@ definitions:
       name:
         type: string
         description: The main name of the command.
-      aliases:
-        type: array
-        description: All the aliases with which the command can be executed.
-        items:
-          type: string
-      usage:
-        type: string
-        description: The usage instructions for the command.
       description:
         type: string
         description: Describes what the command does.
+  CommandFull:
+    allOf:
+    - $ref: '#/definitions/Command'
+    - type: object
+      properties:
+        aliases:
+          type: array
+          description: All the aliases with which the command can be executed.
+          items:
+            type: string
+        usage:
+          type: string
+          description: The usage instructions for the command.
+        help:
+          type: string
+          description: More information about the command.
+  CommandRequestList:
+    type: array
+    items:
+      $ref: '#/definitions/CommandRequest'
   CommandRequest:
     type: object
+    required:
+      - command
     properties:
       name:
         type: string
@@ -609,7 +913,6 @@ definitions:
       command:
         type: string
         description: The command and it's arguments that are sent to the server.
-        required: true
       waitLines:
         type: integer
         description: The minimum amount of lines of text to wait for before returning the response.
@@ -617,12 +920,13 @@ definitions:
       waitTime:
         type: integer
         description: The amount of time in milliseconds to wait for response messages from the server.
+        default: 0
   CommandResponse:
     type: object
     properties:
-      response:
+      result:
         type: array
-        description: An array of message that were sent in response to the command.
+        description: An array of messages that were sent in response to the command.
         items:
           type: string
 
@@ -636,14 +940,7 @@ definitions:
         type: array
         description: A list of players.
         items:
-          type: object
-          properties:
-            name:
-              type: string
-              description: The name of the player.
-            uuid:
-              type: string
-              description: The unique identifier of the player.
+          $ref: '#/definitions/Player'
   Player:
     type: object
     properties:
@@ -653,18 +950,30 @@ definitions:
       uuid:
         type: string
         description: The unique identifier of the player.
-      address:
-        type: string
-        description: The IP address that the player is connecting from.
-      latency:
-        type: integer
-        description: The latency (ping) of the player in ms.
-      location:
-        $ref: '#/definitions/Location'
-      velocity:
-        $ref: '#/definitions/Vector3'
-      rotation:
-        $ref: '#/definitions/Vector3'
+  PlayerFull:
+    allOf:
+      - $ref: '#/definitions/Player'
+      - type: object
+        properties:
+          name:
+            type: string
+            description: The name of the player.
+          uuid:
+            type: string
+            description: The unique identifier of the player.
+          address:
+            type: string
+            description: The IP address that the player is connecting from.
+          latency:
+            type: integer
+            description: The latency (ping) of the player in ms.
+          location:
+            $ref: '#/definitions/Location'
+          velocity:
+            $ref: '#/definitions/Vector3'
+          rotation:
+            $ref: '#/definitions/Vector3'
+
   WorldList:
     type: object
     properties:
@@ -672,14 +981,7 @@ definitions:
         type: array
         description: A list of worlds.
         items:
-          type: object
-          properties:
-            name:
-              type: string
-              description: The name of the world.
-            uuid:
-              type: string
-              description: The unique identifier of the world.
+          $ref: '#/definitions/World'
   World:
     type: object
     properties:
@@ -689,6 +991,54 @@ definitions:
       uuid:
         type: string
         description: The unique id of the world.
+  WorldFull:
+    allOf:
+      - $ref: '#/definitions/World'
+      - type: object
+        properties:
+          dimension:
+            $ref: '#/definitions/Dimension'
+          data:
+            $ref: '#/definitions/DataContainer'
+          generator:
+            $ref: '#/definitions/GeneratorType'
+  Dimension:
+    type: object
+    properties:
+      type:
+        $ref: '#/definitions/DimensionType'
+      height:
+        type: number
+        description: The height of the dimension.
+      buildHeight:
+        type: number
+        description: The maximum allowed build height of the dimension.
+      generator:
+        $ref: '#/definitions/GeneratorType'
+  DimensionType:
+    type: object
+    properties:
+      id:
+        type: string
+        description: The unique id of the dimension type.
+      name:
+        type: string
+        description: The name of the dimension type.
+      dimensionClass:
+        type: string
+        description: The classname of the dimension.
+  GeneratorType:
+    type: object
+    properties:
+      id:
+        type: string
+        description: The unique id of the generator type.
+      name:
+        type: string
+        description: The name of the generator type.
+      settings:
+        $ref: '#/definitions/DataContainer'
+
   PluginList:
     type: object
     properties:
@@ -696,14 +1046,7 @@ definitions:
         type: array
         description: A list of plugin ids.
         items:
-          type: object
-          properties:
-            id:
-              type: string
-              description: The id of the plugin.
-            name:
-              type: string
-              description: The name of the plugin.
+          $ref: '#/definitions/Plugin'
   Plugin:
     type: object
     properties:
@@ -713,21 +1056,26 @@ definitions:
       name:
         type: string
         description: The name of the plugin.
-      description:
-        type: string
-        description: The description of the plugin.
       version:
         type: string
         description: The version of the plugin.
-      url:
-        type: string
-        description: The website that the plugin belongs to.
-      authors:
-        type: array
-        description: The list of authors that worked on the plugin.
-        items:
-          type: string
-          description: The name of the author.
+  PluginFull:
+    allOf:
+      - $ref: '#/definitions/Plugin'
+      - type: object
+        properties:
+          description:
+            type: string
+            description: The description of the plugin.
+          url:
+            type: string
+            description: The website that the plugin belongs to.
+          authors:
+            type: array
+            description: The list of authors that worked on the plugin.
+            items:
+              type: string
+              description: The name of the author.
 
   EntityList:
     type: object
@@ -736,29 +1084,34 @@ definitions:
         type: array
         description: A list of entities.
         items:
-          type: object
-          properties:
-            type:
-              type: string
-              description: The type of the entity.
-            uuid:
-              type: string
-              description: The uuid of the entity.
+          $ref: '#/definitions/Entity'
   Entity:
     type: object
     properties:
       type:
         type: string
         description: The type of the entity.
+      class:
+        type: string
+        description: The fully qualified classname of the entity.
       uuid:
         type: string
         description: The uuid of the entity.
       location:
         $ref: '#/definitions/Location'
-      velocity:
-        $ref: '#/definitions/Vector3'
-      rotation:
-        $ref: '#/definitions/Vector3'
+  EntityFull:
+    allOf:
+      - $ref: '#/definitions/Entity'
+      - type: object
+        properties:
+          velocity:
+            $ref: '#/definitions/Vector3'
+          rotation:
+            $ref: '#/definitions/Vector3'
+          properties:
+            $ref: '#/definitions/Properties'
+          data:
+            $ref: '#/definitions/DataContainer'
 
   TileEntityList:
     type: object
@@ -767,19 +1120,24 @@ definitions:
         type: array
         description: A list of tile entities.
         items:
-          type: object
-          properties:
-            type:
-              type: string
-              description: The type of the tile entity.
-            location:
-              $ref: '#/definitions/Location'
+          $ref: '#/definitions/TileEntity'
   TileEntity:
     type: object
     properties:
       type:
         type: string
-        description: The type of the entity.
+        description: The type of the tile entity.
+      class:
+        type: string
+        description: The fully qualified classname of the tile entity.
       location:
         $ref: '#/definitions/Location'
-
+  TileEntityFull:
+    allOf:
+      - $ref: '#/definitions/TileEntity'
+      - type: object
+        properties:
+          data:
+            $ref: '#/definitions/DataContainer'
+          properties:
+            $ref: '#/definitions/Properties'

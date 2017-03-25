@@ -2,6 +2,7 @@ package valandur.webapi.command;
 
 import org.slf4j.Logger;
 import org.spongepowered.api.Sponge;
+import org.spongepowered.api.command.CommandManager;
 import org.spongepowered.api.command.args.CommandElement;
 import org.spongepowered.api.command.args.GenericArguments;
 import org.spongepowered.api.command.spec.CommandSpec;
@@ -15,11 +16,13 @@ import java.util.*;
 
 public class CommandRegistry {
     public static void init() {
+        CommandManager manager = Sponge.getCommandManager();
         Logger logger = WebAPI.getInstance().getLogger();
 
         // Register commands
         logger.info("Registering commands...");
 
+        // Whitelist
         CommandSpec specWhitelistAdd = CommandSpec.builder()
                 .description(Text.of("Add an IP to the whitelist"))
                 .permission("webapi.command.whitelist.add")
@@ -51,6 +54,7 @@ public class CommandRegistry {
                 .child(specWhitelistDisable, "disable")
                 .build();
 
+        // Blacklist
         CommandSpec specBlacklistAdd = CommandSpec.builder()
                 .description(Text.of("Add an IP to the blacklist"))
                 .permission("webapi.command.blacklist.add")
@@ -82,13 +86,17 @@ public class CommandRegistry {
                 .child(specBlacklistDisable, "disable")
                 .build();
 
+        // Notify commands
         Map<List<String>, CommandSpec> hookSpecs = new HashMap<>();
+        Map<List<String>, CommandSpec> hookAliases = new HashMap<>();
         for (WebHook hook : WebHooks.getCommandHooks().values()) {
             List<CommandElement> args = new ArrayList<>();
 
-            for (WebHookParam param : hook.getParams()) {
-                Optional<CommandElement> e = param.getCommandElement();
-                e.ifPresent(args::add);
+            if (hook.getParams() != null) {
+                for (WebHookParam param : hook.getParams()) {
+                    Optional<CommandElement> e = param.getCommandElement();
+                    e.ifPresent(args::add);
+                }
             }
 
             CommandSpec hookCmd = CommandSpec.builder()
@@ -97,14 +105,18 @@ public class CommandRegistry {
                     .arguments(args.toArray(new CommandElement[args.size()]))
                     .executor(new CmdNotifyHook(hook))
                     .build();
+            if (hook.getAliases() != null && hook.getAliases().size() > 0) hookAliases.put(hook.getAliases(), hookCmd);
             hookSpecs.put(Collections.singletonList(hook.getName()), hookCmd);
         }
+
+        // Notify parent
         CommandSpec specNotifyHook = CommandSpec.builder()
                 .description(Text.of("Notify a hook"))
                 .permission("webapi.command.notify")
                 .children(hookSpecs)
                 .build();
 
+        // Register main command
         CommandSpec spec = CommandSpec.builder()
                 .description(Text.of("Manage Web-API settings"))
                 .permission("webapi.command")
@@ -112,6 +124,11 @@ public class CommandRegistry {
                 .child(specBlacklist, "blacklist")
                 .child(specNotifyHook, "notify")
                 .build();
-        Sponge.getCommandManager().register(WebAPI.getInstance(), spec, "webapi");
+        manager.register(WebAPI.getInstance(), spec, "webapi");
+
+        // Register aliases for notify commands
+        for (Map.Entry<List<String>, CommandSpec> entry : hookAliases.entrySet()) {
+            manager.register(WebAPI.getInstance(), entry.getValue(), entry.getKey());
+        }
     }
 }

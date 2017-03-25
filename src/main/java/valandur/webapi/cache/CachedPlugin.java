@@ -34,11 +34,8 @@ public class CachedPlugin extends CachedObject {
     }
 
     @Override
-    public Optional<Object> getLive() {
-        Optional<PluginContainer> p = Sponge.getPluginManager().getPlugin(id);
-        if (!p.isPresent())
-            return Optional.empty();
-        return Optional.of(p.get());
+    public Optional<?> getLive() {
+        return Sponge.getPluginManager().getPlugin(id);
     }
 
     @Override

@@ -35,11 +35,8 @@ public class CachedWorld extends CachedObject {
         return CacheConfig.durationWorld;
     }
     @Override
-    public Optional<Object> getLive() {
-        Optional<World> w = Sponge.getServer().getWorld(UUID.fromString(uuid));
-        if (!w.isPresent())
-            return Optional.empty();
-        return Optional.of(w.get());
+    public Optional<?> getLive() {
+        return Sponge.getServer().getWorld(UUID.fromString(uuid));
     }
 
     @Override

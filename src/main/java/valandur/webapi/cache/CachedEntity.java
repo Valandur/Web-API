@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.flowpowered.math.vector.Vector3d;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.Entity;
-import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 import valandur.webapi.json.JsonConverter;
 
@@ -48,7 +47,7 @@ public class CachedEntity extends CachedObject {
         return CacheConfig.durationEntity;
     }
     @Override
-    public Optional<Object> getLive() {
+    public Optional<?> getLive() {
         for (World w : Sponge.getServer().getWorlds()) {
             Optional<Entity> e = w.getEntity(UUID.fromString(uuid));
             if (e.isPresent())

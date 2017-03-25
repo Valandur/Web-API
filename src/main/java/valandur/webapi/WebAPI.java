@@ -13,7 +13,6 @@ import org.eclipse.jetty.server.handler.ContextHandler;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
 import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.servlet.ServletContextHandler;
-import org.eclipse.jetty.util.DateCache;
 import org.eclipse.jetty.util.log.Log;
 import org.slf4j.Logger;
 import org.spongepowered.api.Sponge;
@@ -25,7 +24,6 @@ import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.Order;
 import org.spongepowered.api.event.achievement.GrantAchievementEvent;
-import org.spongepowered.api.event.action.FishingEvent;
 import org.spongepowered.api.event.cause.entity.damage.source.EntityDamageSource;
 import org.spongepowered.api.event.command.SendCommandEvent;
 import org.spongepowered.api.event.entity.DestructEntityEvent;
@@ -47,6 +45,7 @@ import org.spongepowered.api.statistic.achievement.Achievement;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
 import org.spongepowered.api.util.Tuple;
+import org.spongepowered.api.util.ban.Ban;
 import valandur.webapi.cache.*;
 import valandur.webapi.command.*;
 import valandur.webapi.handlers.AuthHandler;
@@ -284,10 +283,16 @@ public class WebAPI {
         DataCache.updateCommands();
 
         startWebServer(null);
+
+        String message = "{\"cause\":" + JsonConverter.toString(event.getCause()) + "}";
+        WebHooks.notifyHooks(WebHooks.WebHookType.SERVER_START, message);
     }
 
     @Listener
     public void onServerStop(GameStoppedServerEvent event) {
+        String message = "{\"cause\":" + JsonConverter.toString(event.getCause()) + "}";
+        WebHooks.notifyHooks(WebHooks.WebHookType.SERVER_STOP, message);
+
         stopWebServer();
     }
 
@@ -328,7 +333,8 @@ public class WebAPI {
     public void onPlayerLeave(ClientConnectionEvent.Disconnect event) {
         CachedPlayer p = DataCache.removePlayer(event.getTargetEntity().getUniqueId());
 
-        WebHooks.notifyHooks(WebHooks.WebHookType.PLAYER_LEAVE, JsonConverter.toString(p));
+        String message = "{\"player\":" + JsonConverter.toString(p) + ",\"cause\":" + JsonConverter.toString(event.getCause()) + "}";
+        WebHooks.notifyHooks(WebHooks.WebHookType.PLAYER_LEAVE, message);
     }
 
 
@@ -389,7 +395,7 @@ public class WebAPI {
         CachedPlayer p = DataCache.getPlayer(event.getTargetEntity());
         Achievement a = event.getAchievement();
 
-        String message = "{\"player\":" + JsonConverter.toString(p) + ",\"achievement\":" + JsonConverter.toString(a) + ",\"wasCancelled\":" + event.isCancelled() + "}";
+        String message = "{\"player\":" + JsonConverter.toString(p) + ",\"achievement\":" + JsonConverter.toString(a) + ",\"wasCancelled\":" + event.isMessageCancelled() + "}";
         WebHooks.notifyHooks(WebHooks.WebHookType.ACHIEVEMENT, message);
     }
 

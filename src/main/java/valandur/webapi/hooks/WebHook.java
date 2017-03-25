@@ -17,29 +17,35 @@ public class WebHook {
         JSON, FORM
     }
 
-    @Setting(comment = "The name of the hook (used when referring to it in commands)")
+    @Setting
     private String name;
     public String getName() {
         return name != null ? name : address;
     }
 
-    @Setting(comment = "The address of the endpoint that is contacted. This may contain arguments")
+    @Setting
+    private List<String> aliases;
+    public List<String> getAliases() {
+        return aliases;
+    }
+
+    @Setting
     private String address;
     public String getAddress() {
         return address;
     }
 
-    @Setting(comment = "True if this endpoint is called, false otherwise.")
+    @Setting
     private boolean enabled = true;
     public boolean isEnabled() {
         return enabled;
     }
 
-    @Setting(comment = "The method which is used when notifying this hook (GET/PUT/POST/DELETE)")
+    @Setting
     private WebHookMethod method = WebHookMethod.GET;
     public WebHookMethod getMethod() { return method; }
 
-    @Setting(comment = "Choose to either send the body as application/json directly, or as application/x-www-form-urlencoded")
+    @Setting
     private WebHookDataType dataType = WebHookDataType.JSON;
     public WebHookDataType getDataType() {
         return dataType;
@@ -48,11 +54,11 @@ public class WebHook {
         return "application/" + (dataType == WebHookDataType.JSON ? "json" : "x-www-form-urlencoded");
     }
 
-    @Setting(comment = "The headers that are sent along with the request. You can use this for example to pass along a secret key to ensure the requests are coming from the Web-API")
+    @Setting
     private List<WebHookHeader> headers = new ArrayList<>();
     public List<WebHookHeader> getHeaders() { return headers; }
 
-    @Setting(comment = "The parameters can be used in either the header and/or the address, and will also be included in the body")
+    @Setting
     private List<WebHookParam> params = new ArrayList<>();
     public List<WebHookParam> getParams() {
         return params;

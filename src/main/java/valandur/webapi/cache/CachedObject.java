@@ -25,7 +25,7 @@ public abstract class CachedObject {
         return Integer.MAX_VALUE;
     }
     @JsonIgnore
-    public Optional<Object> getLive() {
+    public Optional<?> getLive() {
         return Optional.empty();
     }
     @JsonIgnore

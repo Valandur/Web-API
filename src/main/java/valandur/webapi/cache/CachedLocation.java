@@ -29,11 +29,9 @@ public class CachedLocation extends CachedObject {
     }
 
     @Override
-    public Optional<Object> getLive() {
-        Optional<Object> w = _world.getLive();
-        if (!w.isPresent())
-            return Optional.empty();
-        return Optional.of(new Location<>((World)w.get(), position));
+    public Optional<?> getLive() {
+        Optional<?> w = _world.getLive();
+        return w.map(o -> new Location<>((World) o, position));
     }
 
     @JsonIgnore

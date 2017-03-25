@@ -1,8 +1,10 @@
 package valandur.webapi.cache;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonNode;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.Player;
+import valandur.webapi.json.JsonConverter;
 
 import java.util.*;
 
@@ -12,6 +14,8 @@ public class CachedPlayer extends CachedEntity {
 
     public String address;
     public Integer latency;
+    public JsonNode achievements;
+    public JsonNode profile;
 
 
     public CachedPlayer(Player player) {
@@ -20,6 +24,8 @@ public class CachedPlayer extends CachedEntity {
         this.name = player.getName();
         this.address = player.getConnection().getAddress().toString();
         this.latency = player.getConnection().getLatency();
+        this.achievements = JsonConverter.toJson(player.getAchievementData().achievements());
+        this.profile = JsonConverter.toJson(player.getProfile().getPropertyMap());
     }
 
     @Override
@@ -27,11 +33,8 @@ public class CachedPlayer extends CachedEntity {
         return CacheConfig.durationPlayer;
     }
     @Override
-    public Optional<Object> getLive() {
-        Optional<Player> p = Sponge.getServer().getPlayer(UUID.fromString(uuid));
-        if (!p.isPresent())
-            return Optional.empty();
-        return Optional.of(p.get());
+    public Optional<?> getLive() {
+        return Sponge.getServer().getPlayer(UUID.fromString(uuid));
     }
 
     @Override

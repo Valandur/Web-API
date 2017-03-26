@@ -21,7 +21,7 @@ whatever language you prefer.
 1. Run `npm init` inside that folder to setup a new project.
 
 1. Run `npm i request lodash --save` to install the request module, which we'll be using to comunicate
-with the Web-API, and the Lodash module, which offers lots of functions to work with lista and objects.
+with the Web-API, and the Lodash module, which offers lots of functions to work with lists and objects.
 
 
 <a name="server-info"></a>
@@ -80,9 +80,9 @@ null
 200
 {
   "motd": "A Minecraft Server",
-  "players": 0,
+  "players": 1,
   "maxPlayers": 20,
-  "uptimeTicks": 3948,
+  "uptimeTicks": 85404,
   "hasWhitelist": false,
   "minecraftVersion": "1.11.2",
   "game": {
@@ -91,24 +91,22 @@ null
     "version": "1.11.2",
     "description": "Minecraft is a game about placing blocks and going on adventures",
     "url": "1.11.2",
-    "authors": [
-      "Mojang"
-    ]
+    "authors": ["Mojang"]
   },
   "api": {
     "id": "spongeapi",
     "name": "SpongeAPI",
-    "version": "6.0.0-SNAPSHOT-c641cb0",
+    "version": "6.0.0-SNAPSHOT-8aabd12",
     "description": "A Minecraft plugin API",
-    "url": "6.0.0-SNAPSHOT-c641cb0",
+    "url": "6.0.0-SNAPSHOT-8aabd12",
     "authors": []
   },
   "implementation": {
     "id": "sponge",
     "name": "SpongeVanilla",
-    "version": "1.11.2-6.0.0-BETA-228",
+    "version": "1.11.2-6.0.0-BETA-229",
     "description": "The SpongeAPI implementation for Vanilla Minecraft",
-    "url": "1.11.2-6.0.0-BETA-228",
+    "url": "1.11.2-6.0.0-BETA-229",
     "authors": []
   }
 }
@@ -118,7 +116,7 @@ null
 <a name="world-info"></a>
 ## World Info
 
-### Complete
+### Code
 world-info.js
 ```javascript
 const req = require("request");

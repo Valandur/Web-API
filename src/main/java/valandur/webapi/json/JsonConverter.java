@@ -111,6 +111,9 @@ public class JsonConverter {
     public static JsonNode classToJson(Class c) {
         ObjectNode json = JsonNodeFactory.instance.objectNode();
 
+        json.put("name", c.getName());
+        json.put("parent", c.getSuperclass().getName());
+
         ObjectNode jsonFields = JsonNodeFactory.instance.objectNode();
         Field[] fs = getAllFields(c);
         for (Field f : fs) {

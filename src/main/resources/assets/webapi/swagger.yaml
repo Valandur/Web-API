@@ -1513,7 +1513,7 @@ definitions:
         type: string
         description: The message that was sent.
       wasCancelled:
-        type: bool
+        type: boolean
         description: True if the execution of the command was cancelled.
     example:
       timestamp: 1490533107

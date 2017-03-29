@@ -17,25 +17,17 @@ public class CachedWorld extends CachedObject {
     @JsonProperty
     public String uuid;
 
-    public String dimension;
+    public JsonNode dimension;
     public JsonNode data;
     public JsonNode generator;
 
-    public static CachedWorld copyFrom(World world) {
-        return copyFrom(world, false);
-    }
-    public static CachedWorld copyFrom(World world, boolean details) {
-        CachedWorld cache = new CachedWorld();
-        cache.name = world.getName();
-        cache.uuid = world.getUniqueId().toString();
 
-        if (details) {
-            cache.details = true;
-            cache.dimension = world.getDimension().getType().getName();
-            cache.data = JsonConverter.toJson(world.getProperties().toContainer(), true);
-            cache.generator = JsonConverter.toJson(world.getProperties().getGeneratorType(), true);
-        }
-        return cache;
+    public CachedWorld(World world) {
+        this.name = world.getName();
+        this.uuid = world.getUniqueId().toString();
+        this.dimension = JsonConverter.toJson(world.getDimension());
+        this.data = JsonConverter.toJson(world.getProperties().toContainer());
+        this.generator = JsonConverter.toJson(world.getProperties().getGeneratorType());
     }
 
     @Override
@@ -43,11 +35,8 @@ public class CachedWorld extends CachedObject {
         return CacheConfig.durationWorld;
     }
     @Override
-    public Optional<Object> getLive() {
-        Optional<World> w = Sponge.getServer().getWorld(UUID.fromString(uuid));
-        if (!w.isPresent())
-            return Optional.empty();
-        return Optional.of(w.get());
+    public Optional<?> getLive() {
+        return Sponge.getServer().getWorld(UUID.fromString(uuid));
     }
 
     @Override

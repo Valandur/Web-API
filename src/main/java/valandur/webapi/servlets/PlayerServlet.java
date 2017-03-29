@@ -30,7 +30,7 @@ public class PlayerServlet extends WebAPIServlet {
             return;
         }
 
-        Optional<CachedPlayer> player = DataCache.getPlayer(UUID.fromString(uuid), true);
+        Optional<CachedPlayer> player = DataCache.getPlayer(UUID.fromString(uuid));
         if (!player.isPresent()) {
             data.sendError(HttpServletResponse.SC_NOT_FOUND);
             return;
@@ -56,7 +56,7 @@ public class PlayerServlet extends WebAPIServlet {
             return;
         }
 
-        Optional<CachedPlayer> player = DataCache.getPlayer(UUID.fromString(uuid), false);
+        Optional<CachedPlayer> player = DataCache.getPlayer(UUID.fromString(uuid));
         if (!player.isPresent()) {
             data.sendError(HttpServletResponse.SC_NOT_FOUND);
             return;
@@ -64,15 +64,23 @@ public class PlayerServlet extends WebAPIServlet {
 
         final JsonNode reqJson = (JsonNode) data.getAttribute("body");
 
-        String mName = reqJson.get("method").asText();
-        Optional<Tuple<Class[], Object[]>> params = Util.parseParams(reqJson.get("params"));
+        if (reqJson.has("method")) {
+            String mName = reqJson.get("method").asText();
+            Optional<Tuple<Class[], Object[]>> params = Util.parseParams(reqJson.get("params"));
 
-        if (!params.isPresent()) {
+            if (!params.isPresent()) {
+                data.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                return;
+            }
+
+            JsonNode res = DataCache.executeMethod(player.get(), mName, params.get().getFirst(), params.get().getSecond());
+            data.addJson("result", res);
+        } else if (reqJson.has("field")) {
+            String fName = reqJson.get("field").asText();
+            JsonNode res = DataCache.getField(player.get(), fName);
+            data.addJson("result", res);
+        } else {
             data.sendError(HttpServletResponse.SC_BAD_REQUEST);
-            return;
         }
-
-        JsonNode res = DataCache.executeMethod(player.get(), mName, params.get().getFirst(), params.get().getSecond());
-        data.addJson("result", res);
     }
 }

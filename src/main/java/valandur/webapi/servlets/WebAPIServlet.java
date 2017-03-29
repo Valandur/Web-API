@@ -2,6 +2,7 @@ package valandur.webapi.servlets;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import valandur.webapi.json.JsonConverter;
 import valandur.webapi.misc.Permission;
 import valandur.webapi.WebAPI;
 
@@ -46,8 +47,9 @@ public abstract class WebAPIServlet extends HttpServlet {
             method.invoke(this, data);
             PrintWriter out = data.getWriter();
 
+            ObjectMapper om = JsonConverter.getDefaultObjectMapper();
             if (!data.isErrorSent()) {
-                out.write(data.getNode().toString());
+                out.write(om.writeValueAsString(data.getNode()));
             }
         } catch (NoSuchMethodException e) {
             // Method does not exist (endpoint/verb not supported)

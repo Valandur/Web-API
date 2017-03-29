@@ -4,7 +4,7 @@ plugins {
 }
 
 group = project.group;
-version = "${project.version}-S6.0";
+version = "${project.version}-S${project.spongeVersion}";
 
 repositories {
     mavenCentral()
@@ -19,7 +19,7 @@ spongestart {
 }
 
 dependencies {
-    compileOnly group: 'org.spongepowered', name: 'spongeapi', version: project.spongeVersion
+    compileOnly group: 'org.spongepowered', name: 'spongeapi', version: "${project.spongeVersion}.0-SNAPSHOT"
     compile group: 'org.eclipse.jetty', name: 'jetty-server', version: '9.4.2.v20170220'
     compile group: 'org.eclipse.jetty', name: 'jetty-servlet', version: '9.4.2.v20170220'
     compile group: 'org.eclipse.jetty', name: 'jetty-http', version: '9.4.2.v20170220'

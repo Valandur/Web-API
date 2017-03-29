@@ -50,8 +50,6 @@ tags:
 
 #parameters:
 
-#responses:
-
 securityDefinitions:
   headerKey:
     type: apiKey
@@ -66,6 +64,20 @@ security:
   - headerKey: []
   - queryKey: []
 
+responses:
+  400:
+    description: A provided parameter is invalid (e.g. not a valid UUID).
+    schema:
+      type: object
+  403:
+    description: The provided api key is invalid or you do not have the permissions to access this endpoint.
+    schema:
+      type: object
+  404:
+    description: A required object could not be found (e.g. UUID of world is invalid).
+    schema:
+      type: object
+
 paths:
   /info:
     get:
@@ -77,13 +89,15 @@ paths:
       tags:
         - Info
       responses:
+        403:
+          $ref: '#/responses/403'
         200:
           description: General information about the server
           schema:
             $ref: '#/definitions/ServerInfo'
   /history/chat:
     get:
-      summary: Chat
+      summary: Chat History
       description: |
         View a history of the server chat.
 
@@ -91,13 +105,15 @@ paths:
       tags:
         - History
       responses:
+        403:
+          $ref: '#/responses/403'
         200:
           description: A history of the chat.
           schema:
             $ref: '#/definitions/ChatHistory'
   /history/cmd:
     get:
-      summary: Command
+      summary: Command History
       description: |
         View a history of the server commands.
 
@@ -105,6 +121,8 @@ paths:
       tags:
         - History
       responses:
+        403:
+          $ref: '#/responses/403'
         200:
           description: A history of the chat.
           schema:
@@ -119,6 +137,8 @@ paths:
       tags:
         - Command
       responses:
+        403:
+          $ref: '#/responses/403'
         200:
           description: A list of commands
           schema:
@@ -126,22 +146,49 @@ paths:
     post:
       summary: Execute command
       description: |
-        Execute a command on the server.
+        Execute a command on the server. (Almost the same as running it from the console).
+        Pass a list of commands to execute them in succession, if only passing one command the
+        array is not required.
 
         > Required permission: cmd
       parameters:
         - name: Request
           in: body
-          description: The command sent to the server
+          description: The command and arguments sent to the server
+          required: true
           schema:
-            $ref: '#/definitions/CommandRequest'
+            $ref: '#/definitions/CommandRequestList'
       tags:
         - Command
       responses:
+        403:
+          $ref: '#/responses/403'
         200:
-          description: The command executed successfully.
+          description: A list of text lines sent in response to the command.
           schema:
             $ref: '#/definitions/CommandResponse'
+  /cmd/{name}:
+    get:
+      summary: Detailed command info
+      description: |
+        Get detailed information about a command.
+
+        > Required permission: cmd
+      parameters:
+        - name: name
+          in: path
+          description: The name (main alias) of the command
+          type: string
+          required: true
+      tags:
+        - Command
+      responses:
+        403:
+          $ref: '#/responses/403'
+        200:
+          description: Detailed info about the command.
+          schema:
+            $ref: '#/definitions/CommandFull'
   /class:
     get:
       summary: Cached classes
@@ -152,6 +199,8 @@ paths:
       tags:
         - Class
       responses:
+        403:
+          $ref: '#/responses/403'
         200:
           description: A list of all the classes that are cached on the server.
           schema:
@@ -164,12 +213,20 @@ paths:
       summary: Lookup class
       description: |
         Get the fields and methods of a specific class loaded on the server.
-        Use either the short name if the class is already cached, or the fully quilified classname.
+        Use the fully quilified classname (e.g. "net.minecraft.tileentity.TileEntityChest").
 
         > Required permission: class
+      parameters:
+        - name: classname
+          in: path
+          type: string
+          description: The classname of the class to show.
+          required: true
       tags:
         - Class
       responses:
+        403:
+          $ref: '#/responses/403'
         200:
           description: An object describing the class fields and methods.
           schema:
@@ -188,6 +245,8 @@ paths:
       tags:
         - Player
       responses:
+        403:
+          $ref: '#/responses/403'
         200:
           description: A list of all the players on the server
           schema:
@@ -204,13 +263,53 @@ paths:
           in: path
           type: string
           description: The uuid of the player to get detailed information about.
+          required: true
       tags:
         - Player
       responses:
+        400:
+          $ref: '#/responses/400'
+        403:
+          $ref: '#/responses/403'
+        404:
+          $ref: '#/responses/404'
         200:
           description: Detailed information about the player.
           schema:
-            $ref: '#/definitions/Player'
+            $ref: '#/definitions/PlayerFull'
+    post:
+      summary: Player methods & fields
+      description: |
+        Provides direct access to the underlaying player object and can execute
+        any method on it or access any field.
+
+        > Required permission: player
+      parameters:
+        - name: uuid
+          in: path
+          type: string
+          description: The uuid of the player.
+          required: true
+        - name: Request
+          in: body
+          description: Information about which method/field to execute/get.
+          required: true
+          schema:
+            $ref: '#/definitions/RawRequest'
+      tags:
+        - Player
+      responses:
+        400:
+          $ref: '#/responses/400'
+        403:
+          $ref: '#/responses/403'
+        404:
+          $ref: '#/responses/404'
+        200:
+          description: The result of executing/getting the method/field.
+          schema:
+            $ref: '#/definitions/RawResponse'
+
   /world:
     get:
       summary: World list
@@ -221,6 +320,8 @@ paths:
       tags:
         - World
       responses:
+        403:
+          $ref: '#/responses/403'
         200:
           description: A list of all the worlds on the server
           schema:
@@ -237,13 +338,53 @@ paths:
           in: path
           type: string
           description: The uuid of the world to get detailed information about.
+          required: true
       tags:
         - World
       responses:
+        400:
+          $ref: '#/responses/400'
+        403:
+          $ref: '#/responses/403'
+        404:
+          $ref: '#/responses/404'
         200:
           description: Detailed information about the world.
           schema:
-            $ref: '#/definitions/World'
+            $ref: '#/definitions/WorldFull'
+    post:
+      summary: World methods & fields
+      description: |
+        Provides direct access to the underlaying world object and can execute
+        any method on it or access any field.
+
+        > Required permission: world
+      parameters:
+        - name: uuid
+          in: path
+          type: string
+          description: The uuid of the world.
+          required: true
+        - name: Request
+          in: body
+          description: Information about which method/field to execute/get.
+          required: true
+          schema:
+            $ref: '#/definitions/RawRequest'
+      tags:
+        - World
+      responses:
+        400:
+          $ref: '#/responses/400'
+        403:
+          $ref: '#/responses/403'
+        404:
+          $ref: '#/responses/404'
+        200:
+          description: The result of executing/getting the method/field.
+          schema:
+            $ref: '#/definitions/RawResponse'
+
   /plugin:
     get:
       summary: Plugin list
@@ -254,6 +395,8 @@ paths:
       tags:
         - Plugin
       responses:
+        403:
+          $ref: '#/responses/403'
         200:
           description: A list of all the plugins on the server.
           schema:
@@ -270,13 +413,18 @@ paths:
           in: path
           type: string
           description: The id of the plugin to get detailed information about.
+          required: true
       tags:
         - Plugin
       responses:
+        403:
+          $ref: '#/responses/403'
+        404:
+          $ref: '#/responses/404'
         200:
           description: Detailed information about the plugin.
           schema:
-            $ref: '#/definitions/Plugin'
+            $ref: '#/definitions/PluginFull'
   /entity:
     get:
       summary: Entities list
@@ -287,6 +435,8 @@ paths:
       tags:
         - Entity
       responses:
+        403:
+          $ref: '#/responses/403'
         200:
           description: A list of all the entities on the server.
           schema:
@@ -303,35 +453,53 @@ paths:
           in: path
           type: string
           description: The uuid of the entity to get detailed information about.
+          required: true
       tags:
         - Entity
       responses:
+        400:
+          $ref: '#/responses/400'
+        403:
+          $ref: '#/responses/403'
+        404:
+          $ref: '#/responses/404'
         200:
           description: Detailed information about the entity.
           schema:
-            $ref: '#/definitions/Entity'
+            $ref: '#/definitions/EntityFull'
     post:
-      summary: Call entity function
+      summary: Entity methods & fields
       description: |
-        Provides direct access to the underlaying entity object and can execute any function on it.
+        Provides direct access to the underlaying entity object and can execute
+        any method on it or access any field.
 
         > Required permission: entity
       parameters:
         - name: uuid
           in: path
           type: string
-          description: The uuid of the entity to get detailed information about.
+          description: The uuid of the entity.
+          required: true
+        - name: Request
+          in: body
+          description: Information about which method/field to execute/get.
+          required: true
+          schema:
+            $ref: '#/definitions/RawRequest'
       tags:
         - Entity
       responses:
+        400:
+          $ref: '#/responses/400'
+        403:
+          $ref: '#/responses/403'
+        404:
+          $ref: '#/responses/404'
         200:
-          description: The result of executing the function.
+          description: The result of executing/getting the method/field.
           schema:
-            type: object
-            properties:
-              result:
-                type: object
-                description: The result of the function.
+            $ref: '#/definitions/RawResponse'
+
   /tile-entity:
     get:
       summary: Tile entities list
@@ -342,6 +510,8 @@ paths:
       tags:
         - Tile Entity
       responses:
+        403:
+          $ref: '#/responses/403'
         200:
           description: A list of all the tile entities on the server.
           schema:
@@ -358,32 +528,189 @@ paths:
           in: path
           type: string
           description: The uuid of the world the tile entity is in.
+          required: true
         - name: x
           in: path
           type: string
           description: The x-coordinate of the tile entity.
+          required: true
         - name: y
           in: path
           type: string
           description: The y-coordinate of the tile entity.
+          required: true
         - name: z
           in: path
           type: string
           description: The z-coordinate of the tile entity.
+          required: true
       tags:
         - Tile Entity
       responses:
+        400:
+          $ref: '#/responses/400'
+        403:
+          $ref: '#/responses/403'
+        404:
+          $ref: '#/responses/404'
         200:
           description: Detailed information about the tile entity.
           schema:
-            $ref: '#/definitions/TileEntity'
+            $ref: '#/definitions/TileEntityFull'
+    post:
+      summary: Tile-Entity methods & fields
+      description: |
+        Provides direct access to the underlaying tile entity object and can execute
+        any method on it or access any field.
+
+        > Required permission: tile-entity
+      parameters:
+        - name: worldUuid
+          in: path
+          type: string
+          description: The uuid of the world the tile entity is in.
+          required: true
+        - name: x
+          in: path
+          type: string
+          description: The x-coordinate of the tile entity.
+          required: true
+        - name: y
+          in: path
+          type: string
+          description: The y-coordinate of the tile entity.
+          required: true
+        - name: z
+          in: path
+          type: string
+          description: The z-coordinate of the tile entity.
+          required: true
+        - name: Request
+          in: body
+          description: Information about which method/field to execute/get.
+          required: true
+          schema:
+            $ref: '#/definitions/RawRequest'
+      tags:
+        - Tile Entity
+      responses:
+        400:
+          $ref: '#/responses/400'
+        403:
+          $ref: '#/responses/403'
+        404:
+          $ref: '#/responses/404'
+        200:
+          description: The result of executing/getting the method/field.
+          schema:
+            $ref: '#/definitions/RawResponse'
 
 
 definitions:
+  DataContainer:
+    type: object
+    description: A container of various properties.
+  Properties:
+    type: array
+    description: A list of properties belonging to the object.
+    items:
+      type: object
+
+  Location:
+    type: object
+    description: Describes a location in a world
+    properties:
+      world:
+        $ref: '#/definitions/World'
+      position:
+        $ref: '#/definitions/Vector3'
+
+  Vector3:
+    type: object
+    description: Describes a location
+    properties:
+      x:
+        type: number
+        format: double
+        description: The x-coordinate of the vector.
+      y:
+        type: number
+        format: double
+        description: The y-coordinate of the vector.
+      z:
+        type: number
+        format: double
+        description: The z-coordinate of the vector.
+
+  RawRequest:
+    type: object
+    description: |
+      This data defines what method to execute or which field of the object to get.
+
+      Note that either "method" or "field" is required.
+    properties:
+      method:
+        type: string
+        description: The name of the method to execute
+      params:
+        type: array
+        description: The parameters passed to the method.
+        items:
+          $ref: '#/definitions/RawRequestParam'
+      field:
+        type: string
+        description: The name of the field to get.
+  RawRequestParam:
+    type: object
+    description: A parameter that is interpreted by the server and passed to the method.
+    properties:
+      type:
+        type: string
+        description: The type of the parameter. This defines how the value is interpreted.
+        enum:
+          - int
+          - integer
+          - float
+          - double
+          - bool
+          - boolean
+          - byte
+          - char
+          - long
+          - short
+          - string
+          - class
+          - vector3d
+          - text
+          - world
+          - player
+          - itemstack
+      value:
+        type: object
+        description: |
+          The value of the parameter. Base types (like integer, float, boolean, etc.) are converted
+          to the correct type and then passed to the method. Some parameters are handled differently,
+          they are listed below along with their usage:
+
+          - class: Interpreted as the fully qualified classname of a class which is loaded and passed |
+          - vector3d: Converted to a Vector3d object. Requires the properties "x", "y" and "z"
+          - text: Converted to a sponge text
+          - world: Assumed to be the UUID of a world which is fetched and passed
+          - player: Assumed to be the UUID of the player which is fetched and passed.
+          - itemstack: Converted to a new item stack. Requires the properties "itemType" and "amount"
+  RawResponse:
+    type: object
+
   Class:
     type: object
     description: A class definition that is loaded on the server.
     properties:
+      name:
+        type: string
+        description: The name of the class
+      parent:
+        type: string
+        description: The name of the superclass
       fields:
         type: array
         items:
@@ -409,7 +736,6 @@ definitions:
           properties:
             modifiers:
               type: array
-              decription: The modifiers of the method.
               items:
                 type: string
             params:
@@ -424,42 +750,657 @@ definitions:
             from:
               type: string
               description: The class where this field is from (if from a superclass)
-
-  Location:
-    type: object
-    description: Describes a location in a world
-    properties:
-      world:
-        type: string
-        description: The name of the world the player is in.
-      x:
-        type: number
-        format: double
-        description: The x-coordinate of the location.
-      y:
-        type: number
-        format: double
-        description: The y-coordinate of the location.
-      z:
-        type: number
-        format: double
-        description: The z-coordinate of the location.
-  Vector3:
-    type: object
-    description: Describes a location
-    properties:
-      x:
-        type: number
-        format: double
-        description: The x-coordinate of the vector.
-      y:
-        type: number
-        format: double
-        description: The y-coordinate of the vector.
-      z:
-        type: number
-        format: double
-        description: The z-coordinate of the vector.
+    example:
+      name: net.minecraft.tileentity.TileEntityChest
+      parent: net.minecraft.tileentity.TileEntityLockableLoot
+      fields:
+        fabric:
+          type: org.spongepowered.common.item.inventory.lens.Fabric
+          modifiers:
+          - private
+        slots:
+          type: org.spongepowered.common.item.inventory.lens.impl.collections.SlotCollection
+          modifiers:
+          - protected
+          from: net.minecraft.tileentity.TileEntityLockableLoot
+        lens:
+          type: org.spongepowered.common.item.inventory.lens.Lens
+          modifiers:
+          - private
+        empty:
+          type: org.spongepowered.api.item.inventory.EmptyInventory
+          modifiers:
+          - protected
+          from: net.minecraft.tileentity.TileEntityLockableLoot
+        parent:
+          type: org.spongepowered.api.item.inventory.Inventory
+          modifiers:
+          - protected
+          from: net.minecraft.tileentity.TileEntityLockableLoot
+        next:
+          type: org.spongepowered.api.item.inventory.Inventory
+          modifiers:
+          - protected
+          from: net.minecraft.tileentity.TileEntityLockableLoot
+        children:
+          type: java.util.List
+          modifiers:
+          - protected
+          from: net.minecraft.tileentity.TileEntityLockableLoot
+        slotIterator:
+          type: java.lang.Iterable
+          modifiers:
+          - protected
+          from: net.minecraft.tileentity.TileEntityLockableLoot
+        customTileData:
+          type: net.minecraft.nbt.NBTTagCompound
+          modifiers:
+          - private
+          from: net.minecraft.tileentity.TileEntity
+        manipulators:
+          type: java.util.List
+          modifiers:
+          - private
+          from: net.minecraft.tileentity.TileEntity
+        tileType:
+          type: org.spongepowered.api.block.tileentity.TileEntityType
+          modifiers:
+          - final
+          - private
+          from: net.minecraft.tileentity.TileEntity
+        isTileVanilla:
+          type: boolean
+          modifiers:
+          - final
+          - private
+          from: net.minecraft.tileentity.TileEntity
+        timing:
+          type: co.aikar.timings.Timing
+          modifiers:
+          - private
+          from: net.minecraft.tileentity.TileEntity
+        locatableBlock:
+          type: org.spongepowered.api.world.LocatableBlock
+          modifiers:
+          - private
+          from: net.minecraft.tileentity.TileEntity
+      methods:
+        getInventory:
+          modifiers:
+          - public
+          - volatile
+          params: []
+          return: org.spongepowered.api.item.inventory.type.CarriedInventory
+          from: net.minecraft.tileentity.TileEntityLockable
+        getRootLens:
+          modifiers:
+          - public
+          params: []
+          return: org.spongepowered.common.item.inventory.lens.Lens
+        getSlotProvider:
+          modifiers:
+          - public
+          params: []
+          return: org.spongepowered.common.item.inventory.lens.SlotProvider
+          from: net.minecraft.tileentity.TileEntityLockableLoot
+        handler$onConstructed$zij007:
+          modifiers:
+          - public
+          params:
+          - org.spongepowered.asm.mixin.injection.callback.CallbackInfo
+          return: void
+        handler$onUpdate$zij002:
+          modifiers:
+          - public
+          params:
+          - org.spongepowered.asm.mixin.injection.callback.CallbackInfo
+          return: void
+        handler$onOpenInventory$zij000:
+          modifiers:
+          - public
+          params:
+          - net.minecraft.entity.player.EntityPlayer
+          - org.spongepowered.asm.mixin.injection.callback.CallbackInfo
+          return: void
+        getDoubleChestInventory:
+          modifiers:
+          - public
+          params: []
+          return: java.util.Optional
+        handler$onCloseInventory$zij000:
+          modifiers:
+          - public
+          params:
+          - net.minecraft.entity.player.EntityPlayer
+          - org.spongepowered.asm.mixin.injection.callback.CallbackInfo
+          return: void
+        setCustomDisplayName:
+          modifiers:
+          - public
+          params:
+          - java.lang.String
+          return: void
+        supplyVanillaManipulators:
+          modifiers:
+          - public
+          params:
+          - java.util.List
+          return: void
+          from: net.minecraft.tileentity.TileEntity
+        parent:
+          modifiers:
+          - public
+          params: []
+          return: org.spongepowered.api.item.inventory.Inventory
+          from: net.minecraft.tileentity.TileEntityLockableLoot
+        clear:
+          modifiers:
+          - public
+          params: []
+          return: void
+          from: net.minecraft.tileentity.TileEntityLockableLoot
+        next:
+          modifiers:
+          - public
+          params: []
+          return: org.spongepowered.api.item.inventory.Inventory
+          from: net.minecraft.tileentity.TileEntityLockableLoot
+        first:
+          modifiers:
+          - public
+          params: []
+          return: org.spongepowered.api.item.inventory.Inventory
+          from: net.minecraft.tileentity.TileEntityLockableLoot
+        slots:
+          modifiers:
+          - public
+          params: []
+          return: java.lang.Iterable
+          from: net.minecraft.tileentity.TileEntityLockableLoot
+        getChild:
+          modifiers:
+          - public
+          params:
+          - int
+          return: org.spongepowered.api.item.inventory.Inventory
+          from: net.minecraft.tileentity.TileEntityLockableLoot
+        toContainer:
+          modifiers:
+          - public
+          params: []
+          return: org.spongepowered.api.data.DataContainer
+          from: net.minecraft.tileentity.TileEntity
+        emptyInventory:
+          modifiers:
+          - final
+          - protected
+          params: []
+          return: org.spongepowered.api.item.inventory.EmptyInventory
+          from: net.minecraft.tileentity.TileEntityLockableLoot
+        getTileEntity:
+          modifiers:
+          - public
+          params: []
+          return: java.util.Optional
+          from: net.minecraft.tileentity.TileEntityLockable
+        getCarrier:
+          modifiers:
+          - public
+          params: []
+          return: java.util.Optional
+          from: net.minecraft.tileentity.TileEntityLockable
+        remove:
+          modifiers:
+          - public
+          params:
+          - org.spongepowered.api.data.key.Key
+          return: org.spongepowered.api.data.DataTransactionResult
+          from: net.minecraft.tileentity.TileEntity
+        get:
+          modifiers:
+          - public
+          params:
+          - org.spongepowered.api.data.key.Key
+          return: java.util.Optional
+          from: net.minecraft.tileentity.TileEntity
+        getProperty:
+          modifiers:
+          - public
+          params:
+          - java.lang.Class
+          return: java.util.Optional
+          from: net.minecraft.tileentity.TileEntity
+        getValue:
+          modifiers:
+          - public
+          params:
+          - org.spongepowered.api.data.key.Key
+          return: java.util.Optional
+          from: net.minecraft.tileentity.TileEntity
+        access$000:
+          modifiers:
+          - static
+          params: []
+          return: net.minecraft.util.registry.RegistryNamespaced
+          from: net.minecraft.tileentity.TileEntity
+        getLocation:
+          modifiers:
+          - public
+          params: []
+          return: org.spongepowered.api.world.Location
+          from: net.minecraft.tileentity.TileEntity
+        copy:
+          modifiers:
+          - public
+          - volatile
+          params: []
+          return: org.spongepowered.api.data.value.ValueContainer
+          from: net.minecraft.tileentity.TileEntity
+        getType:
+          modifiers:
+          - final
+          - public
+          params: []
+          return: org.spongepowered.api.block.tileentity.TileEntityType
+          from: net.minecraft.tileentity.TileEntity
+        getKeys:
+          modifiers:
+          - public
+          params: []
+          return: java.util.Set
+          from: net.minecraft.tileentity.TileEntity
+        offer:
+          modifiers:
+          - public
+          - volatile
+          params:
+          - org.spongepowered.api.data.value.ValueContainer
+          - org.spongepowered.api.data.merge.MergeFunction
+          return: org.spongepowered.api.data.DataTransactionResult
+          from: net.minecraft.tileentity.TileEntity
+        isValid:
+          modifiers:
+          - public
+          params: []
+          return: boolean
+          from: net.minecraft.tileentity.TileEntity
+        handler$onRegister$zif000:
+          modifiers:
+          - private
+          - static
+          params:
+          - java.lang.String
+          - java.lang.Class
+          - org.spongepowered.asm.mixin.injection.callback.CallbackInfo
+          return: void
+          from: net.minecraft.tileentity.TileEntity
+        handler$onReadFromNBT$zif001:
+          modifiers:
+          - public
+          params:
+          - net.minecraft.nbt.NBTTagCompound
+          - org.spongepowered.asm.mixin.injection.callback.CallbackInfo
+          return: void
+          from: net.minecraft.tileentity.TileEntity
+        handler$onWriteToNBT$zif001:
+          modifiers:
+          - public
+          params:
+          - net.minecraft.nbt.NBTTagCompound
+          - org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable
+          return: void
+          from: net.minecraft.tileentity.TileEntity
+        lambda$onMarkDirty$0:
+          modifiers:
+          - private
+          params:
+          - org.spongepowered.api.block.tileentity.TileEntity
+          return: void
+          from: net.minecraft.tileentity.TileEntity
+        handler$onMarkDirty$zif000:
+          modifiers:
+          - public
+          params:
+          - org.spongepowered.asm.mixin.injection.callback.CallbackInfo
+          return: void
+          from: net.minecraft.tileentity.TileEntity
+        getContainers:
+          modifiers:
+          - public
+          params: []
+          return: java.util.Collection
+          from: net.minecraft.tileentity.TileEntity
+        supportsCustom:
+          modifiers:
+          - public
+          params:
+          - org.spongepowered.api.data.key.Key
+          return: boolean
+          from: net.minecraft.tileentity.TileEntity
+        getCustomValue:
+          modifiers:
+          - public
+          params:
+          - org.spongepowered.api.data.key.Key
+          return: java.util.Optional
+          from: net.minecraft.tileentity.TileEntity
+        lambda$getKeys$1:
+          modifiers:
+          - private
+          - static
+          params:
+          - org.spongepowered.api.data.manipulator.DataManipulator
+          return: java.util.stream.Stream
+          from: net.minecraft.tileentity.TileEntity
+        hasManipulators:
+          modifiers:
+          - public
+          params: []
+          return: boolean
+          from: net.minecraft.tileentity.TileEntity
+        removeCustom:
+          modifiers:
+          - public
+          params:
+          - org.spongepowered.api.data.key.Key
+          return: org.spongepowered.api.data.DataTransactionResult
+          from: net.minecraft.tileentity.TileEntity
+        writeToNbt:
+          modifiers:
+          - public
+          params:
+          - net.minecraft.nbt.NBTTagCompound
+          return: void
+          from: net.minecraft.tileentity.TileEntity
+        readFromNbt:
+          modifiers:
+          - public
+          params:
+          - net.minecraft.nbt.NBTTagCompound
+          return: void
+          from: net.minecraft.tileentity.TileEntity
+        createArchetype:
+          modifiers:
+          - public
+          params: []
+          return: org.spongepowered.api.block.tileentity.TileEntityArchetype
+          from: net.minecraft.tileentity.TileEntity
+        getCustom:
+          modifiers:
+          - public
+          params:
+          - org.spongepowered.api.data.key.Key
+          return: java.util.Optional
+          from: net.minecraft.tileentity.TileEntity
+        offerCustom:
+          modifiers:
+          - public
+          params:
+          - org.spongepowered.api.data.manipulator.DataManipulator
+          - org.spongepowered.api.data.merge.MergeFunction
+          return: org.spongepowered.api.data.DataTransactionResult
+          from: net.minecraft.tileentity.TileEntity
+        getLocatableBlock:
+          modifiers:
+          - public
+          params: []
+          return: org.spongepowered.api.world.LocatableBlock
+          from: net.minecraft.tileentity.TileEntity
+        isVanilla:
+          modifiers:
+          - public
+          params: []
+          return: boolean
+          from: net.minecraft.tileentity.TileEntity
+        getBlock:
+          modifiers:
+          - public
+          params: []
+          return: org.spongepowered.api.block.BlockState
+          from: net.minecraft.tileentity.TileEntity
+        supports:
+          modifiers:
+          - public
+          params:
+          - java.lang.Class
+          return: boolean
+          from: net.minecraft.tileentity.TileEntity
+        validateRawData:
+          modifiers:
+          - public
+          params:
+          - org.spongepowered.api.data.DataView
+          return: boolean
+          from: net.minecraft.tileentity.TileEntity
+        setRawData:
+          modifiers:
+          - public
+          params:
+          - org.spongepowered.api.data.DataView
+          return: void
+          from: net.minecraft.tileentity.TileEntity
+        getValues:
+          modifiers:
+          - public
+          params: []
+          return: java.util.Set
+          from: net.minecraft.tileentity.TileEntity
+        getOrCreate:
+          modifiers:
+          - public
+          params:
+          - java.lang.Class
+          return: java.util.Optional
+          from: net.minecraft.tileentity.TileEntity
+        copyFrom:
+          modifiers:
+          - public
+          params:
+          - org.spongepowered.api.data.DataHolder
+          - org.spongepowered.api.data.merge.MergeFunction
+          return: org.spongepowered.api.data.DataTransactionResult
+          from: net.minecraft.tileentity.TileEntity
+        undo:
+          modifiers:
+          - public
+          params:
+          - org.spongepowered.api.data.DataTransactionResult
+          return: org.spongepowered.api.data.DataTransactionResult
+          from: net.minecraft.tileentity.TileEntity
+        getTimingsHandler:
+          modifiers:
+          - public
+          params: []
+          return: co.aikar.timings.Timing
+          from: net.minecraft.tileentity.TileEntity
+        getApplicableProperties:
+          modifiers:
+          - public
+          params: []
+          return: java.util.Collection
+          from: net.minecraft.tileentity.TileEntity
+        lambda$getOrCreate$0:
+          modifiers:
+          - private
+          - static
+          params:
+          - org.spongepowered.api.data.manipulator.DataManipulator
+          return: org.spongepowered.api.data.manipulator.DataManipulator
+          from: net.minecraft.tileentity.TileEntity
+        getContentVersion:
+          modifiers:
+          - public
+          params: []
+          return: int
+          from: net.minecraft.tileentity.TileEntity
+        lambda$getCustom$1:
+          modifiers:
+          - private
+          - static
+          params:
+          - org.spongepowered.api.data.key.Key
+          - org.spongepowered.api.data.manipulator.DataManipulator
+          return: boolean
+          from: net.minecraft.tileentity.TileEntity
+        lambda$getValues$2:
+          modifiers:
+          - private
+          - static
+          params:
+          - org.spongepowered.api.data.manipulator.DataManipulator
+          return: java.util.stream.Stream
+          from: net.minecraft.tileentity.TileEntity
+        lambda$getCustom$2:
+          modifiers:
+          - private
+          - static
+          params:
+          - org.spongepowered.api.data.key.Key
+          - org.spongepowered.api.data.manipulator.DataManipulator
+          return: java.util.Optional
+          from: net.minecraft.tileentity.TileEntity
+        lambda$getCustomValue$4:
+          modifiers:
+          - private
+          - static
+          params:
+          - org.spongepowered.api.data.key.Key
+          - org.spongepowered.api.data.manipulator.DataManipulator
+          return: java.util.Optional
+          from: net.minecraft.tileentity.TileEntity
+        lambda$getCustomValue$3:
+          modifiers:
+          - private
+          - static
+          params:
+          - org.spongepowered.api.data.key.Key
+          - org.spongepowered.api.data.manipulator.DataManipulator
+          return: boolean
+          from: net.minecraft.tileentity.TileEntity
+        lambda$supportsCustom$0:
+          modifiers:
+          - private
+          - static
+          params:
+          - org.spongepowered.api.data.key.Key
+          - org.spongepowered.api.data.manipulator.DataManipulator
+          return: boolean
+          from: net.minecraft.tileentity.TileEntity
+        getCustomManipulators:
+          modifiers:
+          - public
+          params: []
+          return: java.util.List
+          from: net.minecraft.tileentity.TileEntity
+        markDirty:
+          modifiers:
+          - public
+          params: []
+          return: void
+          from: net.minecraft.tileentity.TileEntity
+        getTileData:
+          modifiers:
+          - public
+          params: []
+          return: net.minecraft.nbt.NBTTagCompound
+          from: net.minecraft.tileentity.TileEntity
+        setValid:
+          modifiers:
+          - public
+          params:
+          - boolean
+          return: void
+          from: net.minecraft.tileentity.TileEntity
+        handler$endWriteToNBTInject$zoc000:
+          modifiers:
+          - private
+          params:
+          - net.minecraft.nbt.NBTTagCompound
+          - org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable
+          return: void
+          from: net.minecraft.tileentity.TileEntity
+        handler$endReadFromNBTInject$zoc000:
+          modifiers:
+          - private
+          params:
+          - net.minecraft.nbt.NBTTagCompound
+          - org.spongepowered.asm.mixin.injection.callback.CallbackInfo
+          return: void
+          from: net.minecraft.tileentity.TileEntity
+        finalize:
+          modifiers:
+          - protected
+          params: []
+          return: void
+          from: java.lang.Object
+        wait:
+          modifiers:
+          - final
+          - native
+          - public
+          params:
+          - long
+          return: void
+          from: java.lang.Object
+        equals:
+          modifiers:
+          - public
+          params:
+          - java.lang.Object
+          return: boolean
+          from: java.lang.Object
+        toString:
+          modifiers:
+          - public
+          params: []
+          return: java.lang.String
+          from: java.lang.Object
+        hashCode:
+          modifiers:
+          - native
+          - public
+          params: []
+          return: int
+          from: java.lang.Object
+        getClass:
+          modifiers:
+          - final
+          - native
+          - public
+          params: []
+          return: java.lang.Class
+          from: java.lang.Object
+        clone:
+          modifiers:
+          - native
+          - protected
+          params: []
+          return: java.lang.Object
+          from: java.lang.Object
+        notify:
+          modifiers:
+          - final
+          - native
+          - public
+          params: []
+          return: void
+          from: java.lang.Object
+        notifyAll:
+          modifiers:
+          - final
+          - native
+          - public
+          params: []
+          return: void
+          from: java.lang.Object
+        registerNatives:
+          modifiers:
+          - native
+          - private
+          - static
+          params: []
+          return: void
+          from: java.lang.Object
 
   ServerInfo:
     type: object
@@ -482,31 +1423,74 @@ definitions:
       minecraftVersion:
         type: string
         description: The minecraft version running on the server.
+      game:
+        $ref: '#/definitions/ServerInfoDetail'
       api:
-        type: object
-        description: Information about the API running on the server.
-        properties:
-          id:
-            type: string
-            description: The unique id of the api.
-          name:
-            type: string
-            description: The name of the api.
-          version:
-            type: string
-            description: The version of the api.
-          description:
-            type: string
-            description: The description of the api.
-          url:
-            type: string
-            description: The website of the api.
-          authors:
-            type: array
-            description: The list of authors that worked on the api.
-            items:
-              type: string
-              description: The name of the author.
+        $ref: '#/definitions/ServerInfoDetail'
+      implementation:
+        $ref: '#/definitions/ServerInfoDetail'
+    example:
+      motd: A Minecraft Server
+      players: 1
+      maxPlayers: 20
+      uptimeTicks: 85404
+      hasWhitelist: false
+      minecraftVersion: 1.11.2
+      game:
+        id: minecraft
+        name: Minecraft
+        version: 1.11.2
+        description: Minecraft is a game about placing blocks and going on adventures
+        url: 1.11.2
+        authors:
+        - Mojang
+      api:
+        id: spongeapi
+        name: SpongeAPI
+        version: 6.0.0-SNAPSHOT-8aabd12
+        description: A Minecraft plugin API
+        url: 6.0.0-SNAPSHOT-8aabd12
+        authors: []
+      implementation:
+        id: sponge
+        name: SpongeVanilla
+        version: 1.11.2-6.0.0-BETA-229
+        description: The SpongeAPI implementation for Vanilla Minecraft
+        url: 1.11.2-6.0.0-BETA-229
+        authors: []
+
+  ServerInfoDetail:
+    type: object
+    description: Information about the Game/API/Implementation running on the server.
+    properties:
+      id:
+        type: string
+        description: The unique id of the api.
+      name:
+        type: string
+        description: The name of the api.
+      version:
+        type: string
+        description: The version of the api.
+      description:
+        type: string
+        description: The description of the api.
+      url:
+        type: string
+        description: The website of the api.
+      authors:
+        type: array
+        description: The list of authors that worked on the api.
+        items:
+          type: string
+          description: The name of the author.
+    example:
+      id: sponge
+      name: SpongeVanilla
+      version: 1.11.2-6.0.0-BETA-229
+      description: The SpongeAPI implementation for Vanilla Minecraft
+      url: 1.11.2-6.0.0-BETA-229
+      authors: []
 
   ChatHistory:
     type: object
@@ -528,6 +1512,28 @@ definitions:
       message:
         type: string
         description: The message that was sent.
+      wasCancelled:
+        type: boolean
+        description: True if the execution of the command was cancelled.
+    example:
+      timestamp: 1490533107
+      sender:
+        type: player
+        uuid: 357427c6-3b91-4ead-aad4-15a3e18e6452
+        location:
+          world:
+            name: world
+            uuid: c574ab53-831b-4410-b3ad-955a2a504843
+            link: "/api/world/c574ab53-831b-4410-b3ad-955a2a504843"
+          position:
+            x: -1289.0203529877956
+            y: 4
+            z: -1065.111295771125
+        name: Valandur
+        link: "/api/player/357427c6-3b91-4ead-aad4-15a3e18e6452"
+        class: net.minecraft.entity.player.EntityPlayerMP
+      message: Valandur joined the game
+      wasCancelled: false
   CommandHistory:
     type: object
     properties:
@@ -555,6 +1561,14 @@ definitions:
         description: An object describing the source (executor) of the command. Usually a player or the console.
       result:
         $ref: '#/definitions/CommandResult'
+    example:
+      timestamp: 1490533099
+      command: unban
+      args: Valandur
+      cause:
+        Source: net.minecraft.server.dedicated.DedicatedServer
+      wasCancelled: false
+      result: {}
   CommandResult:
     type: object
     properties:
@@ -588,19 +1602,48 @@ definitions:
       name:
         type: string
         description: The main name of the command.
-      aliases:
-        type: array
-        description: All the aliases with which the command can be executed.
-        items:
-          type: string
-      usage:
-        type: string
-        description: The usage instructions for the command.
       description:
         type: string
         description: Describes what the command does.
+    example:
+      name: webapi
+      description: Manage Web-API settings
+      link: "/api/cmd/webapi"
+  CommandFull:
+    allOf:
+      - $ref: '#/definitions/Command'
+      - type: object
+        properties:
+          aliases:
+            type: array
+            description: All the aliases with which the command can be executed.
+            items:
+              type: string
+          usage:
+            type: string
+            description: The usage instructions for the command.
+          help:
+            type: string
+            description: More information about the command.
+    example:
+      name: webapi
+      description: Manage Web-API settings
+      aliases:
+      - webapi:webapi
+      - webapi
+      usage: blacklist|whitelist|notify
+      help: |-
+        Manage Web-API settings
+        blacklist|whitelist|notify
+      link: "/api/cmd/webapi"
+  CommandRequestList:
+    type: array
+    items:
+      $ref: '#/definitions/CommandRequest'
   CommandRequest:
     type: object
+    required:
+      - command
     properties:
       name:
         type: string
@@ -609,7 +1652,6 @@ definitions:
       command:
         type: string
         description: The command and it's arguments that are sent to the server.
-        required: true
       waitLines:
         type: integer
         description: The minimum amount of lines of text to wait for before returning the response.
@@ -617,12 +1659,13 @@ definitions:
       waitTime:
         type: integer
         description: The amount of time in milliseconds to wait for response messages from the server.
+        default: 0
   CommandResponse:
     type: object
     properties:
-      response:
+      result:
         type: array
-        description: An array of message that were sent in response to the command.
+        description: An array of messages that were sent in response to the command.
         items:
           type: string
 
@@ -636,14 +1679,7 @@ definitions:
         type: array
         description: A list of players.
         items:
-          type: object
-          properties:
-            name:
-              type: string
-              description: The name of the player.
-            uuid:
-              type: string
-              description: The unique identifier of the player.
+          $ref: '#/definitions/Player'
   Player:
     type: object
     properties:
@@ -653,18 +1689,106 @@ definitions:
       uuid:
         type: string
         description: The unique identifier of the player.
-      address:
-        type: string
-        description: The IP address that the player is connecting from.
-      latency:
-        type: integer
-        description: The latency (ping) of the player in ms.
+    example:
+      type: player
+      uuid: 357427c6-3b91-4ead-aad4-15a3e18e6452
       location:
-        $ref: '#/definitions/Location'
+        world:
+          name: world
+          uuid: c574ab53-831b-4410-b3ad-955a2a504843
+          link: "/api/world/c574ab53-831b-4410-b3ad-955a2a504843"
+        position:
+          x: -1289.0203529877956
+          y: 4
+          z: -1065.111295771125
+      name: Valandur
+      link: "/api/player/357427c6-3b91-4ead-aad4-15a3e18e6452"
+      class: net.minecraft.entity.player.EntityPlayerMP
+  PlayerFull:
+    allOf:
+      - $ref: '#/definitions/Player'
+      - type: object
+        properties:
+          name:
+            type: string
+            description: The name of the player.
+          uuid:
+            type: string
+            description: The unique identifier of the player.
+          address:
+            type: string
+            description: The IP address that the player is connecting from.
+          latency:
+            type: integer
+            description: The latency (ping) of the player in ms.
+          location:
+            $ref: '#/definitions/Location'
+          velocity:
+            $ref: '#/definitions/Vector3'
+          rotation:
+            $ref: '#/definitions/Vector3'
+    example:
+      type: player
+      uuid: 357427c6-3b91-4ead-aad4-15a3e18e6452
+      location:
+        world:
+          name: world
+          uuid: c574ab53-831b-4410-b3ad-955a2a504843
+          link: "/api/world/c574ab53-831b-4410-b3ad-955a2a504843"
+        position:
+          x: -1289.0203529877956
+          y: 4
+          z: -1065.111295771125
       velocity:
-        $ref: '#/definitions/Vector3'
+        x: 0
+        y: 0
+        z: 0
       rotation:
-        $ref: '#/definitions/Vector3'
+        x: -3.6000499725341797
+        y: 250.05055236816406
+        z: 0
+      data:
+        entityClass: net.minecraft.entity.player.EntityPlayerMP
+        worldUuid: c574ab53-831b-4410-b3ad-955a2a504843
+        position:
+          x: -1289.0203529877956
+          y: 4
+          z: -1065.111295771125
+        rotation:
+          x: -3.6000499725341797
+          y: 250.05055236816406
+          z: 0
+        scale:
+          x: 1
+          y: 1
+          z: 1
+        entityType: minecraft:player
+        data:
+        - dataClass: org.spongepowered.common.data.manipulator.mutable.entity.SpongeGravityData
+          manipulatorData:
+            hasGravity: true
+        - dataClass: org.spongepowered.common.data.manipulator.mutable.entity.SpongeHealthData
+          manipulatorData:
+            health: 20
+            maxHealth: 20
+        - dataClass: org.spongepowered.common.data.manipulator.mutable.entity.SpongeJoinData
+          manipulatorData:
+            firstTimeJoined: 1489329688231
+            lastTimePlayed: 1490533123682
+        - dataClass: org.spongepowered.common.data.manipulator.mutable.entity.SpongeGameModeData
+          manipulatorData:
+            gameMode: creative
+      name: Valandur
+      address: "/127.0.0.1:55159"
+      latency: 0
+      achievements:
+      - id: open_inventory
+        name: Taking Inventory
+        type: basic
+        description: Press '%1$s' to open your inventory
+      link: "/api/player/357427c6-3b91-4ead-aad4-15a3e18e6452"
+      class: net.minecraft.entity.player.EntityPlayerMP
+
   WorldList:
     type: object
     properties:
@@ -672,14 +1796,7 @@ definitions:
         type: array
         description: A list of worlds.
         items:
-          type: object
-          properties:
-            name:
-              type: string
-              description: The name of the world.
-            uuid:
-              type: string
-              description: The unique identifier of the world.
+          $ref: '#/definitions/World'
   World:
     type: object
     properties:
@@ -689,6 +1806,136 @@ definitions:
       uuid:
         type: string
         description: The unique id of the world.
+    example:
+      name: world
+      uuid: c574ab53-831b-4410-b3ad-955a2a504843
+  WorldFull:
+    allOf:
+      - $ref: '#/definitions/World'
+      - type: object
+        properties:
+          dimension:
+            $ref: '#/definitions/Dimension'
+          data:
+            $ref: '#/definitions/DataContainer'
+          generator:
+            $ref: '#/definitions/GeneratorType'
+    example:
+      name: world
+      uuid: c574ab53-831b-4410-b3ad-955a2a504843
+      dimension:
+        type:
+          id: minecraft:overworld
+          name: Overworld
+          dimensionClass: net.minecraft.world.WorldProviderSurface
+        height: 256
+        buildHeight: 256
+        generator:
+          id: flat
+          name: flat
+          settings:
+            customSettings: 3;minecraft:bedrock,2*minecraft:dirt,minecraft:grass;1;village
+      data:
+        randomSeed: -8009412544287338000
+        generatorName: flat
+        borderCenterZ: 0
+        difficulty: 0
+        borderSizeLerpTime: 0
+        raining: 0
+        dimensionData: {}
+        time: 814530
+        gameType: 1
+        mapFeatures: 0
+        borderCenterX: 0
+        borderDamagePerBlock: 0.2
+        borderWarningBlocks: 5
+        borderSizeLerpTarget: 60000000
+        version: 19133
+        dayTime: 814530
+        initialized: 1
+        allowCommands: 0
+        sizeOnDisk: 0
+        gameRules:
+          doTileDrops: 'true'
+          doFireTick: 'true'
+          reducedDebugInfo: 'false'
+          naturalRegeneration: 'true'
+          disableElytraMovementCheck: 'false'
+          doMobLoot: 'true'
+          keepInventory: 'false'
+          doEntityDrops: 'true'
+          mobGriefing: 'true'
+          randomTickSpeed: '3'
+          commandBlockOutput: 'true'
+          spawnRadius: '10'
+          doMobSpawning: 'true'
+          maxEntityCramming: '24'
+          logAdminCommands: 'true'
+          spectatorsGenerateChunks: 'true'
+          doWeatherCycle: 'true'
+          sendCommandFeedback: 'true'
+          doDaylightCycle: 'true'
+          showDeathMessages: 'true'
+        spawnY: 4
+        rainTime: 27499
+        thunderTime: 11344
+        spawnZ: -1066
+        hardcore: 0
+        difficultyLocked: 0
+        spawnX: -1288
+        clearWeatherTime: 0
+        thundering: 0
+        generatorVersion: 0
+        borderSafeZone: 5
+        generatorOptions: ''
+        lastPlayed: 1490532475628
+        borderWarningTime: 15
+        levelName: world
+        borderSize: 60000000
+        dataVersion: 922
+      generator:
+        id: flat
+        name: flat
+        settings:
+          customSettings: 3;minecraft:bedrock,2*minecraft:dirt,minecraft:grass;1;village
+      link: "/api/world/c574ab53-831b-4410-b3ad-955a2a504843"
+  Dimension:
+    type: object
+    properties:
+      type:
+        $ref: '#/definitions/DimensionType'
+      height:
+        type: number
+        description: The height of the dimension.
+      buildHeight:
+        type: number
+        description: The maximum allowed build height of the dimension.
+      generator:
+        $ref: '#/definitions/GeneratorType'
+  DimensionType:
+    type: object
+    properties:
+      id:
+        type: string
+        description: The unique id of the dimension type.
+      name:
+        type: string
+        description: The name of the dimension type.
+      dimensionClass:
+        type: string
+        description: The classname of the dimension.
+  GeneratorType:
+    type: object
+    properties:
+      id:
+        type: string
+        description: The unique id of the generator type.
+      name:
+        type: string
+        description: The name of the generator type.
+      settings:
+        $ref: '#/definitions/DataContainer'
+
   PluginList:
     type: object
     properties:
@@ -696,14 +1943,7 @@ definitions:
         type: array
         description: A list of plugin ids.
         items:
-          type: object
-          properties:
-            id:
-              type: string
-              description: The id of the plugin.
-            name:
-              type: string
-              description: The name of the plugin.
+          $ref: '#/definitions/Plugin'
   Plugin:
     type: object
     properties:
@@ -713,21 +1953,40 @@ definitions:
       name:
         type: string
         description: The name of the plugin.
-      description:
-        type: string
-        description: The description of the plugin.
       version:
         type: string
         description: The version of the plugin.
-      url:
-        type: string
-        description: The website that the plugin belongs to.
+    example:
+      id: minecraft
+      name: Minecraft
+      version: 1.11.2
+      link: "/api/plugin/minecraft"
+  PluginFull:
+    allOf:
+      - $ref: '#/definitions/Plugin'
+      - type: object
+        properties:
+          description:
+            type: string
+            description: The description of the plugin.
+          url:
+            type: string
+            description: The website that the plugin belongs to.
+          authors:
+            type: array
+            description: The list of authors that worked on the plugin.
+            items:
+              type: string
+              description: The name of the author.
+    example:
+      id: webapi
+      name: Web-API
+      version: 2.0.2-S6.0
+      description: Access Minecraft through a Web API
+      url: https://github.com/Valandur/Web-API
       authors:
-        type: array
-        description: The list of authors that worked on the plugin.
-        items:
-          type: string
-          description: The name of the author.
+      - Valandur
+      link: "/api/plugin/webapi"
 
   EntityList:
     type: object
@@ -736,29 +1995,103 @@ definitions:
         type: array
         description: A list of entities.
         items:
-          type: object
-          properties:
-            type:
-              type: string
-              description: The type of the entity.
-            uuid:
-              type: string
-              description: The uuid of the entity.
+          $ref: '#/definitions/Entity'
   Entity:
     type: object
     properties:
       type:
         type: string
         description: The type of the entity.
+      class:
+        type: string
+        description: The fully qualified classname of the entity.
       uuid:
         type: string
         description: The uuid of the entity.
       location:
         $ref: '#/definitions/Location'
+    example:
+      type: sheep
+      uuid: 8835e1b0-b385-416b-aebf-02446bbfa63f
+      location:
+        world:
+          name: world
+          uuid: c574ab53-831b-4410-b3ad-955a2a504843
+          link: "/api/world/c574ab53-831b-4410-b3ad-955a2a504843"
+        position:
+          x: -1263.7945795740736
+          y: 4
+          z: -1119.1971438629455
+      link: "/api/entity/8835e1b0-b385-416b-aebf-02446bbfa63f"
+      class: net.minecraft.entity.passive.EntitySheep
+  EntityFull:
+    allOf:
+      - $ref: '#/definitions/Entity'
+      - type: object
+        properties:
+          velocity:
+            $ref: '#/definitions/Vector3'
+          rotation:
+            $ref: '#/definitions/Vector3'
+          properties:
+            $ref: '#/definitions/Properties'
+          data:
+            $ref: '#/definitions/DataContainer'
+    example:
+      type: sheep
+      uuid: 8835e1b0-b385-416b-aebf-02446bbfa63f
+      location:
+        world:
+          name: world
+          uuid: c574ab53-831b-4410-b3ad-955a2a504843
+          link: "/api/world/c574ab53-831b-4410-b3ad-955a2a504843"
+        position:
+          x: -1263.7945795740736
+          y: 4
+          z: -1119.1971438629455
       velocity:
-        $ref: '#/definitions/Vector3'
+        x: 0
+        y: -0.0784000015258789
+        z: 0
       rotation:
-        $ref: '#/definitions/Vector3'
+        x: 0
+        y: 224.205078125
+        z: 0
+      data:
+        entityClass: net.minecraft.entity.passive.EntitySheep
+        worldUuid: c574ab53-831b-4410-b3ad-955a2a504843
+        position:
+          x: -1263.7945795740736
+          y: 4
+          z: -1119.1971438629455
+        rotation:
+          x: 0
+          y: 224.205078125
+          z: 0
+        scale:
+          x: 1
+          y: 1
+          z: 1
+        entityType: minecraft:sheep
+        data:
+        - dataClass: org.spongepowered.common.data.manipulator.mutable.entity.SpongeGravityData
+          manipulatorData:
+            hasGravity: true
+        - dataClass: org.spongepowered.common.data.manipulator.mutable.entity.SpongeHealthData
+          manipulatorData:
+            health: 8
+            maxHealth: 8
+        - dataClass: org.spongepowered.common.data.manipulator.mutable.entity.SpongeAgentData
+          manipulatorData:
+            isAiEnabled: true
+        - dataClass: org.spongepowered.common.data.manipulator.mutable.SpongeDyeableData
+          manipulatorData:
+            dyeColor: white
+        - dataClass: org.spongepowered.common.data.manipulator.mutable.entity.SpongeShearedData
+          manipulatorData:
+            isSheared: false
+      link: "/api/entity/8835e1b0-b385-416b-aebf-02446bbfa63f"
+      class: net.minecraft.entity.passive.EntitySheep
 
   TileEntityList:
     type: object
@@ -767,19 +2100,117 @@ definitions:
         type: array
         description: A list of tile entities.
         items:
-          type: object
-          properties:
-            type:
-              type: string
-              description: The type of the tile entity.
-            location:
-              $ref: '#/definitions/Location'
+          $ref: '#/definitions/TileEntity'
   TileEntity:
     type: object
     properties:
       type:
         type: string
-        description: The type of the entity.
+        description: The type of the tile entity.
+      class:
+        type: string
+        description: The fully qualified classname of the tile entity.
       location:
         $ref: '#/definitions/Location'
-
+    example:
+      type: chest
+      location:
+        world:
+          name: world
+          uuid: c574ab53-831b-4410-b3ad-955a2a504843
+          link: "/api/world/c574ab53-831b-4410-b3ad-955a2a504843"
+        position:
+          x: -1291
+          y: 4
+          z: -1066
+      link: "/api/tile-entity/c574ab53-831b-4410-b3ad-955a2a504843/-1291/4/-1066"
+      class: net.minecraft.tileentity.TileEntityChest
+  TileEntityFull:
+    allOf:
+      - $ref: '#/definitions/TileEntity'
+      - type: object
+        properties:
+          data:
+            $ref: '#/definitions/DataContainer'
+          properties:
+            $ref: '#/definitions/Properties'
+    example:
+      type: chest
+      location:
+        world:
+          name: world
+          uuid: c574ab53-831b-4410-b3ad-955a2a504843
+          link: "/api/world/c574ab53-831b-4410-b3ad-955a2a504843"
+        position:
+          x: -1291
+          y: 4
+          z: -1066
+      data:
+        worldUuid: c574ab53-831b-4410-b3ad-955a2a504843
+        x: -1291
+        y: 4
+        z: -1066
+        tileType: chest
+        data:
+        - dataClass: org.spongepowered.common.data.manipulator.mutable.block.SpongeConnectedDirectionData
+          manipulatorData:
+            connectedDirections:
+            - SOUTH
+            connectedNorth: false
+            connectedSouth: true
+            connectedEast: false
+            connectedWest: false
+        lock: ''
+        contents:
+        - slotId: 0
+          item:
+            itemType: minecraft:iron_pickaxe
+            count: 1
+            unsafeDamage: 0
+        - slotId: 1
+          item:
+            itemType: minecraft:glass
+            count: 1
+            unsafeDamage: 0
+        - slotId: 3
+          item:
+            itemType: minecraft:iron_axe
+            count: 1
+            unsafeDamage: 0
+        - slotId: 5
+          item:
+            itemType: minecraft:planks
+            count: 27
+            unsafeDamage: 3
+        - slotId: 15
+          item:
+            itemType: minecraft:glass
+            count: 1
+            unsafeDamage: 0
+        - slotId: 16
+          item:
+            itemType: minecraft:glass
+            count: 1
+            unsafeDamage: 0
+        - slotId: 21
+          item:
+            itemType: minecraft:gold_ore
+            count: 1
+            unsafeDamage: 0
+        - slotId: 22
+          item:
+            itemType: minecraft:glass
+            count: 1
+            unsafeDamage: 0
+        - slotId: 23
+          item:
+            itemType: minecraft:gold_ore
+            count: 23
+            unsafeDamage: 0
+        - slotId: 24
+          item:
+            itemType: minecraft:glass
+            count: 1
+            unsafeDamage: 0
+      link: "/api/tile-entity/c574ab53-831b-4410-b3ad-955a2a504843/-1291/4/-1066"
+      class: net.minecraft.tileentity.TileEntityChest

@@ -20,13 +20,12 @@ public class CachedCommandResult extends CachedObject {
     @JsonProperty
     public Integer successCount;
 
-    public static CachedCommandResult copyFrom(CommandResult result) {
-        CachedCommandResult res = new CachedCommandResult();
-        if (result.getAffectedBlocks().isPresent()) res.affectedBlocks = result.getAffectedBlocks().get();
-        if (result.getAffectedEntities().isPresent()) res.affectedEntities = result.getAffectedEntities().get();
-        if (result.getAffectedItems().isPresent()) res.affectedItems = result.getAffectedItems().get();
-        if (result.getQueryResult().isPresent()) res.queryResult = result.getQueryResult().get();
-        if (result.getSuccessCount().isPresent()) res.successCount = result.getSuccessCount().get();
-        return res;
+
+    public CachedCommandResult(CommandResult result) {
+        if (result.getAffectedBlocks().isPresent()) this.affectedBlocks = result.getAffectedBlocks().get();
+        if (result.getAffectedEntities().isPresent()) this.affectedEntities = result.getAffectedEntities().get();
+        if (result.getAffectedItems().isPresent()) this.affectedItems = result.getAffectedItems().get();
+        if (result.getQueryResult().isPresent()) this.queryResult = result.getQueryResult().get();
+        if (result.getSuccessCount().isPresent()) this.successCount = result.getSuccessCount().get();
     }
 }

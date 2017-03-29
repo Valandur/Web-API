@@ -5,8 +5,6 @@ import org.spongepowered.api.command.CommandMapping;
 import org.spongepowered.api.text.Text;
 import valandur.webapi.misc.WebAPICommandSource;
 
-import java.util.Optional;
-
 public class CachedCommand extends CachedObject {
 
     @JsonProperty
@@ -20,16 +18,12 @@ public class CachedCommand extends CachedObject {
     public String help;
 
 
-    public static CachedCommand copyFrom(CommandMapping cmd) {
-        CachedCommand cache = new CachedCommand();
-
-        cache.name = cmd.getPrimaryAlias();
-        cache.aliases = cmd.getAllAliases().toArray();
-        cache.usage = cmd.getCallable().getUsage(WebAPICommandSource.instance).toPlain();
-        cache.description = cmd.getCallable().getShortDescription(WebAPICommandSource.instance).orElse(Text.EMPTY).toPlain();
-        cache.help = cmd.getCallable().getHelp(WebAPICommandSource.instance).orElse(Text.EMPTY).toPlain();
-
-        return cache;
+    public CachedCommand(CommandMapping cmd) {
+        this.name = cmd.getPrimaryAlias();
+        this.aliases = cmd.getAllAliases().toArray();
+        this.usage = cmd.getCallable().getUsage(WebAPICommandSource.instance).toPlain();
+        this.description = cmd.getCallable().getShortDescription(WebAPICommandSource.instance).orElse(Text.EMPTY).toPlain();
+        this.help = cmd.getCallable().getHelp(WebAPICommandSource.instance).orElse(Text.EMPTY).toPlain();
     }
 
     @Override

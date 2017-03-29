@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import org.spongepowered.api.entity.Entity;
-import valandur.webapi.cache.CachedEntity;
+import valandur.webapi.cache.DataCache;
 
 import java.io.IOException;
 
@@ -22,6 +22,6 @@ public class EntitySerializer extends StdSerializer<Entity> {
     @Override
     public void serialize(Entity value, JsonGenerator gen, SerializerProvider provider) throws IOException {
         boolean details = provider.isEnabled(MapperFeature.AUTO_DETECT_CREATORS);
-        gen.writeRawValue(JsonConverter.toString(CachedEntity.copyFrom(value, details), details));
+        gen.writeRawValue(JsonConverter.toString(DataCache.getEntity(value), details));
     }
 }

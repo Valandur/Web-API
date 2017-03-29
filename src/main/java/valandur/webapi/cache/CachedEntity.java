@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.flowpowered.math.vector.Vector3d;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.Entity;
-import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.world.World;
 import valandur.webapi.json.JsonConverter;
 
@@ -24,34 +23,23 @@ public class CachedEntity extends CachedObject {
     public String uuid;
 
     @JsonProperty
-    public CachedLocation location;
+    public JsonNode location;
 
     public Vector3d velocity;
     public Vector3d rotation;
     public JsonNode properties;
     public JsonNode data;
 
-    public static CachedEntity copyFrom(Entity entity) {
-        return copyFrom(entity, false);
-    }
-    public static CachedEntity copyFrom(Entity entity, boolean details) {
-        if (entity instanceof Player)
-            return CachedPlayer.copyFrom((Player)entity, details);
 
-        CachedEntity cache = new CachedEntity();
-        cache.type = entity.getType() != null ? entity.getType().getName() : null;
-        cache.clazz = entity.getClass().getName();
-        cache.uuid = entity.getUniqueId().toString();
-        cache.location = CachedLocation.copyFrom(entity.getLocation());
-
-        if (details) {
-            cache.details = true;
-            cache.velocity = entity.getVelocity().clone();
-            cache.rotation = entity.getRotation().clone();
-            cache.properties = JsonConverter.toJson(entity.getApplicableProperties(), true);
-            cache.data = JsonConverter.toJson(entity.toContainer(), true);
-        }
-        return cache;
+    public CachedEntity(Entity entity) {
+        this.type = entity.getType() != null ? entity.getType().getName() : null;
+        this.clazz = entity.getClass().getName();
+        this.uuid = entity.getUniqueId().toString();
+        this.location = JsonConverter.toJson(new CachedLocation(entity.getLocation()));
+        this.velocity = entity.getVelocity().clone();
+        this.rotation = entity.getRotation().clone();
+        this.properties = JsonConverter.toJson(entity.getApplicableProperties(), true);
+        this.data = JsonConverter.toJson(entity.toContainer(), true);
     }
 
     @Override
@@ -59,7 +47,7 @@ public class CachedEntity extends CachedObject {
         return CacheConfig.durationEntity;
     }
     @Override
-    public Optional<Object> getLive() {
+    public Optional<?> getLive() {
         for (World w : Sponge.getServer().getWorlds()) {
             Optional<Entity> e = w.getEntity(UUID.fromString(uuid));
             if (e.isPresent())

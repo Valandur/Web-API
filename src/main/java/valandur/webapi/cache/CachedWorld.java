@@ -20,6 +20,9 @@ public class CachedWorld extends CachedObject {
     public JsonNode dimension;
     public JsonNode data;
     public JsonNode generator;
+    public JsonNode difficulty;
+    public JsonNode weather;
+    public JsonNode time;
 
 
     public CachedWorld(World world) {
@@ -28,6 +31,9 @@ public class CachedWorld extends CachedObject {
         this.dimension = JsonConverter.toJson(world.getDimension());
         this.data = JsonConverter.toJson(world.getProperties().toContainer());
         this.generator = JsonConverter.toJson(world.getProperties().getGeneratorType());
+        this.difficulty = JsonConverter.toJson(world.getDifficulty().getName().replaceFirst("minecraft:",""));
+        this.weather = JsonConverter.toJson(world.getWeather().getName());
+        this.time = JsonConverter.toJson(world.getProperties().getWorldTime());
     }
 
     @Override

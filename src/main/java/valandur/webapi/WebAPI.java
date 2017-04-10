@@ -283,8 +283,8 @@ public class WebAPI {
         DataCache.updateCommands();
 
         startWebServer(null);
-
-        String message = "{\"cause\":" + JsonConverter.toString(event.getCause()) + "}";
+        //getcause doesnt seem to work on GameStartedServerEvent
+        String message = "{\"cause\":" + JsonConverter.toString(event.getState()) + "}";
         WebHooks.notifyHooks(WebHooks.WebHookType.SERVER_START, message);
     }
 

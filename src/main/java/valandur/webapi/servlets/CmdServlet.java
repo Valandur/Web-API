@@ -11,6 +11,7 @@ import valandur.webapi.json.JsonConverter;
 import valandur.webapi.misc.WebAPICommandSource;
 
 import javax.servlet.http.HttpServletResponse;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.*;
 
@@ -42,15 +43,30 @@ public class CmdServlet extends WebAPIServlet {
     protected void handlePost(ServletData data) {
         data.setStatus(HttpServletResponse.SC_OK);
 
+        List<String> permissions = (List<String>) data.getAttribute("perms");
+        boolean allowAll = permissions.contains("*") || permissions.contains("cmd.*");
+
         final JsonNode reqJson = (JsonNode) data.getAttribute("body");
 
         if (!reqJson.isArray()) {
+            String cmd = reqJson.get("command").asText().split(" ")[0];
+            if (!allowAll && !permissions.contains("cmd." + cmd)) {
+                data.sendError(HttpServletResponse.SC_FORBIDDEN);
+                return;
+            }
+
             data.addJson("result", runCommand(reqJson));
             return;
         }
 
         ArrayNode arr = JsonNodeFactory.instance.arrayNode();
         for (JsonNode node : reqJson) {
+            String cmd = node.get("command").asText().split(" ")[0];
+            if (!allowAll && !permissions.contains("cmd." + cmd)) {
+                arr.add(JsonConverter.toJson(HttpServletResponse.SC_FORBIDDEN));
+                continue;
+            }
+
             JsonNode res = runCommand(node);
             arr.add(res);
         }

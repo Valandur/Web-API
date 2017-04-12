@@ -1,6 +1,8 @@
 plugins {
     id "java"
     id "com.qixalite.spongestart" version "1.6.0"
+    id "ninja.miserable.blossom" version "1.0.1"
+    id "com.github.johnrengelman.shadow" version "1.2.4"
 }
 
 group = project.group;
@@ -9,8 +11,13 @@ version = "${project.version}-S${project.spongeVersion}";
 repositories {
     mavenCentral()
     maven {
-        url 'https://repo.spongepowered.org/maven/'
+        url "https://repo.spongepowered.org/maven/"
     }
+}
+
+blossom {
+    def location = 'src/main/java/valandur/webapi/WebAPI.java'
+    replaceToken '@version@', project.version, location
 }
 
 spongestart {
@@ -19,22 +26,35 @@ spongestart {
 }
 
 dependencies {
-    compileOnly group: 'org.spongepowered', name: 'spongeapi', version: "${project.spongeVersion}.0-SNAPSHOT"
-    compile group: 'org.eclipse.jetty', name: 'jetty-server', version: '9.4.2.v20170220'
-    compile group: 'org.eclipse.jetty', name: 'jetty-servlet', version: '9.4.2.v20170220'
-    compile group: 'org.eclipse.jetty', name: 'jetty-http', version: '9.4.2.v20170220'
-    compile group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.8.7'
-    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.8.7'
-    compile group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: '2.8.7'
+    compileOnly group: "org.spongepowered", name: "spongeapi", version: "${project.spongeVersion}.0-SNAPSHOT"
+    compile group: "org.eclipse.jetty", name: "jetty-server", version: "9.4.2.v20170220"
+    compile group: "org.eclipse.jetty", name: "jetty-servlet", version: "9.4.2.v20170220"
+    compile group: "org.eclipse.jetty", name: "jetty-http", version: "9.4.2.v20170220"
+    compile group: "com.fasterxml.jackson.core", name: "jackson-core", version: "2.8.7"
+    compile group: "com.fasterxml.jackson.core", name: "jackson-databind", version: "2.8.7"
+    compile group: "com.fasterxml.jackson.core", name: "jackson-annotations", version: "2.8.7"
 }
 
 jar {
-    // Include all compile time dependencies in the jar (e.g. Jetty)
-    // Sponge is declared compileOnly so that it doesn't get included here
-    from configurations.compile.collect {
-        zipTree(it)
-    }
+    enabled = false
+}
 
-    // Exclude signature files from JARs
-    exclude 'META-INF/*.RSA', 'META-INF/*.SF','META-INF/*.DSA'
+shadowJar {
+    configurations  = [project.configurations.compile]
+
+    relocate "org.eclipse.jetty", "valandur.webapi.shadow.org.eclipse.jetty"
+    relocate "com.fasterxml.jackson", "valandur.webapi.shadow.fasterxml.jackson"
+    relocate "javax.servlet", "valandur.webapi.shadow.javax.servlet"
+
+    exclude "/about.html"
+    exclude "/jetty-dir.css"
+    exclude "/StartServer.class"
+    exclude "/StartServer.java"
+    exclude '/StartServer$SpongeClassLoader.class'
+
+    archiveName = "webapi-${version}.jar"
+}
+
+artifacts {
+    archives shadowJar
 }

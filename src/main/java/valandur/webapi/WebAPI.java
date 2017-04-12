@@ -1,6 +1,5 @@
 package valandur.webapi;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.google.inject.Inject;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
@@ -24,7 +23,6 @@ import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.Order;
 import org.spongepowered.api.event.achievement.GrantAchievementEvent;
-import org.spongepowered.api.event.cause.entity.damage.source.EntityDamageSource;
 import org.spongepowered.api.event.command.SendCommandEvent;
 import org.spongepowered.api.event.entity.DestructEntityEvent;
 import org.spongepowered.api.event.entity.SpawnEntityEvent;
@@ -41,11 +39,9 @@ import org.spongepowered.api.event.world.LoadWorldEvent;
 import org.spongepowered.api.event.world.UnloadWorldEvent;
 import org.spongepowered.api.plugin.Plugin;
 import org.spongepowered.api.scheduler.SpongeExecutorService;
-import org.spongepowered.api.statistic.achievement.Achievement;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
 import org.spongepowered.api.util.Tuple;
-import org.spongepowered.api.util.ban.Ban;
 import valandur.webapi.cache.*;
 import valandur.webapi.command.*;
 import valandur.webapi.handlers.AuthHandler;
@@ -76,7 +72,7 @@ public class WebAPI {
 
     public static final String ID = "webapi";
     public static final String NAME = "Web-API";
-    public static final String VERSION = "2.1.0-S6.0";
+    public static final String VERSION = "@version@";
     public static final String DESCRIPTION = "Access Minecraft through a Web API";
     public static final String URL = "https://github.com/Valandur/Web-API";
 
@@ -121,7 +117,7 @@ public class WebAPI {
             }
         }
 
-        this.syncExecutor = Sponge.getScheduler().createSyncExecutor(this);
+        syncExecutor = Sponge.getScheduler().createSyncExecutor(this);
     }
 
     @Listener
@@ -284,14 +280,12 @@ public class WebAPI {
 
         startWebServer(null);
 
-        String message = "{\"cause\":" + JsonConverter.toString(event.getCause()) + "}";
-        WebHooks.notifyHooks(WebHooks.WebHookType.SERVER_START, message);
+        WebHooks.notifyHooks(WebHooks.WebHookType.SERVER_START, JsonConverter.toString(event));
     }
 
     @Listener
     public void onServerStop(GameStoppedServerEvent event) {
-        String message = "{\"cause\":" + JsonConverter.toString(event.getCause()) + "}";
-        WebHooks.notifyHooks(WebHooks.WebHookType.SERVER_STOP, message);
+        WebHooks.notifyHooks(WebHooks.WebHookType.SERVER_STOP, JsonConverter.toString(event));
 
         stopWebServer();
     }
@@ -325,36 +319,28 @@ public class WebAPI {
 
     @Listener(order = Order.POST)
     public void onPlayerJoin(ClientConnectionEvent.Join event) {
-        CachedPlayer p = DataCache.addPlayer(event.getTargetEntity());
+        DataCache.addPlayer(event.getTargetEntity());
 
-        WebHooks.notifyHooks(WebHooks.WebHookType.PLAYER_JOIN, JsonConverter.toString(p));
+        WebHooks.notifyHooks(WebHooks.WebHookType.PLAYER_JOIN, JsonConverter.toString(event));
     }
     @Listener(order = Order.POST)
     public void onPlayerLeave(ClientConnectionEvent.Disconnect event) {
-        CachedPlayer p = DataCache.removePlayer(event.getTargetEntity().getUniqueId());
+        // Get the message first because the player is removed from cache afterwards
+        String message = JsonConverter.toString(event);
 
-        String message = "{\"player\":" + JsonConverter.toString(p) + ",\"cause\":" + JsonConverter.toString(event.getCause()) + "}";
+        DataCache.removePlayer(event.getTargetEntity().getUniqueId());
+
         WebHooks.notifyHooks(WebHooks.WebHookType.PLAYER_LEAVE, message);
     }
 
 
     @Listener(order = Order.POST)
     public void onUserKick(KickPlayerEvent event) {
-        CachedPlayer p = DataCache.getPlayer(event.getTargetEntity());
-        String msg = event.getMessage().toPlain();
-        String cause = JsonConverter.toString(event.getCause());
-
-        String message = "{\"player\":" + JsonConverter.toString(p) + ",\"message\":\"" + msg + "\",\"cause\":" + cause + "}";
-        WebHooks.notifyHooks(WebHooks.WebHookType.PLAYER_KICK, message);
+        WebHooks.notifyHooks(WebHooks.WebHookType.PLAYER_KICK, JsonConverter.toString(event));
     }
     @Listener(order = Order.POST)
     public void onUserBan(BanUserEvent event) {
-        String ban = JsonConverter.toString(event.getBan());
-        String cause = JsonConverter.toString(event.getCause());
-        String user = JsonConverter.toString(event.getTargetUser());
-
-        String message = "{\"user\":" + user + ",\"ban\":" + ban + ",\"cause\":" + cause + "}";
-        WebHooks.notifyHooks(WebHooks.WebHookType.PLAYER_BAN, message);
+        WebHooks.notifyHooks(WebHooks.WebHookType.PLAYER_BAN, JsonConverter.toString(event));
     }
 
     @Listener(order = Order.POST)
@@ -369,15 +355,7 @@ public class WebAPI {
 
         Entity ent = event.getTargetEntity();
         if (ent instanceof Player) {
-            Entity source = null;
-            CachedPlayer player = DataCache.getPlayer((Player)event.getTargetEntity());
-
-            Optional<EntityDamageSource> dmgSource = event.getCause().first(EntityDamageSource.class);
-            if (dmgSource.isPresent()) source = dmgSource.get().getSource();
-            String sourceStr = source != null ? JsonConverter.toString(source) : "null";
-
-            String message = "{\"killer\":" + sourceStr + ",\"target\":" + JsonConverter.toString(player) + "}";
-            WebHooks.notifyHooks(WebHooks.WebHookType.PLAYER_DEATH, message);
+            WebHooks.notifyHooks(WebHooks.WebHookType.PLAYER_DEATH, JsonConverter.toString(event));
         }
     }
 
@@ -392,19 +370,13 @@ public class WebAPI {
 
     @Listener(order = Order.POST)
     public void onPlayerAchievement(GrantAchievementEvent.TargetPlayer event) {
-        CachedPlayer p = DataCache.getPlayer(event.getTargetEntity());
-        Achievement a = event.getAchievement();
-
-        String message = "{\"player\":" + JsonConverter.toString(p) + ",\"achievement\":" + JsonConverter.toString(a) + ",\"wasCancelled\":" + event.isMessageCancelled() + "}";
-        WebHooks.notifyHooks(WebHooks.WebHookType.ACHIEVEMENT, message);
+        WebHooks.notifyHooks(WebHooks.WebHookType.ACHIEVEMENT, JsonConverter.toString(event));
     }
 
     @Listener(order = Order.POST)
     public void onCommand(SendCommandEvent event) {
-        JsonNode cause = JsonConverter.toJson(event.getCause());
-        CachedCommandCall call = DataCache.addCommandCall(event, cause);
+        CachedCommandCall call = DataCache.addCommandCall(event);
 
-        String message = JsonConverter.toString(call);
-        WebHooks.notifyHooks(WebHooks.WebHookType.COMMAND, message);
+        WebHooks.notifyHooks(WebHooks.WebHookType.COMMAND, JsonConverter.toString(call));
     }
 }

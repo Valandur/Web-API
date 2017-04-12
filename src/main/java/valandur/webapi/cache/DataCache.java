@@ -1,6 +1,7 @@
 package valandur.webapi.cache;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.block.tileentity.TileEntity;
 import org.spongepowered.api.command.CommandMapping;
@@ -60,8 +61,8 @@ public class DataCache {
         return cache;
     }
 
-    public static CachedCommandCall addCommandCall(SendCommandEvent event, JsonNode cause) {
-        CachedCommandCall cache = new CachedCommandCall(event, cause);
+    public static CachedCommandCall addCommandCall(SendCommandEvent event) {
+        CachedCommandCall cache = new CachedCommandCall(event);
         commandCalls.add(cache);
 
         while (commandCalls.size() > CacheConfig.numCommandCalls) {
@@ -87,7 +88,7 @@ public class DataCache {
             }
 
             try {
-                Method m = optMethod.get(); o.getClass().getMethod(methodName, paramTypes);
+                Method m = optMethod.get();
                 m.setAccessible(true);
                 Object res = m.invoke(o, paramValues);
                 return JsonConverter.toJson(res, true);
@@ -97,7 +98,7 @@ public class DataCache {
             }
         });
 
-        return node.orElseGet(() -> JsonConverter.toJson(null));
+        return node.orElseGet(JsonNodeFactory.instance::nullNode);
     }
     public static JsonNode getField(CachedObject cache, String fieldName) {
         Optional<JsonNode> node = runOnMainThread(() -> {
@@ -125,7 +126,7 @@ public class DataCache {
             }
         });
 
-        return node.orElseGet(() -> JsonConverter.toJson(null));
+        return node.orElseGet(JsonNodeFactory.instance::nullNode);
     }
 
     public static CachedWorld getWorld(World world) {
@@ -142,7 +143,6 @@ public class DataCache {
     }
     private static Optional<CachedWorld> updateWorld(UUID uuid) {
         return runOnMainThread(() -> {
-            WebAPI.getInstance().getLogger().info("Running world on main");
             Optional<World> world = Sponge.getServer().getWorld(uuid);
             return world.map(DataCache::addWorld).orElse(null);
         });

@@ -8,16 +8,26 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.flowpowered.math.vector.Vector3d;
 import org.spongepowered.api.block.tileentity.TileEntity;
-import org.spongepowered.api.data.DataContainer;
-import org.spongepowered.api.data.Property;
+import org.spongepowered.api.data.manipulator.mutable.entity.FoodData;
+import org.spongepowered.api.data.manipulator.mutable.entity.HealthData;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.living.player.Player;
-import org.spongepowered.api.entity.living.player.User;
+import org.spongepowered.api.event.Event;
 import org.spongepowered.api.event.cause.Cause;
+import org.spongepowered.api.item.inventory.Inventory;
+import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.profile.GameProfile;
 import org.spongepowered.api.statistic.achievement.Achievement;
 import org.spongepowered.api.util.ban.Ban;
 import org.spongepowered.api.world.*;
+import valandur.webapi.json.serializers.entity.EntitySerializer;
+import valandur.webapi.json.serializers.entity.HealthDataSerializer;
+import valandur.webapi.json.serializers.events.CauseSerializer;
+import valandur.webapi.json.serializers.events.EventSerializer;
+import valandur.webapi.json.serializers.general.*;
+import valandur.webapi.json.serializers.player.*;
+import valandur.webapi.json.serializers.tileentity.TileEntitySerializer;
+import valandur.webapi.json.serializers.world.*;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -27,10 +37,57 @@ import java.util.*;
 
 public class JsonConverter {
 
+    private static Map<Class, JsonSerializer> defaultSerializers;
+    static {
+        Map<Class, JsonSerializer> serializers = new HashMap<>();
+
+        // Entity
+        serializers.put(Entity.class, new EntitySerializer());
+        serializers.put(HealthData.class, new HealthDataSerializer());
+
+        // Player
+        serializers.put(Achievement.class, new AchievementSerializer());
+        serializers.put(Ban.Profile.class, new BanSerializer());
+        serializers.put(FoodData.class, new FoodDataSerializer());
+        serializers.put(GameProfile.class, new GameProfileSerializer());
+        serializers.put(Player.class, new PlayerSerializer());
+
+        // World
+        serializers.put(Dimension.class, new DimensionSerializer());
+        serializers.put(DimensionType.class, new DimensionTypeSerializer());
+        serializers.put(GeneratorType.class, new GeneratorTypeSerializer());
+        serializers.put(World.class, new WorldSerializer());
+        serializers.put(WorldBorder.class, new WorldBorderSerializer());
+
+        // Tile-Entity
+        serializers.put(TileEntity.class, new TileEntitySerializer());
+
+        // General
+        serializers.put(ItemStack.class, new ItemStackSerializer());
+        serializers.put(Inventory.class, new InventorySerializer());
+        serializers.put(Cause.class, new CauseSerializer());
+        serializers.put(Map.class, new MapSerializer());
+        serializers.put(Vector3d.class, new VectorSerializer());
+        serializers.put(Event.class, new EventSerializer());
+
+        defaultSerializers = serializers;
+    }
+
+    /**
+     * Converts an object directly to a json string. EXCLUDES details.
+     * @param obj The object to convert to json.
+     * @return The json string representation of the object.
+     */
     public static String toString(Object obj) {
         return toString(obj, false);
     }
 
+    /**
+     * Converts an object directly to a json string. Includes details if specified.
+     * @param obj The object to convert to json.
+     * @param details False if only marked properties/methods should be included, true otherwise.
+     * @return The json string representation of the object.
+     */
     public static String toString(Object obj, boolean details) {
         ObjectMapper om = getDefaultObjectMapper();
 
@@ -47,8 +104,8 @@ public class JsonConverter {
     }
 
     /**
-     * Converts an object to json using the default object mapper without details.
-     * @param obj The object to convert to json.
+     * Converts an object to json using the default object mapper. EXCLUDES details.
+     * @param obj The object to convert to json
      * @return The json representation of the object.
      */
     public static JsonNode toJson(Object obj) {
@@ -77,29 +134,13 @@ public class JsonConverter {
         ObjectMapper om = new ObjectMapper();
         om.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
 
-        addSerializer(om, Achievement.class, new AchievementSerializer());
-        addSerializer(om, Ban.Profile.class, new BanSerializer());
-        addSerializer(om, Cause.class, new CauseSerializer());
-        addSerializer(om, DataContainer.class, new DataContainerSerializer());
-        addSerializer(om, Dimension.class, new DimensionSerializer());
-        addSerializer(om, DimensionType.class, new DimensionTypeSerializer());
-        addSerializer(om, Entity.class, new EntitySerializer());
-        addSerializer(om, GameProfile.class, new GameProfileSerializer());
-        addSerializer(om, GeneratorType.class, new GeneratorTypeSerializer());
-        addSerializer(om, Map.class, new MapSerializer());
-        addSerializer(om, Player.class, new PlayerSerializer());
-        addSerializer(om, Property.class, new PropertySerializer());
-        addSerializer(om, TileEntity.class, new TileEntitySerializer());
-        //addSerializer(om, User.class, new UserSerializer());
-        addSerializer(om, Vector3d.class, new VectorSerializer());
-        addSerializer(om, World.class, new WorldSerializer());
+        for (Map.Entry<Class, JsonSerializer> entry : defaultSerializers.entrySet()) {
+            SimpleModule mod = new SimpleModule();
+            mod.addSerializer(entry.getKey(), entry.getValue());
+            om.registerModule(mod);
+        }
 
         return om;
-    }
-    private static void addSerializer(ObjectMapper mapper, Class attachClass, JsonSerializer serializer) {
-        SimpleModule mod = new SimpleModule();
-        mod.addSerializer(attachClass, serializer);
-        mapper.registerModule(mod);
     }
 
 

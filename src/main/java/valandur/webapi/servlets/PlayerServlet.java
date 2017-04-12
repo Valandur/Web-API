@@ -2,6 +2,7 @@ package valandur.webapi.servlets;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import org.spongepowered.api.util.Tuple;
+import valandur.webapi.WebAPI;
 import valandur.webapi.misc.Permission;
 import valandur.webapi.cache.CachedPlayer;
 import valandur.webapi.cache.DataCache;

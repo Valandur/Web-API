@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.flowpowered.math.vector.Vector3d;
 import org.spongepowered.api.Sponge;
+import org.spongepowered.api.data.manipulator.mutable.entity.HealthData;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.world.World;
 import valandur.webapi.json.JsonConverter;
@@ -25,21 +26,22 @@ public class CachedEntity extends CachedObject {
     @JsonProperty
     public JsonNode location;
 
-    public Vector3d velocity;
-    public Vector3d rotation;
-    public JsonNode properties;
-    public JsonNode data;
+    public JsonNode health;
+    public JsonNode rotation;
+    public JsonNode scale;
+    public JsonNode velocity;
 
 
     public CachedEntity(Entity entity) {
-        this.type = entity.getType() != null ? entity.getType().getName() : null;
+        this.type = entity.getType() != null ? entity.getType().getId() : null;
         this.clazz = entity.getClass().getName();
         this.uuid = entity.getUniqueId().toString();
         this.location = JsonConverter.toJson(new CachedLocation(entity.getLocation()));
-        this.velocity = entity.getVelocity().clone();
-        this.rotation = entity.getRotation().clone();
-        this.properties = JsonConverter.toJson(entity.getApplicableProperties(), true);
-        this.data = JsonConverter.toJson(entity.toContainer(), true);
+
+        this.health = JsonConverter.toJson(entity.get(HealthData.class).orElse(null));
+        this.rotation = JsonConverter.toJson(entity.getRotation());
+        this.scale = JsonConverter.toJson(entity.getScale());
+        this.velocity = JsonConverter.toJson(entity.getVelocity());
     }
 
     @Override

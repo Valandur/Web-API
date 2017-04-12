@@ -25,6 +25,7 @@ public class InfoServlet extends WebAPIServlet {
         data.addJson("players", server.getOnlinePlayers().size());
         data.addJson("maxPlayers", server.getMaxPlayers());
         data.addJson("uptimeTicks", server.getRunningTimeTicks());
+        data.addJson("tps", server.getTicksPerSecond());
         data.addJson("hasWhitelist", server.hasWhitelist());
         data.addJson("minecraftVersion", platform.getMinecraftVersion().getName());
 

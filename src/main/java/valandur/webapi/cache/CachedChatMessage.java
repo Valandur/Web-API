@@ -19,14 +19,10 @@ public class CachedChatMessage extends CachedObject {
     @JsonProperty
     public String message;
 
-    @JsonProperty
-    public boolean wasCancelled;
-
 
     public CachedChatMessage(Player sender, MessageEvent event) {
         this.timestamp = (new Date()).toInstant().getEpochSecond();
         this.sender = JsonConverter.toJson(DataCache.getPlayer(sender.getUniqueId()).orElse(null));
         this.message = event.getMessage().toPlain();
-        this.wasCancelled = event.isMessageCancelled();
     }
 }

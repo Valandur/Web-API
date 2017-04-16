@@ -1,4 +1,4 @@
-package valandur.webapi.json.serializers.player;
+package valandur.webapi.json.serializers.entity;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;

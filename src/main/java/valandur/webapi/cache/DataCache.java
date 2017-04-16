@@ -2,16 +2,21 @@ package valandur.webapi.cache;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.flowpowered.math.vector.Vector3i;
 import org.spongepowered.api.Sponge;
+import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.block.tileentity.TileEntity;
 import org.spongepowered.api.command.CommandMapping;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.living.player.Player;
+import org.spongepowered.api.event.cause.Cause;
 import org.spongepowered.api.event.command.SendCommandEvent;
 import org.spongepowered.api.event.message.MessageEvent;
 import org.spongepowered.api.plugin.PluginContainer;
+import org.spongepowered.api.world.Chunk;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
+import org.spongepowered.api.world.extent.BlockVolume;
 import valandur.webapi.WebAPI;
 import valandur.webapi.json.JsonConverter;
 
@@ -127,6 +132,52 @@ public class DataCache {
         });
 
         return node.orElseGet(JsonNodeFactory.instance::nullNode);
+    }
+
+    public static JsonNode getBlockVolume(CachedWorld world, Vector3i min, Vector3i max) {
+        Optional<JsonNode> node = runOnMainThread(() -> {
+            Optional<?> obj = world.getLive();
+
+            if (!obj.isPresent())
+                return null;
+
+            World w = (World)obj.get();
+            return JsonConverter.toJson(w.getBlockView(min, max));
+        });
+
+        return node.orElseGet(JsonNodeFactory.instance::nullNode);
+    }
+    public static JsonNode getBlockAt(CachedWorld world, Vector3i pos) {
+        Optional<JsonNode> node = runOnMainThread(() -> {
+            Optional<?> obj = world.getLive();
+
+            if (!obj.isPresent())
+                return null;
+
+            World w = (World)obj.get();
+            return JsonConverter.toJson(w.getBlock(pos));
+        });
+
+        return node.orElseGet(JsonNodeFactory.instance::nullNode);
+    }
+    public static Optional<Boolean> setBlock(CachedWorld world, Vector3i position, BlockState state) {
+        return runOnMainThread(() -> {
+            Optional<?> optWorld = world.getLive();
+            if (!optWorld.isPresent())
+                return null;
+
+            World w = (World)optWorld.get();
+
+            Optional<Vector3i> chunkPos = Sponge.getServer().getChunkLayout().toChunk(position);
+            if (!chunkPos.isPresent())
+                return null;
+
+            Optional<Chunk> chunk = w.loadChunk(chunkPos.get(), false);
+            if (!chunk.isPresent())
+                return null;
+
+            return w.setBlock(position, state, Cause.source(WebAPI.getInstance().getContainer()).build());
+        });
     }
 
     public static CachedWorld getWorld(World world) {

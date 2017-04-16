@@ -32,7 +32,7 @@ public class CachedCommandCall extends CachedObject {
         this.timestamp = (new Date()).toInstant().getEpochSecond();
         this.command = event.getCommand();
         this.args = event.getArguments();
-        this.cause = JsonConverter.toJson(event.getCause(), true);
+        this.cause = JsonConverter.toJson(event.getCause());
         this.wasCancelled = event.isCancelled();
         this.result = new CachedCommandResult(event.getResult());
     }

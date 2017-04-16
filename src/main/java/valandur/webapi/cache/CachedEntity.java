@@ -2,9 +2,7 @@ package valandur.webapi.cache;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.flowpowered.math.vector.Vector3d;
 import org.spongepowered.api.Sponge;
-import org.spongepowered.api.data.manipulator.mutable.entity.HealthData;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.world.World;
 import valandur.webapi.json.JsonConverter;
@@ -26,10 +24,8 @@ public class CachedEntity extends CachedObject {
     @JsonProperty
     public JsonNode location;
 
-    public JsonNode health;
     public JsonNode rotation;
     public JsonNode scale;
-    public JsonNode velocity;
 
 
     public CachedEntity(Entity entity) {
@@ -38,10 +34,10 @@ public class CachedEntity extends CachedObject {
         this.uuid = entity.getUniqueId().toString();
         this.location = JsonConverter.toJson(new CachedLocation(entity.getLocation()));
 
-        this.health = JsonConverter.toJson(entity.get(HealthData.class).orElse(null));
         this.rotation = JsonConverter.toJson(entity.getRotation());
         this.scale = JsonConverter.toJson(entity.getScale());
-        this.velocity = JsonConverter.toJson(entity.getVelocity());
+
+        this.data = JsonConverter.dataHolderToJson(entity);
     }
 
     @Override

@@ -27,10 +27,10 @@ public class CmdServlet extends WebAPIServlet {
             return;
         }
 
-        String pName = paths[0];
-        Optional<CachedCommand> cmd = DataCache.getCommand(pName);
+        String cName = paths[0];
+        Optional<CachedCommand> cmd = DataCache.getCommand(cName);
         if (!cmd.isPresent()) {
-            data.sendError(HttpServletResponse.SC_NOT_FOUND);
+            data.sendError(HttpServletResponse.SC_NOT_FOUND, "The command '" + cName + "' could not be found");
             return;
         }
 
@@ -51,7 +51,7 @@ public class CmdServlet extends WebAPIServlet {
         if (!reqJson.isArray()) {
             String cmd = reqJson.get("command").asText().split(" ")[0];
             if (!allowAll && !permissions.contains("cmd." + cmd)) {
-                data.sendError(HttpServletResponse.SC_FORBIDDEN);
+                data.sendError(HttpServletResponse.SC_FORBIDDEN, "Access denied");
                 return;
             }
 

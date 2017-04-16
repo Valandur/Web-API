@@ -20,8 +20,8 @@ public class HealthDataSerializer extends StdSerializer<HealthData> {
     @Override
     public void serialize(HealthData value, JsonGenerator gen, SerializerProvider provider) throws IOException {
         gen.writeStartObject();
-        gen.writeObjectField("current", value.health().get());
-        gen.writeObjectField("max", value.maxHealth().get());
+        gen.writeNumberField("current", value.health().get());
+        gen.writeNumberField("max", value.maxHealth().get());
         gen.writeEndObject();
     }
 }

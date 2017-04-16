@@ -3,10 +3,8 @@ package valandur.webapi.cache;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.spongepowered.api.block.tileentity.TileEntity;
-import org.spongepowered.api.item.inventory.Carrier;
-import org.spongepowered.api.item.inventory.Inventory;
+import org.spongepowered.api.block.tileentity.carrier.TileEntityCarrier;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 import valandur.webapi.json.JsonConverter;
@@ -34,8 +32,9 @@ public class CachedTileEntity extends CachedObject {
         this.clazz = te.getClass().getName();
         this._location = new CachedLocation(te.getLocation());
         this.location = JsonConverter.toJson(this._location);
-        if (te instanceof Carrier)
-            this.inventory = JsonConverter.toJson(((Carrier)te).getInventory());
+        //if (te instanceof TileEntityCarrier)
+        //    this.inventory = JsonConverter.toJson(((TileEntityCarrier)te).getInventory());
+        this.data = JsonConverter.dataHolderToJson(te);
     }
 
     @Override

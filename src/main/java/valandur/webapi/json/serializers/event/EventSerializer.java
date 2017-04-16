@@ -1,4 +1,4 @@
-package valandur.webapi.json.serializers.events;
+package valandur.webapi.json.serializers.event;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
@@ -11,6 +11,7 @@ import org.spongepowered.api.event.entity.TargetEntityEvent;
 import org.spongepowered.api.event.entity.living.humanoid.player.KickPlayerEvent;
 import org.spongepowered.api.event.user.BanUserEvent;
 import org.spongepowered.api.event.user.TargetUserEvent;
+import valandur.webapi.WebAPI;
 import valandur.webapi.cache.CachedEntity;
 import valandur.webapi.cache.CachedPlayer;
 import valandur.webapi.cache.DataCache;
@@ -56,6 +57,7 @@ public class EventSerializer extends StdSerializer<Event> {
 
         if (value instanceof GrantAchievementEvent) {
             gen.writeObjectField("achievement", ((GrantAchievementEvent)value).getAchievement());
+            WebAPI.getInstance().getLogger().info("c: " + ((GrantAchievementEvent)value).isCancelled());
         }
 
         try {

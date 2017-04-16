@@ -26,13 +26,13 @@ public class WorldServlet extends WebAPIServlet {
 
         String uuid = paths[0];
         if (uuid.split("-").length != 5) {
-            data.sendError(HttpServletResponse.SC_BAD_REQUEST);
+            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid world UUID");
             return;
         }
 
         Optional<CachedWorld> world = DataCache.getWorld(UUID.fromString(uuid));
         if (!world.isPresent()) {
-            data.sendError(HttpServletResponse.SC_NOT_FOUND);
+            data.sendError(HttpServletResponse.SC_NOT_FOUND, "World with UUID '" + uuid + "' could not be found");
             return;
         }
 
@@ -46,19 +46,19 @@ public class WorldServlet extends WebAPIServlet {
         String[] paths = data.getPathParts();
 
         if (paths.length == 0 || paths[0].isEmpty()) {
-            data.sendError(HttpServletResponse.SC_NOT_FOUND);
+            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid world UUID");
             return;
         }
 
         String uuid = paths[0];
         if (uuid.split("-").length != 5) {
-            data.sendError(HttpServletResponse.SC_BAD_REQUEST);
+            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid world UUID");
             return;
         }
 
         Optional<CachedWorld> world = DataCache.getWorld(UUID.fromString(uuid));
         if (!world.isPresent()) {
-            data.sendError(HttpServletResponse.SC_NOT_FOUND);
+            data.sendError(HttpServletResponse.SC_NOT_FOUND, "World with UUID '" + uuid + "' could not be found");
             return;
         }
 
@@ -69,7 +69,7 @@ public class WorldServlet extends WebAPIServlet {
             Optional<Tuple<Class[], Object[]>> params = Util.parseParams(reqJson.get("params"));
 
             if (!params.isPresent()) {
-                data.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid parameters");
                 return;
             }
 
@@ -80,7 +80,7 @@ public class WorldServlet extends WebAPIServlet {
             JsonNode res = DataCache.getField(world.get(), fName);
             data.addJson("result", res);
         } else {
-            data.sendError(HttpServletResponse.SC_BAD_REQUEST);
+            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Request must define either a 'method' or 'field' property");
         }
     }
 }

@@ -27,20 +27,26 @@ import org.spongepowered.api.event.command.SendCommandEvent;
 import org.spongepowered.api.event.entity.DestructEntityEvent;
 import org.spongepowered.api.event.entity.SpawnEntityEvent;
 import org.spongepowered.api.event.entity.living.humanoid.player.KickPlayerEvent;
+import org.spongepowered.api.event.filter.IsCancelled;
+import org.spongepowered.api.event.filter.cause.First;
 import org.spongepowered.api.event.game.GameReloadEvent;
 import org.spongepowered.api.event.game.state.GameInitializationEvent;
 import org.spongepowered.api.event.game.state.GamePreInitializationEvent;
 import org.spongepowered.api.event.game.state.GameStartedServerEvent;
 import org.spongepowered.api.event.game.state.GameStoppedServerEvent;
-import org.spongepowered.api.event.message.MessageEvent;
+import org.spongepowered.api.event.message.MessageChannelEvent;
 import org.spongepowered.api.event.network.ClientConnectionEvent;
 import org.spongepowered.api.event.user.BanUserEvent;
 import org.spongepowered.api.event.world.LoadWorldEvent;
 import org.spongepowered.api.event.world.UnloadWorldEvent;
+import org.spongepowered.api.item.recipe.Recipe;
+import org.spongepowered.api.item.recipe.RecipeRegistry;
 import org.spongepowered.api.plugin.Plugin;
+import org.spongepowered.api.plugin.PluginContainer;
 import org.spongepowered.api.scheduler.SpongeExecutorService;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
+import org.spongepowered.api.util.Tristate;
 import org.spongepowered.api.util.Tuple;
 import valandur.webapi.cache.*;
 import valandur.webapi.command.*;
@@ -92,6 +98,10 @@ public class WebAPI {
     @Inject
     @ConfigDir(sharedRoot = false)
     private Path configPath;
+
+    @Inject
+    private PluginContainer container;
+    public PluginContainer getContainer() { return this.container; }
 
     private String serverHost;
     private int serverPort;
@@ -146,6 +156,7 @@ public class WebAPI {
         serverHost = config.getNode("host").getString();
         serverPort = config.getNode("port").getInt();
         cmdWaitTime = config.getNode("cmdWaitTime").getInt();
+        BlockServlet.MAX_BLOCK_VOLUME_SIZE = config.getNode("maxBlockVolumeSize").getInt();
 
         authHandler.reloadConfig();
 
@@ -192,6 +203,7 @@ public class WebAPI {
 
             servletsContext.addServlet(InfoServlet.class, "/info");
 
+            servletsContext.addServlet(BlockServlet.class, "/block/*");
             servletsContext.addServlet(HistoryServlet.class, "/history/*");
             servletsContext.addServlet(CmdServlet.class, "/cmd/*");
             servletsContext.addServlet(WorldServlet.class, "/world/*");
@@ -312,6 +324,7 @@ public class WebAPI {
     public void onWorldLoad(LoadWorldEvent event) {
         DataCache.addWorld(event.getTargetWorld());
     }
+
     @Listener
     public void onWorldUnload(UnloadWorldEvent event) {
         DataCache.removeWorld(event.getTargetWorld().getUniqueId());
@@ -323,6 +336,7 @@ public class WebAPI {
 
         WebHooks.notifyHooks(WebHooks.WebHookType.PLAYER_JOIN, JsonConverter.toString(event));
     }
+
     @Listener(order = Order.POST)
     public void onPlayerLeave(ClientConnectionEvent.Disconnect event) {
         // Get the message first because the player is removed from cache afterwards
@@ -333,11 +347,11 @@ public class WebAPI {
         WebHooks.notifyHooks(WebHooks.WebHookType.PLAYER_LEAVE, message);
     }
 
-
     @Listener(order = Order.POST)
     public void onUserKick(KickPlayerEvent event) {
         WebHooks.notifyHooks(WebHooks.WebHookType.PLAYER_KICK, JsonConverter.toString(event));
     }
+
     @Listener(order = Order.POST)
     public void onUserBan(BanUserEvent event) {
         WebHooks.notifyHooks(WebHooks.WebHookType.PLAYER_BAN, JsonConverter.toString(event));
@@ -349,6 +363,7 @@ public class WebAPI {
             DataCache.addEntity(entity);
         }
     }
+
     @Listener(order = Order.POST)
     public void onEntityDespawn(DestructEntityEvent event) {
         DataCache.removeEntity(event.getTargetEntity().getUniqueId());
@@ -360,16 +375,20 @@ public class WebAPI {
     }
 
     @Listener(order = Order.POST)
-    public void onMessage(MessageEvent event) {
-        Optional<Player> player = event.getCause().first(Player.class);
-        if (!player.isPresent()) return;
-
-        CachedChatMessage msg = DataCache.addChatMessage(player.get(), event);
+    public void onPlayerChat(MessageChannelEvent.Chat event, @First Player player) {
+        CachedChatMessage msg = DataCache.addChatMessage(player, event);
         WebHooks.notifyHooks(WebHooks.WebHookType.CHAT, JsonConverter.toString(msg));
     }
 
     @Listener(order = Order.POST)
+    @IsCancelled(value = Tristate.FALSE)
     public void onPlayerAchievement(GrantAchievementEvent.TargetPlayer event) {
+        Player player = event.getTargetEntity();
+
+        // Check if we already have the achievement
+        if (player.getAchievementData().achievements().get().stream().anyMatch(a -> a.getId().equals(event.getAchievement().getId())))
+            return;
+
         WebHooks.notifyHooks(WebHooks.WebHookType.ACHIEVEMENT, JsonConverter.toString(event));
     }
 

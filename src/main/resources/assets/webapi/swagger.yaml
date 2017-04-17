@@ -8,12 +8,19 @@ info:
     # Introduction
     This is the documentation of the various API routes offered by the WebAPI plugin.
 
-    This documentation assumes that you are familiar with the basic concepts of Web API's, such as GET, PUT, POST and DELETE methods, request HEADERS and RESPONSE CODES and JSON data.
+    This documentation assumes that you are familiar with the basic concepts of Web API's, such as `GET`, `PUT`, `POST` and `DELETE` methods,
+    request `HEADERS` and `RESPONSE CODES` and `JSON` data.
 
     By default this documentation can be found at http://localhost:8080 (while your minecraft server is running) and the various routes start with http://localhost:8080/api/...
 
     As a quick test try reaching the route http://localhost:8080/api/info (remember that you can only access "localhost" routes on the server on which you are running minecraft).
     This route should show you basic information about your server, like the motd and player count.
+
+    # Additional data
+    Certain endpoints (such as `/player`, `/entity` and `/tile-entity` have additional properties which are not documented here, because the data depends on the concrete
+    object type (eg. `Sheep` have a wool color, others do not) and on the other plugins/mods that are running on your server which might add additional data.
+
+    You can also find more information in the github docs (https://github.com/Valandur/Web-API/tree/master/docs)
   version: "<version>"
 
 host: "<host>"
@@ -722,7 +729,7 @@ paths:
 definitions:
   Location:
     type: object
-    description: Describes a location in a world
+    description: Describes a location in a world.
     properties:
       world:
         $ref: '#/definitions/World'
@@ -731,7 +738,7 @@ definitions:
 
   Vector3:
     type: object
-    description: Describes a location
+    description: Describes a location.
     properties:
       x:
         type: number
@@ -746,6 +753,38 @@ definitions:
         format: double
         description: The z-coordinate of the vector.
 
+  Inventory:
+    type: object
+    description: A collection of item stacks.
+    properties:
+      name:
+        type: string
+        description: The name of the inventory.
+      stackCount:
+        type: integer
+        description: The amount of different stacks in the inventory.
+      itemCount:
+        type: integer
+        description: The total amount of items in the inventory.
+      items:
+        type: array
+        description: The item stacks in the inventory
+        items:
+          $ref: '#/definitions/ItemStack'
+  ItemStack:
+    type: object
+    description: A stack of items.
+    properties:
+      id:
+        type: string
+        description: The unique id of the item
+      quantity:
+        type: string
+        description: The amount of items in this stack
+      data:
+        type: object
+        description: Any additional data attached to the items.
+
   RawRequest:
     type: object
     description: |
@@ -755,7 +794,7 @@ definitions:
     properties:
       method:
         type: string
-        description: The name of the method to execute
+        description: The name of the method to execute.
       params:
         type: array
         description: The parameters passed to the method.
@@ -1864,6 +1903,8 @@ definitions:
       - $ref: '#/definitions/Player'
       - type: object
         properties:
+          velocity:
+            $ref: '#/definitions/Vector3'
           rotation:
             $ref: '#/definitions/Vector3'
           scale:
@@ -1890,6 +1931,72 @@ definitions:
                 $ref: '#/definitions/ItemStack'
               boots:
                 $ref: '#/definitions/ItemStack'
+          achievements:
+            type: array
+            description: An array of achievements the player has been awarded.
+            items:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: The unique id of the achievement
+                name:
+                  type: string
+                  description: The displayed name of the achievement.
+                class:
+                  type: string
+                  description: The fully qualified class name of the achievement.
+                description:
+                  type: string
+                  description: The description that is displayed when hovering the achievement.
+          experience:
+            type: object
+            properties:
+              level:
+                type: integer
+                description: The current level of the player
+              experience:
+                type: integer
+                description: The amount of experience SINCE THE LAST LEVEL.
+              totalExperience:
+                type: integer
+                description: The total amount of experience earned.
+          gameMode:
+            type: string
+            description: The current game mode the player is in.
+          joined:
+            type: object
+            properties:
+              first:
+                type: number
+                description: The unix timestamp (seconds) when the player first joined the server.
+              last:
+                type: number
+                description: The unix timestamp (seconds) when the player last joined the server.
+          health:
+            type: object
+            properties:
+              current:
+                type: number
+                description: The current amount of health the player has.
+              max:
+                type: number
+                description: The maximum amount of health the player can have.
+          food:
+            type: object
+            properties:
+              foodLevel:
+                type: number
+                description: The current amount of food the player has.
+              exhaustion:
+                type: number
+                description: How exhausted the player is.
+              saturation:
+                type: number
+                description: How saturated the player is.
+          statistics:
+            type: object
+            description: A map from statistics id to value, keeping track of the players actions.
     example:
       type: minecraft:player
       uuid: 357427c6-3b91-4ead-aad4-15a3e18e6452
@@ -2085,7 +2192,8 @@ definitions:
                 type: string
                 description: The name of the generator type.
               settings:
-                $ref: '#/definitions/DataContainer'
+                type: string
+                description: A map of various generator settings to values.
           seed:
             type: number
             description: The seed used to generate this world.
@@ -2145,7 +2253,8 @@ definitions:
       generator:
         id: minecraft:flat
         name: flat
-        settings: {}
+        settings:
+          customSettings: 3;minecraft:bedrock,2*minecraft:dirt,minecraft:grass;1;village
       seed: -8009412544287338000
       spawn:
         x: -1288
@@ -2254,6 +2363,8 @@ definitions:
       - $ref: '#/definitions/Entity'
       - type: object
         properties:
+          velocity:
+            $ref: '#/definitions/Vector3'
           rotation:
             $ref: '#/definitions/Vector3'
           scale:

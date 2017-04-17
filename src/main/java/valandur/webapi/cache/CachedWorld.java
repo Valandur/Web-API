@@ -17,17 +17,32 @@ public class CachedWorld extends CachedObject {
     @JsonProperty
     public String uuid;
 
+    public JsonNode border;
+    public JsonNode difficulty;
     public JsonNode dimension;
-    public JsonNode data;
+    public JsonNode gameMode;
+    public JsonNode gameRules;
     public JsonNode generator;
+    public JsonNode seed;
+    public JsonNode spawn;
+    public JsonNode time;
+    public JsonNode weather;
 
 
     public CachedWorld(World world) {
         this.name = world.getName();
         this.uuid = world.getUniqueId().toString();
+
+        this.border = JsonConverter.toJson(world.getWorldBorder());
+        this.difficulty = JsonConverter.toJson(world.getDifficulty().getId());
         this.dimension = JsonConverter.toJson(world.getDimension());
-        this.data = JsonConverter.toJson(world.getProperties().toContainer());
+        this.gameMode = JsonConverter.toJson(world.getProperties().getGameMode().getId());
+        this.gameRules = JsonConverter.toJson(world.getGameRules());
         this.generator = JsonConverter.toJson(world.getProperties().getGeneratorType());
+        this.seed = JsonConverter.toJson(world.getProperties().getSeed());
+        this.spawn = JsonConverter.toJson(world.getProperties().getSpawnPosition());
+        this.time = JsonConverter.toJson(world.getProperties().getWorldTime());
+        this.weather = JsonConverter.toJson(world.getWeather().getId());
     }
 
     @Override

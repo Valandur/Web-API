@@ -3,7 +3,11 @@ package valandur.webapi.misc;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.flowpowered.math.vector.Vector3d;
+import com.flowpowered.math.vector.Vector3i;
 import org.spongepowered.api.Sponge;
+import org.spongepowered.api.block.BlockType;
+import org.spongepowered.api.block.BlockTypes;
+import org.spongepowered.api.block.trait.BlockTrait;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.item.ItemType;
 import org.spongepowered.api.item.inventory.ItemStack;
@@ -12,19 +16,35 @@ import org.spongepowered.api.util.Tuple;
 import org.spongepowered.api.world.World;
 
 import javax.servlet.http.HttpServletRequest;
+import java.lang.reflect.Field;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Util {
 
+    /**
+     * Gets the path parameters of a given request.
+     * @param req The request from which the path parameters are extracted.
+     * @return The path parameters.
+     */
     public static String[] getPathParts(HttpServletRequest req) {
         String path = req.getPathInfo();
         if (path == null) return new String[] { };
         return path.substring(1).split("/");
     }
 
+    /**
+     * Gets the query parameters of a given request.
+     * @param req The request from which the query parameters are extracted.
+     * @return The query parameters.
+     */
     public static Map<String, String> getQueryParts(HttpServletRequest req) {
         Map<String, String> map = new HashMap<>();
-        String[] splits = req.getQueryString().split("&");
+
+        String query = req.getQueryString();
+        if (query == null) return map;
+
+        String[] splits = query.split("&");
         for (String split : splits) {
             String[] subSplits = split.split("=");
             map.put(subSplits[0], subSplits[1]);
@@ -32,10 +52,20 @@ public class Util {
         return map;
     }
 
+    /**
+     * Transform the first letter to lowercase.
+     * @param text The text to transform.
+     * @return The transformed text.
+     */
     public static String lowerFirst(String text) {
         return Character.toLowerCase(text.charAt(0)) + text.substring(1);
     }
 
+    /**
+     * Parse a json node as an array of method parameters
+     * @param node The json node that contains the information about the method parameters.
+     * @return An optional which is empty on failure. On success it contains a tuple with the method parameters types and values.
+     */
     public static Optional<Tuple<Class[], Object[]>> parseParams(JsonNode node) {
         if (node == null)
             return Optional.of(new Tuple<>(new Class[0], new Object[0]));
@@ -63,7 +93,7 @@ public class Util {
 
     private static Tuple<Class, Object> getParamFromJson(JsonNode node) throws ClassNotFoundException {
         if (!node.isObject())
-            return new Tuple<>(null, null);
+            throw new ClassNotFoundException(node.toString());
 
         String type = node.get("type").asText().toLowerCase();
         JsonNode e = node.get("value");
@@ -91,9 +121,16 @@ public class Util {
                 return new Tuple<>(String.class, e.asText());
             case "class":
                 return new Tuple<>(Class.class, Class.forName(type));
+            case "enum":
+                Class c = Class.forName(e.get("type").asText());
+                String name = e.get("value").asText();
+                return new Tuple<Class, Object>(c, Enum.valueOf(c, name));
 
             case "vector3d":
                 return new Tuple<>(Vector3d.class, new Vector3d(e.get("x").asDouble(), e.get("y").asDouble(), e.get("z").asDouble()));
+
+            case "vector3i":
+                return new Tuple<>(Vector3i.class, new Vector3i(e.get("x").asInt(), e.get("y").asInt(), e.get("z").asInt()));
 
             case "text":
                 return new Tuple<>(Text.class, Text.of(e.asText()));
@@ -119,5 +156,25 @@ public class Util {
             default:
                 return new Tuple<>(Class.forName(type), null);
         }
+    }
+
+    public static Optional<Vector3i> getVector3i(JsonNode rootNode, String name) {
+        JsonNode node = rootNode.get(name);
+        if (node == null)
+            return Optional.empty();
+
+        JsonNode xNode = node.get("x");
+        if (xNode == null)
+            return Optional.empty();
+
+        JsonNode yNode = node.get("y");
+        if (yNode == null)
+            return Optional.empty();
+
+        JsonNode zNode = node.get("z");
+        if (zNode == null)
+            return Optional.empty();
+
+        return Optional.of(new Vector3i(xNode.asInt(), yNode.asInt(), zNode.asInt()));
     }
 }

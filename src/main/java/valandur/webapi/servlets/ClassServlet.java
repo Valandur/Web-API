@@ -35,7 +35,7 @@ public class ClassServlet extends WebAPIServlet {
             Class c = Class.forName(className);
             data.addJson("class", DataCache.getClass(c));
         } catch (ClassNotFoundException e) {
-            data.sendError(HttpServletResponse.SC_NOT_FOUND);
+            data.sendError(HttpServletResponse.SC_NOT_FOUND, "The class '" + className + "' could not be found");
         }
     }
 }

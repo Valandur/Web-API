@@ -39,7 +39,8 @@ public abstract class WebAPIServlet extends HttpServlet {
                     JsonNode node = mapper.readTree(req.getReader());
                     req.setAttribute("body", node);
                 } catch (Exception e) {
-                    throw new IOException("Error parsing JSON request string");
+                    resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                    return;
                 }
             }
 
@@ -47,7 +48,7 @@ public abstract class WebAPIServlet extends HttpServlet {
             method.invoke(this, data);
             PrintWriter out = data.getWriter();
 
-            ObjectMapper om = JsonConverter.getDefaultObjectMapper();
+            ObjectMapper om = new ObjectMapper();
             if (!data.isErrorSent()) {
                 out.write(om.writeValueAsString(data.getNode()));
             }
@@ -82,18 +83,18 @@ public abstract class WebAPIServlet extends HttpServlet {
     }
 
     protected void handleGet(ServletData data) {
-        data.sendError(HttpServletResponse.SC_NOT_IMPLEMENTED);
+        data.sendError(HttpServletResponse.SC_NOT_IMPLEMENTED, "Not implemented");
     }
 
     protected void handlePost(ServletData data) {
-        data.sendError(HttpServletResponse.SC_NOT_IMPLEMENTED);
+        data.sendError(HttpServletResponse.SC_NOT_IMPLEMENTED, "Not implemented");
     }
 
     protected void handlePut(ServletData data) {
-        data.sendError(HttpServletResponse.SC_NOT_IMPLEMENTED);
+        data.sendError(HttpServletResponse.SC_NOT_IMPLEMENTED, "Not implemented");
     }
 
     protected void handleDelete(ServletData data) {
-        data.sendError(HttpServletResponse.SC_NOT_IMPLEMENTED);
+        data.sendError(HttpServletResponse.SC_NOT_IMPLEMENTED, "Not implemented");
     }
 }

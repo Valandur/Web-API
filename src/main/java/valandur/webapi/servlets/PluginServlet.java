@@ -23,7 +23,7 @@ public class PluginServlet extends WebAPIServlet {
         String pName = paths[0];
         Optional<CachedPlugin> plugin = DataCache.getPlugin(pName);
         if (!plugin.isPresent()) {
-            data.sendError(HttpServletResponse.SC_NOT_FOUND);
+            data.sendError(HttpServletResponse.SC_NOT_FOUND, "Plugin with id '" + pName + "' could not be found");
             return;
         }
 

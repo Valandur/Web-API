@@ -32,18 +32,9 @@ This API uses JSON as requeset and response formats.
 
 ## Routes
 When accessing the base site (by default http://localhost:8080/) a documentation of all the methods will show up.
-This can be used as a starting point to explore the supported methods. You can also find the same documentation at
-https://valandur.github.io/Web-API/redoc.html
+This can be used as a starting point to explore the supported routes. You can also find the same documentation
+[here](https://valandur.github.io/Web-API/redoc.html).
 
-| Path         | Description                                                           |
-|--------------|-----------------------------------------------------------------------|
-| /            | Base API url, shows a list of all supported paths                     |
-| /info        | Provides basic information about the minecraft server                 |
-| /history     | Provides access to the chat and command history                       |
-| /cmd         | Lists all commands & executes individual commands                     |
-| /player      | Lists all players & information about individual players              |
-| /world       | Lists all worlds & information about individual worlds                |
-| /plugin      | Lists all plugins & information about individual plugins              |
-| /entity      | Lists all entities & information about individual entities            |
-| /tile-entity | Lists all tile entities & information about individual tile entities  |
-| /class       | Provides information about loaded classes on the server               |
+## Additional Data
+Some endpoints provide data that is not documented, because it depends on the type of object that is returned.
+Examples of such data can be found [here](docs/DATA.md).

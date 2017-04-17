@@ -25,6 +25,7 @@ public class InfoServlet extends WebAPIServlet {
         data.addJson("players", server.getOnlinePlayers().size());
         data.addJson("maxPlayers", server.getMaxPlayers());
         data.addJson("uptimeTicks", server.getRunningTimeTicks());
+        data.addJson("tps", server.getTicksPerSecond());
         data.addJson("hasWhitelist", server.hasWhitelist());
         data.addJson("minecraftVersion", platform.getMinecraftVersion().getName());
 
@@ -38,11 +39,11 @@ public class InfoServlet extends WebAPIServlet {
         obj.put("id", container.getId());
         obj.put("name", container.getName());
         Optional<String> version = container.getVersion();
-        obj.put("version", version.isPresent() ? version.get() : null);
+        obj.put("version", version.orElse(null));
         Optional<String> descr = container.getDescription();
-        obj.put("description", descr.isPresent() ? descr.get() : null);
+        obj.put("description", descr.orElse(null));
         Optional<String> url = container.getVersion();
-        obj.put("url", url.isPresent() ? url.get() : null);
+        obj.put("url", url.orElse(null));
         obj.set("authors", JsonConverter.toJson(container.getAuthors()));
         return obj;
     }

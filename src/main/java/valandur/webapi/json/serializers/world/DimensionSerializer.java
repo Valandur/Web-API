@@ -1,4 +1,4 @@
-package valandur.webapi.json;
+package valandur.webapi.json.serializers.world;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
@@ -23,7 +23,6 @@ public class DimensionSerializer extends StdSerializer<Dimension> {
         gen.writeObjectField("type", value.getType());
         gen.writeNumberField("height", value.getHeight());
         gen.writeNumberField("buildHeight", value.getBuildHeight());
-        gen.writeObjectField("generator", value.getGeneratorType());
         gen.writeEndObject();
     }
 }

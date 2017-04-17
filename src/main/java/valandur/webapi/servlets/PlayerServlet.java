@@ -26,13 +26,13 @@ public class PlayerServlet extends WebAPIServlet {
 
         String uuid = paths[0];
         if (uuid.split("-").length != 5) {
-            data.sendError(HttpServletResponse.SC_BAD_REQUEST);
+            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid player UUID");
             return;
         }
 
         Optional<CachedPlayer> player = DataCache.getPlayer(UUID.fromString(uuid));
         if (!player.isPresent()) {
-            data.sendError(HttpServletResponse.SC_NOT_FOUND);
+            data.sendError(HttpServletResponse.SC_NOT_FOUND, "Player with UUID '" + uuid + "' could not be found");
             return;
         }
 
@@ -46,19 +46,19 @@ public class PlayerServlet extends WebAPIServlet {
         String[] paths = data.getPathParts();
 
         if (paths.length == 0 || paths[0].isEmpty()) {
-            data.sendError(HttpServletResponse.SC_NOT_FOUND);
+            data.sendError(HttpServletResponse.SC_NOT_FOUND, "Invalid player UUID");
             return;
         }
 
         String uuid = paths[0];
         if (uuid.split("-").length != 5) {
-            data.sendError(HttpServletResponse.SC_BAD_REQUEST);
+            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid player UUID");
             return;
         }
 
         Optional<CachedPlayer> player = DataCache.getPlayer(UUID.fromString(uuid));
         if (!player.isPresent()) {
-            data.sendError(HttpServletResponse.SC_NOT_FOUND);
+            data.sendError(HttpServletResponse.SC_NOT_FOUND, "Player with UUID '" + uuid + "' could not be found");
             return;
         }
 
@@ -69,7 +69,7 @@ public class PlayerServlet extends WebAPIServlet {
             Optional<Tuple<Class[], Object[]>> params = Util.parseParams(reqJson.get("params"));
 
             if (!params.isPresent()) {
-                data.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid parameters");
                 return;
             }
 
@@ -80,7 +80,7 @@ public class PlayerServlet extends WebAPIServlet {
             JsonNode res = DataCache.getField(player.get(), fName);
             data.addJson("result", res);
         } else {
-            data.sendError(HttpServletResponse.SC_BAD_REQUEST);
+            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Request must define either a 'method' or 'field' property");
         }
     }
 }

@@ -8,12 +8,19 @@ info:
     # Introduction
     This is the documentation of the various API routes offered by the WebAPI plugin.
 
-    This documentation assumes that you are familiar with the basic concepts of Web API's, such as GET, PUT, POST and DELETE methods, request HEADERS and RESPONSE CODES and JSON data.
+    This documentation assumes that you are familiar with the basic concepts of Web API's, such as `GET`, `PUT`, `POST` and `DELETE` methods,
+    request `HEADERS` and `RESPONSE CODES` and `JSON` data.
 
     By default this documentation can be found at http://localhost:8080 (while your minecraft server is running) and the various routes start with http://localhost:8080/api/...
 
     As a quick test try reaching the route http://localhost:8080/api/info (remember that you can only access "localhost" routes on the server on which you are running minecraft).
     This route should show you basic information about your server, like the motd and player count.
+
+    # Additional data
+    Certain endpoints (such as `/player`, `/entity` and `/tile-entity` have additional properties which are not documented here, because the data depends on the concrete
+    object type (eg. `Sheep` have a wool color, others do not) and on the other plugins/mods that are running on your server which might add additional data.
+
+    You can also find more information in the github docs (https://github.com/Valandur/Web-API/tree/master/docs)
   version: "<version>"
 
 host: "<host>"
@@ -29,24 +36,26 @@ produces:
   - application/json
 
 tags:
-  - name: Info
-    description: Get general information about the minecraft server
-  - name: History
-    description: Provides access to the command and chat history.
-  - name: Command
-    description: List all commands on the server and execute them.
-  - name: Player
-    description: List all players and get detailed information about them.
-  - name: World
-    description: List all worlds and get detailed information about them.
-  - name: Plugin
-    description: List all plugins and get detailed information about them.
-  - name: Entity
-    description: List all entities and get detailed information about them.
-  - name: Tile Entity
-    description: List all tile entities and get detailed information about them.
+  - name: Block
+    description: Get information about blocks and manipulate them.
   - name: Class
     description: Provides information about the classes loaded on the server.
+  - name: Command
+    description: List all commands on the server and execute them.
+  - name: Entity
+    description: List all entities and get detailed information about them.
+  - name: History
+    description: Provides access to the command and chat history.
+  - name: Info
+    description: Get general information about the minecraft server
+  - name: Player
+    description: List all players and get detailed information about them.
+  - name: Plugin
+    description: List all plugins and get detailed information about them.
+  - name: Tile Entity
+    description: List all tile entities and get detailed information about them.
+  - name: World
+    description: List all worlds and get detailed information about them.
 
 #parameters:
 
@@ -66,17 +75,29 @@ security:
 
 responses:
   400:
-    description: A provided parameter is invalid (e.g. not a valid UUID).
+    description: Invalid parameter
     schema:
       type: object
+      properties:
+        error:
+          type: string
+          description: A description of the type of error that occured.
   403:
-    description: The provided api key is invalid or you do not have the permissions to access this endpoint.
+    description: Access denied
     schema:
       type: object
+      properties:
+        error:
+          type: string
+          description: A description of the type of error that occured.
   404:
-    description: A required object could not be found (e.g. UUID of world is invalid).
+    description: Not found
     schema:
       type: object
+      properties:
+        error:
+          type: string
+          description: A description of the type of error that occured.
 
 paths:
   /info:
@@ -108,7 +129,7 @@ paths:
         403:
           $ref: '#/responses/403'
         200:
-          description: A history of the chat.
+          description: A history of the chat
           schema:
             $ref: '#/definitions/ChatHistory'
   /history/cmd:
@@ -124,9 +145,108 @@ paths:
         403:
           $ref: '#/responses/403'
         200:
-          description: A history of the chat.
+          description: A history of the chat
           schema:
             $ref: '#/definitions/CommandHistory'
+  /block/{world}/{x}/{y}/{z}:
+    get:
+      summary: Get one block
+      description: |
+        Gets information about one block in the world.
+
+        > Required permission: block
+      parameters:
+        - name: world
+          in: path
+          type: string
+          description: The uuid of the world the block is in.
+          required: true
+        - name: x
+          in: path
+          type: integer
+          description: The x-coordinate of the block.
+          required: true
+        - name: y
+          in: path
+          type: integer
+          description: The y-coordinate of the block.
+          required: true
+        - name: z
+          in: path
+          type: integer
+          description: The z-coordinate of the block.
+          required: true
+      tags:
+        - Block
+      responses:
+        400:
+          $ref: '#/responses/400'
+        403:
+          $ref: '#/responses/403'
+        404:
+          $ref: '#/responses/404'
+        200:
+          description: A single block
+          schema:
+            $ref: '#/definitions/BlockFull'
+  /block/{world}/{minX}/{minY}/{minZ}/{maxX}/{maxY}/{maxZ}:
+    get:
+      summary: Get block volume
+      description: |
+        Gets information about a block volume (multiple blocks) in the world.
+
+        The blocks in the returned block volume can be accessed by using `responseData.blocks[x][y][z]` where x, y, and z are the coordinates of the block.
+
+        > Required permission: block
+      parameters:
+        - name: world
+          in: path
+          type: string
+          description: The uuid of the world the block is in.
+          required: true
+        - name: minX
+          in: path
+          type: integer
+          description: The minimum x-coordinate of the volume.
+          required: true
+        - name: minY
+          in: path
+          type: integer
+          description: The minimum y-coordinate of the volume.
+          required: true
+        - name: minZ
+          in: path
+          type: integer
+          description: The minimum z-coordinate of the volume.
+          required: true
+        - name: maxX
+          in: path
+          type: integer
+          description: The maximum x-coordinate of the volume.
+          required: true
+        - name: maxY
+          in: path
+          type: integer
+          description: The maximum y-coordinate of the volume.
+          required: true
+        - name: maxZ
+          in: path
+          type: integer
+          description: The maximum z-coordinate of the volume.
+          required: true
+      tags:
+        - Block
+      responses:
+        400:
+          $ref: '#/responses/400'
+        403:
+          $ref: '#/responses/403'
+        404:
+          $ref: '#/responses/404'
+        200:
+          description: A block volume
+          schema:
+            $ref: '#/definitions/BlockVolume'
   /cmd:
     get:
       summary: Command list
@@ -164,7 +284,7 @@ paths:
         403:
           $ref: '#/responses/403'
         200:
-          description: A list of text lines sent in response to the command.
+          description: A list of text lines sent in response to the command
           schema:
             $ref: '#/definitions/CommandResponse'
   /cmd/{name}:
@@ -186,7 +306,7 @@ paths:
         403:
           $ref: '#/responses/403'
         200:
-          description: Detailed info about the command.
+          description: Detailed info about the command
           schema:
             $ref: '#/definitions/CommandFull'
   /class:
@@ -202,7 +322,7 @@ paths:
         403:
           $ref: '#/responses/403'
         200:
-          description: A list of all the classes that are cached on the server.
+          description: A list of all the classes that are cached on the server
           schema:
             type: array
             items:
@@ -228,7 +348,7 @@ paths:
         403:
           $ref: '#/responses/403'
         200:
-          description: An object describing the class fields and methods.
+          description: An object describing the class fields and methods
           schema:
             type: object
             properties:
@@ -274,7 +394,7 @@ paths:
         404:
           $ref: '#/responses/404'
         200:
-          description: Detailed information about the player.
+          description: Detailed information about the player
           schema:
             $ref: '#/definitions/PlayerFull'
     post:
@@ -306,7 +426,7 @@ paths:
         404:
           $ref: '#/responses/404'
         200:
-          description: The result of executing/getting the method/field.
+          description: The result of executing/getting the method/field
           schema:
             $ref: '#/definitions/RawResponse'
 
@@ -349,7 +469,7 @@ paths:
         404:
           $ref: '#/responses/404'
         200:
-          description: Detailed information about the world.
+          description: Detailed information about the world
           schema:
             $ref: '#/definitions/WorldFull'
     post:
@@ -381,7 +501,7 @@ paths:
         404:
           $ref: '#/responses/404'
         200:
-          description: The result of executing/getting the method/field.
+          description: The result of executing/getting the method/field
           schema:
             $ref: '#/definitions/RawResponse'
 
@@ -398,7 +518,7 @@ paths:
         403:
           $ref: '#/responses/403'
         200:
-          description: A list of all the plugins on the server.
+          description: A list of all the plugins on the server
           schema:
             $ref: '#/definitions/PluginList'
   /plugin/{id}:
@@ -422,7 +542,7 @@ paths:
         404:
           $ref: '#/responses/404'
         200:
-          description: Detailed information about the plugin.
+          description: Detailed information about the plugin
           schema:
             $ref: '#/definitions/PluginFull'
   /entity:
@@ -438,7 +558,7 @@ paths:
         403:
           $ref: '#/responses/403'
         200:
-          description: A list of all the entities on the server.
+          description: A list of all the entities on the server
           schema:
             $ref: '#/definitions/EntityList'
   /entity/{uuid}:
@@ -464,7 +584,7 @@ paths:
         404:
           $ref: '#/responses/404'
         200:
-          description: Detailed information about the entity.
+          description: Detailed information about the entity
           schema:
             $ref: '#/definitions/EntityFull'
     post:
@@ -496,7 +616,7 @@ paths:
         404:
           $ref: '#/responses/404'
         200:
-          description: The result of executing/getting the method/field.
+          description: The result of executing/getting the method/field
           schema:
             $ref: '#/definitions/RawResponse'
 
@@ -513,7 +633,7 @@ paths:
         403:
           $ref: '#/responses/403'
         200:
-          description: A list of all the tile entities on the server.
+          description: A list of all the tile entities on the server
           schema:
             $ref: '#/definitions/TileEntityList'
   /tile-entity/{worldUuid}/{x}/{y}/{z}:
@@ -531,17 +651,17 @@ paths:
           required: true
         - name: x
           in: path
-          type: string
+          type: integer
           description: The x-coordinate of the tile entity.
           required: true
         - name: y
           in: path
-          type: string
+          type: integer
           description: The y-coordinate of the tile entity.
           required: true
         - name: z
           in: path
-          type: string
+          type: integer
           description: The z-coordinate of the tile entity.
           required: true
       tags:
@@ -554,7 +674,7 @@ paths:
         404:
           $ref: '#/responses/404'
         200:
-          description: Detailed information about the tile entity.
+          description: Detailed information about the tile entity
           schema:
             $ref: '#/definitions/TileEntityFull'
     post:
@@ -601,24 +721,15 @@ paths:
         404:
           $ref: '#/responses/404'
         200:
-          description: The result of executing/getting the method/field.
+          description: The result of executing/getting the method/field
           schema:
             $ref: '#/definitions/RawResponse'
 
 
 definitions:
-  DataContainer:
-    type: object
-    description: A container of various properties.
-  Properties:
-    type: array
-    description: A list of properties belonging to the object.
-    items:
-      type: object
-
   Location:
     type: object
-    description: Describes a location in a world
+    description: Describes a location in a world.
     properties:
       world:
         $ref: '#/definitions/World'
@@ -627,7 +738,7 @@ definitions:
 
   Vector3:
     type: object
-    description: Describes a location
+    description: Describes a location.
     properties:
       x:
         type: number
@@ -642,6 +753,38 @@ definitions:
         format: double
         description: The z-coordinate of the vector.
 
+  Inventory:
+    type: object
+    description: A collection of item stacks.
+    properties:
+      name:
+        type: string
+        description: The name of the inventory.
+      stackCount:
+        type: integer
+        description: The amount of different stacks in the inventory.
+      itemCount:
+        type: integer
+        description: The total amount of items in the inventory.
+      items:
+        type: array
+        description: The item stacks in the inventory
+        items:
+          $ref: '#/definitions/ItemStack'
+  ItemStack:
+    type: object
+    description: A stack of items.
+    properties:
+      id:
+        type: string
+        description: The unique id of the item
+      quantity:
+        type: string
+        description: The amount of items in this stack
+      data:
+        type: object
+        description: Any additional data attached to the items.
+
   RawRequest:
     type: object
     description: |
@@ -651,7 +794,7 @@ definitions:
     properties:
       method:
         type: string
-        description: The name of the method to execute
+        description: The name of the method to execute.
       params:
         type: array
         description: The parameters passed to the method.
@@ -679,8 +822,10 @@ definitions:
           - long
           - short
           - string
+          - enum
           - class
           - vector3d
+          - vector3i
           - text
           - world
           - player
@@ -693,7 +838,7 @@ definitions:
           they are listed below along with their usage:
 
           - class: Interpreted as the fully qualified classname of a class which is loaded and passed |
-          - vector3d: Converted to a Vector3d object. Requires the properties "x", "y" and "z"
+          - vector3(i/d): Converted to a Vector3(i/d) object. Requires the properties "x", "y" and "z"
           - text: Converted to a sponge text
           - world: Assumed to be the UUID of a world which is fetched and passed
           - player: Assumed to be the UUID of the player which is fetched and passed.
@@ -1417,6 +1562,9 @@ definitions:
       uptimeTicks:
         type: integer
         description: The number of ticks the server has been running
+      tps:
+        type: number
+        description: The average ticks per second the server is running with. 20 is ideal.
       hasWhitelist:
         type: boolean
         description: True if the server has a whitelist, false otherwise.
@@ -1434,13 +1582,14 @@ definitions:
       players: 1
       maxPlayers: 20
       uptimeTicks: 85404
+      tps: 19.65
       hasWhitelist: false
       minecraftVersion: 1.11.2
       game:
         id: minecraft
         name: Minecraft
         version: 1.11.2
-        description: Minecraft is a game about placing blocks and going on adventures
+        description: Minecraft is a game about placing block and going on adventures
         url: 1.11.2
         authors:
         - Mojang
@@ -1491,6 +1640,37 @@ definitions:
       description: The SpongeAPI implementation for Vanilla Minecraft
       url: 1.11.2-6.0.0-BETA-229
       authors: []
+
+  BlockVolume:
+    type: object
+    properties:
+      min:
+        $ref: '#/definitions/Vector3'
+      max:
+        $ref: '#/definitions/Vector3'
+      blocks:
+        type: array
+        items:
+          type: array
+          items:
+            type: array
+            items:
+              $ref: '#/definitions/BlockFull'
+  BlockFull:
+    type: object
+    properties:
+      type:
+        type: string
+        description: The type of the block.
+      data:
+        type: object
+        description: Additional block properties that define this block.
+    example:
+      type: minecraft:dark_oak_stairs
+      data:
+        facing: SOUTH
+        half: BOTTOM
+        shape: STRAIGHT
 
   ChatHistory:
     type: object
@@ -1574,7 +1754,7 @@ definitions:
     properties:
       affectedBlocks:
         type: number
-        description: The number of blocks that were affected.
+        description: The number of block that were affected.
       affectedEntities:
         type: number
         description: The number of entities that were affected.
@@ -1605,6 +1785,9 @@ definitions:
       description:
         type: string
         description: Describes what the command does.
+      link:
+        type: string
+        description: The API URL which contains detailed information about this command.
     example:
       name: webapi
       description: Manage Web-API settings
@@ -1683,14 +1866,25 @@ definitions:
   Player:
     type: object
     properties:
-      name:
+      type:
         type: string
-        description: The name of the player.
+        description: The type of player, usually `minecraft:player`
       uuid:
         type: string
         description: The unique identifier of the player.
+      location:
+        $ref: '#/definitions/Location'
+      name:
+        type: string
+        description: The name of the player.
+      link:
+        type: string
+        description: The API URL which contains detailed information about this player.
+      class:
+        type: string
+        description: The fully qualified class name of the object representing the player. Usually `net.minecraft.entity.player.EntityPlayerMP`.
     example:
-      type: player
+      type: minecraft:player
       uuid: 357427c6-3b91-4ead-aad4-15a3e18e6452
       location:
         world:
@@ -1698,9 +1892,9 @@ definitions:
           uuid: c574ab53-831b-4410-b3ad-955a2a504843
           link: "/api/world/c574ab53-831b-4410-b3ad-955a2a504843"
         position:
-          x: -1289.0203529877956
+          x: 0.3622799563437187
           y: 4
-          z: -1065.111295771125
+          z: -1.0292199195390332
       name: Valandur
       link: "/api/player/357427c6-3b91-4ead-aad4-15a3e18e6452"
       class: net.minecraft.entity.player.EntityPlayerMP
@@ -1709,26 +1903,102 @@ definitions:
       - $ref: '#/definitions/Player'
       - type: object
         properties:
-          name:
-            type: string
-            description: The name of the player.
-          uuid:
-            type: string
-            description: The unique identifier of the player.
-          address:
-            type: string
-            description: The IP address that the player is connecting from.
-          latency:
-            type: integer
-            description: The latency (ping) of the player in ms.
-          location:
-            $ref: '#/definitions/Location'
           velocity:
             $ref: '#/definitions/Vector3'
           rotation:
             $ref: '#/definitions/Vector3'
+          scale:
+            $ref: '#/definitions/Vector3'
+          inventory:
+            $ref: '#/definitions/Inventory'
+          connection:
+            type: object
+            properties:
+              address:
+                type: string
+                description: The address the player is connecting from
+              latency:
+                type: integer
+                description: The delay between the player and server
+          armour:
+            type: object
+            properties:
+              helmet:
+                $ref: '#/definitions/ItemStack'
+              chestplate:
+                $ref: '#/definitions/ItemStack'
+              leggings:
+                $ref: '#/definitions/ItemStack'
+              boots:
+                $ref: '#/definitions/ItemStack'
+          achievements:
+            type: array
+            description: An array of achievements the player has been awarded.
+            items:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: The unique id of the achievement
+                name:
+                  type: string
+                  description: The displayed name of the achievement.
+                class:
+                  type: string
+                  description: The fully qualified class name of the achievement.
+                description:
+                  type: string
+                  description: The description that is displayed when hovering the achievement.
+          experience:
+            type: object
+            properties:
+              level:
+                type: integer
+                description: The current level of the player
+              experience:
+                type: integer
+                description: The amount of experience SINCE THE LAST LEVEL.
+              totalExperience:
+                type: integer
+                description: The total amount of experience earned.
+          gameMode:
+            type: string
+            description: The current game mode the player is in.
+          joined:
+            type: object
+            properties:
+              first:
+                type: number
+                description: The unix timestamp (seconds) when the player first joined the server.
+              last:
+                type: number
+                description: The unix timestamp (seconds) when the player last joined the server.
+          health:
+            type: object
+            properties:
+              current:
+                type: number
+                description: The current amount of health the player has.
+              max:
+                type: number
+                description: The maximum amount of health the player can have.
+          food:
+            type: object
+            properties:
+              foodLevel:
+                type: number
+                description: The current amount of food the player has.
+              exhaustion:
+                type: number
+                description: How exhausted the player is.
+              saturation:
+                type: number
+                description: How saturated the player is.
+          statistics:
+            type: object
+            description: A map from statistics id to value, keeping track of the players actions.
     example:
-      type: player
+      type: minecraft:player
       uuid: 357427c6-3b91-4ead-aad4-15a3e18e6452
       location:
         world:
@@ -1736,59 +2006,100 @@ definitions:
           uuid: c574ab53-831b-4410-b3ad-955a2a504843
           link: "/api/world/c574ab53-831b-4410-b3ad-955a2a504843"
         position:
-          x: -1289.0203529877956
+          x: 0.4615942321910655
           y: 4
-          z: -1065.111295771125
-      velocity:
-        x: 0
-        y: 0
-        z: 0
+          z: -0.6950285369083933
       rotation:
-        x: -3.6000499725341797
-        y: 250.05055236816406
+        x: 31.95008659362793
+        y: -359.83551025390625
         z: 0
-      data:
-        entityClass: net.minecraft.entity.player.EntityPlayerMP
-        worldUuid: c574ab53-831b-4410-b3ad-955a2a504843
-        position:
-          x: -1289.0203529877956
-          y: 4
-          z: -1065.111295771125
-        rotation:
-          x: -3.6000499725341797
-          y: 250.05055236816406
-          z: 0
-        scale:
-          x: 1
-          y: 1
-          z: 1
-        entityType: minecraft:player
-        data:
-        - dataClass: org.spongepowered.common.data.manipulator.mutable.entity.SpongeGravityData
-          manipulatorData:
-            hasGravity: true
-        - dataClass: org.spongepowered.common.data.manipulator.mutable.entity.SpongeHealthData
-          manipulatorData:
-            health: 20
-            maxHealth: 20
-        - dataClass: org.spongepowered.common.data.manipulator.mutable.entity.SpongeJoinData
-          manipulatorData:
-            firstTimeJoined: 1489329688231
-            lastTimePlayed: 1490533123682
-        - dataClass: org.spongepowered.common.data.manipulator.mutable.entity.SpongeGameModeData
-          manipulatorData:
-            gameMode: creative
+      scale:
+        x: 1
+        y: 1
+        z: 1
       name: Valandur
-      address: "/127.0.0.1:55159"
-      latency: 0
-      achievements:
-      - id: open_inventory
-        name: Taking Inventory
-        type: basic
-        description: Press '%1$s' to open your inventory
+      armour:
+        helmet:
+        chestplate:
+        leggings:
+        boots:
+      connection:
+        address: "/127.0.0.1:35310"
+        latency: 0
+      inventory:
+        name: Inventory
+        stackCount: 2
+        itemCount: 2
+        items:
+        - id: minecraft:dark_oak_stairs
+          quantity: 1
+          data: {}
+        - id: minecraft:spawn_egg
+          quantity: 1
+          data:
+            spawn: minecraft:skeleton_horse
       link: "/api/player/357427c6-3b91-4ead-aad4-15a3e18e6452"
       class: net.minecraft.entity.player.EntityPlayerMP
-
+      statistics:
+        chest_opened: 2
+        use_item.minecraft.dispenser: 1
+        walk_one_cm: 38715
+        use_item.minecraft.sapling: 1
+        use_item.minecraft.chest: 2
+        craft_item.minecraft.planks: 16
+        leave_game: 34
+        craft_item.minecraft.crafting_table: 1
+        dispenser_inspected: 1
+        use_item.minecraft.dark_oak_stairs: 2
+        use_item.minecraft.dye: 2
+        mine_block.minecraft.log: 1
+        talked_to_villager: 6
+        pickup.minecraft.log: 62
+        fly_one_cm: 1351
+        deaths: 10
+        jump: 15
+        play_one_minute: 1062820
+        fall_one_cm: 20680
+        use_item.minecraft.planks: 2
+        sneak_time: 5
+        use_item.minecraft.spruce_stairs: 5
+        crouch_one_cm: 31
+        time_since_death: 440265
+        pickup.minecraft.sapling: 1
+        use_item.minecraft.dirt: 11
+        sprint_one_cm: 1745
+        use_item.minecraft.stained_glass: 1
+        use_item.minecraft.sign: 3
+        use_item.minecraft.red_sandstone_stairs: 2
+        use_item.minecraft.spawn_egg: 8
+      achievements:
+      - id: mine_wood
+        name: Getting Wood
+        class: net.minecraft.stats.Achievement
+        description: Attack a tree until a block of wood pops out
+      - id: open_inventory
+        name: Taking Inventory
+        class: net.minecraft.stats.Achievement
+        description: Press '%1$s' to open your inventory
+      joined:
+        first: 1489329688
+        last: 1492352651
+      health:
+        current: 20
+        max: 20
+      velocity:
+        x: 0.02433375901921936
+        y: 0
+        z: 0.05446270355102478
+      experience:
+        level: 0
+        experience: 0
+        totalExperience: 0
+      gameMode: minecraft:creative
+      food:
+        foodLevel: 20
+        exhaustion: 3.049999952316284
+        saturation: 1
   WorldList:
     type: object
     properties:
@@ -1806,23 +2117,110 @@ definitions:
       uuid:
         type: string
         description: The unique id of the world.
+      link:
+        type: string
+        description: The API URL which contains detailed information about this world.
     example:
       name: world
       uuid: c574ab53-831b-4410-b3ad-955a2a504843
+      link: "/api/world/c574ab53-831b-4410-b3ad-955a2a504843"
   WorldFull:
     allOf:
       - $ref: '#/definitions/World'
       - type: object
         properties:
+          border:
+            type: object
+            properties:
+              center:
+                $ref: '#/definitions/Vector3'
+              diameter:
+                type: number
+                description: The diameter of the world border.
+              damageAmount:
+                type: number
+                description: The amount of damage done to the player when outside the world border.
+              damageThreshold:
+                type: number
+                description: The amount of time in seconds to wait before applying the damage.
+              newDiameter:
+                type: number
+                description: The new diameter the world border is going to change to.
+              timeRemaining:
+                type: number
+                description: The amount of time remaining before the world border reaches the new diameter.
+              warningDistance:
+                type: number
+                description: The distance at which a player is warned of the world border.
+              warningTime:
+                type: number
+                description: The amount of time in seconds before a contracting world border reaches a player that the player is warned.
+          difficulty:
+            type: string
+            description: The current difficulty of the world.
           dimension:
-            $ref: '#/definitions/Dimension'
-          data:
-            $ref: '#/definitions/DataContainer'
+            type: object
+            properties:
+              type:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: The unique id of the dimension type.
+                  name:
+                    type: string
+                    description: The name of the dimension type.
+                  dimensionClass:
+                    type: string
+                    description: The classname of the dimension.
+              height:
+                type: number
+                description: The height of the dimension.
+              buildHeight:
+                type: number
+                description: The maximum allowed build height of the dimension.
+          gameMode:
+            type: string
+            description: The default game mode of the world.
           generator:
-            $ref: '#/definitions/GeneratorType'
+            type: object
+            properties:
+              id:
+                type: string
+                description: The unique id of the generator type.
+              name:
+                type: string
+                description: The name of the generator type.
+              settings:
+                type: string
+                description: A map of various generator settings to values.
+          seed:
+            type: number
+            description: The seed used to generate this world.
+          spawn:
+            $ref: '#/definitions/Vector3'
+          time:
+            type: number
+            description: The current in game time.
+          weather:
+            type: string
+            description: The current weather of the world.
     example:
       name: world
       uuid: c574ab53-831b-4410-b3ad-955a2a504843
+      border:
+        center:
+          x: 0
+          y: 0
+          z: 0
+        diameter: 60000000
+        damageAmount: 0.2
+        damageThreshold: 5
+        newDiameter: 60000000
+        timeRemaining: 0
+        warningDistance: 5
+        warningTime: 15
+      difficulty: minecraft:peaceful
       dimension:
         type:
           id: minecraft:overworld
@@ -1830,111 +2228,41 @@ definitions:
           dimensionClass: net.minecraft.world.WorldProviderSurface
         height: 256
         buildHeight: 256
-        generator:
-          id: flat
-          name: flat
-          settings:
-            customSettings: 3;minecraft:bedrock,2*minecraft:dirt,minecraft:grass;1;village
-      data:
-        randomSeed: -8009412544287338000
-        generatorName: flat
-        borderCenterZ: 0
-        difficulty: 0
-        borderSizeLerpTime: 0
-        raining: 0
-        dimensionData: {}
-        time: 814530
-        gameType: 1
-        mapFeatures: 0
-        borderCenterX: 0
-        borderDamagePerBlock: 0.2
-        borderWarningBlocks: 5
-        borderSizeLerpTarget: 60000000
-        version: 19133
-        dayTime: 814530
-        initialized: 1
-        allowCommands: 0
-        sizeOnDisk: 0
-        gameRules:
-          doTileDrops: 'true'
-          doFireTick: 'true'
-          reducedDebugInfo: 'false'
-          naturalRegeneration: 'true'
-          disableElytraMovementCheck: 'false'
-          doMobLoot: 'true'
-          keepInventory: 'false'
-          doEntityDrops: 'true'
-          mobGriefing: 'true'
-          randomTickSpeed: '3'
-          commandBlockOutput: 'true'
-          spawnRadius: '10'
-          doMobSpawning: 'true'
-          maxEntityCramming: '24'
-          logAdminCommands: 'true'
-          spectatorsGenerateChunks: 'true'
-          doWeatherCycle: 'true'
-          sendCommandFeedback: 'true'
-          doDaylightCycle: 'true'
-          showDeathMessages: 'true'
-        spawnY: 4
-        rainTime: 27499
-        thunderTime: 11344
-        spawnZ: -1066
-        hardcore: 0
-        difficultyLocked: 0
-        spawnX: -1288
-        clearWeatherTime: 0
-        thundering: 0
-        generatorVersion: 0
-        borderSafeZone: 5
-        generatorOptions: ''
-        lastPlayed: 1490532475628
-        borderWarningTime: 15
-        levelName: world
-        borderSize: 60000000
-        dataVersion: 922
+      gameMode: minecraft:creative
+      gameRules:
+        commandBlockOutput: 'true'
+        disableElytraMovementCheck: 'false'
+        doDaylightCycle: 'true'
+        doEntityDrops: 'true'
+        doFireTick: 'true'
+        doMobLoot: 'true'
+        doMobSpawning: 'true'
+        doTileDrops: 'true'
+        doWeatherCycle: 'true'
+        keepInventory: 'false'
+        logAdminCommands: 'true'
+        maxEntityCramming: '24'
+        mobGriefing: 'true'
+        naturalRegeneration: 'true'
+        randomTickSpeed: '3'
+        reducedDebugInfo: 'false'
+        sendCommandFeedback: 'true'
+        showDeathMessages: 'true'
+        spawnRadius: '10'
+        spectatorsGenerateChunks: 'true'
       generator:
-        id: flat
+        id: minecraft:flat
         name: flat
         settings:
           customSettings: 3;minecraft:bedrock,2*minecraft:dirt,minecraft:grass;1;village
+      seed: -8009412544287338000
+      spawn:
+        x: -1288
+        y: 4
+        z: -1066
+      time: 66110
+      weather: minecraft:clear
       link: "/api/world/c574ab53-831b-4410-b3ad-955a2a504843"
-  Dimension:
-    type: object
-    properties:
-      type:
-        $ref: '#/definitions/DimensionType'
-      height:
-        type: number
-        description: The height of the dimension.
-      buildHeight:
-        type: number
-        description: The maximum allowed build height of the dimension.
-      generator:
-        $ref: '#/definitions/GeneratorType'
-  DimensionType:
-    type: object
-    properties:
-      id:
-        type: string
-        description: The unique id of the dimension type.
-      name:
-        type: string
-        description: The name of the dimension type.
-      dimensionClass:
-        type: string
-        description: The classname of the dimension.
-  GeneratorType:
-    type: object
-    properties:
-      id:
-        type: string
-        description: The unique id of the generator type.
-      name:
-        type: string
-        description: The name of the generator type.
-      settings:
-        $ref: '#/definitions/DataContainer'
 
   PluginList:
     type: object
@@ -1956,6 +2284,9 @@ definitions:
       version:
         type: string
         description: The version of the plugin.
+      link:
+        type: string
+        description: The API URL which contains detailed information about this plugin.
     example:
       id: minecraft
       name: Minecraft
@@ -2002,14 +2333,17 @@ definitions:
       type:
         type: string
         description: The type of the entity.
-      class:
-        type: string
-        description: The fully qualified classname of the entity.
       uuid:
         type: string
         description: The uuid of the entity.
       location:
         $ref: '#/definitions/Location'
+      link:
+        type: string
+        description: The API URL which contains detailed information about this entity.
+      class:
+        type: string
+        description: The fully qualified classname of the entity.
     example:
       type: sheep
       uuid: 8835e1b0-b385-416b-aebf-02446bbfa63f
@@ -2033,12 +2367,10 @@ definitions:
             $ref: '#/definitions/Vector3'
           rotation:
             $ref: '#/definitions/Vector3'
-          properties:
-            $ref: '#/definitions/Properties'
-          data:
-            $ref: '#/definitions/DataContainer'
+          scale:
+            $ref: '#/definitions/Vector3'
     example:
-      type: sheep
+      type: minecraft:sheep
       uuid: 8835e1b0-b385-416b-aebf-02446bbfa63f
       location:
         world:
@@ -2049,49 +2381,25 @@ definitions:
           x: -1263.7945795740736
           y: 4
           z: -1119.1971438629455
-      velocity:
-        x: 0
-        y: -0.0784000015258789
-        z: 0
       rotation:
         x: 0
         y: 224.205078125
         z: 0
-      data:
-        entityClass: net.minecraft.entity.passive.EntitySheep
-        worldUuid: c574ab53-831b-4410-b3ad-955a2a504843
-        position:
-          x: -1263.7945795740736
-          y: 4
-          z: -1119.1971438629455
-        rotation:
-          x: 0
-          y: 224.205078125
-          z: 0
-        scale:
-          x: 1
-          y: 1
-          z: 1
-        entityType: minecraft:sheep
-        data:
-        - dataClass: org.spongepowered.common.data.manipulator.mutable.entity.SpongeGravityData
-          manipulatorData:
-            hasGravity: true
-        - dataClass: org.spongepowered.common.data.manipulator.mutable.entity.SpongeHealthData
-          manipulatorData:
-            health: 8
-            maxHealth: 8
-        - dataClass: org.spongepowered.common.data.manipulator.mutable.entity.SpongeAgentData
-          manipulatorData:
-            isAiEnabled: true
-        - dataClass: org.spongepowered.common.data.manipulator.mutable.SpongeDyeableData
-          manipulatorData:
-            dyeColor: white
-        - dataClass: org.spongepowered.common.data.manipulator.mutable.entity.SpongeShearedData
-          manipulatorData:
-            isSheared: false
+      scale:
+        x: 1
+        y: 1
+        z: 1
       link: "/api/entity/8835e1b0-b385-416b-aebf-02446bbfa63f"
       class: net.minecraft.entity.passive.EntitySheep
+      sheared: false
+      dye: white
+      health:
+        current: 8
+        max: 8
+      velocity:
+        x: 0
+        y: -0.0784000015258789
+        z: 0
 
   TileEntityList:
     type: object
@@ -2107,11 +2415,14 @@ definitions:
       type:
         type: string
         description: The type of the tile entity.
+      location:
+        $ref: '#/definitions/Location'
+      link:
+        type: string
+        description: The API URL which contains detailed information about this tile entity.
       class:
         type: string
         description: The fully qualified classname of the tile entity.
-      location:
-        $ref: '#/definitions/Location'
     example:
       type: chest
       location:
@@ -2129,11 +2440,6 @@ definitions:
     allOf:
       - $ref: '#/definitions/TileEntity'
       - type: object
-        properties:
-          data:
-            $ref: '#/definitions/DataContainer'
-          properties:
-            $ref: '#/definitions/Properties'
     example:
       type: chest
       location:

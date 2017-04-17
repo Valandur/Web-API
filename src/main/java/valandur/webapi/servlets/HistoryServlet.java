@@ -13,11 +13,12 @@ public class HistoryServlet extends WebAPIServlet {
         String[] paths = data.getPathParts();
 
         if (paths.length == 0 || paths[0].isEmpty()) {
-            data.sendError(HttpServletResponse.SC_NOT_FOUND);
+            data.sendError(HttpServletResponse.SC_NOT_FOUND, "History endpoint type is missing");
             return;
         }
 
-        switch (paths[0].toLowerCase()) {
+        String endpoint = paths[0].toLowerCase();
+        switch (endpoint) {
             case "cmd":
                 data.setStatus(HttpServletResponse.SC_OK);
                 data.addJson("calls", JsonConverter.toJson(DataCache.getCommandCalls()));
@@ -29,7 +30,7 @@ public class HistoryServlet extends WebAPIServlet {
                 break;
 
             default:
-                data.sendError(HttpServletResponse.SC_NOT_FOUND);
+                data.sendError(HttpServletResponse.SC_NOT_FOUND, "Unkown history endpoint '" + endpoint + "'");
                 break;
         }
     }

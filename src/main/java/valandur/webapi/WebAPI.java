@@ -39,8 +39,6 @@ import org.spongepowered.api.event.network.ClientConnectionEvent;
 import org.spongepowered.api.event.user.BanUserEvent;
 import org.spongepowered.api.event.world.LoadWorldEvent;
 import org.spongepowered.api.event.world.UnloadWorldEvent;
-import org.spongepowered.api.item.recipe.Recipe;
-import org.spongepowered.api.item.recipe.RecipeRegistry;
 import org.spongepowered.api.plugin.Plugin;
 import org.spongepowered.api.plugin.PluginContainer;
 import org.spongepowered.api.scheduler.SpongeExecutorService;
@@ -261,20 +259,31 @@ public class WebAPI {
     public Tuple<ConfigurationLoader, ConfigurationNode> loadWithDefaults(String path, String defaultPath) {
         try {
             Path filePath = configPath.resolve(path);
+            Asset asset = Sponge.getAssetManager().getAsset(this, defaultPath).get();
+
             if (!Files.exists(filePath))
-                Sponge.getAssetManager().getAsset(this, defaultPath).get().copyToDirectory(configPath);
+                asset.copyToDirectory(configPath);
 
             ConfigurationLoader<CommentedConfigurationNode> loader = HoconConfigurationLoader.builder().setPath(filePath).build();
             ConfigurationNode config = loader.load();
 
-            ConfigurationLoader<CommentedConfigurationNode> defLoader = HoconConfigurationLoader.builder().setPath(filePath).build();
-            ConfigurationNode defConfig = loader.load();
+            ConfigurationLoader<CommentedConfigurationNode> defLoader = HoconConfigurationLoader.builder().setURL(asset.getUrl()).build();
+            ConfigurationNode defConfig = defLoader.load();
+
+            int version = config.getNode("version").getInt(0);
+            int defVersion = defConfig.getNode("version").getInt(0);
 
             config.mergeValuesFrom(defConfig);
 
+            if (defVersion != version) {
+                logger.info("New configuration version '" + defVersion + "' for " + path);
+                config.getNode("version").setValue(defVersion);
+                loader.save(config);
+            }
+
             return new Tuple<>(loader, config);
 
-        } catch (IOException e) {
+        } catch (IOException | NoSuchElementException e) {
             e.printStackTrace();
             return null;
         }

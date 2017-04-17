@@ -24,6 +24,7 @@ public class CachedEntity extends CachedObject {
     @JsonProperty
     public JsonNode location;
 
+    public JsonNode velocity;
     public JsonNode rotation;
     public JsonNode scale;
 
@@ -36,6 +37,7 @@ public class CachedEntity extends CachedObject {
 
         this.rotation = JsonConverter.toJson(entity.getRotation());
         this.scale = JsonConverter.toJson(entity.getScale());
+        this.velocity = JsonConverter.toJson(entity.getVelocity());
 
         this.data = JsonConverter.dataHolderToJson(entity);
     }

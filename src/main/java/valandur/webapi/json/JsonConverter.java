@@ -13,8 +13,6 @@ import org.spongepowered.api.block.tileentity.TileEntity;
 import org.spongepowered.api.data.DataHolder;
 import org.spongepowered.api.data.manipulator.mutable.DyeableData;
 import org.spongepowered.api.data.manipulator.mutable.PotionEffectData;
-import org.spongepowered.api.data.manipulator.mutable.RotationalData;
-import org.spongepowered.api.data.manipulator.mutable.block.DirectionalData;
 import org.spongepowered.api.data.manipulator.mutable.entity.*;
 import org.spongepowered.api.data.manipulator.mutable.item.DurabilityData;
 import org.spongepowered.api.data.manipulator.mutable.item.SpawnableData;
@@ -68,7 +66,6 @@ public class JsonConverter {
         // General
         serializers.put(Vector3d.class, new Vector3dSerializer());
         serializers.put(Vector3i.class, new Vector3iSerializer());
-        serializers.put(VelocityData.class, new VelocityDataSerializer());
 
         // Block
         serializers.put(BlockVolume.class, new BlockVolumeSerializer());
@@ -129,7 +126,6 @@ public class JsonConverter {
         supportedData = new HashMap<>();
         supportedData.put("achievements", AchievementData.class);
         supportedData.put("career", CareerData.class);
-        supportedData.put("direction", DirectionalData.class);
         supportedData.put("durability", DurabilityData.class);
         supportedData.put("dye", DyeableData.class);
         supportedData.put("experience", ExperienceHolderData.class);
@@ -138,14 +134,12 @@ public class JsonConverter {
         supportedData.put("health", HealthData.class);
         supportedData.put("joined", JoinData.class);
         supportedData.put("potionEffects", PotionEffectData.class);
-        supportedData.put("rotation", RotationalData.class);
         supportedData.put("sheared", ShearedData.class);
         supportedData.put("sign", SignData.class);
         supportedData.put("spawn", SpawnableData.class);
         supportedData.put("statistics", StatisticData.class);
         supportedData.put("tameable", TameableData.class);
         supportedData.put("trades", TradeOfferData.class);
-        supportedData.put("velocity", VelocityData.class);
     }
 
     /**

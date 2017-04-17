@@ -38,3 +38,7 @@ This can be used as a starting point to explore the supported routes. You can al
 ## Additional Data
 Some endpoints provide data that is not documented, because it depends on the type of object that is returned.
 Examples of such data can be found [here](docs/DATA.md).
+
+## Contributors
+
+- @johnfg10

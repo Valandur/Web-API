@@ -148,6 +148,44 @@ paths:
           description: A history of the chat
           schema:
             $ref: '#/definitions/CommandHistory'
+
+  /block:
+    post:
+      summary: Modify blocks
+      description: |
+        Change blocks on the server.
+      parameters:
+        - name: Request
+          in: body
+          description: The requested changes to blocks
+          required: true
+          schema:
+            $ref: '#/definitions/BlockChangeList'
+      tags:
+        - Block
+      responses:
+        400:
+          $ref: '#/responses/400'
+        403:
+          $ref: '#/responses/403'
+        404:
+          $ref: '#/responses/404'
+        406:
+          description: Too many blocks
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                description: A description of the type of error that occured.
+        200:
+          description: Information about the changed blocks
+          schema:
+            type: object
+            properties:
+              blocksChanged:
+                type: integer
+                description: The number of blocks that were changed (blocks that already match the defined block(s) are not considered changed)
   /block/{world}/{x}/{y}/{z}:
     get:
       summary: Get one block
@@ -1641,6 +1679,40 @@ definitions:
       url: 1.11.2-6.0.0-BETA-229
       authors: []
 
+  BlockChangeList:
+    type: array
+    items:
+      type: object
+      required:
+        - world
+        - min
+        - max
+      properties:
+        world:
+          type: string
+          description: |
+            The UUID of the world that the block update is applied to.
+            Either the property `block` or `blocks` has to be set.
+
+            If the property `block` is set then all the blocks within the area defined by `min` and `max` are changed to the specified block.
+
+            If the property `blocks` is set then it defines nested arrays of the blocks within the area defined by `min` and `max`.
+            The arrays should contain the blocks such that a block located at [min.X + x, min.Y + y, min.Z + z] can be accessed by `blocks[x][y][z]`,
+            where `min` is the vecotor defined by the `min` property.
+        min:
+          $ref: '#/definitions/Vector3'
+        max:
+          $ref: '#/definitions/Vector3'
+        block:
+          $ref: '#/definitions/BlockFull'
+        blocks:
+          type: array
+          items:
+            type: array
+            items:
+              type: array
+              items:
+                $ref: '#/definitions/BlockFull'
   BlockVolume:
     type: object
     properties:
@@ -1661,7 +1733,7 @@ definitions:
     properties:
       type:
         type: string
-        description: The type of the block.
+        description: The type of the block, eg. `minecraft:dirt`
       data:
         type: object
         description: Additional block properties that define this block.

@@ -358,11 +358,11 @@
     </library>
     <library name="Gradle: org.spongepowered:spongeapi:6.0.0-SNAPSHOT">
       <CLASSES>
-        <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.spongepowered/spongeapi/6.0.0-SNAPSHOT/6e5aec0d9517bae96389bb0db5aa380ab98a6728/spongeapi-6.0.0-SNAPSHOT.jar!/" />
+        <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.spongepowered/spongeapi/6.0.0-SNAPSHOT/60db7117e485f4740c0e7492beb77eec2379c2dc/spongeapi-6.0.0-SNAPSHOT.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES>
-        <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.spongepowered/spongeapi/6.0.0-SNAPSHOT/ca6c4a4a9c4332ef0587dc421e9e86d76e9c2e89/spongeapi-6.0.0-SNAPSHOT-sources.jar!/" />
+        <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.spongepowered/spongeapi/6.0.0-SNAPSHOT/7bd6ef82b4d635fafd77fa8bc201000fce82db9/spongeapi-6.0.0-SNAPSHOT-sources.jar!/" />
       </SOURCES>
     </library>
     <library name="Gradle: org.yaml:snakeyaml:1.16">

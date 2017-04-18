@@ -205,9 +205,6 @@ public class JsonConverter {
         Map<String, JsonNode> nodes = new HashMap<>();
 
         for (Map.Entry<String, Class> entry : supportedData.entrySet()) {
-            if (!holder.supports(entry.getValue()))
-                continue;
-
             Optional<?> m = holder.get(entry.getValue());
 
             if (!m.isPresent())

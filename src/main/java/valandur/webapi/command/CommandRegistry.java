@@ -8,6 +8,7 @@ import org.spongepowered.api.command.args.GenericArguments;
 import org.spongepowered.api.command.spec.CommandSpec;
 import org.spongepowered.api.text.Text;
 import valandur.webapi.WebAPI;
+import valandur.webapi.hooks.CommandWebHook;
 import valandur.webapi.hooks.WebHook;
 import valandur.webapi.hooks.WebHookParam;
 import valandur.webapi.hooks.WebHooks;
@@ -89,8 +90,10 @@ public class CommandRegistry {
         // Notify commands
         Map<List<String>, CommandSpec> hookSpecs = new HashMap<>();
         Map<List<String>, CommandSpec> hookAliases = new HashMap<>();
-        for (WebHook hook : WebHooks.getCommandHooks().values()) {
+        for (Map.Entry<String, CommandWebHook> entry : WebHooks.getCommandHooks().entrySet()) {
             List<CommandElement> args = new ArrayList<>();
+            String name = entry.getKey();
+            CommandWebHook hook = entry.getValue();
 
             if (hook.getParams() != null) {
                 for (WebHookParam param : hook.getParams()) {
@@ -100,13 +103,13 @@ public class CommandRegistry {
             }
 
             CommandSpec hookCmd = CommandSpec.builder()
-                    .description(Text.of("Notify the " + hook.getName() + " hook"))
-                    .permission("webapi.command.notify." + hook.getName())
+                    .description(Text.of("Notify the " + name + " hook"))
+                    .permission("webapi.command.notify." + name)
                     .arguments(args.toArray(new CommandElement[args.size()]))
-                    .executor(new CmdNotifyHook(hook))
+                    .executor(new CmdNotifyHook(name, hook))
                     .build();
             if (hook.getAliases() != null && hook.getAliases().size() > 0) hookAliases.put(hook.getAliases(), hookCmd);
-            hookSpecs.put(Collections.singletonList(hook.getName()), hookCmd);
+            hookSpecs.put(Collections.singletonList(name), hookCmd);
         }
 
         // Notify parent

@@ -22,6 +22,8 @@ public class CachedCommandResult extends CachedObject {
 
 
     public CachedCommandResult(CommandResult result) {
+        super(null);
+
         if (result.getAffectedBlocks().isPresent()) this.affectedBlocks = result.getAffectedBlocks().get();
         if (result.getAffectedEntities().isPresent()) this.affectedEntities = result.getAffectedEntities().get();
         if (result.getAffectedItems().isPresent()) this.affectedItems = result.getAffectedItems().get();

@@ -30,19 +30,21 @@ public class CachedWorld extends CachedObject {
 
 
     public CachedWorld(World world) {
+        super(world);
+
         this.name = world.getName();
         this.uuid = world.getUniqueId().toString();
 
         this.border = JsonConverter.toJson(world.getWorldBorder());
-        this.difficulty = JsonConverter.toJson(world.getDifficulty().getId());
+        this.difficulty = JsonConverter.toJson(world.getDifficulty());
         this.dimension = JsonConverter.toJson(world.getDimension());
-        this.gameMode = JsonConverter.toJson(world.getProperties().getGameMode().getId());
+        this.gameMode = JsonConverter.toJson(world.getProperties().getGameMode());
         this.gameRules = JsonConverter.toJson(world.getGameRules());
         this.generator = JsonConverter.toJson(world.getProperties().getGeneratorType());
         this.seed = JsonConverter.toJson(world.getProperties().getSeed());
         this.spawn = JsonConverter.toJson(world.getProperties().getSpawnPosition());
         this.time = JsonConverter.toJson(world.getProperties().getWorldTime());
-        this.weather = JsonConverter.toJson(world.getWeather().getId());
+        this.weather = JsonConverter.toJson(world.getWeather());
     }
 
     @Override

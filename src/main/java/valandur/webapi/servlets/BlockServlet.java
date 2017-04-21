@@ -86,8 +86,6 @@ public class BlockServlet extends WebAPIServlet {
             return;
         }
 
-        data.setStatus(HttpServletResponse.SC_OK);
-
         if (numBlocks > 1) {
             JsonNode node = DataCache.getBlockVolume(world.get(), new Vector3i(minX, minY, minZ), new Vector3i(maxX, maxY, maxZ));
             data.addJson("volume", node);
@@ -127,8 +125,8 @@ public class BlockServlet extends WebAPIServlet {
             }
 
             // Check min & max
-            Optional<Vector3i> minOpt = Util.getVector3i(area, "min");
-            Optional<Vector3i> maxOpt = Util.getVector3i(area, "max");
+            Optional<Vector3i> minOpt = getVector3i(area, "min");
+            Optional<Vector3i> maxOpt = getVector3i(area, "max");
             if (!minOpt.isPresent() || !maxOpt.isPresent()) {
                 data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Area needs to define 'min' and 'max' properties");
                 return;
@@ -219,8 +217,27 @@ public class BlockServlet extends WebAPIServlet {
             }
         }
 
-        data.setStatus(HttpServletResponse.SC_OK);
         data.addJson("blocksChanged", blocksSet);
+    }
+
+    private Optional<Vector3i> getVector3i(JsonNode rootNode, String name) {
+        JsonNode node = rootNode.get(name);
+        if (node == null)
+            return Optional.empty();
+
+        JsonNode xNode = node.get("x");
+        if (xNode == null)
+            return Optional.empty();
+
+        JsonNode yNode = node.get("y");
+        if (yNode == null)
+            return Optional.empty();
+
+        JsonNode zNode = node.get("z");
+        if (zNode == null)
+            return Optional.empty();
+
+        return Optional.of(new Vector3i(xNode.asInt(), yNode.asInt(), zNode.asInt()));
     }
 
     private Optional<BlockType> parseBlockType(String type) {

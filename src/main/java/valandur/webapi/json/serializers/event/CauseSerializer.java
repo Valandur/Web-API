@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import org.spongepowered.api.event.cause.Cause;
+import valandur.webapi.misc.Util;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -35,10 +36,11 @@ public class CauseSerializer extends StdSerializer<Cause> {
         gen.writeStartObject();
 
         for (Map.Entry<String, Object> entry : value.getNamedCauses().entrySet()) {
+            String key = Util.lowerFirst(entry.getKey());
             if (blockedCauseClasses.stream().anyMatch(c -> entry.getValue().getClass().getName().startsWith(c)))
-                gen.writeStringField(entry.getKey(), entry.getValue().getClass().getName());
+                gen.writeStringField(key, entry.getValue().getClass().getName());
             else
-                gen.writeObjectField(entry.getKey(), entry.getValue());
+                gen.writeObjectField(key, entry.getValue());
         }
 
         gen.writeEndObject();

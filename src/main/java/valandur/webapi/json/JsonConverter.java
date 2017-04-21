@@ -6,8 +6,10 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import com.flowpowered.math.vector.Vector3d;
 import com.flowpowered.math.vector.Vector3i;
+import org.slf4j.Logger;
 import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.block.tileentity.TileEntity;
 import org.spongepowered.api.data.DataHolder;
@@ -33,7 +35,10 @@ import org.spongepowered.api.profile.GameProfile;
 import org.spongepowered.api.statistic.achievement.Achievement;
 import org.spongepowered.api.util.ban.Ban;
 import org.spongepowered.api.world.*;
+import org.spongepowered.api.world.difficulty.Difficulty;
 import org.spongepowered.api.world.extent.BlockVolume;
+import org.spongepowered.api.world.weather.Weather;
+import valandur.webapi.WebAPI;
 import valandur.webapi.json.serializers.block.*;
 import valandur.webapi.json.serializers.entity.*;
 import valandur.webapi.json.serializers.entity.TradeOfferSerializer;
@@ -45,22 +50,32 @@ import valandur.webapi.json.serializers.player.*;
 import valandur.webapi.json.serializers.tileentity.SignDataSerializer;
 import valandur.webapi.json.serializers.tileentity.TileEntitySerializer;
 import valandur.webapi.json.serializers.world.*;
+import valandur.webapi.misc.Util;
+import valandur.webapi.misc.WebAPIDiagnosticListener;
 
+import javax.tools.*;
+import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Parameter;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class JsonConverter {
 
     private static Map<Class, JsonSerializer> serializers;
     private static Map<String, Class> supportedData;
 
-    static {
-        initSerialiers();
-    }
-    private static void initSerialiers() {
+    public static void initSerializers() {
         serializers = new HashMap<>();
 
         // General
@@ -114,9 +129,11 @@ public class JsonConverter {
         serializers.put(TileEntity.class, new TileEntitySerializer());
 
         // World
+        serializers.put(Difficulty.class, new DifficultySerializer());
         serializers.put(Dimension.class, new DimensionSerializer());
         serializers.put(DimensionType.class, new DimensionTypeSerializer());
         serializers.put(GeneratorType.class, new GeneratorTypeSerializer());
+        serializers.put(Weather.class, new WeatherSerializer());
         serializers.put(World.class, new WorldSerializer());
         serializers.put(WorldBorder.class, new WorldBorderSerializer());
 
@@ -140,6 +157,84 @@ public class JsonConverter {
         supportedData.put("statistics", StatisticData.class);
         supportedData.put("tameable", TameableData.class);
         supportedData.put("trades", TradeOfferData.class);
+    }
+    public static void loadExtraSerializers() {
+        Logger logger = WebAPI.getInstance().getLogger();
+        logger.info("Loading additional serializers...");
+
+        // Get root directory
+        File root = new File("webapi");
+        File folder = new File("webapi/serializers");
+        if (!folder.exists() && folder.mkdirs()) {
+            logger.warn("Could not create folder for additional serializers");
+            return;
+        }
+
+        List<File> files = null;
+        try {
+            files = Files.walk(Paths.get(root.toURI()))
+                    .filter(Files::isRegularFile)
+                    .filter(f -> f.toString().endsWith(".java"))
+                    .map(Path::toFile)
+                    .collect(Collectors.toList());
+        } catch (IOException e) {
+            e.printStackTrace();
+            return;
+        }
+
+        logger.info("Found " + files.size() + " serializer files in " + root.getAbsolutePath());
+        if (files.size() == 0) {
+            return;
+        }
+
+        // Setup java compiler
+        ClassLoader currentCl = Thread.currentThread().getContextClassLoader();
+        URL[] urls = ((URLClassLoader) currentCl).getURLs();
+        String classpath = Arrays.stream(urls).map(URL::getPath).filter(Objects::nonNull).collect(Collectors.joining(";"));
+
+        WebAPIDiagnosticListener diag = new WebAPIDiagnosticListener();
+
+        JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
+        StandardJavaFileManager fm = compiler.getStandardFileManager(diag, null, null);
+        List<String> optionList = Arrays.asList("-classpath", classpath);
+
+        // Compile, load and instantiate compiled class.
+        for (File file : files) {
+            // Compile the file
+            logger.info("  - " + file.getName());
+            Iterable<? extends JavaFileObject> compilationUnits = fm.getJavaFileObjectsFromFiles(Collections.singletonList(file));
+            JavaCompiler.CompilationTask task = compiler.getTask(null, fm, diag, optionList, null, compilationUnits);
+
+            try {
+                diag.startLog(file.getAbsolutePath().replace(".java", ".log"));
+                boolean res = task.call();
+                diag.stopLog();
+
+                if (!res) {
+                    logger.warn("    Compilation failed. See the log file at " + " for details");
+                    continue;
+                }
+
+                String className = file.getName().substring(0, file.getName().length() - 5);
+
+                // Load the class
+                URLClassLoader classLoader = URLClassLoader.newInstance(new URL[]{root.toURI().toURL()}, currentCl);
+                Class<?> cls = Class.forName("serializers." + className, true, classLoader);
+                if (!StdSerializer.class.isAssignableFrom(cls)) {
+                    logger.warn("Class " + cls.getName() + " must extend " + StdSerializer.class.getName());
+                    continue;
+                }
+
+                // Instantiate and add to serializers
+                StdSerializer instance = (StdSerializer)cls.newInstance();
+                serializers.put(cls, instance);
+                logger.info("Loaded " + cls.getName());
+            } catch (IOException | IllegalAccessException | InstantiationException | ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+        }
+
+        logger.info("Done loading additional serializers");
     }
 
     /**
@@ -246,10 +341,10 @@ public class JsonConverter {
         ObjectNode json = JsonNodeFactory.instance.objectNode();
 
         json.put("name", c.getName());
-        json.put("parent", c.getSuperclass().getName());
+        json.put("parent", c.getSuperclass() != null ? c.getSuperclass().getName() : null);
 
         ObjectNode jsonFields = JsonNodeFactory.instance.objectNode();
-        Field[] fs = getAllFields(c);
+        Field[] fs = Util.getAllFields(c);
         for (Field f : fs) {
             ObjectNode jsonField = JsonNodeFactory.instance.objectNode();
 
@@ -282,7 +377,7 @@ public class JsonConverter {
         json.set("fields", jsonFields);
 
         ObjectNode jsonMethods = JsonNodeFactory.instance.objectNode();
-        Method[] ms = getAllMethods(c);
+        Method[] ms = Util.getAllMethods(c);
         for (Method m : ms) {
             ObjectNode jsonMethod = JsonNodeFactory.instance.objectNode();
 
@@ -319,33 +414,5 @@ public class JsonConverter {
         json.set("methods", jsonMethods);
 
         return json;
-    }
-
-    /**
-     * Returns all NON MINECRAFT NATIVE fields from a class and it's ancestors. (The fields that don't start with "field_")
-     * @param c The class for which to get the fields.
-     * @return The array of fields of that class and all inherited fields.
-     */
-    public static Field[] getAllFields(Class c) {
-        List<Field> fs = new LinkedList<>();
-        while (c != null) {
-            fs.addAll(Arrays.asList(c.getDeclaredFields()));
-            c = c.getSuperclass();
-        }
-        return fs.stream().filter(f -> !f.getName().startsWith("field_")).toArray(Field[]::new);
-    }
-
-    /**
-     * Returns all NON MINECRAFT NATIVE methods from a class and it's ancestors. (The methods that don't start with "func_")
-     * @param c The class for which to get the methods
-     * @return The array of methods of that class and all inherited methods.
-     */
-    public static Method[] getAllMethods(Class c) {
-        List<Method> ms = new LinkedList<>();
-        while (c != null) {
-            ms.addAll(Arrays.asList(c.getDeclaredMethods()));
-            c = c.getSuperclass();
-        }
-        return ms.stream().filter(m -> !m.getName().startsWith("func_")).toArray(Method[]::new);
     }
 }

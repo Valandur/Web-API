@@ -9,9 +9,9 @@ import org.spongepowered.api.event.Event;
 import org.spongepowered.api.event.achievement.GrantAchievementEvent;
 import org.spongepowered.api.event.entity.TargetEntityEvent;
 import org.spongepowered.api.event.entity.living.humanoid.player.KickPlayerEvent;
+import org.spongepowered.api.event.item.inventory.InteractInventoryEvent;
 import org.spongepowered.api.event.user.BanUserEvent;
 import org.spongepowered.api.event.user.TargetUserEvent;
-import valandur.webapi.WebAPI;
 import valandur.webapi.cache.CachedEntity;
 import valandur.webapi.cache.CachedPlayer;
 import valandur.webapi.cache.DataCache;
@@ -32,6 +32,8 @@ public class EventSerializer extends StdSerializer<Event> {
     public void serialize(Event value, JsonGenerator gen, SerializerProvider provider) throws IOException {
         gen.writeStartObject();
 
+        gen.writeStringField("class", value.getClass().getName());
+
         if (value instanceof TargetEntityEvent) {
             Entity entity = ((TargetEntityEvent)value).getTargetEntity();
             if (entity instanceof Player) {
@@ -41,7 +43,6 @@ public class EventSerializer extends StdSerializer<Event> {
                 CachedEntity e = DataCache.getEntity(entity);
                 gen.writeObjectField("target", e);
             }
-
         } else if (value instanceof TargetUserEvent) {
             gen.writeObjectField("target", ((TargetUserEvent)value).getTargetUser());
         }
@@ -57,7 +58,10 @@ public class EventSerializer extends StdSerializer<Event> {
 
         if (value instanceof GrantAchievementEvent) {
             gen.writeObjectField("achievement", ((GrantAchievementEvent)value).getAchievement());
-            WebAPI.getInstance().getLogger().info("c: " + ((GrantAchievementEvent)value).isCancelled());
+        }
+
+        if (value instanceof InteractInventoryEvent) {
+            gen.writeObjectField("inventory", ((InteractInventoryEvent)value).getTargetInventory());
         }
 
         try {

@@ -6,13 +6,13 @@ import ninja.leaping.configurate.objectmapping.serialize.ConfigSerializable;
 @ConfigSerializable
 public class WebHookHeader {
 
-    @Setting(comment = "The name of the header")
+    @Setting
     private String name;
     public String getName() {
         return name;
     }
 
-    @Setting(comment = "The value of the header")
+    @Setting
     private String value;
     public String getValue() {
         return value;

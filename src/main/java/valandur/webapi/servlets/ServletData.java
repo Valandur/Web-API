@@ -63,9 +63,6 @@ public class ServletData {
         return queryParts.get(key);
     }
 
-    public void setStatus(int status) {
-        resp.setStatus(status);
-    }
     public void sendError(int error, String message) {
         if (errorSent) return;
 

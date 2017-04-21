@@ -16,13 +16,15 @@ import java.util.Optional;
 import java.util.concurrent.*;
 
 public class CmdServlet extends WebAPIServlet {
+
+    public static int CMD_WAIT_TIME = 1000;
+
     @Override
     @Permission(perm = "cmd")
     protected void handleGet(ServletData data) {
         String[] paths = data.getPathParts();
 
         if (paths.length == 0 || paths[0].isEmpty()) {
-            data.setStatus(HttpServletResponse.SC_OK);
             data.addJson("commands", JsonConverter.toJson(DataCache.getCommands()));
             return;
         }
@@ -34,15 +36,12 @@ public class CmdServlet extends WebAPIServlet {
             return;
         }
 
-        data.setStatus(HttpServletResponse.SC_OK);
         data.addJson("command", JsonConverter.toJson(cmd.get(), true));
     }
 
     @Override
     @Permission(perm = "cmd")
     protected void handlePost(ServletData data) {
-        data.setStatus(HttpServletResponse.SC_OK);
-
         List<String> permissions = (List<String>) data.getAttribute("perms");
         boolean allowAll = permissions.contains("*") || permissions.contains("cmd.*");
 
@@ -88,7 +87,7 @@ public class CmdServlet extends WebAPIServlet {
 
             if (waitLines > 0 || waitTime > 0) {
                 synchronized (src) {
-                    src.wait(waitTime > 0 ? waitTime : WebAPI.cmdWaitTime);
+                    src.wait(waitTime > 0 ? waitTime : CMD_WAIT_TIME);
                 }
             }
 

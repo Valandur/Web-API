@@ -87,6 +87,7 @@ public class JsonConverter {
         serializers.put(BlockState.class, new BlockStateSerializer());
 
         // Entity
+        serializers.put(AgeableData.class, new AgeableDataSerializer());
         serializers.put(CareerData.class, new CareerDataSerializer());
         serializers.put(Career.class, new CareerSerializer());
         serializers.put(DyeableData.class, new DyeableDataSerializer());

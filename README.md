@@ -7,6 +7,7 @@ This can be used to perform various administrative tasks through the web, or pro
 
 ## Features
 Provides a RESTful webserver with:
+
 * General information about the server
 * History for
   * Chat

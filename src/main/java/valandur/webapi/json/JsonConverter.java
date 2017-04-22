@@ -39,6 +39,7 @@ import org.spongepowered.api.world.difficulty.Difficulty;
 import org.spongepowered.api.world.extent.BlockVolume;
 import org.spongepowered.api.world.weather.Weather;
 import valandur.webapi.WebAPI;
+import valandur.webapi.json.serializers.WebAPISerializer;
 import valandur.webapi.json.serializers.block.*;
 import valandur.webapi.json.serializers.entity.*;
 import valandur.webapi.json.serializers.entity.TradeOfferSerializer;
@@ -213,7 +214,7 @@ public class JsonConverter {
                 diag.stopLog();
 
                 if (!res) {
-                    logger.warn("    Compilation failed. See the log file at " + logFile + " for details");
+                    logger.error("    Compilation failed. See the log file at " + logFile + " for details");
                     continue;
                 }
 
@@ -222,14 +223,24 @@ public class JsonConverter {
                 // Load the class
                 URLClassLoader classLoader = URLClassLoader.newInstance(new URL[]{root.toURI().toURL()}, currentCl);
                 Class<?> cls = Class.forName("serializers." + className, true, classLoader);
-                if (!StdSerializer.class.isAssignableFrom(cls)) {
-                    logger.warn("Class " + cls.getName() + " must extend " + StdSerializer.class.getName());
+                if (!WebAPISerializer.class.isAssignableFrom(cls)) {
+                    logger.error("    must extend " + WebAPISerializer.class.getName());
                     continue;
                 }
 
-                // Instantiate and add to serializers
-                StdSerializer instance = (StdSerializer)cls.newInstance();
-                serializers.put(cls, instance);
+                // Instantiate
+                WebAPISerializer instance = (WebAPISerializer)cls.newInstance();
+
+                // Get handled class
+                Class forClass = instance.getHandledClass();
+                try {
+                    Field f = cls.getField("forClass");
+                    forClass = (Class) f.get(null);
+                } catch (NoSuchFieldException ignored) {}
+
+                // Add to serializers
+                serializers.put(forClass, instance);
+                logger.info("    -> " + forClass.getName());
             } catch (IOException | IllegalAccessException | InstantiationException | ClassNotFoundException e) {
                 e.printStackTrace();
             }

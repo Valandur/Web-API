@@ -2,7 +2,6 @@ package valandur.webapi.json.serializers.event;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Event;
@@ -15,19 +14,11 @@ import org.spongepowered.api.event.user.TargetUserEvent;
 import valandur.webapi.cache.CachedEntity;
 import valandur.webapi.cache.CachedPlayer;
 import valandur.webapi.cache.DataCache;
+import valandur.webapi.json.serializers.WebAPISerializer;
 
 import java.io.IOException;
 
-public class EventSerializer extends StdSerializer<Event> {
-
-    public EventSerializer() {
-        this(null);
-    }
-
-    public EventSerializer(Class<Event> t) {
-        super(t);
-    }
-
+public class EventSerializer extends WebAPISerializer<Event> {
     @Override
     public void serialize(Event value, JsonGenerator gen, SerializerProvider provider) throws IOException {
         gen.writeStartObject();

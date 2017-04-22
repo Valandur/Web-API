@@ -2,22 +2,13 @@ package valandur.webapi.json.serializers.entity;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import org.spongepowered.api.data.manipulator.mutable.entity.TradeOfferData;
 import org.spongepowered.api.item.merchant.TradeOffer;
+import valandur.webapi.json.serializers.WebAPISerializer;
 
 import java.io.IOException;
 
-public class TradeOfferDataSerializer extends StdSerializer<TradeOfferData> {
-
-    public TradeOfferDataSerializer() {
-        this(null);
-    }
-
-    public TradeOfferDataSerializer(Class<TradeOfferData> t) {
-        super(t);
-    }
-
+public class TradeOfferDataSerializer extends WebAPISerializer<TradeOfferData> {
     @Override
     public void serialize(TradeOfferData value, JsonGenerator gen, SerializerProvider provider) throws IOException {
         gen.writeStartArray();

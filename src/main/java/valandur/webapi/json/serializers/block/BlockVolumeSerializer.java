@@ -2,23 +2,13 @@ package valandur.webapi.json.serializers.block;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import com.flowpowered.math.vector.Vector3i;
 import org.spongepowered.api.world.extent.BlockVolume;
-import valandur.webapi.WebAPI;
+import valandur.webapi.json.serializers.WebAPISerializer;
 
 import java.io.IOException;
 
-public class BlockVolumeSerializer extends StdSerializer<BlockVolume> {
-
-    public BlockVolumeSerializer() {
-        this(null);
-    }
-
-    public BlockVolumeSerializer(Class<BlockVolume> t) {
-        super(t);
-    }
-
+public class BlockVolumeSerializer extends WebAPISerializer<BlockVolume> {
     @Override
     public void serialize(BlockVolume value, JsonGenerator gen, SerializerProvider provider) throws IOException {
         gen.writeStartObject();

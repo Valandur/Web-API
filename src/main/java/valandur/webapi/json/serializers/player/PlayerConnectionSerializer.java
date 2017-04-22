@@ -2,21 +2,12 @@ package valandur.webapi.json.serializers.player;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import org.spongepowered.api.network.PlayerConnection;
+import valandur.webapi.json.serializers.WebAPISerializer;
 
 import java.io.IOException;
 
-public class PlayerConnectionSerializer extends StdSerializer<PlayerConnection> {
-
-    public PlayerConnectionSerializer() {
-        this(null);
-    }
-
-    public PlayerConnectionSerializer(Class<PlayerConnection> t) {
-        super(t);
-    }
-
+public class PlayerConnectionSerializer extends WebAPISerializer<PlayerConnection> {
     @Override
     public void serialize(PlayerConnection value, JsonGenerator gen, SerializerProvider provider) throws IOException {
         gen.writeStartObject();

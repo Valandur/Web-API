@@ -2,21 +2,12 @@ package valandur.webapi.json.serializers.general;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import com.flowpowered.math.vector.Vector3d;
+import valandur.webapi.json.serializers.WebAPISerializer;
 
 import java.io.IOException;
 
-public class Vector3dSerializer extends StdSerializer<Vector3d> {
-
-    public Vector3dSerializer() {
-        this(null);
-    }
-
-    public Vector3dSerializer(Class<Vector3d> t) {
-        super(t);
-    }
-
+public class Vector3dSerializer extends WebAPISerializer<Vector3d> {
     @Override
     public void serialize(Vector3d value, JsonGenerator gen, SerializerProvider provider) throws IOException {
         gen.writeStartObject();

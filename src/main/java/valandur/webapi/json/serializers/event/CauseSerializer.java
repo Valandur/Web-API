@@ -2,8 +2,8 @@ package valandur.webapi.json.serializers.event;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import org.spongepowered.api.event.cause.Cause;
+import valandur.webapi.json.serializers.WebAPISerializer;
 import valandur.webapi.misc.Util;
 
 import java.io.IOException;
@@ -11,24 +11,20 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class CauseSerializer extends StdSerializer<Cause> {
+public class CauseSerializer extends WebAPISerializer<Cause> {
 
-    private static List<String> blockedCauseClasses;
-    static {
+    private List<String> blockedCauseClasses;
+
+
+    public CauseSerializer() {
+        super();
+
         List<String> classes = new ArrayList<>();
 
         classes.add("net.minecraft.server");
         classes.add("valandur.webapi");
 
         blockedCauseClasses = classes;
-    }
-
-    public CauseSerializer() {
-        this(null);
-    }
-
-    public CauseSerializer(Class<Cause> t) {
-        super(t);
     }
 
     @Override

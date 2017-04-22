@@ -19,8 +19,11 @@ public class WebAPIDiagnosticListener implements DiagnosticListener {
     @Override
     public void report(Diagnostic diagnostic) {
         try {
-            writer.write(diagnostic.getLineNumber() + ":" + diagnostic.getColumnNumber() +
-                    " | " + diagnostic.getMessage(Locale.getDefault()));
+            String line = "[" + diagnostic.getKind().name() + "] ";
+            if (diagnostic.getKind() == Diagnostic.Kind.ERROR || diagnostic.getKind() == Diagnostic.Kind.WARNING)
+                line += "Line " + diagnostic.getLineNumber() + ":" + diagnostic.getColumnNumber() + " | ";
+            line += diagnostic.getMessage(Locale.getDefault()) + System.lineSeparator();
+            writer.write(line);
         } catch (IOException ignored) {}
     }
 }

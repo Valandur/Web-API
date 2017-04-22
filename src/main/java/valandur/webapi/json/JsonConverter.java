@@ -207,12 +207,13 @@ public class JsonConverter {
             JavaCompiler.CompilationTask task = compiler.getTask(null, fm, diag, optionList, null, compilationUnits);
 
             try {
-                diag.startLog(file.getAbsolutePath().replace(".java", ".log"));
+                String logFile = file.getAbsolutePath().replace(".java", ".log");
+                diag.startLog(logFile);
                 boolean res = task.call();
                 diag.stopLog();
 
                 if (!res) {
-                    logger.warn("    Compilation failed. See the log file at " + " for details");
+                    logger.warn("    Compilation failed. See the log file at " + logFile + " for details");
                     continue;
                 }
 
@@ -229,7 +230,6 @@ public class JsonConverter {
                 // Instantiate and add to serializers
                 StdSerializer instance = (StdSerializer)cls.newInstance();
                 serializers.put(cls, instance);
-                logger.info("Loaded " + cls.getName());
             } catch (IOException | IllegalAccessException | InstantiationException | ClassNotFoundException e) {
                 e.printStackTrace();
             }

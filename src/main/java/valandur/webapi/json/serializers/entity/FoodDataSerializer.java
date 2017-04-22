@@ -2,21 +2,12 @@ package valandur.webapi.json.serializers.entity;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import org.spongepowered.api.data.manipulator.mutable.entity.FoodData;
+import valandur.webapi.json.serializers.WebAPISerializer;
 
 import java.io.IOException;
 
-public class FoodDataSerializer extends StdSerializer<FoodData> {
-
-    public FoodDataSerializer() {
-        this(null);
-    }
-
-    public FoodDataSerializer(Class<FoodData> t) {
-        super(t);
-    }
-
+public class FoodDataSerializer extends WebAPISerializer<FoodData> {
     @Override
     public void serialize(FoodData value, JsonGenerator gen, SerializerProvider provider) throws IOException {
         gen.writeStartObject();

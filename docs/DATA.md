@@ -16,6 +16,7 @@ possibly various different things.
 
 ## Table of Contents
 1. [Achievements](#achievements)
+1. [Age](#age)
 1. [Career](#career)
 1. [Durability](#durability)
 1. [Dye](#dye)
@@ -46,6 +47,15 @@ Contains a list of achievements that have been granted to the object.
 ]
 ```
 
+<a name="age"></a>
+## Age
+Contains information about the age of an object.
+```json
+"age": {
+  "adult": false,
+  "age": 35,
+}
+```
 
 <a name="career"></a>
 ## Career

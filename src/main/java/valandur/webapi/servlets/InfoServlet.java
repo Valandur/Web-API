@@ -16,8 +16,6 @@ public class InfoServlet extends WebAPIServlet {
     @Override
     @Permission(perm = "info")
     protected void handleGet(ServletData data) {
-        data.setStatus(HttpServletResponse.SC_OK);
-
         Server server = Sponge.getServer();
         Platform platform = Sponge.getPlatform();
 

@@ -18,18 +18,6 @@ public class WebHook {
     }
 
     @Setting
-    private String name;
-    public String getName() {
-        return name != null ? name : address;
-    }
-
-    @Setting
-    private List<String> aliases;
-    public List<String> getAliases() {
-        return aliases;
-    }
-
-    @Setting
     private String address;
     public String getAddress() {
         return address;
@@ -57,13 +45,6 @@ public class WebHook {
     @Setting
     private List<WebHookHeader> headers = new ArrayList<>();
     public List<WebHookHeader> getHeaders() { return headers; }
-
-    @Setting
-    private List<WebHookParam> params = new ArrayList<>();
-    public List<WebHookParam> getParams() {
-        return params;
-    }
-
 
     public WebHook() {}
 }

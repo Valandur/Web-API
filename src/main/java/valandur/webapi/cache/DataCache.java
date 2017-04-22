@@ -3,6 +3,7 @@ package valandur.webapi.cache;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.flowpowered.math.vector.Vector3i;
+import org.reflections.ReflectionUtils;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.block.tileentity.TileEntity;
@@ -13,14 +14,17 @@ import org.spongepowered.api.event.cause.Cause;
 import org.spongepowered.api.event.command.SendCommandEvent;
 import org.spongepowered.api.event.message.MessageEvent;
 import org.spongepowered.api.plugin.PluginContainer;
+import org.spongepowered.api.util.Tuple;
 import org.spongepowered.api.world.Chunk;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 import org.spongepowered.api.world.extent.BlockVolume;
 import valandur.webapi.WebAPI;
 import valandur.webapi.json.JsonConverter;
+import valandur.webapi.misc.Util;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.*;
@@ -77,7 +81,7 @@ public class DataCache {
         return cache;
     }
 
-    public static JsonNode executeMethod(CachedObject cache, String methodName, Class[] paramTypes, Object[] paramValues) {
+    public static JsonNode executeMethod(CachedObject cache, String methodName, Object[] paramValues) {
         Optional<JsonNode> node = runOnMainThread(() -> {
             Optional<?> obj = cache.getLive();
 
@@ -85,45 +89,21 @@ public class DataCache {
                 return null;
 
             Object o = obj.get();
-            Method[] ms = JsonConverter.getAllMethods(o.getClass());
+            Method[] ms = Util.getAllMethods(o.getClass());
             Optional<Method> optMethod = Arrays.stream(ms).filter(m -> m.getName().equalsIgnoreCase(methodName)).findAny();
 
             if (!optMethod.isPresent()) {
-                return null;
+                return JsonConverter.toJson("Method not found");
             }
 
             try {
                 Method m = optMethod.get();
+                if (m.getParameterCount() != paramValues.length) {
+                    return JsonConverter.toJson("Method must have " + m.getParameterCount() +
+                            " parameters but has " + paramValues.length);
+                }
                 m.setAccessible(true);
                 Object res = m.invoke(o, paramValues);
-                return JsonConverter.toJson(res, true);
-            } catch (Exception e) {
-                e.printStackTrace();
-                return null;
-            }
-        });
-
-        return node.orElseGet(JsonNodeFactory.instance::nullNode);
-    }
-    public static JsonNode getField(CachedObject cache, String fieldName) {
-        Optional<JsonNode> node = runOnMainThread(() -> {
-            Optional<?> obj = cache.getLive();
-
-            if (!obj.isPresent())
-                return null;
-
-            Object o = obj.get();
-            Field[] fs = JsonConverter.getAllFields(o.getClass());
-            Optional<Field> optField = Arrays.stream(fs).filter(f -> f.getName().equalsIgnoreCase(fieldName)).findAny();
-
-            if (!optField.isPresent()) {
-                return null;
-            }
-
-            try {
-                Field field = optField.get();
-                field.setAccessible(true);
-                Object res = field.get(o);
                 return JsonConverter.toJson(res, true);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -288,6 +268,66 @@ public class DataCache {
         } else {
             return Optional.of(res);
         }
+    }
+
+    public static Tuple<Map<String, JsonNode>, Map<String, JsonNode>> getExtraData(CachedObject cache, String[] reqFields, String[] reqMethods) {
+        return runOnMainThread(() -> {
+            Map<String, JsonNode> fields = new HashMap<>();
+            Map<String, JsonNode> methods = new HashMap<>();
+
+            Optional<?> opt = cache.getLive();
+            if (!opt.isPresent()) return null;
+
+            Object obj = opt.get();
+            Class c = obj.getClass();
+
+            List<Field> allFields = Arrays.asList(Util.getAllFields(c));
+            List<Method> allMethods = Arrays.asList(Util.getAllMethods(c));
+            for (String fieldName : reqFields) {
+                Optional<Field> field = allFields.stream().filter(f -> f.getName().equalsIgnoreCase(fieldName)).findAny();
+                if (!field.isPresent()) {
+                    fields.put(fieldName, JsonConverter.toJson("ERROR: Field not found"));
+                    continue;
+                }
+
+                field.get().setAccessible(true);
+
+                try {
+                    Object res = field.get().get(obj);
+                    fields.put(fieldName, JsonConverter.toJson(res));
+                } catch (IllegalAccessException e) {
+                    fields.put(fieldName, JsonConverter.toJson("ERROR: " + e.toString()));
+                }
+            }
+            for (String methodName : reqMethods) {
+                Optional<Method> method = allMethods.stream().filter(f -> f.getName().equalsIgnoreCase(methodName)).findAny();
+                if (!method.isPresent()) {
+                    methods.put(methodName, JsonConverter.toJson("ERROR: Method not found"));
+                    continue;
+                }
+
+                if (method.get().getParameterCount() > 0) {
+                    methods.put(methodName, JsonConverter.toJson("ERROR: Method must not have parameters"));
+                    continue;
+                }
+
+                if (method.get().getReturnType().equals(Void.TYPE) || method.get().getReturnType().equals(Void.class)) {
+                    methods.put(methodName, JsonConverter.toJson("ERROR: Method must not return void"));
+                    continue;
+                }
+
+                method.get().setAccessible(true);
+
+                try {
+                    Object res = method.get().invoke(obj);
+                    methods.put(methodName, JsonConverter.toJson(res));
+                } catch (IllegalAccessException | InvocationTargetException e) {
+                    methods.put(methodName, JsonConverter.toJson("ERROR: " + e.toString()));
+                }
+            }
+
+            return new Tuple<>(fields, methods);
+        }).orElse(null);
     }
 
     public static void updatePlugins() {

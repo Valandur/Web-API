@@ -13,10 +13,7 @@ import java.util.*;
 
 public class CachedTileEntity extends CachedObject {
     @JsonProperty
-    public String type;
-
-    @JsonProperty("class")
-    public String clazz;
+    public JsonNode type;
 
     @JsonIgnore
     private CachedLocation _location;
@@ -28,8 +25,9 @@ public class CachedTileEntity extends CachedObject {
 
 
     public CachedTileEntity(TileEntity te) {
-        this.type = te.getType() != null ? te.getType().getId() : null;
-        this.clazz = te.getClass().getName();
+        super(te);
+
+        this.type = JsonConverter.toJson(te.getType().getId());
         this._location = new CachedLocation(te.getLocation());
         this.location = JsonConverter.toJson(this._location);
         //if (te instanceof TileEntityCarrier)

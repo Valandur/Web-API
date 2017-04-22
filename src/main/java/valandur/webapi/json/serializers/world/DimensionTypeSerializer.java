@@ -2,21 +2,12 @@ package valandur.webapi.json.serializers.world;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import org.spongepowered.api.world.DimensionType;
+import valandur.webapi.json.serializers.WebAPISerializer;
 
 import java.io.IOException;
 
-public class DimensionTypeSerializer extends StdSerializer<DimensionType> {
-
-    public DimensionTypeSerializer() {
-        this(null);
-    }
-
-    public DimensionTypeSerializer(Class<DimensionType> t) {
-        super(t);
-    }
-
+public class DimensionTypeSerializer extends WebAPISerializer<DimensionType> {
     @Override
     public void serialize(DimensionType value, JsonGenerator gen, SerializerProvider provider) throws IOException {
         gen.writeStartObject();

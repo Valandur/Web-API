@@ -21,6 +21,8 @@ public class CachedChatMessage extends CachedObject {
 
 
     public CachedChatMessage(Player sender, MessageEvent event) {
+        super(null);
+
         this.timestamp = (new Date()).toInstant().getEpochSecond();
         this.sender = JsonConverter.toJson(DataCache.getPlayer(sender.getUniqueId()).orElse(null));
         this.message = event.getMessage().toPlain();

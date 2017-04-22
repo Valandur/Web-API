@@ -29,6 +29,8 @@ public class CachedCommandCall extends CachedObject {
 
 
     public CachedCommandCall(SendCommandEvent event) {
+        super(null);
+
         this.timestamp = (new Date()).toInstant().getEpochSecond();
         this.command = event.getCommand();
         this.args = event.getArguments();

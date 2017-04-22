@@ -20,12 +20,10 @@ public class HistoryServlet extends WebAPIServlet {
         String endpoint = paths[0].toLowerCase();
         switch (endpoint) {
             case "cmd":
-                data.setStatus(HttpServletResponse.SC_OK);
                 data.addJson("calls", JsonConverter.toJson(DataCache.getCommandCalls()));
                 break;
 
             case "chat":
-                data.setStatus(HttpServletResponse.SC_OK);
                 data.addJson("messages", JsonConverter.toJson(DataCache.getChatMessages()));
                 break;
 

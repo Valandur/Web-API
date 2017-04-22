@@ -23,6 +23,8 @@ public class CachedLocation extends CachedObject {
 
 
     public CachedLocation(Location<World> location) {
+        super(null);
+
         this._world = DataCache.getWorld(location.getExtent());
         this.world = JsonConverter.toJson(this._world);
         this.position = location.getPosition().clone();

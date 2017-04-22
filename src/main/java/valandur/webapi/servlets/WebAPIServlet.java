@@ -50,6 +50,7 @@ public abstract class WebAPIServlet extends HttpServlet {
 
             ObjectMapper om = new ObjectMapper();
             if (!data.isErrorSent()) {
+                resp.setStatus(HttpServletResponse.SC_OK);
                 out.write(om.writeValueAsString(data.getNode()));
             }
         } catch (NoSuchMethodException e) {

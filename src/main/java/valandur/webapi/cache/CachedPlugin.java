@@ -25,6 +25,8 @@ public class CachedPlugin extends CachedObject {
 
 
     public CachedPlugin(PluginContainer plugin) {
+        super(plugin);
+
         this.id = plugin.getId();
         this.name = plugin.getName();
         this.description = plugin.getDescription().orElse(null);

@@ -17,7 +17,7 @@ current implementation state in the Web-API.
 |:-----:| ----- |
 | + | AchievementData |
 |   | AffectsSpawningData |
-|   | AgeableData |
+| + | AgeableData |
 |   | AgentData |
 |   | AggressiveData |
 |   | AngerableData |

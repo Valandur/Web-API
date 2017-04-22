@@ -33,6 +33,8 @@ dependencies {
     compile group: "com.fasterxml.jackson.core", name: "jackson-core", version: "2.8.7"
     compile group: "com.fasterxml.jackson.core", name: "jackson-databind", version: "2.8.7"
     compile group: "com.fasterxml.jackson.core", name: "jackson-annotations", version: "2.8.7"
+    compile group: "org.reflections", name: "reflections", version: "0.9.10"
+    compile group: "net.jodah", name: "typetools", version: "0.4.9"
 }
 
 jar {
@@ -45,6 +47,8 @@ shadowJar {
     relocate "org.eclipse.jetty", "valandur.webapi.shadow.org.eclipse.jetty"
     relocate "com.fasterxml.jackson", "valandur.webapi.shadow.fasterxml.jackson"
     relocate "javax.servlet", "valandur.webapi.shadow.javax.servlet"
+    relocate "org.reflections", "valandur.webapi.shadow.org.reflections"
+    relocate "net.jodah", "valandur.webapi.shadow.net.jodah"
 
     exclude "/about.html"
     exclude "/jetty-dir.css"

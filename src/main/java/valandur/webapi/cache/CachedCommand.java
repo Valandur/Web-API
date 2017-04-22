@@ -19,6 +19,8 @@ public class CachedCommand extends CachedObject {
 
 
     public CachedCommand(CommandMapping cmd) {
+        super(null);
+
         this.name = cmd.getPrimaryAlias();
         this.aliases = cmd.getAllAliases().toArray();
         this.usage = cmd.getCallable().getUsage(WebAPICommandSource.instance).toPlain();

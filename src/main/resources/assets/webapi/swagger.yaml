@@ -20,7 +20,7 @@ info:
     Certain endpoints (such as `/player`, `/entity` and `/tile-entity` have additional properties which are not documented here, because the data depends on the concrete
     object type (eg. `Sheep` have a wool color, others do not) and on the other plugins/mods that are running on your server which might add additional data.
 
-    You can also find more information in the github docs (https://github.com/Valandur/Web-API/tree/master/docs)
+    You can also find more information in the github docs (https://github.com/Valandur/Web-API/tree/master/docs/DATA.md)
   version: "<version>"
 
 host: "<host>"
@@ -100,55 +100,6 @@ responses:
           description: A description of the type of error that occured.
 
 paths:
-  /info:
-    get:
-      summary: Server info
-      description: |
-        Get general information about the minecraft server.
-
-        > Required permission: info
-      tags:
-        - Info
-      responses:
-        403:
-          $ref: '#/responses/403'
-        200:
-          description: General information about the server
-          schema:
-            $ref: '#/definitions/ServerInfo'
-  /history/chat:
-    get:
-      summary: Chat History
-      description: |
-        View a history of the server chat.
-
-        > Required permission: history
-      tags:
-        - History
-      responses:
-        403:
-          $ref: '#/responses/403'
-        200:
-          description: A history of the chat
-          schema:
-            $ref: '#/definitions/ChatHistory'
-  /history/cmd:
-    get:
-      summary: Command History
-      description: |
-        View a history of the server commands.
-
-        > Required permission: history
-      tags:
-        - History
-      responses:
-        403:
-          $ref: '#/responses/403'
-        200:
-          description: A history of the chat
-          schema:
-            $ref: '#/definitions/CommandHistory'
-
   /block:
     post:
       summary: Modify blocks
@@ -179,7 +130,7 @@ paths:
                 type: string
                 description: A description of the type of error that occured.
         200:
-          description: Information about the changed blocks
+          description: Block change results
           schema:
             type: object
             properties:
@@ -224,7 +175,7 @@ paths:
         404:
           $ref: '#/responses/404'
         200:
-          description: A single block
+          description: Single block
           schema:
             $ref: '#/definitions/BlockFull'
   /block/{world}/{minX}/{minY}/{minZ}/{maxX}/{maxY}/{maxZ}:
@@ -282,9 +233,117 @@ paths:
         404:
           $ref: '#/responses/404'
         200:
-          description: A block volume
+          description: Block volume
           schema:
             $ref: '#/definitions/BlockVolume'
+
+  /class:
+    get:
+      summary: Cached classes
+      description: |
+        Get a list of all the classes available on the server.
+
+        > Required permission: class
+      tags:
+        - Class
+      responses:
+        403:
+          $ref: '#/responses/403'
+        200:
+          description: List of cached classes
+          schema:
+            type: array
+            items:
+              type: string
+              description: The name of the class
+  /class/{classname}:
+    get:
+      summary: Class details
+      description: |
+        Get the fields and methods of a specific class loaded on the server.
+        Use the fully quilified classname (e.g. "net.minecraft.tileentity.TileEntityChest").
+
+        > Required permission: class
+      parameters:
+        - name: classname
+          in: path
+          type: string
+          description: The classname of the class to show.
+          required: true
+      tags:
+        - Class
+      responses:
+        403:
+          $ref: '#/responses/403'
+        404:
+          $ref: '#/responses/404'
+        200:
+          description: Class details
+          schema:
+            type: object
+            properties:
+              class:
+                $ref: '#/definitions/Class'
+  /class/{classname}/subclasses:
+    get:
+      summary: Subclasses
+      description: |
+        Gets all the subclasses of a specific class.
+
+        > Required permission: class
+      parameters:
+        - name: classname
+          in: path
+          type: string
+          description: The classname of the class to show.
+          required: true
+      tags:
+        - Class
+      responses:
+        403:
+          $ref: '#/responses/403'
+        404:
+          $ref: '#/responses/404'
+        200:
+          description: List of subclasses
+          schema:
+            type: object
+            properties:
+              base:
+                type: string
+                description: The base class.
+              classes:
+                type: array
+                description: An array of all the subclasses of the base class.
+                items:
+                  type: string
+            example:
+              base: org.spongepowered.api.event.Event
+              classes:
+              - org.spongepowered.api.event.SaveWorldEvent$Post$Impl
+              - org.spongepowered.api.event.FishingEvent$HookEntity$Impl
+              - org.spongepowered.api.event.item.inventory.ChangeInventoryEvent$Transfer
+              - org.spongepowered.api.event.TameEntityEvent$Impl
+              - org.spongepowered.api.event.CollideEntityEvent$Impl
+              - org.spongepowered.api.event.game.state.GameStartedServerEvent
+              - org.spongepowered.api.event.ClientConnectionEvent$Auth$Impl
+              - org.spongepowered.api.event.block.tileentity.ChangeSignEvent
+              - org.spongepowered.api.event.world.SaveWorldEvent
+              - org.spongepowered.api.event.item.inventory.DropItemEvent$Dispense
+              - org.spongepowered.api.event.ChangeInventoryEvent$Pickup$Impl
+              - org.spongepowered.api.event.ChangeGameModeEvent$Impl
+              - me.ryanhamshire.griefprevention.api.event.ResizeClaimEvent
+              - nl.riebie.mcclans.api.events.ClanSetHomeEvent
+              - org.spongepowered.api.event.BreedEntityEvent$FindMate$Impl
+              - org.spongepowered.api.event.action.SleepingEvent$Tick
+              - org.spongepowered.api.event.game.state.GameStateEvent
+              - org.spongepowered.api.event.TargetAgentEvent$Impl
+              - org.spongepowered.api.event.item.inventory.ClickInventoryEvent$Shift$Primary
+              - org.spongepowered.api.event.ChangeInventoryEvent$Transfer$Impl
+              - org.spongepowered.api.event.BrewingEvent$Tick$Impl
+              - org.spongepowered.api.event.block.TickBlockEvent$Random
+              - org.spongepowered.api.event.TabCompleteEvent$Command$Impl
+
   /cmd:
     get:
       summary: Command list
@@ -298,7 +357,7 @@ paths:
         403:
           $ref: '#/responses/403'
         200:
-          description: A list of commands
+          description: List of commands
           schema:
             $ref: '#/definitions/CommandList'
     post:
@@ -309,6 +368,7 @@ paths:
         array is not required.
 
         > Required permission: cmd
+        > Required permission: cmd.[command]
       parameters:
         - name: Request
           in: body
@@ -322,7 +382,7 @@ paths:
         403:
           $ref: '#/responses/403'
         200:
-          description: A list of text lines sent in response to the command
+          description: The command responses
           schema:
             $ref: '#/definitions/CommandResponse'
   /cmd/{name}:
@@ -347,51 +407,138 @@ paths:
           description: Detailed info about the command
           schema:
             $ref: '#/definitions/CommandFull'
-  /class:
-    get:
-      summary: Cached classes
-      description: |
-        Get a list of all the classes that have been cached on the server.
 
-        > Required permission: class
+  /entity:
+    get:
+      summary: Entities list
+      description: |
+        Get a list of all entities on the server (in all worlds).
+
+        > Required permission: entity
       tags:
-        - Class
+        - Entity
       responses:
         403:
           $ref: '#/responses/403'
         200:
-          description: A list of all the classes that are cached on the server
+          description: List of entities
           schema:
-            type: array
-            items:
-              type: string
-              description: The name of the class
-  /class/{classname}:
+            $ref: '#/definitions/EntityList'
+  /entity/{uuid}:
     get:
-      summary: Lookup class
+      summary: Detailed entity info
       description: |
-        Get the fields and methods of a specific class loaded on the server.
-        Use the fully quilified classname (e.g. "net.minecraft.tileentity.TileEntityChest").
+        Get detailed information about an entity.
 
-        > Required permission: class
+        > Required permission: entity
       parameters:
-        - name: classname
+        - name: uuid
           in: path
           type: string
-          description: The classname of the class to show.
+          description: The uuid of the entity to get detailed information about.
           required: true
+        - name: fields
+          in: query
+          type: string
+          description: An optional list of additional fields to get.
+        - name: methods
+          in: query
+          type: string
+          description: An optional list of additional methods to get.
       tags:
-        - Class
+        - Entity
+      responses:
+        400:
+          $ref: '#/responses/400'
+        403:
+          $ref: '#/responses/403'
+        404:
+          $ref: '#/responses/404'
+        200:
+          description: Detailed entity info
+          schema:
+            $ref: '#/definitions/EntityFull'
+    post:
+      summary: Execute entity method
+      description: |
+        Provides direct access to the underlaying entity object and can execute any method on it.
+
+        > Required permission: entity
+      parameters:
+        - name: uuid
+          in: path
+          type: string
+          description: The uuid of the entity.
+          required: true
+        - name: Request
+          in: body
+          description: Information about which method to execute.
+          required: true
+          schema:
+            $ref: '#/definitions/RawRequest'
+      tags:
+        - Entity
+      responses:
+        400:
+          $ref: '#/responses/400'
+        403:
+          $ref: '#/responses/403'
+        404:
+          $ref: '#/responses/404'
+        200:
+          description: Method return value
+          schema:
+            $ref: '#/definitions/RawResponse'
+
+  /history/chat:
+    get:
+      summary: Chat History
+      description: |
+        View a history of the server chat.
+
+        > Required permission: history
+      tags:
+        - History
       responses:
         403:
           $ref: '#/responses/403'
         200:
-          description: An object describing the class fields and methods
+          description: Chat history
           schema:
-            type: object
-            properties:
-              class:
-                $ref: '#/definitions/Class'
+            $ref: '#/definitions/ChatHistory'
+  /history/cmd:
+    get:
+      summary: Command History
+      description: |
+        View a history of the server commands.
+
+        > Required permission: history
+      tags:
+        - History
+      responses:
+        403:
+          $ref: '#/responses/403'
+        200:
+          description: Command history
+          schema:
+            $ref: '#/definitions/CommandHistory'
+
+  /info:
+    get:
+      summary: Server info
+      description: |
+        Get general information about the minecraft server.
+
+        > Required permission: info
+      tags:
+        - Info
+      responses:
+        403:
+          $ref: '#/responses/403'
+        200:
+          description: General info
+          schema:
+            $ref: '#/definitions/ServerInfo'
 
   /player:
     get:
@@ -406,7 +553,7 @@ paths:
         403:
           $ref: '#/responses/403'
         200:
-          description: A list of all the players on the server
+          description: List of players
           schema:
             $ref: '#/definitions/PlayerList'
   /player/{uuid}:
@@ -422,6 +569,14 @@ paths:
           type: string
           description: The uuid of the player to get detailed information about.
           required: true
+        - name: fields
+          in: query
+          type: string
+          description: An optional list of additional fields to get.
+        - name: methods
+          in: query
+          type: string
+          description: An optional list of additional methods to get.
       tags:
         - Player
       responses:
@@ -432,14 +587,13 @@ paths:
         404:
           $ref: '#/responses/404'
         200:
-          description: Detailed information about the player
+          description: Detailed player info
           schema:
             $ref: '#/definitions/PlayerFull'
     post:
-      summary: Player methods & fields
+      summary: Execute player method
       description: |
-        Provides direct access to the underlaying player object and can execute
-        any method on it or access any field.
+        Provides direct access to the underlaying player object and can execute any method on it.
 
         > Required permission: player
       parameters:
@@ -450,7 +604,7 @@ paths:
           required: true
         - name: Request
           in: body
-          description: Information about which method/field to execute/get.
+          description: Information about which method to execute.
           required: true
           schema:
             $ref: '#/definitions/RawRequest'
@@ -464,82 +618,7 @@ paths:
         404:
           $ref: '#/responses/404'
         200:
-          description: The result of executing/getting the method/field
-          schema:
-            $ref: '#/definitions/RawResponse'
-
-  /world:
-    get:
-      summary: World list
-      description: |
-        Get a list of all the worlds on the server.
-
-        > Required permission: world
-      tags:
-        - World
-      responses:
-        403:
-          $ref: '#/responses/403'
-        200:
-          description: A list of all the worlds on the server
-          schema:
-            $ref: '#/definitions/WorldList'
-  /world/{uuid}:
-    get:
-      summary: Detailed world info
-      description: |
-        Get detailed information about a world.
-
-        > Required permission: world
-      parameters:
-        - name: uuid
-          in: path
-          type: string
-          description: The uuid of the world to get detailed information about.
-          required: true
-      tags:
-        - World
-      responses:
-        400:
-          $ref: '#/responses/400'
-        403:
-          $ref: '#/responses/403'
-        404:
-          $ref: '#/responses/404'
-        200:
-          description: Detailed information about the world
-          schema:
-            $ref: '#/definitions/WorldFull'
-    post:
-      summary: World methods & fields
-      description: |
-        Provides direct access to the underlaying world object and can execute
-        any method on it or access any field.
-
-        > Required permission: world
-      parameters:
-        - name: uuid
-          in: path
-          type: string
-          description: The uuid of the world.
-          required: true
-        - name: Request
-          in: body
-          description: Information about which method/field to execute/get.
-          required: true
-          schema:
-            $ref: '#/definitions/RawRequest'
-      tags:
-        - World
-      responses:
-        400:
-          $ref: '#/responses/400'
-        403:
-          $ref: '#/responses/403'
-        404:
-          $ref: '#/responses/404'
-        200:
-          description: The result of executing/getting the method/field
+          description: Method return value
           schema:
             $ref: '#/definitions/RawResponse'
 
@@ -556,7 +635,7 @@ paths:
         403:
           $ref: '#/responses/403'
         200:
-          description: A list of all the plugins on the server
+          description: List of plugins
           schema:
             $ref: '#/definitions/PluginList'
   /plugin/{id}:
@@ -580,83 +659,9 @@ paths:
         404:
           $ref: '#/responses/404'
         200:
-          description: Detailed information about the plugin
+          description: Detailed plugin info
           schema:
             $ref: '#/definitions/PluginFull'
-  /entity:
-    get:
-      summary: Entities list
-      description: |
-        Get a list of all entities on the server (in all worlds).
-
-        > Required permission: entity
-      tags:
-        - Entity
-      responses:
-        403:
-          $ref: '#/responses/403'
-        200:
-          description: A list of all the entities on the server
-          schema:
-            $ref: '#/definitions/EntityList'
-  /entity/{uuid}:
-    get:
-      summary: Detailed entity info
-      description: |
-        Get detailed information about an entity.
-
-        > Required permission: entity
-      parameters:
-        - name: uuid
-          in: path
-          type: string
-          description: The uuid of the entity to get detailed information about.
-          required: true
-      tags:
-        - Entity
-      responses:
-        400:
-          $ref: '#/responses/400'
-        403:
-          $ref: '#/responses/403'
-        404:
-          $ref: '#/responses/404'
-        200:
-          description: Detailed information about the entity
-          schema:
-            $ref: '#/definitions/EntityFull'
-    post:
-      summary: Entity methods & fields
-      description: |
-        Provides direct access to the underlaying entity object and can execute
-        any method on it or access any field.
-
-        > Required permission: entity
-      parameters:
-        - name: uuid
-          in: path
-          type: string
-          description: The uuid of the entity.
-          required: true
-        - name: Request
-          in: body
-          description: Information about which method/field to execute/get.
-          required: true
-          schema:
-            $ref: '#/definitions/RawRequest'
-      tags:
-        - Entity
-      responses:
-        400:
-          $ref: '#/responses/400'
-        403:
-          $ref: '#/responses/403'
-        404:
-          $ref: '#/responses/404'
-        200:
-          description: The result of executing/getting the method/field
-          schema:
-            $ref: '#/definitions/RawResponse'
 
   /tile-entity:
     get:
@@ -671,7 +676,7 @@ paths:
         403:
           $ref: '#/responses/403'
         200:
-          description: A list of all the tile entities on the server
+          description: List of tile entities
           schema:
             $ref: '#/definitions/TileEntityList'
   /tile-entity/{worldUuid}/{x}/{y}/{z}:
@@ -702,6 +707,14 @@ paths:
           type: integer
           description: The z-coordinate of the tile entity.
           required: true
+        - name: fields
+          in: query
+          type: string
+          description: An optional list of additional fields to get.
+        - name: methods
+          in: query
+          type: string
+          description: An optional list of additional methods to get.
       tags:
         - Tile Entity
       responses:
@@ -712,14 +725,13 @@ paths:
         404:
           $ref: '#/responses/404'
         200:
-          description: Detailed information about the tile entity
+          description: Detailed tile entity info
           schema:
             $ref: '#/definitions/TileEntityFull'
     post:
-      summary: Tile-Entity methods & fields
+      summary: Execute tile entity methods
       description: |
-        Provides direct access to the underlaying tile entity object and can execute
-        any method on it or access any field.
+        Provides direct access to the underlaying tile entity object and can execute any method on it.
 
         > Required permission: tile-entity
       parameters:
@@ -745,7 +757,7 @@ paths:
           required: true
         - name: Request
           in: body
-          description: Information about which method/field to execute/get.
+          description: Information about which method to execute.
           required: true
           schema:
             $ref: '#/definitions/RawRequest'
@@ -759,7 +771,89 @@ paths:
         404:
           $ref: '#/responses/404'
         200:
-          description: The result of executing/getting the method/field
+          description: Method return value
+          schema:
+            $ref: '#/definitions/RawResponse'
+
+  /world:
+    get:
+      summary: World list
+      description: |
+        Get a list of all the worlds on the server.
+
+        > Required permission: world
+      tags:
+        - World
+      responses:
+        403:
+          $ref: '#/responses/403'
+        200:
+          description: List of worlds
+          schema:
+            $ref: '#/definitions/WorldList'
+  /world/{uuid}:
+    get:
+      summary: Detailed world info
+      description: |
+        Get detailed information about a world.
+
+        > Required permission: world
+      parameters:
+        - name: uuid
+          in: path
+          type: string
+          description: The uuid of the world to get detailed information about.
+          required: true
+        - name: fields
+          in: query
+          type: string
+          description: An optional list of additional fields to get.
+        - name: methods
+          in: query
+          type: string
+          description: An optional list of additional methods to get.
+      tags:
+        - World
+      responses:
+        400:
+          $ref: '#/responses/400'
+        403:
+          $ref: '#/responses/403'
+        404:
+          $ref: '#/responses/404'
+        200:
+          description: Detailed world info
+          schema:
+            $ref: '#/definitions/WorldFull'
+    post:
+      summary: Execute world methods
+      description: |
+        Provides direct access to the underlaying world object and can execute any method on it.
+
+        > Required permission: world
+      parameters:
+        - name: uuid
+          in: path
+          type: string
+          description: The uuid of the world.
+          required: true
+        - name: Request
+          in: body
+          description: Information about which method to execute.
+          required: true
+          schema:
+            $ref: '#/definitions/RawRequest'
+      tags:
+        - World
+      responses:
+        400:
+          $ref: '#/responses/400'
+        403:
+          $ref: '#/responses/403'
+        404:
+          $ref: '#/responses/404'
+        200:
+          description: Method return value
           schema:
             $ref: '#/definitions/RawResponse'
 
@@ -826,9 +920,9 @@ definitions:
   RawRequest:
     type: object
     description: |
-      This data defines what method to execute or which field of the object to get.
-
-      Note that either "method" or "field" is required.
+      This data defines what method to execute.
+    required:
+      - method
     properties:
       method:
         type: string
@@ -838,9 +932,6 @@ definitions:
         description: The parameters passed to the method.
         items:
           $ref: '#/definitions/RawRequestParam'
-      field:
-        type: string
-        description: The name of the field to get.
   RawRequestParam:
     type: object
     description: A parameter that is interpreted by the server and passed to the method.
@@ -881,6 +972,9 @@ definitions:
           - world: Assumed to be the UUID of a world which is fetched and passed
           - player: Assumed to be the UUID of the player which is fetched and passed.
           - itemstack: Converted to a new item stack. Requires the properties "itemType" and "amount"
+      optional:
+        type: boolean
+        description: True if the value should be wrapped into an optional value, false otherwise.
   RawResponse:
     type: object
 

@@ -13,10 +13,7 @@ import java.util.UUID;
 public class CachedEntity extends CachedObject {
 
     @JsonProperty
-    public String type;
-
-    @JsonProperty("class")
-    public String clazz;
+    public JsonNode type;
 
     @JsonProperty
     public String uuid;
@@ -30,8 +27,9 @@ public class CachedEntity extends CachedObject {
 
 
     public CachedEntity(Entity entity) {
-        this.type = entity.getType() != null ? entity.getType().getId() : null;
-        this.clazz = entity.getClass().getName();
+        super(entity);
+
+        this.type = JsonConverter.toJson(entity.getType().getId());
         this.uuid = entity.getUniqueId().toString();
         this.location = JsonConverter.toJson(new CachedLocation(entity.getLocation()));
 

@@ -13,6 +13,7 @@ import org.eclipse.jetty.server.handler.ContextHandlerCollection;
 import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.util.log.Log;
+import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.asset.Asset;
@@ -27,13 +28,13 @@ import org.spongepowered.api.event.command.SendCommandEvent;
 import org.spongepowered.api.event.entity.DestructEntityEvent;
 import org.spongepowered.api.event.entity.SpawnEntityEvent;
 import org.spongepowered.api.event.entity.living.humanoid.player.KickPlayerEvent;
-import org.spongepowered.api.event.filter.IsCancelled;
 import org.spongepowered.api.event.filter.cause.First;
 import org.spongepowered.api.event.game.GameReloadEvent;
 import org.spongepowered.api.event.game.state.GameInitializationEvent;
 import org.spongepowered.api.event.game.state.GamePreInitializationEvent;
 import org.spongepowered.api.event.game.state.GameStartedServerEvent;
 import org.spongepowered.api.event.game.state.GameStoppedServerEvent;
+import org.spongepowered.api.event.item.inventory.InteractInventoryEvent;
 import org.spongepowered.api.event.message.MessageChannelEvent;
 import org.spongepowered.api.event.network.ClientConnectionEvent;
 import org.spongepowered.api.event.user.BanUserEvent;
@@ -44,7 +45,6 @@ import org.spongepowered.api.plugin.PluginContainer;
 import org.spongepowered.api.scheduler.SpongeExecutorService;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
-import org.spongepowered.api.util.Tristate;
 import org.spongepowered.api.util.Tuple;
 import valandur.webapi.cache.*;
 import valandur.webapi.command.*;
@@ -53,6 +53,7 @@ import valandur.webapi.handlers.RateLimitHandler;
 import valandur.webapi.handlers.WebAPIErrorHandler;
 import valandur.webapi.hooks.WebHooks;
 import valandur.webapi.json.JsonConverter;
+import valandur.webapi.misc.Util;
 import valandur.webapi.misc.WebAPICommandSource;
 import valandur.webapi.misc.JettyLogger;
 import valandur.webapi.servlets.*;
@@ -87,6 +88,9 @@ public class WebAPI {
 
     public static SpongeExecutorService syncExecutor;
 
+    private Reflections reflections;
+    public Reflections getReflections() { return this.reflections; }
+
     @Inject
     private Logger logger;
     public Logger getLogger() {
@@ -109,8 +113,6 @@ public class WebAPI {
     public AuthHandler getAuthHandler() {
         return authHandler;
     }
-
-    public static int cmdWaitTime;
 
     @Listener
     public void onPreInitialization(GamePreInitializationEvent event) {
@@ -142,6 +144,9 @@ public class WebAPI {
 
         CommandRegistry.init();
 
+        Reflections.log = null;
+        this.reflections = new Reflections();
+
         logger.info(WebAPI.NAME + " ready");
     }
 
@@ -153,12 +158,15 @@ public class WebAPI {
 
         serverHost = config.getNode("host").getString();
         serverPort = config.getNode("port").getInt();
-        cmdWaitTime = config.getNode("cmdWaitTime").getInt();
+        CmdServlet.CMD_WAIT_TIME = config.getNode("cmdWaitTime").getInt();
         BlockServlet.MAX_BLOCK_VOLUME_SIZE = config.getNode("maxBlockVolumeSize").getInt();
 
         authHandler.reloadConfig();
 
         WebHooks.reloadConfig();
+
+        JsonConverter.initSerializers();
+        JsonConverter.loadExtraSerializers();
 
         CacheConfig.init();
 
@@ -265,17 +273,19 @@ public class WebAPI {
                 asset.copyToDirectory(configPath);
 
             ConfigurationLoader<CommentedConfigurationNode> loader = HoconConfigurationLoader.builder().setPath(filePath).build();
-            ConfigurationNode config = loader.load();
+            CommentedConfigurationNode config = loader.load();
 
             ConfigurationLoader<CommentedConfigurationNode> defLoader = HoconConfigurationLoader.builder().setURL(asset.getUrl()).build();
-            ConfigurationNode defConfig = defLoader.load();
+            CommentedConfigurationNode defConfig = defLoader.load();
 
             int version = config.getNode("version").getInt(0);
             int defVersion = defConfig.getNode("version").getInt(0);
+            boolean newVersion = defVersion != version;
 
-            config.mergeValuesFrom(defConfig);
+            Util.mergeConfigs(config, defConfig, newVersion);
+            loader.save(config);
 
-            if (defVersion != version) {
+            if (newVersion) {
                 logger.info("New configuration version '" + defVersion + "' for " + path);
                 config.getNode("version").setValue(defVersion);
                 loader.save(config);
@@ -303,14 +313,12 @@ public class WebAPI {
 
         WebHooks.notifyHooks(WebHooks.WebHookType.SERVER_START, JsonConverter.toString(event));
     }
-
     @Listener
     public void onServerStop(GameStoppedServerEvent event) {
         WebHooks.notifyHooks(WebHooks.WebHookType.SERVER_STOP, JsonConverter.toString(event));
 
         stopWebServer();
     }
-
     @Listener
     public void onReload(GameReloadEvent event) {
         Optional<Player> p = event.getCause().first(Player.class);
@@ -333,7 +341,6 @@ public class WebAPI {
     public void onWorldLoad(LoadWorldEvent event) {
         DataCache.addWorld(event.getTargetWorld());
     }
-
     @Listener
     public void onWorldUnload(UnloadWorldEvent event) {
         DataCache.removeWorld(event.getTargetWorld().getUniqueId());
@@ -345,7 +352,6 @@ public class WebAPI {
 
         WebHooks.notifyHooks(WebHooks.WebHookType.PLAYER_JOIN, JsonConverter.toString(event));
     }
-
     @Listener(order = Order.POST)
     public void onPlayerLeave(ClientConnectionEvent.Disconnect event) {
         // Get the message first because the player is removed from cache afterwards
@@ -360,7 +366,6 @@ public class WebAPI {
     public void onUserKick(KickPlayerEvent event) {
         WebHooks.notifyHooks(WebHooks.WebHookType.PLAYER_KICK, JsonConverter.toString(event));
     }
-
     @Listener(order = Order.POST)
     public void onUserBan(BanUserEvent event) {
         WebHooks.notifyHooks(WebHooks.WebHookType.PLAYER_BAN, JsonConverter.toString(event));
@@ -372,7 +377,6 @@ public class WebAPI {
             DataCache.addEntity(entity);
         }
     }
-
     @Listener(order = Order.POST)
     public void onEntityDespawn(DestructEntityEvent event) {
         DataCache.removeEntity(event.getTargetEntity().getUniqueId());
@@ -390,7 +394,15 @@ public class WebAPI {
     }
 
     @Listener(order = Order.POST)
-    @IsCancelled(value = Tristate.FALSE)
+    public void onInteractInventory(InteractInventoryEvent.Open event) {
+        WebHooks.notifyHooks(WebHooks.WebHookType.INVENTORY_OPEN, JsonConverter.toString(event));
+    }
+    @Listener(order = Order.POST)
+    public void onInteractInventory(InteractInventoryEvent.Close event) {
+        WebHooks.notifyHooks(WebHooks.WebHookType.INVENTORY_CLOSE, JsonConverter.toString(event));
+    }
+
+    @Listener(order = Order.POST)
     public void onPlayerAchievement(GrantAchievementEvent.TargetPlayer event) {
         Player player = event.getTargetEntity();
 

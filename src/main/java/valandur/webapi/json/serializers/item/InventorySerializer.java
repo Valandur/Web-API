@@ -2,24 +2,15 @@ package valandur.webapi.json.serializers.item;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import org.spongepowered.api.item.inventory.Inventory;
 import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.item.inventory.Slot;
+import valandur.webapi.json.serializers.WebAPISerializer;
 
 import java.io.IOException;
 import java.util.Optional;
 
-public class InventorySerializer extends StdSerializer<Inventory> {
-
-    public InventorySerializer() {
-        this(null);
-    }
-
-    public InventorySerializer(Class<Inventory> t) {
-        super(t);
-    }
-
+public class InventorySerializer extends WebAPISerializer<Inventory> {
     @Override
     public void serialize(Inventory value, JsonGenerator gen, SerializerProvider provider) throws IOException {
         gen.writeStartObject();

@@ -19,7 +19,6 @@ public class PlayerServlet extends WebAPIServlet {
         String[] paths = data.getPathParts();
 
         if (paths.length == 0 || paths[0].isEmpty()) {
-            data.setStatus(HttpServletResponse.SC_OK);
             data.addJson("players", JsonConverter.toJson(DataCache.getPlayers()));
             return;
         }
@@ -36,7 +35,16 @@ public class PlayerServlet extends WebAPIServlet {
             return;
         }
 
-        data.setStatus(HttpServletResponse.SC_OK);
+        String strFields = data.getQueryPart("fields");
+        String strMethods = data.getQueryPart("methods");
+        if (strFields != null || strMethods != null) {
+            String[] fields = strFields != null ? strFields.split(",") : new String[]{};
+            String[] methods = strMethods != null ? strMethods.split(",") : new String[]{};
+            Tuple extra = DataCache.getExtraData(player.get(), fields, methods);
+            data.addJson("fields", extra.getFirst());
+            data.addJson("methods", extra.getSecond());
+        }
+
         data.addJson("player", JsonConverter.toJson(player.get(), true));
     }
 
@@ -64,23 +72,20 @@ public class PlayerServlet extends WebAPIServlet {
 
         final JsonNode reqJson = (JsonNode) data.getAttribute("body");
 
-        if (reqJson.has("method")) {
-            String mName = reqJson.get("method").asText();
-            Optional<Tuple<Class[], Object[]>> params = Util.parseParams(reqJson.get("params"));
-
-            if (!params.isPresent()) {
-                data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid parameters");
-                return;
-            }
-
-            JsonNode res = DataCache.executeMethod(player.get(), mName, params.get().getFirst(), params.get().getSecond());
-            data.addJson("result", res);
-        } else if (reqJson.has("field")) {
-            String fName = reqJson.get("field").asText();
-            JsonNode res = DataCache.getField(player.get(), fName);
-            data.addJson("result", res);
-        } else {
-            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Request must define either a 'method' or 'field' property");
+        if (!reqJson.has("method")) {
+            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Request must define the 'method' property");
+            return;
         }
+
+        String mName = reqJson.get("method").asText();
+        Optional<Object[]> params = Util.parseParams(reqJson.get("params"));
+
+        if (!params.isPresent()) {
+            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid parameters");
+            return;
+        }
+
+        JsonNode res = DataCache.executeMethod(player.get(), mName, params.get());
+        data.addJson("result", res);
     }
 }

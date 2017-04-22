@@ -24,51 +24,75 @@ import java.util.UUID;
 public class WebHookParam {
 
     public enum WebHookParamType {
-        STRING, BOOL, INTEGER, DOUBLE, PLAYER, WORLD, DIMENSION, LOCATION, VECTOR3D
+        STRING, BOOL, INTEGER, DOUBLE, PLAYER, WORLD, DIMENSION, LOCATION, VECTOR3D, VECTOR3I
     }
 
-    @Setting(comment = "The name of the parameter")
+    @Setting
     private String name;
     public String getName() {
         return name;
     }
 
-    @Setting(comment = "The type of the parameter (string/bool/integer/double/player/world/location/vector3d)")
+    @Setting
     private WebHookParamType type;
     public WebHookParamType getType() {
         return type;
     }
-    
+
+    @Setting
+    private boolean isOptional = false;
+    public boolean isOptional() { return isOptional; }
+
+
     public Optional<CommandElement> getCommandElement() {
         Text textName = Text.of(name);
+        CommandElement elem = null;
 
         switch (type) {
             case STRING:
-                return Optional.of(GenericArguments.string(textName));
+                elem = GenericArguments.string(textName);
+                break;
 
             case BOOL:
-                return Optional.of(GenericArguments.bool(textName));
+                elem = GenericArguments.bool(textName);
+                break;
 
             case INTEGER:
-                return Optional.of(GenericArguments.integer(textName));
+                elem = GenericArguments.integer(textName);
+                break;
 
             case DOUBLE:
-                return Optional.of(GenericArguments.doubleNum(textName));
+                elem = GenericArguments.doubleNum(textName);
+                break;
 
             case PLAYER:
-                return Optional.of(GenericArguments.player(textName));
+                elem = GenericArguments.player(textName);
+                break;
 
             case WORLD:
-                return Optional.of(GenericArguments.world(textName));
+                elem = GenericArguments.world(textName);
+                break;
 
             case LOCATION:
-                return Optional.of(GenericArguments.location(textName));
+                elem = GenericArguments.location(textName);
+                break;
 
             case VECTOR3D:
-                return Optional.of(GenericArguments.vector3d(textName));
+                elem = GenericArguments.vector3d(textName);
+                break;
+
+            case VECTOR3I:
+                elem = GenericArguments.vector3d(textName);
+                break;
         }
 
-        return Optional.empty();
+        if (elem == null)
+            return Optional.empty();
+
+        if (isOptional)
+            elem = GenericArguments.optional(elem);
+
+        return Optional.of(elem);
     }
 
     public Optional<Tuple<String, JsonNode>> getValue(CommandContext args) {

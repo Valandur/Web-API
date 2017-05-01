@@ -44,7 +44,7 @@ public class Util {
         String[] splits = query.split("&");
         for (String split : splits) {
             String[] subSplits = split.split("=");
-            map.put(subSplits[0], subSplits[1]);
+            map.put(subSplits[0], subSplits.length == 2 ? subSplits[1] : "");
         }
         return map;
     }

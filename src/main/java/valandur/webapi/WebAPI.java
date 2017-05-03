@@ -91,6 +91,11 @@ public class WebAPI {
     private Reflections reflections;
     public Reflections getReflections() { return this.reflections; }
 
+    private boolean devMode = false;
+    public boolean isDevMode() {
+        return devMode;
+    }
+
     @Inject
     private Logger logger;
     public Logger getLogger() {
@@ -156,10 +161,14 @@ public class WebAPI {
         Tuple<ConfigurationLoader, ConfigurationNode> tup = loadWithDefaults("config.conf", "defaults/config.conf");
         ConfigurationNode config = tup.getSecond();
 
+        devMode = config.getNode("devMode").getBoolean();
         serverHost = config.getNode("host").getString();
         serverPort = config.getNode("port").getInt();
         CmdServlet.CMD_WAIT_TIME = config.getNode("cmdWaitTime").getInt();
         BlockServlet.MAX_BLOCK_VOLUME_SIZE = config.getNode("maxBlockVolumeSize").getInt();
+
+        if (devMode)
+            logger.info("WebAPI IS RUNNING IN DEV MODE. USING NON-SHADOWED REFERENCES!");
 
         authHandler.reloadConfig();
 

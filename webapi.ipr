@@ -237,6 +237,15 @@
         <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/javax.servlet/javax.servlet-api/3.1.0/ab3976d4574c48d22dc1abf6a9e8bd0fdf928223/javax.servlet-api-3.1.0-sources.jar!/" />
       </SOURCES>
     </library>
+    <library name="Gradle: net.jodah:typetools:0.4.9">
+      <CLASSES>
+        <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/net.jodah/typetools/0.4.9/be3e69f1723d51cbd1627338f140988dfcc9ae7d/typetools-0.4.9.jar!/" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES>
+        <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/net.jodah/typetools/0.4.9/e1cad5c9678a98d4e2a1f06b178f9a975eb7e247/typetools-0.4.9-sources.jar!/" />
+      </SOURCES>
+    </library>
     <library name="Gradle: ninja.leaping.configurate:configurate-core:3.2">
       <CLASSES>
         <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/ninja.leaping.configurate/configurate-core/3.2/166fb82311704208782b4e1faf99dbeac9c84d00/configurate-core-3.2.jar!/" />
@@ -381,13 +390,13 @@
         <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.spongepowered/plugin-meta/0.4.1/5db3214cc052ea648e0c02fda6fa79d8a669e9c8/plugin-meta-0.4.1-sources.jar!/" />
       </SOURCES>
     </library>
-    <library name="Gradle: org.spongepowered:spongeapi:6.0.0-SNAPSHOT">
+    <library name="Gradle: org.spongepowered:spongeapi:7.0.0-SNAPSHOT">
       <CLASSES>
-        <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.spongepowered/spongeapi/6.0.0-SNAPSHOT/c792d536d6ed20a8af0a0d551eba510fd8e10d/spongeapi-6.0.0-SNAPSHOT.jar!/" />
+        <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.spongepowered/spongeapi/7.0.0-SNAPSHOT/7b0f5121c86c509ffcd2a738b5cc4739e3fb42a0/spongeapi-7.0.0-SNAPSHOT.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES>
-        <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.spongepowered/spongeapi/6.0.0-SNAPSHOT/3d23156a9977e4c7d7a520e3ab96bfe39b1c9ec8/spongeapi-6.0.0-SNAPSHOT-sources.jar!/" />
+        <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.spongepowered/spongeapi/7.0.0-SNAPSHOT/9b4d2adda24a4b2694b060e883bf7ab137f52769/spongeapi-7.0.0-SNAPSHOT-sources.jar!/" />
       </SOURCES>
     </library>
     <library name="Gradle: org.yaml:snakeyaml:1.16">

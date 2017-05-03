@@ -67,4 +67,5 @@ Web-API supports custom serializers for data. Find out more about them [here](do
 
 ## Contributors
 
-- @johnfg10
+- [johnfg10](https://github.com/johnfg10)
+- [r15ch13](https://github.com/r15ch13)

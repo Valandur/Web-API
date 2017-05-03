@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import com.flowpowered.math.vector.Vector3d;
 import com.flowpowered.math.vector.Vector3i;
 import org.slf4j.Logger;
@@ -61,13 +60,9 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Parameter;
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -75,6 +70,7 @@ public class JsonConverter {
 
     private static Map<Class, JsonSerializer> serializers;
     private static Map<String, Class> supportedData;
+    private static Map<String, String> relocatedPackages;
 
     public static void initSerializers() {
         serializers = new HashMap<>();
@@ -159,6 +155,15 @@ public class JsonConverter {
         supportedData.put("statistics", StatisticData.class);
         supportedData.put("tameable", TameableData.class);
         supportedData.put("trades", TradeOfferData.class);
+
+
+        // Relocated packages
+        relocatedPackages = new HashMap<>();
+        relocatedPackages.put("org.eclipse.jetty", "valandur.webapi.shadow.org.eclipse.jetty");
+        relocatedPackages.put("com.fasterxml.jackson", "valandur.webapi.shadow.fasterxml.jackson");
+        relocatedPackages.put("javax.servlet", "valandur.webapi.shadow.javax.servlet");
+        relocatedPackages.put("org.reflections", "valandur.webapi.shadow.org.reflections");
+        relocatedPackages.put("net.jodah", "valandur.webapi.shadow.net.jodah");
     }
     public static void loadExtraSerializers() {
         Logger logger = WebAPI.getInstance().getLogger();
@@ -167,7 +172,7 @@ public class JsonConverter {
         // Get root directory
         File root = new File("webapi");
         File folder = new File("webapi/serializers");
-        if (!folder.exists() && folder.mkdirs()) {
+        if (!folder.exists() && !folder.mkdirs()) {
             logger.warn("Could not create folder for additional serializers");
             return;
         }
@@ -197,24 +202,49 @@ public class JsonConverter {
         WebAPIDiagnosticListener diag = new WebAPIDiagnosticListener();
 
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
+        if (compiler == null) {
+            logger.warn("You need to install & use a JDK to support custom serializers. ");
+            return;
+        }
+
         StandardJavaFileManager fm = compiler.getStandardFileManager(diag, null, null);
         List<String> optionList = Arrays.asList("-classpath", classpath);
 
         // Compile, load and instantiate compiled class.
         for (File file : files) {
-            // Compile the file
-            logger.info("  - " + file.getName());
-            Iterable<? extends JavaFileObject> compilationUnits = fm.getJavaFileObjectsFromFiles(Collections.singletonList(file));
-            JavaCompiler.CompilationTask task = compiler.getTask(null, fm, diag, optionList, null, compilationUnits);
+            String logFile = file.getAbsolutePath().replace(".java", ".log");
+            diag.startLog(logFile);
 
             try {
-                String logFile = file.getAbsolutePath().replace(".java", ".log");
-                diag.startLog(logFile);
+                logger.info("  - " + file.getName());
+
+                // Read file to check for some basic things like package and shadowed references
+                String fileContent = new String(Files.readAllBytes(file.toPath()));
+
+                if (!fileContent.contains("package serializers;")) {
+                    logger.error("   Compilation failed. The class must be in the 'serializers' package.");
+                    continue;
+                }
+
+                // Replace shadowed references
+                for  (Map.Entry<String, String> entry : relocatedPackages.entrySet()) {
+                    if (WebAPI.getInstance().isDevMode())
+                        fileContent = fileContent.replace(entry.getValue(), entry.getKey());
+                    else
+                        fileContent = fileContent.replace(entry.getKey(), entry.getValue());
+                }
+
+                // Write back to file
+                Files.write(file.toPath(), fileContent.getBytes(), StandardOpenOption.CREATE);
+
+                // Compile the file
+                Iterable<? extends JavaFileObject> compilationUnits = fm.getJavaFileObjectsFromFiles(Collections.singletonList(file));
+                JavaCompiler.CompilationTask task = compiler.getTask(null, fm, diag, optionList, null, compilationUnits);
+
                 boolean res = task.call();
-                diag.stopLog();
 
                 if (!res) {
-                    logger.error("    Compilation failed. See the log file at " + logFile + " for details");
+                    logger.error("   Compilation failed. See the log file at " + logFile + " for details");
                     continue;
                 }
 
@@ -224,7 +254,7 @@ public class JsonConverter {
                 URLClassLoader classLoader = URLClassLoader.newInstance(new URL[]{root.toURI().toURL()}, currentCl);
                 Class<?> cls = Class.forName("serializers." + className, true, classLoader);
                 if (!WebAPISerializer.class.isAssignableFrom(cls)) {
-                    logger.error("    must extend " + WebAPISerializer.class.getName());
+                    logger.error("   Must extend " + WebAPISerializer.class.getName());
                     continue;
                 }
 
@@ -242,9 +272,14 @@ public class JsonConverter {
                 serializers.put(forClass, instance);
                 logger.info("    -> " + forClass.getName());
             } catch (IOException | IllegalAccessException | InstantiationException | ClassNotFoundException e) {
-                e.printStackTrace();
+                logger.error("   Error. See the log file at " + logFile + " for details");
+                diag.writeException(e);
             }
+
+            diag.stopLog();
         }
+
+        diag.stopLog();
 
         logger.info("Done loading additional serializers");
     }

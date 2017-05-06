@@ -2,12 +2,14 @@ package valandur.webapi.servlets;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.flowpowered.math.vector.Vector3i;
+import jdk.nashorn.internal.ir.Block;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.block.BlockType;
 import org.spongepowered.api.block.trait.BlockTrait;
 import org.spongepowered.api.util.Tuple;
+import valandur.webapi.blocks.Blocks;
 import valandur.webapi.cache.CachedWorld;
 import valandur.webapi.cache.DataCache;
 import valandur.webapi.misc.Permission;
@@ -19,10 +21,8 @@ import java.util.stream.Collectors;
 
 public class BlockServlet extends WebAPIServlet {
 
-    public static int MAX_BLOCK_VOLUME_SIZE = 1000;
-
     @Override
-    @Permission(perm = "block")
+    @Permission(perm = "block.get")
     protected void handleGet(ServletData data) {
         String[] parts = data.getPathParts();
 
@@ -31,8 +31,14 @@ public class BlockServlet extends WebAPIServlet {
             return;
         }
 
-        // Check world
+        // Check uuid
         String uuid = parts[0];
+        if (!Util.isValidUUID(uuid)) {
+            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid world UUID");
+            return;
+        }
+
+        // Check world
         Optional<CachedWorld> world = DataCache.getWorld(UUID.fromString(uuid));
         if (!world.isPresent()) {
             data.sendError(HttpServletResponse.SC_NOT_FOUND, "World with UUID '" + uuid + "' could not be found");
@@ -81,22 +87,23 @@ public class BlockServlet extends WebAPIServlet {
 
         // Check volume size
         int numBlocks = Math.abs((1 + maxX - minX) * (1 + maxY - minY) * (1 + maxZ - minZ));
-        if (MAX_BLOCK_VOLUME_SIZE > 0 && numBlocks > MAX_BLOCK_VOLUME_SIZE) {
-            data.sendError(HttpServletResponse.SC_NOT_ACCEPTABLE, "Size is " + numBlocks + " blocks, which is larger than the maximum of " + MAX_BLOCK_VOLUME_SIZE + " blocks");
+        if (Blocks.MAX_BLOCK_GET_SIZE > 0 && numBlocks > Blocks.MAX_BLOCK_GET_SIZE) {
+            data.sendError(HttpServletResponse.SC_NOT_ACCEPTABLE, "Size is " + numBlocks +
+                    " blocks, which is larger than the maximum of " + Blocks.MAX_BLOCK_GET_SIZE + " blocks");
             return;
         }
 
         if (numBlocks > 1) {
-            JsonNode node = DataCache.getBlockVolume(world.get(), new Vector3i(minX, minY, minZ), new Vector3i(maxX, maxY, maxZ));
+            JsonNode node = Blocks.getBlockVolume(world.get(), new Vector3i(minX, minY, minZ), new Vector3i(maxX, maxY, maxZ));
             data.addJson("volume", node);
         } else {
-            JsonNode node = DataCache.getBlockAt(world.get(), new Vector3i(minX, minY, minZ));
+            JsonNode node = Blocks.getBlockAt(world.get(), new Vector3i(minX, minY, minZ));
             data.addJson("block", node);
         }
     }
 
     @Override
-    @Permission(perm = "block")
+    @Permission(perm = "block.post")
     protected void handlePost(ServletData data) {
         JsonNode reqJson = (JsonNode) data.getAttribute("body");
 
@@ -116,8 +123,14 @@ public class BlockServlet extends WebAPIServlet {
                 return;
             }
 
-            // Check world
+            // Check uuid
             String uuid = wNode.asText();
+            if (!Util.isValidUUID(uuid)) {
+                data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid world UUID");
+                return;
+            }
+
+            // Check world
             Optional<CachedWorld> world = DataCache.getWorld(UUID.fromString(uuid));
             if (!world.isPresent()) {
                 data.sendError(HttpServletResponse.SC_NOT_FOUND, "World with UUID '" + uuid + "' could not be found");
@@ -144,14 +157,17 @@ public class BlockServlet extends WebAPIServlet {
             Vector3i size = max.sub(min).add(1, 1, 1);
 
             int numBlocks = size.getX() * size.getY() * size.getZ();
-            if (MAX_BLOCK_VOLUME_SIZE > 0 && numBlocks > MAX_BLOCK_VOLUME_SIZE) {
-                data.sendError(HttpServletResponse.SC_NOT_ACCEPTABLE, "Area size is " + numBlocks + " blocks, which is larger than the maximum of " + MAX_BLOCK_VOLUME_SIZE + " blocks");
+            if (Blocks.MAX_BLOCK_UPDATE_SIZE > 0 && numBlocks > Blocks.MAX_BLOCK_UPDATE_SIZE) {
+                data.sendError(HttpServletResponse.SC_NOT_ACCEPTABLE, "Area size is " + numBlocks +
+                        " blocks, which is larger than the maximum of " + Blocks.MAX_BLOCK_UPDATE_SIZE + " blocks");
                 return;
             }
 
-            JsonNode block = area.get("block");
+            // Collect a list of blocks we want to update
+            List<Tuple<Vector3i, BlockState>> blocks = new ArrayList<>();
 
             // If a property 'block' exists, then all blocks in the area are changed to the same type
+            JsonNode block = area.get("block");
             if (block != null) {
                 BlockState state = null;
                 try {
@@ -164,25 +180,21 @@ public class BlockServlet extends WebAPIServlet {
                 for (int x = min.getX(); x <= max.getX(); x++) {
                     for (int y = min.getY(); y <= max.getY(); y++) {
                         for (int z = min.getZ(); z <= max.getZ(); z++) {
-                            Vector3i pos = new Vector3i(x, y, z);
-
-                            Optional<Boolean> res = DataCache.setBlock(world.get(), pos, state);
-                            if (res.isPresent() && res.get())
-                                blocksSet++;
+                            blocks.add(new Tuple<>(new Vector3i(x, y, z), state));
                         }
                     }
                 }
             } else {
                 // otherwise, the property 'blocks' defines nested arrays for every location in the area
-                JsonNode blocks = area.get("blocks");
+                JsonNode jsonBlocks = area.get("blocks");
 
-                if (blocks == null) {
+                if (jsonBlocks == null) {
                     data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Either 'block' or 'blocks' has to be defined on each area");
                     return;
                 }
 
                 for (int x = 0; x < size.getX(); x++) {
-                    JsonNode xBlocks = blocks.get(x);
+                    JsonNode xBlocks = jsonBlocks.get(x);
 
                     if (xBlocks == null)
                         continue;
@@ -199,14 +211,9 @@ public class BlockServlet extends WebAPIServlet {
                             if (b == null)
                                 continue;
 
-                            Vector3i pos = new Vector3i(min.getX() + x, min.getY() + y, min.getZ() + z);
-
                             try {
                                 BlockState state = parseBlockState(b);
-
-                                Optional<Boolean> res = DataCache.setBlock(world.get(), pos, state);
-                                if (res.isPresent() && res.get())
-                                    blocksSet++;
+                                blocks.add(new Tuple<>(new Vector3i(min.getX() + x, min.getY() + y, min.getZ() + z), state));
                             } catch (Exception e) {
                                 data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Could not process block state: " + e.getMessage());
                                 return;
@@ -215,9 +222,10 @@ public class BlockServlet extends WebAPIServlet {
                     }
                 }
             }
-        }
 
-        data.addJson("blocksChanged", blocksSet);
+            UUID updateUUID = Blocks.startBlockUpdate(UUID.fromString(world.get().uuid), blocks);
+            data.addJson("uuid", updateUUID);
+        }
     }
 
     private Optional<Vector3i> getVector3i(JsonNode rootNode, String name) {

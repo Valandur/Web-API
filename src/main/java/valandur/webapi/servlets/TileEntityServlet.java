@@ -17,7 +17,7 @@ import java.util.UUID;
 
 public class TileEntityServlet extends WebAPIServlet {
     @Override
-    @Permission(perm = "tile-entity")
+    @Permission(perm = "tile-entity.get")
     protected void handleGet(ServletData data) {
         String[] parts = data.getPathParts();
 
@@ -33,7 +33,7 @@ public class TileEntityServlet extends WebAPIServlet {
         }
 
         String uuid = parts[0];
-        if (uuid.split("-").length != 5) {
+        if (!Util.isValidUUID(uuid)) {
             data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid tile entity UUID");
             return;
         }
@@ -74,7 +74,7 @@ public class TileEntityServlet extends WebAPIServlet {
     }
 
     @Override
-    @Permission(perm = "tile-entity")
+    @Permission(perm = "tile-entity.post")
     protected void handlePost(ServletData data) {
         String[] parts = data.getPathParts();
 

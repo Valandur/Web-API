@@ -1,4 +1,4 @@
-package valandur.webapi.command;
+package valandur.webapi.command.hooks;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.NullNode;

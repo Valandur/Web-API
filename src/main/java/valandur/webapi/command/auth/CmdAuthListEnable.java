@@ -1,4 +1,4 @@
-package valandur.webapi.command;
+package valandur.webapi.command.auth;
 
 import org.spongepowered.api.command.CommandException;
 import org.spongepowered.api.command.CommandResult;
@@ -8,23 +8,21 @@ import org.spongepowered.api.command.spec.CommandExecutor;
 import org.spongepowered.api.text.Text;
 import valandur.webapi.WebAPI;
 
-public class CmdAuthListRemove implements CommandExecutor {
+public class CmdAuthListEnable implements CommandExecutor {
     private boolean whitelist = false;
 
-    public CmdAuthListRemove(boolean whitelist) {
+    public CmdAuthListEnable(boolean whitelist) {
         this.whitelist = whitelist;
     }
 
     @Override
     public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
-        String ip = args.getOne("ip").get().toString();
-
         if (whitelist) {
-            WebAPI.getInstance().getAuthHandler().removeFromWhitelist(ip);
-            src.sendMessage(Text.of("Removed " + ip + " from whitelist"));
+            WebAPI.getInstance().getAuthHandler().toggleWhitelist(true);
+            src.sendMessage(Text.of("Enabled whitelist"));
         } else {
-            WebAPI.getInstance().getAuthHandler().removeFromBlacklist(ip);
-            src.sendMessage(Text.of("Removed " + ip + " from blacklist"));
+            WebAPI.getInstance().getAuthHandler().toggleBlacklist(true);
+            src.sendMessage(Text.of("Enabled blacklist"));
         }
 
         return CommandResult.success();

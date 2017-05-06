@@ -17,7 +17,7 @@ import java.util.Set;
 public class ClassServlet extends WebAPIServlet {
 
     @Override
-    @Permission(perm = "class")
+    @Permission(perm = "class.get")
     protected void handleGet(ServletData data) {
         String[] paths = data.getPathParts();
 

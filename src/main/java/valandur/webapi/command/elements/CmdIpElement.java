@@ -1,4 +1,4 @@
-package valandur.webapi.command;
+package valandur.webapi.command.elements;
 
 import com.google.common.net.InetAddresses;
 import org.spongepowered.api.command.CommandSource;

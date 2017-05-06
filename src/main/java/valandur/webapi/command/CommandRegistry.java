@@ -8,12 +8,21 @@ import org.spongepowered.api.command.args.GenericArguments;
 import org.spongepowered.api.command.spec.CommandSpec;
 import org.spongepowered.api.text.Text;
 import valandur.webapi.WebAPI;
+import valandur.webapi.blocks.Blocks;
+import valandur.webapi.command.auth.CmdAuthListAdd;
+import valandur.webapi.command.auth.CmdAuthListDisable;
+import valandur.webapi.command.auth.CmdAuthListEnable;
+import valandur.webapi.command.auth.CmdAuthListRemove;
+import valandur.webapi.command.blocks.CmdBlockUpdatesList;
+import valandur.webapi.command.elements.CmdIpElement;
+import valandur.webapi.command.hooks.CmdNotifyHook;
 import valandur.webapi.hooks.CommandWebHook;
-import valandur.webapi.hooks.WebHook;
 import valandur.webapi.hooks.WebHookParam;
 import valandur.webapi.hooks.WebHooks;
+import valandur.webapi.misc.Util;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class CommandRegistry {
     public static void init() {
@@ -87,6 +96,36 @@ public class CommandRegistry {
                 .child(specBlacklistDisable, "disable")
                 .build();
 
+        // Block updates
+        CommandSpec specBlockUpdatesList = CommandSpec.builder()
+                .description(Text.of("List all running block updates"))
+                .permission("webapi.command.blocks.list")
+                .executor(new CmdBlockUpdatesList())
+                .build();
+        CommandSpec specBlockUpdatesPause = CommandSpec.builder()
+                .description(Text.of("Pause/Resume running block updates"))
+                .permission("webapi.command.blocks.pause")
+                .arguments(GenericArguments.choices(Text.of("uuid"),
+                        () -> Blocks.getBlockUpdates().stream().map(u -> u.getUUID().toString()).collect(Collectors.toList()),
+                        uuid -> Blocks.getBlockUpdate(UUID.fromString(uuid))))
+                .executor(new CmdBlockUpdatesList())
+                .build();
+        CommandSpec specBlockUpdatesStop = CommandSpec.builder()
+                .description(Text.of("Stop a running block update"))
+                .permission("webapi.command.blocks.stop")
+                .arguments(GenericArguments.choices(Text.of("uuid"),
+                        () -> Blocks.getBlockUpdates().stream().map(u -> u.getUUID().toString()).collect(Collectors.toList()),
+                        uuid -> Util.isValidUUID(uuid) ? Blocks.getBlockUpdate(UUID.fromString(uuid)) : null))
+                .executor(new CmdBlockUpdatesList())
+                .build();
+        CommandSpec specBlockUpdates = CommandSpec.builder()
+                .description(Text.of("Manage running block updates"))
+                .permission("webapi.command.blocks")
+                .child(specBlockUpdatesList, "list")
+                .child(specBlockUpdatesPause, "pause")
+                .child(specBlockUpdatesStop, "stop", "delete", "remove")
+                .build();
+
         // Notify commands
         Map<List<String>, CommandSpec> hookSpecs = new HashMap<>();
         Map<List<String>, CommandSpec> hookAliases = new HashMap<>();
@@ -126,6 +165,7 @@ public class CommandRegistry {
                 .child(specWhitelist, "whitelist")
                 .child(specBlacklist, "blacklist")
                 .child(specNotifyHook, "notify")
+                .child(specBlockUpdates, "blocks")
                 .build();
         manager.register(WebAPI.getInstance(), spec, "webapi");
 

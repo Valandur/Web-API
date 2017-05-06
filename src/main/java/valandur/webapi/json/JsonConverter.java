@@ -226,6 +226,20 @@ public class JsonConverter {
                     continue;
                 }
 
+                int start = fileContent.indexOf("class ") + 6;
+                int end = fileContent.indexOf(" ", start);
+                String cName = fileContent.substring(start, end);
+                if (!cName.equalsIgnoreCase(file.getName().substring(0, file.getName().length() - 5))) {
+                    logger.error("   File name '" + file.getName().substring(0, file.getName().length() - 5) + "' must match class name '" + cName + "'");
+                    continue;
+                }
+
+                if (!fileContent.contains("extends WebAPISerializer<")) {
+                    logger.error("   Class must extend WebAPISerializer, and must provide the event class as a " +
+                            "generic parameter, e.g: WebAPISerializer<InteractBlockEvent>");
+                    continue;
+                }
+
                 // Replace shadowed references
                 for  (Map.Entry<String, String> entry : relocatedPackages.entrySet()) {
                     if (WebAPI.getInstance().isDevMode())

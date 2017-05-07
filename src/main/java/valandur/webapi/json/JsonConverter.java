@@ -159,11 +159,11 @@ public class JsonConverter {
 
         // Relocated packages
         relocatedPackages = new HashMap<>();
-        relocatedPackages.put("org.eclipse.jetty", "valandur.webapi.shadow.org.eclipse.jetty");
-        relocatedPackages.put("com.fasterxml.jackson", "valandur.webapi.shadow.fasterxml.jackson");
-        relocatedPackages.put("javax.servlet", "valandur.webapi.shadow.javax.servlet");
-        relocatedPackages.put("org.reflections", "valandur.webapi.shadow.org.reflections");
-        relocatedPackages.put("net.jodah", "valandur.webapi.shadow.net.jodah");
+        relocatedPackages.put("import org.eclipse.jetty",     "import valandur.webapi.shadow.org.eclipse.jetty");
+        relocatedPackages.put("import com.fasterxml.jackson", "import valandur.webapi.shadow.fasterxml.jackson");
+        relocatedPackages.put("import javax.servlet",         "import valandur.webapi.shadow.javax.servlet");
+        relocatedPackages.put("import org.reflections",       "import valandur.webapi.shadow.org.reflections");
+        relocatedPackages.put("import net.jodah",             "import valandur.webapi.shadow.net.jodah");
     }
     public static void loadExtraSerializers() {
         Logger logger = WebAPI.getInstance().getLogger();
@@ -222,7 +222,7 @@ public class JsonConverter {
                 String fileContent = new String(Files.readAllBytes(file.toPath()));
 
                 if (!fileContent.contains("package serializers;")) {
-                    logger.error("   Compilation failed. The class must be in the 'serializers' package.");
+                    logger.error("   The class must be in the 'serializers' package.");
                     continue;
                 }
 
@@ -241,7 +241,7 @@ public class JsonConverter {
                 }
 
                 // Replace shadowed references
-                for  (Map.Entry<String, String> entry : relocatedPackages.entrySet()) {
+                for (Map.Entry<String, String> entry : relocatedPackages.entrySet()) {
                     if (WebAPI.getInstance().isDevMode())
                         fileContent = fileContent.replace(entry.getValue(), entry.getKey());
                     else

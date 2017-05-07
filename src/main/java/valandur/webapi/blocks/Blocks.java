@@ -28,8 +28,10 @@ public class Blocks {
     public static Collection<BlockUpdate> getBlockUpdates() {
         return blockUpdates.values();
     }
-    public static BlockUpdate getBlockUpdate(UUID uuid) {
-        return blockUpdates.get(uuid);
+    public static Optional<BlockUpdate> getBlockUpdate(UUID uuid) {
+        if (!blockUpdates.containsKey(uuid))
+            return Optional.empty();
+        return Optional.of(blockUpdates.get(uuid));
     }
 
     public static JsonNode getBlockVolume(CachedWorld world, Vector3i min, Vector3i max) {

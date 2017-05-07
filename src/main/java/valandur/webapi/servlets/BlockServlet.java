@@ -9,6 +9,7 @@ import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.block.BlockType;
 import org.spongepowered.api.block.trait.BlockTrait;
 import org.spongepowered.api.util.Tuple;
+import valandur.webapi.blocks.BlockUpdate;
 import valandur.webapi.blocks.Blocks;
 import valandur.webapi.cache.CachedWorld;
 import valandur.webapi.cache.DataCache;
@@ -226,6 +227,65 @@ public class BlockServlet extends WebAPIServlet {
             UUID updateUUID = Blocks.startBlockUpdate(UUID.fromString(world.get().uuid), blocks);
             data.addJson("uuid", updateUUID);
         }
+    }
+
+    @Override
+    @Permission(perm = "block.put")
+    protected void handlePut(ServletData data) {
+        String[] parts = data.getPathParts();
+        JsonNode reqJson = (JsonNode) data.getAttribute("body");
+
+        if (parts.length < 1 || parts[0].isEmpty()) {
+            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid block update UUID");
+            return;
+        }
+
+        // Check uuid
+        String uuid = parts[0];
+        if (!Util.isValidUUID(uuid)) {
+            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid block update UUID");
+            return;
+        }
+
+        // Check block update
+        Optional<BlockUpdate> update = Blocks.getBlockUpdate(UUID.fromString(uuid));
+        if (!update.isPresent()) {
+            data.sendError(HttpServletResponse.SC_NOT_FOUND, "Block update with UUID '" + uuid + "' could not be found");
+            return;
+        }
+
+        if (reqJson.get("pause").asBoolean()) {
+            update.get().pause();
+        } else {
+            update.get().start();
+        }
+    }
+
+    @Override
+    @Permission(perm = "block.delete")
+    protected void handleDelete(ServletData data) {
+        String[] parts = data.getPathParts();
+
+        if (parts.length < 1 || parts[0].isEmpty()) {
+            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid block update UUID");
+            return;
+        }
+
+        // Check uuid
+        String uuid = parts[0];
+        if (!Util.isValidUUID(uuid)) {
+            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid block update UUID");
+            return;
+        }
+
+        // Check block update
+        Optional<BlockUpdate> update = Blocks.getBlockUpdate(UUID.fromString(uuid));
+        if (!update.isPresent()) {
+            data.sendError(HttpServletResponse.SC_NOT_FOUND, "Block update with UUID '" + uuid + "' could not be found");
+            return;
+        }
+
+        update.get().stop("Cancelled by request");
     }
 
     private Optional<Vector3i> getVector3i(JsonNode rootNode, String name) {

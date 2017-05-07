@@ -101,10 +101,41 @@ responses:
 
 paths:
   /block:
+    get:
+      summary: List block updates
+      description: |
+        List all currently running/paused block update operations.
+      tags:
+        - Block
+      responses:
+        403:
+          $ref: '#/responses/403'
+        200:
+          description: Block updates
+          schema:
+            type: array
+            items:
+              type: object
+              properties:
+                uuid:
+                  type: string
+                  description: The UUID of the block update operation.
+                status:
+                  type: string
+                  description: |
+                    The current status of the operation, one of: INIT, RUNNING, PAUSED, DONE, ERRORED.
+                progress:
+                  type: number
+                  format: float
+                  description: The update progress of this operation, from 0 (nothing done) to 1 (completely done).
+                blocksSet:
+                  type: number
+                  format: integer
+                  description: The amount of blocks changed (blocks that are already set to the correct type do not count).
     post:
       summary: Modify blocks
       description: |
-        Change blocks on the server.
+        Start a request to change blocks on the server.
       parameters:
         - name: Request
           in: body
@@ -130,13 +161,62 @@ paths:
                 type: string
                 description: A description of the type of error that occured.
         200:
-          description: Block change results
+          description: Block update uuid
           schema:
             type: object
             properties:
-              blocksChanged:
-                type: integer
-                description: The number of blocks that were changed (blocks that already match the defined block(s) are not considered changed)
+              uuid:
+                type: string
+                description: The uuid of the block change operation
+  /block/{uuid}:
+    put:
+      summary: Modify block update
+      parameters:
+        - name: uuid
+          in: path
+          type: string
+          description: The uuid of the block update.
+          required: true
+        - name: data
+          in: body
+          required: true
+          description: The new data applied to the block update.
+          schema:
+            type: object
+            properties:
+              pause:
+                type: boolean
+                description: True if the block operation should be paused, false otherwise.
+      tags:
+        - Block
+      responses:
+        400:
+          $ref: '#/responses/400'
+        403:
+          $ref: '#/responses/403'
+        404:
+          $ref: '#/responses/404'
+        200:
+          description: Status change successful
+    delete:
+      summary: Cancel block update
+      parameters:
+        - name: world
+          in: path
+          type: string
+          description: The uuid of the block update.
+          required: true
+      tags:
+        - Block
+      responses:
+        400:
+          $ref: '#/responses/400'
+        403:
+          $ref: '#/responses/403'
+        404:
+          $ref: '#/responses/404'
+        200:
+          description: Cancel successful
   /block/{world}/{x}/{y}/{z}:
     get:
       summary: Get one block
@@ -1786,6 +1866,7 @@ definitions:
           type: string
           description: |
             The UUID of the world that the block update is applied to.
+
             Either the property `block` or `blocks` has to be set.
 
             If the property `block` is set then all the blocks within the area defined by `min` and `max` are changed to the specified block.

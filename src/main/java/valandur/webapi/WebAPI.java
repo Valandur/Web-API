@@ -49,6 +49,7 @@ import org.spongepowered.api.text.format.TextColors;
 import org.spongepowered.api.util.Tuple;
 import valandur.webapi.blocks.BlockUpdate;
 import valandur.webapi.blocks.BlockUpdateProgressEvent;
+import valandur.webapi.blocks.BlockUpdateStatusChangeEvent;
 import valandur.webapi.blocks.Blocks;
 import valandur.webapi.cache.*;
 import valandur.webapi.command.*;
@@ -438,18 +439,28 @@ public class WebAPI {
         WebHooks.notifyHooks(WebHooks.WebHookType.COMMAND, JsonConverter.toString(call));
     }
 
-    private int updateTick = 0;
     @Listener
-    public void onBlockUpdate(BlockUpdateProgressEvent event) {
+    public void onBlockUpdateStatusChange(BlockUpdateStatusChangeEvent event) {
         BlockUpdate update = event.getBlockUpdate();
-        if (update.isDone()) {
-            logger.info("Block update " + update.getUUID() + " is done");
-            logger.info("Blocks set: " + update.getBlocksSet() + ", error: " + update.getError());
-        } else {
-            updateTick++;
-            if (updateTick % 4 == 0)
-                logger.info(update.getUUID() + ": " + String.format("%.2f", update.getProgress() * 100));
+        switch (update.getStatus()) {
+            case DONE:
+                logger.info("Block update " + update.getUUID() + " is done, " + update.getBlocksSet() + " blocks set");
+                break;
+
+            case ERRORED:
+                logger.warn("Block update " + update.getUUID() + " failed: " + update.getError());
+                break;
+
+            case PAUSED:
+                logger.info("Block update " + update.getUUID() + " paused");
+                break;
+
+            case RUNNING:
+                logger.info("Block update " + update.getUUID() + " started");
+                break;
         }
+
+        WebHooks.notifyHooks(WebHooks.WebHookType.BLOCK_UPDATE_STATUS, JsonConverter.toString(event));
     }
 
 

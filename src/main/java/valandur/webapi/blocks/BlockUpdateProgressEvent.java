@@ -3,20 +3,22 @@ package valandur.webapi.blocks;
 import org.spongepowered.api.event.cause.Cause;
 import org.spongepowered.api.event.impl.AbstractEvent;
 
-public class BlockUpdateProgressEvent extends AbstractEvent {
+public class BlockUpdateProgressEvent extends AbstractEvent implements BlockUpdateEvent {
 
-    private final BlockUpdate blockUpdate;
+    private BlockUpdate update;
+
+    @Override
     public BlockUpdate getBlockUpdate() {
-        return blockUpdate;
-    }
-
-
-    public BlockUpdateProgressEvent(BlockUpdate update) {
-        this.blockUpdate = update;
+        return update;
     }
 
     @Override
     public Cause getCause() {
-        return blockUpdate.getCause();
+        return update.getCause();
+    }
+
+
+    public BlockUpdateProgressEvent(BlockUpdate update) {
+        this.update = update;
     }
 }

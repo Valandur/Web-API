@@ -13,14 +13,13 @@ import valandur.webapi.misc.WebAPICommandSource;
 import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.*;
 
 public class CmdServlet extends WebAPIServlet {
 
     public static int CMD_WAIT_TIME = 1000;
 
     @Override
-    @Permission(perm = "cmd")
+    @Permission(perm = "cmd.get")
     protected void handleGet(ServletData data) {
         String[] paths = data.getPathParts();
 
@@ -40,16 +39,16 @@ public class CmdServlet extends WebAPIServlet {
     }
 
     @Override
-    @Permission(perm = "cmd")
+    @Permission(perm = "cmd.post")
     protected void handlePost(ServletData data) {
         List<String> permissions = (List<String>) data.getAttribute("perms");
-        boolean allowAll = permissions.contains("*") || permissions.contains("cmd.*");
+        boolean allowAll = permissions.contains("*") || permissions.contains("cmd.*") || permissions.contains("cmd.post.*");
 
         final JsonNode reqJson = (JsonNode) data.getAttribute("body");
 
         if (!reqJson.isArray()) {
             String cmd = reqJson.get("command").asText().split(" ")[0];
-            if (!allowAll && !permissions.contains("cmd." + cmd)) {
+            if (!allowAll && !permissions.contains("cmd.post." + cmd)) {
                 data.sendError(HttpServletResponse.SC_FORBIDDEN, "Access denied");
                 return;
             }
@@ -81,9 +80,7 @@ public class CmdServlet extends WebAPIServlet {
         final WebAPICommandSource src = new WebAPICommandSource(name, waitLines);
 
         try {
-            CompletableFuture
-                    .runAsync(() -> WebAPI.executeCommand(cmd, src), WebAPI.syncExecutor)
-                    .get();
+            WebAPI.runOnMain(() -> WebAPI.executeCommand(cmd, src));
 
             if (waitLines > 0 || waitTime > 0) {
                 synchronized (src) {
@@ -92,7 +89,7 @@ public class CmdServlet extends WebAPIServlet {
             }
 
             return JsonConverter.toJson(src.getLines(), true);
-        } catch (InterruptedException | ExecutionException e) {
+        } catch (InterruptedException e) {
             e.printStackTrace();
             return null;
         }

@@ -14,7 +14,7 @@ import java.util.Optional;
 
 public class InfoServlet extends WebAPIServlet {
     @Override
-    @Permission(perm = "info")
+    @Permission(perm = "info.get")
     protected void handleGet(ServletData data) {
         Server server = Sponge.getServer();
         Platform platform = Sponge.getPlatform();

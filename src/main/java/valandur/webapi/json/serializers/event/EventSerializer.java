@@ -11,6 +11,7 @@ import org.spongepowered.api.event.entity.living.humanoid.player.KickPlayerEvent
 import org.spongepowered.api.event.item.inventory.InteractInventoryEvent;
 import org.spongepowered.api.event.user.BanUserEvent;
 import org.spongepowered.api.event.user.TargetUserEvent;
+import valandur.webapi.blocks.BlockUpdateEvent;
 import valandur.webapi.cache.CachedEntity;
 import valandur.webapi.cache.CachedPlayer;
 import valandur.webapi.cache.DataCache;
@@ -55,9 +56,13 @@ public class EventSerializer extends WebAPISerializer<Event> {
             gen.writeObjectField("inventory", ((InteractInventoryEvent)value).getTargetInventory());
         }
 
+        if (value instanceof BlockUpdateEvent) {
+            gen.writeObjectField("blockUpdate", ((BlockUpdateEvent)value).getBlockUpdate());
+        }
+
         try {
             gen.writeObjectField("cause", value.getCause());
-        } catch (AbstractMethodError e) {}
+        } catch (AbstractMethodError ignored) {}
 
         gen.writeEndObject();
     }

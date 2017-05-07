@@ -20,6 +20,15 @@ import java.util.*;
 public class Util {
 
     /**
+     * Checks if the provided string is  valid UUID.
+     * @param uuid The string to check.
+     * @return True if the provided string is a valid UUID, false otherwise.
+     */
+    public static boolean isValidUUID(String uuid) {
+        return uuid.split("-").length == 5;
+    }
+
+    /**
      * Gets the path parameters of a given request.
      * @param req The request from which the path parameters are extracted.
      * @return The path parameters.

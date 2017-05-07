@@ -18,6 +18,7 @@ import org.slf4j.Logger;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.asset.Asset;
 import org.spongepowered.api.command.CommandManager;
+import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.config.ConfigDir;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.living.player.Player;
@@ -46,6 +47,10 @@ import org.spongepowered.api.scheduler.SpongeExecutorService;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
 import org.spongepowered.api.util.Tuple;
+import valandur.webapi.blocks.BlockUpdate;
+import valandur.webapi.blocks.BlockUpdateProgressEvent;
+import valandur.webapi.blocks.BlockUpdateStatusChangeEvent;
+import valandur.webapi.blocks.Blocks;
 import valandur.webapi.cache.*;
 import valandur.webapi.command.*;
 import valandur.webapi.handlers.AuthHandler;
@@ -62,6 +67,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.function.Supplier;
 
 @Plugin(
         id = WebAPI.ID,
@@ -86,7 +94,7 @@ public class WebAPI {
         return WebAPI.instance;
     }
 
-    public static SpongeExecutorService syncExecutor;
+    private static SpongeExecutorService syncExecutor;
 
     private Reflections reflections;
     public Reflections getReflections() { return this.reflections; }
@@ -165,7 +173,9 @@ public class WebAPI {
         serverHost = config.getNode("host").getString();
         serverPort = config.getNode("port").getInt();
         CmdServlet.CMD_WAIT_TIME = config.getNode("cmdWaitTime").getInt();
-        BlockServlet.MAX_BLOCK_VOLUME_SIZE = config.getNode("maxBlockVolumeSize").getInt();
+        Blocks.MAX_BLOCK_GET_SIZE = config.getNode("maxBlockGetSize").getInt();
+        Blocks.MAX_BLOCK_UPDATE_SIZE = config.getNode("maxBlockUpdateSize").getInt();
+        BlockUpdate.MAX_BLOCKS_PER_SECOND = config.getNode("maxBlocksPerSecond").getInt();
 
         if (devMode)
             logger.info("WebAPI IS RUNNING IN DEV MODE. USING NON-SHADOWED REFERENCES!");
@@ -308,9 +318,9 @@ public class WebAPI {
         }
     }
 
-    public static void executeCommand(String command, WebAPICommandSource source) {
+    public static CommandResult executeCommand(String command, WebAPICommandSource source) {
         CommandManager cmdManager = Sponge.getGame().getCommandManager();
-        cmdManager.process(source, command);
+        return cmdManager.process(source, command);
     }
 
     @Listener
@@ -427,5 +437,48 @@ public class WebAPI {
         CachedCommandCall call = DataCache.addCommandCall(event);
 
         WebHooks.notifyHooks(WebHooks.WebHookType.COMMAND, JsonConverter.toString(call));
+    }
+
+    @Listener
+    public void onBlockUpdateStatusChange(BlockUpdateStatusChangeEvent event) {
+        BlockUpdate update = event.getBlockUpdate();
+        switch (update.getStatus()) {
+            case DONE:
+                logger.info("Block update " + update.getUUID() + " is done, " + update.getBlocksSet() + " blocks set");
+                break;
+
+            case ERRORED:
+                logger.warn("Block update " + update.getUUID() + " failed: " + update.getError());
+                break;
+
+            case PAUSED:
+                logger.info("Block update " + update.getUUID() + " paused");
+                break;
+
+            case RUNNING:
+                logger.info("Block update " + update.getUUID() + " started");
+                break;
+        }
+
+        WebHooks.notifyHooks(WebHooks.WebHookType.BLOCK_UPDATE_STATUS, JsonConverter.toString(event));
+    }
+
+
+    public static <T> Optional<T> runOnMain(Supplier<T> supplier) {
+        if (Sponge.getServer().isMainThread()) {
+            T obj = supplier.get();
+            return obj == null ? Optional.empty() : Optional.of(obj);
+        } else {
+            CompletableFuture<T> future = CompletableFuture.supplyAsync(supplier, WebAPI.syncExecutor);
+            try {
+                T obj = future.get();
+                if (obj == null)
+                    return Optional.empty();
+                return Optional.of(obj);
+            } catch (InterruptedException | ExecutionException e) {
+                e.printStackTrace();
+                return Optional.empty();
+            }
+        }
     }
 }

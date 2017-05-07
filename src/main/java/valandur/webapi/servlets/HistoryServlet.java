@@ -8,7 +8,7 @@ import javax.servlet.http.HttpServletResponse;
 
 public class HistoryServlet extends WebAPIServlet {
     @Override
-    @Permission(perm = "history")
+    @Permission(perm = "history.get")
     protected void handleGet(ServletData data) {
         String[] paths = data.getPathParts();
 

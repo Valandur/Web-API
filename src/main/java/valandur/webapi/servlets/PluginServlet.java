@@ -10,7 +10,7 @@ import java.util.Optional;
 
 public class PluginServlet extends WebAPIServlet {
     @Override
-    @Permission(perm = "plugin")
+    @Permission(perm = "plugin.get")
     protected void handleGet(ServletData data) {
         String[] paths = data.getPathParts();
 

@@ -17,7 +17,7 @@ import java.util.UUID;
 
 public class WorldServlet extends WebAPIServlet {
     @Override
-    @Permission(perm = "world")
+    @Permission(perm = "world.get")
     protected void handleGet(ServletData data) {
         String[] paths = data.getPathParts();
 
@@ -27,7 +27,7 @@ public class WorldServlet extends WebAPIServlet {
         }
 
         String uuid = paths[0];
-        if (uuid.split("-").length != 5) {
+        if (!Util.isValidUUID(uuid)) {
             data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid world UUID");
             return;
         }
@@ -52,7 +52,7 @@ public class WorldServlet extends WebAPIServlet {
     }
 
     @Override
-    @Permission(perm = "world")
+    @Permission(perm = "world.post")
     protected void handlePost(ServletData data) {
         String[] paths = data.getPathParts();
 

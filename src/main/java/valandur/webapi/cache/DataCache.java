@@ -3,7 +3,6 @@ package valandur.webapi.cache;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.flowpowered.math.vector.Vector3i;
-import org.reflections.ReflectionUtils;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.block.tileentity.TileEntity;
@@ -18,7 +17,6 @@ import org.spongepowered.api.util.Tuple;
 import org.spongepowered.api.world.Chunk;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
-import org.spongepowered.api.world.extent.BlockVolume;
 import valandur.webapi.WebAPI;
 import valandur.webapi.json.JsonConverter;
 import valandur.webapi.misc.Util;
@@ -28,7 +26,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.*;
-import java.util.function.Supplier;
 
 public class DataCache {
 
@@ -82,7 +79,7 @@ public class DataCache {
     }
 
     public static JsonNode executeMethod(CachedObject cache, String methodName, Object[] paramValues) {
-        Optional<JsonNode> node = runOnMainThread(() -> {
+        Optional<JsonNode> node = WebAPI.runOnMain(() -> {
             Optional<?> obj = cache.getLive();
 
             if (!obj.isPresent())
@@ -114,52 +111,6 @@ public class DataCache {
         return node.orElseGet(JsonNodeFactory.instance::nullNode);
     }
 
-    public static JsonNode getBlockVolume(CachedWorld world, Vector3i min, Vector3i max) {
-        Optional<JsonNode> node = runOnMainThread(() -> {
-            Optional<?> obj = world.getLive();
-
-            if (!obj.isPresent())
-                return null;
-
-            World w = (World)obj.get();
-            return JsonConverter.toJson(w.getBlockView(min, max));
-        });
-
-        return node.orElseGet(JsonNodeFactory.instance::nullNode);
-    }
-    public static JsonNode getBlockAt(CachedWorld world, Vector3i pos) {
-        Optional<JsonNode> node = runOnMainThread(() -> {
-            Optional<?> obj = world.getLive();
-
-            if (!obj.isPresent())
-                return null;
-
-            World w = (World)obj.get();
-            return JsonConverter.toJson(w.getBlock(pos));
-        });
-
-        return node.orElseGet(JsonNodeFactory.instance::nullNode);
-    }
-    public static Optional<Boolean> setBlock(CachedWorld world, Vector3i position, BlockState state) {
-        return runOnMainThread(() -> {
-            Optional<?> optWorld = world.getLive();
-            if (!optWorld.isPresent())
-                return null;
-
-            World w = (World)optWorld.get();
-
-            Optional<Vector3i> chunkPos = Sponge.getServer().getChunkLayout().toChunk(position);
-            if (!chunkPos.isPresent())
-                return null;
-
-            Optional<Chunk> chunk = w.loadChunk(chunkPos.get(), false);
-            if (!chunk.isPresent())
-                return null;
-
-            return w.setBlock(position, state, Cause.source(WebAPI.getInstance().getContainer()).build());
-        });
-    }
-
     public static CachedWorld getWorld(World world) {
         Optional<CachedWorld> w = getWorld(world.getUniqueId());
         return w.orElseGet(() -> addWorld(world));
@@ -173,7 +124,7 @@ public class DataCache {
         return worlds.remove(uuid);
     }
     private static Optional<CachedWorld> updateWorld(UUID uuid) {
-        return runOnMainThread(() -> {
+        return WebAPI.runOnMain(() -> {
             Optional<World> world = Sponge.getServer().getWorld(uuid);
             return world.map(DataCache::addWorld).orElse(null);
         });
@@ -207,7 +158,7 @@ public class DataCache {
         return players.remove(uuid);
     }
     private static Optional<CachedPlayer> updatePlayer(UUID uuid) {
-        return runOnMainThread(() -> {
+        return WebAPI.runOnMain(() -> {
             Optional<Player> player = Sponge.getServer().getPlayer(uuid);
             return player.map(DataCache::addPlayer).orElse(null);
 
@@ -242,7 +193,7 @@ public class DataCache {
         return entities.remove(uuid);
     }
     private static Optional<CachedEntity> updateEntity(UUID uuid) {
-        return runOnMainThread(() -> {
+        return WebAPI.runOnMain(() -> {
             Optional<Entity> entity = Optional.empty();
             for (World world : Sponge.getServer().getWorlds()) {
                 Optional<Entity> ent = world.getEntity(uuid);
@@ -271,7 +222,7 @@ public class DataCache {
     }
 
     public static Tuple<Map<String, JsonNode>, Map<String, JsonNode>> getExtraData(CachedObject cache, String[] reqFields, String[] reqMethods) {
-        return runOnMainThread(() -> {
+        return WebAPI.runOnMain(() -> {
             Map<String, JsonNode> fields = new HashMap<>();
             Map<String, JsonNode> methods = new HashMap<>();
 
@@ -369,7 +320,7 @@ public class DataCache {
     }
 
     public static Optional<Collection<CachedTileEntity>> getTileEntities() {
-        return runOnMainThread(() -> {
+        return WebAPI.runOnMain(() -> {
             Collection<CachedTileEntity> entities = new LinkedList<>();
 
             for (World world : Sponge.getServer().getWorlds()) {
@@ -383,7 +334,7 @@ public class DataCache {
         });
     }
     public static Optional<Collection<CachedTileEntity>> getTileEntities(CachedWorld world) {
-        return runOnMainThread(() -> {
+        return WebAPI.runOnMain(() -> {
             Optional<?> w = world.getLive();
             if (!w.isPresent())
                 return null;
@@ -406,7 +357,7 @@ public class DataCache {
         return getTileEntity(w.get(), location.getBlockX(), location.getBlockY(), location.getBlockZ());
     }
     public static Optional<CachedTileEntity> getTileEntity(CachedWorld world, int x, int y, int z) {
-        return runOnMainThread(() -> {
+        return WebAPI.runOnMain(() -> {
             Optional<?> w = world.getLive();
             if (!w.isPresent())
                 return null;
@@ -418,23 +369,5 @@ public class DataCache {
 
             return new CachedTileEntity(ent.get());
         });
-    }
-
-    private static <T> Optional<T> runOnMainThread(Supplier<T> supplier) {
-        if (Sponge.getServer().isMainThread()) {
-            T obj = supplier.get();
-            return obj == null ? Optional.empty() : Optional.of(obj);
-        } else {
-            CompletableFuture<T> future = CompletableFuture.supplyAsync(supplier, WebAPI.syncExecutor);
-            try {
-                T obj = future.get();
-                if (obj == null)
-                    return Optional.empty();
-                return Optional.of(obj);
-            } catch (InterruptedException | ExecutionException e) {
-                e.printStackTrace();
-                return Optional.empty();
-            }
-        }
     }
 }

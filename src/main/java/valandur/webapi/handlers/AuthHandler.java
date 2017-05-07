@@ -1,12 +1,9 @@
 package valandur.webapi.handlers;
 
 import ninja.leaping.configurate.ConfigurationNode;
-import ninja.leaping.configurate.commented.CommentedConfigurationNode;
-import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.AbstractHandler;
-import org.spongepowered.api.Sponge;
 import org.spongepowered.api.util.Tuple;
 import valandur.webapi.WebAPI;
 import valandur.webapi.misc.Util;
@@ -15,12 +12,11 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class AuthHandler extends AbstractHandler {
 
@@ -154,8 +150,8 @@ public class AuthHandler extends AbstractHandler {
 
 
     public static class PermissionStruct {
-        private List<String> permissions;
-        public List<String> getPermissions() {
+        private List<String[]> permissions;
+        public List<String[]> getPermissions() {
             return permissions;
         }
 
@@ -165,7 +161,7 @@ public class AuthHandler extends AbstractHandler {
         }
 
         public PermissionStruct(List<String> permissions, int rateLimit) {
-            this.permissions = permissions;
+            this.permissions = permissions.stream().map(s -> s.split(".")).collect(Collectors.toList());
             this.rateLimit = rateLimit;
         }
     }

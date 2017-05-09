@@ -11,6 +11,10 @@ import org.spongepowered.api.event.entity.living.humanoid.player.KickPlayerEvent
 import org.spongepowered.api.event.item.inventory.InteractInventoryEvent;
 import org.spongepowered.api.event.user.BanUserEvent;
 import org.spongepowered.api.event.user.TargetUserEvent;
+import org.spongepowered.api.event.world.ExplosionEvent;
+import org.spongepowered.api.event.world.GenerateChunkEvent;
+import org.spongepowered.api.event.world.SaveWorldEvent;
+import org.spongepowered.api.event.world.TargetWorldEvent;
 import valandur.webapi.blocks.BlockUpdateEvent;
 import valandur.webapi.cache.CachedEntity;
 import valandur.webapi.cache.CachedPlayer;
@@ -58,6 +62,18 @@ public class EventSerializer extends WebAPISerializer<Event> {
 
         if (value instanceof BlockUpdateEvent) {
             gen.writeObjectField("blockUpdate", ((BlockUpdateEvent)value).getBlockUpdate());
+        }
+
+        if (value instanceof GenerateChunkEvent) {
+            gen.writeObjectField("chunk", ((GenerateChunkEvent)value).getTargetChunk());
+        }
+
+        if (value instanceof ExplosionEvent) {
+            gen.writeObjectField("explosion", ((ExplosionEvent)value).getExplosion());
+        }
+
+        if (value instanceof TargetWorldEvent) {
+            gen.writeObjectField("world", ((TargetWorldEvent)value).getTargetWorld());
         }
 
         try {

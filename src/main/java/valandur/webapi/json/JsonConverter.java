@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.flowpowered.math.vector.Vector3d;
 import com.flowpowered.math.vector.Vector3i;
 import org.slf4j.Logger;
+import org.spongepowered.api.block.BlockSnapshot;
 import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.block.tileentity.TileEntity;
 import org.spongepowered.api.data.DataHolder;
@@ -35,6 +36,7 @@ import org.spongepowered.api.statistic.achievement.Achievement;
 import org.spongepowered.api.util.ban.Ban;
 import org.spongepowered.api.world.*;
 import org.spongepowered.api.world.difficulty.Difficulty;
+import org.spongepowered.api.world.explosion.Explosion;
 import org.spongepowered.api.world.extent.BlockVolume;
 import org.spongepowered.api.world.weather.Weather;
 import valandur.webapi.WebAPI;
@@ -80,6 +82,7 @@ public class JsonConverter {
         serializers.put(Vector3i.class, new Vector3iSerializer());
 
         // Block
+        serializers.put(BlockSnapshot.class, new BlockSnapshotSerializer());
         serializers.put(BlockVolume.class, new BlockVolumeSerializer());
         serializers.put(BlockState.class, new BlockStateSerializer());
 
@@ -127,9 +130,11 @@ public class JsonConverter {
         serializers.put(TileEntity.class, new TileEntitySerializer());
 
         // World
+        serializers.put(Chunk.class, new ChunkSerializer());
         serializers.put(Difficulty.class, new DifficultySerializer());
         serializers.put(Dimension.class, new DimensionSerializer());
         serializers.put(DimensionType.class, new DimensionTypeSerializer());
+        serializers.put(Explosion.class, new ExplosionSerializer());
         serializers.put(GeneratorType.class, new GeneratorTypeSerializer());
         serializers.put(Weather.class, new WeatherSerializer());
         serializers.put(World.class, new WorldSerializer());

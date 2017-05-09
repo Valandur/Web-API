@@ -25,6 +25,7 @@ import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.Order;
 import org.spongepowered.api.event.achievement.GrantAchievementEvent;
+import org.spongepowered.api.event.block.InteractBlockEvent;
 import org.spongepowered.api.event.command.SendCommandEvent;
 import org.spongepowered.api.event.entity.DestructEntityEvent;
 import org.spongepowered.api.event.entity.SpawnEntityEvent;
@@ -39,8 +40,7 @@ import org.spongepowered.api.event.item.inventory.InteractInventoryEvent;
 import org.spongepowered.api.event.message.MessageChannelEvent;
 import org.spongepowered.api.event.network.ClientConnectionEvent;
 import org.spongepowered.api.event.user.BanUserEvent;
-import org.spongepowered.api.event.world.LoadWorldEvent;
-import org.spongepowered.api.event.world.UnloadWorldEvent;
+import org.spongepowered.api.event.world.*;
 import org.spongepowered.api.plugin.Plugin;
 import org.spongepowered.api.plugin.PluginContainer;
 import org.spongepowered.api.scheduler.SpongeExecutorService;
@@ -56,6 +56,7 @@ import valandur.webapi.command.*;
 import valandur.webapi.handlers.AuthHandler;
 import valandur.webapi.handlers.RateLimitHandler;
 import valandur.webapi.handlers.WebAPIErrorHandler;
+import valandur.webapi.hooks.WebHook;
 import valandur.webapi.hooks.WebHooks;
 import valandur.webapi.json.JsonConverter;
 import valandur.webapi.misc.Util;
@@ -359,10 +360,18 @@ public class WebAPI {
     @Listener
     public void onWorldLoad(LoadWorldEvent event) {
         DataCache.addWorld(event.getTargetWorld());
+
+        WebHooks.notifyHooks(WebHooks.WebHookType.WORLD_LOAD, JsonConverter.toString(event));
     }
     @Listener
     public void onWorldUnload(UnloadWorldEvent event) {
         DataCache.removeWorld(event.getTargetWorld().getUniqueId());
+
+        WebHooks.notifyHooks(WebHooks.WebHookType.WORLD_UNLOAD, JsonConverter.toString(event));
+    }
+    @Listener
+    public void onWorldSave(SaveWorldEvent event) {
+        WebHooks.notifyHooks(WebHooks.WebHookType.WORLD_SAVE, JsonConverter.toString(event));
     }
 
     @Listener(order = Order.POST)
@@ -433,6 +442,16 @@ public class WebAPI {
     }
 
     @Listener(order = Order.POST)
+    public void onGenerateChunk(GenerateChunkEvent event) {
+        WebHooks.notifyHooks(WebHooks.WebHookType.GENERATE_CHUNK, JsonConverter.toString(event));
+    }
+
+    @Listener(order = Order.POST)
+    public void onExplosion(ExplosionEvent event) {
+        WebHooks.notifyHooks(WebHooks.WebHookType.EXPLOSION, JsonConverter.toString(event));
+    }
+
+    @Listener(order = Order.POST)
     public void onCommand(SendCommandEvent event) {
         CachedCommandCall call = DataCache.addCommandCall(event);
 
@@ -462,7 +481,6 @@ public class WebAPI {
 
         WebHooks.notifyHooks(WebHooks.WebHookType.BLOCK_UPDATE_STATUS, JsonConverter.toString(event));
     }
-
 
     public static <T> Optional<T> runOnMain(Supplier<T> supplier) {
         if (Sponge.getServer().isMainThread()) {

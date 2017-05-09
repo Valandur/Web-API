@@ -197,7 +197,7 @@ public class JsonConverter {
         // Setup java compiler
         ClassLoader currentCl = Thread.currentThread().getContextClassLoader();
         URL[] urls = ((URLClassLoader) currentCl).getURLs();
-        String classpath = Arrays.stream(urls).map(URL::getPath).filter(Objects::nonNull).collect(Collectors.joining(";"));
+        String classpath = Arrays.stream(urls).map(URL::getPath).filter(Objects::nonNull).collect(Collectors.joining(File.pathSeparator));
 
         WebAPIDiagnosticListener diag = new WebAPIDiagnosticListener();
 

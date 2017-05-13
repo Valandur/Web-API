@@ -32,13 +32,7 @@ public class EventSerializer extends WebAPISerializer<Event> {
 
         if (value instanceof TargetEntityEvent) {
             Entity entity = ((TargetEntityEvent)value).getTargetEntity();
-            if (entity instanceof Player) {
-                CachedPlayer p = DataCache.getPlayer((Player)entity);
-                gen.writeObjectField("target", p);
-            } else {
-                CachedEntity e = DataCache.getEntity(entity);
-                gen.writeObjectField("target", e);
-            }
+            gen.writeObjectField("target", entity);
         } else if (value instanceof TargetUserEvent) {
             gen.writeObjectField("target", ((TargetUserEvent)value).getTargetUser());
         }

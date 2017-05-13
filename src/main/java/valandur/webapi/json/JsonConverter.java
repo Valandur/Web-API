@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 import com.flowpowered.math.vector.Vector3d;
 import com.flowpowered.math.vector.Vector3i;
 import org.slf4j.Logger;
@@ -78,6 +79,7 @@ public class JsonConverter {
         serializers = new HashMap<>();
 
         // General
+        serializers.put(Location.class, new LocationSerializer());
         serializers.put(Vector3d.class, new Vector3dSerializer());
         serializers.put(Vector3i.class, new Vector3iSerializer());
 
@@ -323,6 +325,7 @@ public class JsonConverter {
 
         if (!details) {
             om.disable(MapperFeature.AUTO_DETECT_CREATORS, MapperFeature.AUTO_DETECT_FIELDS, MapperFeature.AUTO_DETECT_GETTERS, MapperFeature.AUTO_DETECT_IS_GETTERS);
+            om.setAnnotationIntrospector(new DisableAnyGetterInspector());
         }
 
         try {
@@ -385,18 +388,14 @@ public class JsonConverter {
         ObjectMapper om = new ObjectMapper();
         om.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
 
+        SimpleModule mod = new SimpleModule();
         for (Map.Entry<Class, JsonSerializer> entry : serializers.entrySet()) {
-            addSerializer(om, entry.getKey(), entry.getValue());
+            mod.addSerializer(entry.getKey(), entry.getValue());
         }
+        om.registerModule(mod);
 
         return om;
     }
-    private static void addSerializer(ObjectMapper mapper, Class clazz, JsonSerializer serializer) {
-        SimpleModule mod = new SimpleModule();
-        mod.addSerializer(clazz, serializer);
-        mapper.registerModule(mod);
-    }
-
 
     /**
      * Converts a class structure to json. This includes all the fields and methods of the class

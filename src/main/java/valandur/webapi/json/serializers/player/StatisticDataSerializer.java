@@ -13,7 +13,7 @@ public class StatisticDataSerializer extends WebAPISerializer<StatisticData> {
     @Override
     public void serialize(StatisticData value, JsonGenerator gen, SerializerProvider provider) throws IOException {
         gen.writeStartObject();
-        Map<Statistic, Long> map = value.statistics().get();
+        Map<Statistic, Long> map = value.asMap();
         for (Map.Entry<Statistic, Long> entry : map.entrySet()) {
             writeField(provider, entry.getKey().getId(), entry.getValue());
         }

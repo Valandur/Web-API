@@ -1,5 +1,10 @@
 # Web-API Tutorial
-A few simple examples on how to interact with the Web-API
+A few simple examples on how to consume the Web-API.
+
+Remember that if you are accessing the Web-API without a key then you are using the default
+permissions, and might not be able to access all the data. To pass a key proceed as follows:
+* Set the `x-webapi-key` **header** in the request
+* Set the `key` **query parameter** in the request
 
 
 ## Table of Contents

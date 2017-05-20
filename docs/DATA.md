@@ -4,7 +4,7 @@ it may or may not be present.
 
 The following documentation tries to list all these properties, they will be present 
 on objects for which it makes sense. The current implementation state of the various data
-can be found [here](DATAS.md).
+can be found [here](DATA_IMPL.md).
 
 Objects from the `/player`, `/entity`, `/tile-entity` as well as any item stacks 
 (in their `data` properties) may contain none, one or multiple of these properties.

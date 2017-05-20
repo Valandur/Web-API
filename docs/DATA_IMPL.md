@@ -1,7 +1,9 @@
-# Web-API Additional Data
+# Web-API Additional Data Implementation
 This list contains most of the Data classes in Sponge and their
 current implementation state in the Web-API.
 
+If you see any data which is missing that you need feel free to contact
+me or submit a pull request.
 
 ## Key
 
@@ -42,7 +44,7 @@ current implementation state in the Web-API.
 |   | ColoredData |
 |   | CommandData |
 |   | ComparatorData |
-|   | ConnectedDirectionData |
+| + | ConnectedDirectionData |
 |   | CookedFishData |
 |   | CooldownData |
 |   | CriticalHitData |

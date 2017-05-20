@@ -2,10 +2,9 @@ package valandur.webapi.servlets;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import org.spongepowered.api.util.Tuple;
-import valandur.webapi.misc.Permission;
-import valandur.webapi.cache.CachedEntity;
+import valandur.webapi.permissions.Permission;
+import valandur.webapi.cache.entity.CachedEntity;
 import valandur.webapi.cache.DataCache;
-import valandur.webapi.json.JsonConverter;
 import valandur.webapi.misc.Util;
 
 import javax.servlet.http.HttpServletResponse;
@@ -19,7 +18,7 @@ public class EntityServlet extends WebAPIServlet {
         String[] paths = data.getPathParts();
 
         if (paths.length == 0 || paths[0].isEmpty()) {
-            data.addJson("entities", JsonConverter.toJson(DataCache.getEntities()));
+            data.addJson("entities", DataCache.getEntities(), false);
             return;
         }
 
@@ -41,11 +40,11 @@ public class EntityServlet extends WebAPIServlet {
             String[] fields = strFields != null ? strFields.split(",") : new String[]{};
             String[] methods = strMethods != null ? strMethods.split(",") : new String[]{};
             Tuple extra = DataCache.getExtraData(entity.get(), fields, methods);
-            data.addJson("fields", extra.getFirst());
-            data.addJson("methods", extra.getSecond());
+            data.addJson("fields", extra.getFirst(), true);
+            data.addJson("methods", extra.getSecond(), true);
         }
 
-        data.addJson("entity", JsonConverter.toJson(entity.get(), true));
+        data.addJson("entity", entity.get(), true);
     }
 
     @Override
@@ -70,7 +69,7 @@ public class EntityServlet extends WebAPIServlet {
             return;
         }
 
-        final JsonNode reqJson = (JsonNode) data.getAttribute("body");
+        final JsonNode reqJson = data.getRequestBody();
 
         if (!reqJson.has("method")) {
             data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Request must define the 'method' property");
@@ -85,7 +84,12 @@ public class EntityServlet extends WebAPIServlet {
             return;
         }
 
-        JsonNode res = DataCache.executeMethod(entity.get(), mName, params.get());
-        data.addJson("result", res);
+        Optional<Object> res = DataCache.executeMethod(entity.get(), mName, params.get());
+        if (!res.isPresent()) {
+            data.sendError(HttpServletResponse.SC_NOT_FOUND, "Could not get entity");
+            return;
+        }
+
+        data.addJson("result", res.get(), true);
     }
 }

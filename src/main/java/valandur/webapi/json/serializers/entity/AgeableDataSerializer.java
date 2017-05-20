@@ -11,8 +11,8 @@ public class AgeableDataSerializer extends WebAPISerializer<AgeableData> {
     @Override
     public void serialize(AgeableData value, JsonGenerator gen, SerializerProvider provider) throws IOException {
         gen.writeStartObject();
-        gen.writeBooleanField("adult", value.adult().get());
-        gen.writeNumberField("age", value.age().get());
+        writeField(provider, "adult", value.adult().get());
+        writeField(provider, "age", value.age().get());
         gen.writeEndObject();
     }
 }

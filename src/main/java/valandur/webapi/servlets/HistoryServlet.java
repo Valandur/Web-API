@@ -1,8 +1,7 @@
 package valandur.webapi.servlets;
 
-import valandur.webapi.misc.Permission;
+import valandur.webapi.permissions.Permission;
 import valandur.webapi.cache.DataCache;
-import valandur.webapi.json.JsonConverter;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -20,11 +19,11 @@ public class HistoryServlet extends WebAPIServlet {
         String endpoint = paths[0].toLowerCase();
         switch (endpoint) {
             case "cmd":
-                data.addJson("calls", JsonConverter.toJson(DataCache.getCommandCalls()));
+                data.addJson("calls", DataCache.getCommandCalls(), false);
                 break;
 
             case "chat":
-                data.addJson("messages", JsonConverter.toJson(DataCache.getChatMessages()));
+                data.addJson("messages", DataCache.getChatMessages(), false);
                 break;
 
             default:

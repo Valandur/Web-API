@@ -1,10 +1,12 @@
 package valandur.webapi;
 
+import com.google.common.reflect.TypeToken;
 import com.google.inject.Inject;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
+import ninja.leaping.configurate.objectmapping.serialize.TypeSerializers;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
@@ -39,8 +41,7 @@ import org.spongepowered.api.event.item.inventory.InteractInventoryEvent;
 import org.spongepowered.api.event.message.MessageChannelEvent;
 import org.spongepowered.api.event.network.ClientConnectionEvent;
 import org.spongepowered.api.event.user.BanUserEvent;
-import org.spongepowered.api.event.world.LoadWorldEvent;
-import org.spongepowered.api.event.world.UnloadWorldEvent;
+import org.spongepowered.api.event.world.*;
 import org.spongepowered.api.plugin.Plugin;
 import org.spongepowered.api.plugin.PluginContainer;
 import org.spongepowered.api.scheduler.SpongeExecutorService;
@@ -48,14 +49,17 @@ import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
 import org.spongepowered.api.util.Tuple;
 import valandur.webapi.blocks.BlockUpdate;
-import valandur.webapi.blocks.BlockUpdateProgressEvent;
 import valandur.webapi.blocks.BlockUpdateStatusChangeEvent;
 import valandur.webapi.blocks.Blocks;
 import valandur.webapi.cache.*;
+import valandur.webapi.cache.chat.CachedChatMessage;
+import valandur.webapi.cache.command.CachedCommandCall;
 import valandur.webapi.command.*;
 import valandur.webapi.handlers.AuthHandler;
 import valandur.webapi.handlers.RateLimitHandler;
 import valandur.webapi.handlers.WebAPIErrorHandler;
+import valandur.webapi.hooks.WebHook;
+import valandur.webapi.hooks.WebHookSerializer;
 import valandur.webapi.hooks.WebHooks;
 import valandur.webapi.json.JsonConverter;
 import valandur.webapi.misc.Util;
@@ -140,7 +144,11 @@ public class WebAPI {
             }
         }
 
+        // Reusable sync executor to run code on main server thread
         syncExecutor = Sponge.getScheduler().createSyncExecutor(this);
+
+        // Register custom serializer for WebHook class
+        TypeSerializers.getDefaultSerializers().registerType(TypeToken.of(WebHook.class), new WebHookSerializer());
     }
 
     @Listener
@@ -330,11 +338,11 @@ public class WebAPI {
 
         startWebServer(null);
 
-        WebHooks.notifyHooks(WebHooks.WebHookType.SERVER_START, JsonConverter.toString(event));
+        WebHooks.notifyHooks(WebHooks.WebHookType.SERVER_START, event);
     }
     @Listener
     public void onServerStop(GameStoppedServerEvent event) {
-        WebHooks.notifyHooks(WebHooks.WebHookType.SERVER_STOP, JsonConverter.toString(event));
+        WebHooks.notifyHooks(WebHooks.WebHookType.SERVER_STOP, event);
 
         stopWebServer();
     }
@@ -356,38 +364,44 @@ public class WebAPI {
         logger.info("Reloaded " + WebAPI.NAME);
     }
 
-    @Listener
+    @Listener(order = Order.POST)
     public void onWorldLoad(LoadWorldEvent event) {
         DataCache.addWorld(event.getTargetWorld());
+
+        WebHooks.notifyHooks(WebHooks.WebHookType.WORLD_LOAD, event);
     }
-    @Listener
+    @Listener(order = Order.POST)
     public void onWorldUnload(UnloadWorldEvent event) {
         DataCache.removeWorld(event.getTargetWorld().getUniqueId());
+
+        WebHooks.notifyHooks(WebHooks.WebHookType.WORLD_UNLOAD, event);
+    }
+    @Listener(order = Order.POST)
+    public void onWorldSave(SaveWorldEvent event) {
+        WebHooks.notifyHooks(WebHooks.WebHookType.WORLD_SAVE, event);
     }
 
     @Listener(order = Order.POST)
     public void onPlayerJoin(ClientConnectionEvent.Join event) {
         DataCache.addPlayer(event.getTargetEntity());
 
-        WebHooks.notifyHooks(WebHooks.WebHookType.PLAYER_JOIN, JsonConverter.toString(event));
+        WebHooks.notifyHooks(WebHooks.WebHookType.PLAYER_JOIN, event);
     }
     @Listener(order = Order.POST)
     public void onPlayerLeave(ClientConnectionEvent.Disconnect event) {
-        // Get the message first because the player is removed from cache afterwards
-        String message = JsonConverter.toString(event);
+        // Send the message first because the player is removed from cache afterwards
+        WebHooks.notifyHooks(WebHooks.WebHookType.PLAYER_LEAVE, event);
 
         DataCache.removePlayer(event.getTargetEntity().getUniqueId());
-
-        WebHooks.notifyHooks(WebHooks.WebHookType.PLAYER_LEAVE, message);
     }
 
     @Listener(order = Order.POST)
     public void onUserKick(KickPlayerEvent event) {
-        WebHooks.notifyHooks(WebHooks.WebHookType.PLAYER_KICK, JsonConverter.toString(event));
+        WebHooks.notifyHooks(WebHooks.WebHookType.PLAYER_KICK, event);
     }
     @Listener(order = Order.POST)
     public void onUserBan(BanUserEvent event) {
-        WebHooks.notifyHooks(WebHooks.WebHookType.PLAYER_BAN, JsonConverter.toString(event));
+        WebHooks.notifyHooks(WebHooks.WebHookType.PLAYER_BAN, event);
     }
 
     @Listener(order = Order.POST)
@@ -402,23 +416,23 @@ public class WebAPI {
 
         Entity ent = event.getTargetEntity();
         if (ent instanceof Player) {
-            WebHooks.notifyHooks(WebHooks.WebHookType.PLAYER_DEATH, JsonConverter.toString(event));
+            WebHooks.notifyHooks(WebHooks.WebHookType.PLAYER_DEATH, event);
         }
     }
 
     @Listener(order = Order.POST)
     public void onPlayerChat(MessageChannelEvent.Chat event, @First Player player) {
         CachedChatMessage msg = DataCache.addChatMessage(player, event);
-        WebHooks.notifyHooks(WebHooks.WebHookType.CHAT, JsonConverter.toString(msg));
+        WebHooks.notifyHooks(WebHooks.WebHookType.CHAT, msg);
     }
 
     @Listener(order = Order.POST)
     public void onInteractInventory(InteractInventoryEvent.Open event) {
-        WebHooks.notifyHooks(WebHooks.WebHookType.INVENTORY_OPEN, JsonConverter.toString(event));
+        WebHooks.notifyHooks(WebHooks.WebHookType.INVENTORY_OPEN, event);
     }
     @Listener(order = Order.POST)
     public void onInteractInventory(InteractInventoryEvent.Close event) {
-        WebHooks.notifyHooks(WebHooks.WebHookType.INVENTORY_CLOSE, JsonConverter.toString(event));
+        WebHooks.notifyHooks(WebHooks.WebHookType.INVENTORY_CLOSE, event);
     }
 
     @Listener(order = Order.POST)
@@ -429,14 +443,24 @@ public class WebAPI {
         if (player.getAchievementData().achievements().get().stream().anyMatch(a -> a.getId().equals(event.getAchievement().getId())))
             return;
 
-        WebHooks.notifyHooks(WebHooks.WebHookType.ACHIEVEMENT, JsonConverter.toString(event));
+        WebHooks.notifyHooks(WebHooks.WebHookType.ACHIEVEMENT, event);
+    }
+
+    @Listener(order = Order.POST)
+    public void onGenerateChunk(GenerateChunkEvent event) {
+        WebHooks.notifyHooks(WebHooks.WebHookType.GENERATE_CHUNK, event);
+    }
+
+    @Listener(order = Order.POST)
+    public void onExplosion(ExplosionEvent event) {
+        WebHooks.notifyHooks(WebHooks.WebHookType.EXPLOSION, event);
     }
 
     @Listener(order = Order.POST)
     public void onCommand(SendCommandEvent event) {
         CachedCommandCall call = DataCache.addCommandCall(event);
 
-        WebHooks.notifyHooks(WebHooks.WebHookType.COMMAND, JsonConverter.toString(call));
+        WebHooks.notifyHooks(WebHooks.WebHookType.COMMAND, call);
     }
 
     @Listener
@@ -460,9 +484,8 @@ public class WebAPI {
                 break;
         }
 
-        WebHooks.notifyHooks(WebHooks.WebHookType.BLOCK_UPDATE_STATUS, JsonConverter.toString(event));
+        WebHooks.notifyHooks(WebHooks.WebHookType.BLOCK_UPDATE_STATUS, event);
     }
-
 
     public static <T> Optional<T> runOnMain(Supplier<T> supplier) {
         if (Sponge.getServer().isMainThread()) {

@@ -13,14 +13,14 @@ public class BlockStateSerializer extends WebAPISerializer<BlockState> {
     @Override
     public void serialize(BlockState value, JsonGenerator gen, SerializerProvider provider) throws IOException {
         gen.writeStartObject();
-        gen.writeStringField("type", value.getType().getName());
+        writeField(provider, "type", value.getType().getName());
 
         gen.writeObjectFieldStart("data");
         for (Map.Entry<BlockTrait<?>, ?> entry : value.getTraitMap().entrySet()) {
-            gen.writeObjectField(entry.getKey().getName(), entry.getValue());
+            writeField(provider, entry.getKey().getName(), entry.getValue());
         }
         gen.writeEndObject();
-        
+
         gen.writeEndObject();
     }
 }

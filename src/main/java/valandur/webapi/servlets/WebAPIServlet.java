@@ -2,9 +2,10 @@ package valandur.webapi.servlets;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import valandur.webapi.json.JsonConverter;
-import valandur.webapi.misc.Permission;
+import valandur.webapi.permissions.Permission;
 import valandur.webapi.WebAPI;
+import valandur.webapi.misc.TreeNode;
+import valandur.webapi.permissions.Permissions;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -14,11 +15,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 public abstract class WebAPIServlet extends HttpServlet {
 
@@ -28,8 +24,8 @@ public abstract class WebAPIServlet extends HttpServlet {
         try {
             Method method = this.getClass().getDeclaredMethod("handle" + verb, ServletData.class);
             if (method.isAnnotationPresent(Permission.class)) {
-                String[] reqPerms = method.getAnnotation(Permission.class).perm().split(".");
-                List<String[]> permissions = (List<String[]>)req.getAttribute("perms");
+                String[] reqPerms = method.getAnnotation(Permission.class).perm().split("\\.");
+                TreeNode<String, Boolean> permissions = (TreeNode<String, Boolean>)req.getAttribute("perms");
 
                 if (permissions == null) {
                     WebAPI.getInstance().getLogger().warn(req.getRemoteAddr() + " does not have permisson to access " + req.getRequestURI());
@@ -37,30 +33,18 @@ public abstract class WebAPIServlet extends HttpServlet {
                     return;
                 }
 
-                List<String[]> permsLeft = new ArrayList<>(permissions);
-                for (int index = 0; index < reqPerms.length; index++) {
-                    final int i = index;
-
-                    // Check to see if we have a * permission for this level, then we can exit early
-                    Optional<String[]> allPerms = permsLeft.stream()
-                            .filter(ps -> ps.length > i && ps[i].equalsIgnoreCase("*"))
-                            .findAny();
-                    if (allPerms.isPresent()) {
-                        break;
-                    }
-
-                    // Otherwise make to filter out all the permissions that don't apply
-                    permsLeft = permsLeft.stream()
-                            .filter(ps -> ps.length > i && ps[i].equalsIgnoreCase(reqPerms[i]))
-                            .collect(Collectors.toList());
-
-                    // If we have no more permissions left then we don't have access
-                    if (permsLeft.size() == 0) {
-                        WebAPI.getInstance().getLogger().warn(req.getRemoteAddr() + " does not have permission to access " + req.getRequestURI());
-                        resp.sendError(HttpServletResponse.SC_FORBIDDEN);
-                        return;
-                    }
+                TreeNode<String, Boolean> methodPerms = Permissions.subPermissions(permissions, reqPerms);
+                if (!methodPerms.getValue()) {
+                    WebAPI.getInstance().getLogger().warn(req.getRemoteAddr() + " does not have permission to access " + req.getRequestURI());
+                    resp.sendError(HttpServletResponse.SC_FORBIDDEN);
+                    return;
                 }
+
+                req.setAttribute("dataPerms", methodPerms);
+            } else {
+                WebAPI.getInstance().getLogger().warn(verb + " in " + this.getClass().getName() + " is not annotated with @Permission");
+                resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                return;
             }
 
             if (verb.equalsIgnoreCase("Post") || verb.equalsIgnoreCase("Put")) {

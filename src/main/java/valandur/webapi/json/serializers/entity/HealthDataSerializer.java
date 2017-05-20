@@ -11,8 +11,8 @@ public class HealthDataSerializer extends WebAPISerializer<HealthData> {
     @Override
     public void serialize(HealthData value, JsonGenerator gen, SerializerProvider provider) throws IOException {
         gen.writeStartObject();
-        gen.writeNumberField("current", value.health().get());
-        gen.writeNumberField("max", value.maxHealth().get());
+        writeField(provider, "current", value.health().get());
+        writeField(provider, "max", value.maxHealth().get());
         gen.writeEndObject();
     }
 }

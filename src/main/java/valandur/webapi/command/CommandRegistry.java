@@ -145,7 +145,7 @@ public class CommandRegistry {
                     .description(Text.of("Notify the " + name + " hook"))
                     .permission("webapi.command.notify." + name)
                     .arguments(args.toArray(new CommandElement[args.size()]))
-                    .executor(new CmdNotifyHook(name, hook))
+                    .executor(new CmdNotifyHook(hook))
                     .build();
             if (hook.getAliases() != null && hook.getAliases().size() > 0) hookAliases.put(hook.getAliases(), hookCmd);
             hookSpecs.put(Collections.singletonList(name), hookCmd);

@@ -44,27 +44,25 @@ You can find more examples in the [json/serializers](https://github.com/Valandur
 folder of the repository.
 
 ## Serializing
-Typically when serializing you will use the `JsonGenerator` to create the json of the object.
-The `JsonGenerator` class offers quite a few methods to write json, including:
+Typically when serializing you will have properties for which there already are existing serializers.
+For example `String` and all primitive classes are automatically serialized. Most Minecraft 
+classes like `BlockState` and `Vector3d` also already have serializers.
 ```java
 gen.writeStartObject();
-gen.writeStringField("id", "The object id");
-gen.writeNumberField("amount", 3435);
-gen.writeBooleanField("on", true);
-gen.writeObjectField("sub", ...);  // This uses other serializers to process the object
+writeField(provider, "id", "some-random-id");
+writeField(provider, "amount", 2433);
+writeField(provider, "on", false);
+writeField(provider, "block", ...);
 gen.writeEndObject();
 ```
 The code above would produce a json output such as:
 ```json
 {
-  "id": "The object id",
-  "amount": 3435,
-  "on": true,
-  "sub": {
+  "id": "some-random-id",
+  "amount": 2433,
+  "on": false,
+  "block": {
     ...
   }
 }
 ```
-Check with the fasterxml jackson repo for the full specs of the 
-[JsonGenerator](https://fasterxml.github.io/jackson-core/javadoc/2.6/com/fasterxml/jackson/core/JsonGenerator.html)
-

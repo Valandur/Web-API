@@ -13,9 +13,9 @@ public class StatisticDataSerializer extends WebAPISerializer<StatisticData> {
     @Override
     public void serialize(StatisticData value, JsonGenerator gen, SerializerProvider provider) throws IOException {
         gen.writeStartObject();
-        Map<Statistic, Long> map = value.asMap();
+        Map<Statistic, Long> map = value.statistics().get();
         for (Map.Entry<Statistic, Long> entry : map.entrySet()) {
-            gen.writeNumberField(entry.getKey().getId(), entry.getValue());
+            writeField(provider, entry.getKey().getId(), entry.getValue());
         }
         gen.writeEndObject();
     }

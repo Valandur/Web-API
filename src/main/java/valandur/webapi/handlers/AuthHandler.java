@@ -6,7 +6,10 @@ import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.AbstractHandler;
 import org.spongepowered.api.util.Tuple;
 import valandur.webapi.WebAPI;
+import valandur.webapi.misc.TreeNode;
 import valandur.webapi.misc.Util;
+import valandur.webapi.permissions.PermissionStruct;
+import valandur.webapi.permissions.Permissions;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -16,7 +19,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 public class AuthHandler extends AbstractHandler {
 
@@ -46,25 +48,19 @@ public class AuthHandler extends AbstractHandler {
         loader = tup.getFirst();
         config = tup.getSecond();
 
-        List<String> defs = new ArrayList<>();
-        for (ConfigurationNode node : config.getNode("default", "permissions").getChildrenList()) {
-            if (node.getString().equalsIgnoreCase("*")) {
-                api.getLogger().warn("DEFAULT PERMISSIONS GRANT UNRESTRICTED ACCESS TO THE API! THIS CAN BE DANGEROUS IF NOT RUNNING ON LOCALHOST!");
-            }
-            defs.add(node.getString());
-        }
+        TreeNode<String, Boolean> defs = Permissions.permissionTreeFromConfig(config.getNode("default", "permissions"));
         int defLimit = config.getNode("default", "rateLimit").getInt();
         defaultPerms = new PermissionStruct(defs, defLimit);
 
         for (ConfigurationNode node : config.getNode("keys").getChildrenList()) {
-            String token = node.getNode("key").getString();
-            if (token == null || token.isEmpty()) {
+            String key = node.getNode("key").getString();
+            if (key == null || key.isEmpty()) {
                 api.getLogger().warn("SKIPPING KEY-PERMISSION MAPPING WITH INVALID KEY");
                 continue;
             }
-            List<String> perms = node.getNode("permissions").getList(Object::toString, new ArrayList<>());
+            TreeNode<String, Boolean> perms = Permissions.permissionTreeFromConfig(node.getNode("permissions"));
             int rateLimit = node.getNode("rateLimit").getInt();
-            permMap.put(token, new PermissionStruct(perms, rateLimit));
+            permMap.put(key, new PermissionStruct(perms, rateLimit));
         }
 
         useWhitelist = config.getNode("useWhitelist").getBoolean();
@@ -145,24 +141,6 @@ public class AuthHandler extends AbstractHandler {
             request.setAttribute("key", defaultKey);
             request.setAttribute("perms", defaultPerms.getPermissions());
             request.setAttribute("rate", defaultPerms.getRateLimit());
-        }
-    }
-
-
-    public static class PermissionStruct {
-        private List<String[]> permissions;
-        public List<String[]> getPermissions() {
-            return permissions;
-        }
-
-        private int rateLimit;
-        public int getRateLimit() {
-            return rateLimit;
-        }
-
-        public PermissionStruct(List<String> permissions, int rateLimit) {
-            this.permissions = permissions.stream().map(s -> s.split(".")).collect(Collectors.toList());
-            this.rateLimit = rateLimit;
         }
     }
 }

@@ -11,9 +11,9 @@ public class ExperienceHolderDataSerializer extends WebAPISerializer<ExperienceH
     @Override
     public void serialize(ExperienceHolderData value, JsonGenerator gen, SerializerProvider provider) throws IOException {
         gen.writeStartObject();
-        gen.writeNumberField("level", value.level().get());
-        gen.writeNumberField("experience", value.experienceSinceLevel().get());
-        gen.writeNumberField("totalExperience", value.totalExperience().get());
+        writeField(provider, "level", value.level().get());
+        writeField(provider, "experience", value.experienceSinceLevel().get());
+        writeField(provider, "totalExperience", value.totalExperience().get());
         gen.writeEndObject();
     }
 }

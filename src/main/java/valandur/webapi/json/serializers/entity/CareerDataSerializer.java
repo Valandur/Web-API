@@ -10,6 +10,6 @@ import java.io.IOException;
 public class CareerDataSerializer extends WebAPISerializer<CareerData> {
     @Override
     public void serialize(CareerData value, JsonGenerator gen, SerializerProvider provider) throws IOException {
-        gen.writeObject(value.type().get());
+        writeValue(provider, value.type().get());
     }
 }

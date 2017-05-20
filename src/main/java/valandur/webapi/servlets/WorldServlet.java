@@ -2,16 +2,12 @@ package valandur.webapi.servlets;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import org.spongepowered.api.util.Tuple;
-import org.spongepowered.api.world.World;
-import valandur.webapi.misc.Permission;
-import valandur.webapi.cache.CachedWorld;
+import valandur.webapi.permissions.Permission;
+import valandur.webapi.cache.world.CachedWorld;
 import valandur.webapi.cache.DataCache;
-import valandur.webapi.json.JsonConverter;
 import valandur.webapi.misc.Util;
 
 import javax.servlet.http.HttpServletResponse;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -22,7 +18,7 @@ public class WorldServlet extends WebAPIServlet {
         String[] paths = data.getPathParts();
 
         if (paths.length == 0 || paths[0].isEmpty()) {
-            data.addJson("worlds", JsonConverter.toJson(DataCache.getWorlds()));
+            data.addJson("worlds", DataCache.getWorlds(), false);
             return;
         }
 
@@ -44,11 +40,11 @@ public class WorldServlet extends WebAPIServlet {
             String[] fields = strFields != null ? strFields.split(",") : new String[]{};
             String[] methods = strMethods != null ? strMethods.split(",") : new String[]{};
             Tuple extra = DataCache.getExtraData(world.get(), fields, methods);
-            data.addJson("fields", extra.getFirst());
-            data.addJson("methods", extra.getSecond());
+            data.addJson("fields", extra.getFirst(), true);
+            data.addJson("methods", extra.getSecond(), true);
         }
 
-        data.addJson("world", JsonConverter.toJson(world.get(), true));
+        data.addJson("world", world.get(), true);
     }
 
     @Override
@@ -73,7 +69,7 @@ public class WorldServlet extends WebAPIServlet {
             return;
         }
 
-        final JsonNode reqJson = (JsonNode) data.getAttribute("body");
+        final JsonNode reqJson = data.getRequestBody();
 
         if (!reqJson.has("method")) {
             data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Request must define the 'method' property");
@@ -88,7 +84,12 @@ public class WorldServlet extends WebAPIServlet {
             return;
         }
 
-        JsonNode res = DataCache.executeMethod(world.get(), mName, params.get());
-        data.addJson("result", res);
+        Optional<Object> res = DataCache.executeMethod(world.get(), mName, params.get());
+        if (!res.isPresent()) {
+            data.sendError(HttpServletResponse.SC_NOT_FOUND, "Could not get entity");
+            return;
+        }
+
+        data.addJson("result", res.get(), true);
     }
 }

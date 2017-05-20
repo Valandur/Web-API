@@ -11,8 +11,8 @@ public class DurabilityDataSerializer extends WebAPISerializer<DurabilityData> {
     @Override
     public void serialize(DurabilityData value, JsonGenerator gen, SerializerProvider provider) throws IOException {
         gen.writeStartObject();
-        gen.writeBooleanField("unbreakable", value.unbreakable().get());
-        gen.writeNumberField("durability", value.durability().get());
+        writeField(provider, "unbreakable", value.unbreakable().get());
+        writeField(provider, "durability", value.durability().get());
         gen.writeEndObject();
     }
 }

@@ -1,12 +1,11 @@
 package valandur.webapi.hooks;
 
-import ninja.leaping.configurate.objectmapping.Setting;
-import ninja.leaping.configurate.objectmapping.serialize.ConfigSerializable;
+import valandur.webapi.misc.TreeNode;
+import valandur.webapi.permissions.Permissions;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@ConfigSerializable
 public class WebHook {
 
     public enum WebHookMethod {
@@ -17,23 +16,20 @@ public class WebHook {
         JSON, FORM
     }
 
-    @Setting
     private String address;
     public String getAddress() {
         return address;
     }
 
-    @Setting
     private boolean enabled = true;
     public boolean isEnabled() {
         return enabled;
     }
 
-    @Setting
+
     private WebHookMethod method = WebHookMethod.GET;
     public WebHookMethod getMethod() { return method; }
 
-    @Setting
     private WebHookDataType dataType = WebHookDataType.JSON;
     public WebHookDataType getDataType() {
         return dataType;
@@ -42,9 +38,28 @@ public class WebHook {
         return "application/" + (dataType == WebHookDataType.JSON ? "json" : "x-www-form-urlencoded");
     }
 
-    @Setting
     private List<WebHookHeader> headers = new ArrayList<>();
     public List<WebHookHeader> getHeaders() { return headers; }
 
-    public WebHook() {}
+    private boolean details;
+    public boolean includeDetails() {
+        return details;
+    }
+
+    private TreeNode<String, Boolean> permissions = Permissions.emptyNode();
+    public TreeNode<String, Boolean> getPermissions() {
+        return permissions;
+    }
+
+
+    public WebHook(String address, boolean enabled, WebHookMethod method, WebHookDataType dataType,
+                   List<WebHookHeader> headers, boolean details, TreeNode<String, Boolean> permissions) {
+        this.address = address;
+        this.enabled = enabled;
+        this.method = method;
+        this.dataType = dataType;
+        this.headers = headers;
+        this.details = details;
+        this.permissions = permissions;
+    }
 }

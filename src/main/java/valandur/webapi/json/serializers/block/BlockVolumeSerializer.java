@@ -13,8 +13,8 @@ public class BlockVolumeSerializer extends WebAPISerializer<BlockVolume> {
     public void serialize(BlockVolume value, JsonGenerator gen, SerializerProvider provider) throws IOException {
         gen.writeStartObject();
 
-        gen.writeObjectField("min", value.getBlockMin());
-        gen.writeObjectField("max", value.getBlockMax());
+        writeField(provider, "min", value.getBlockMin());
+        writeField(provider, "max", value.getBlockMax());
 
         gen.writeArrayFieldStart("blocks");
 
@@ -28,7 +28,7 @@ public class BlockVolumeSerializer extends WebAPISerializer<BlockVolume> {
                 gen.writeStartArray();
 
                 for (int z = min.getZ(); z <= max.getZ(); z++) {
-                    gen.writeObject(value.getBlock(x, y, z));
+                    writeValue(provider, value.getBlock(x, y, z));
                 }
 
                 gen.writeEndArray();

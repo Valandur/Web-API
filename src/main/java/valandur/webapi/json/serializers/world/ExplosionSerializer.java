@@ -11,12 +11,12 @@ public class ExplosionSerializer extends WebAPISerializer<Explosion> {
     @Override
     public void serialize(Explosion value, JsonGenerator gen, SerializerProvider provider) throws IOException {
         gen.writeStartObject();
-        gen.writeBooleanField("canCauseFire", value.canCauseFire());
-        gen.writeNumberField("radius", value.getRadius());
-        gen.writeBooleanField("shouldBreakBlocks", value.shouldBreakBlocks());
-        gen.writeBooleanField("shouldDamageEntities", value.shouldDamageEntities());
-        gen.writeBooleanField("shouldPlaySmoke", value.shouldPlaySmoke());
-        gen.writeObjectField("sourceExplosive", value.getSourceExplosive());
+        writeField(provider, "canCauseFire", value.canCauseFire());
+        writeField(provider, "radius", value.getRadius());
+        writeField(provider, "shouldBreakBlocks", value.shouldBreakBlocks());
+        writeField(provider, "shouldDamageEntities", value.shouldDamageEntities());
+        writeField(provider, "shouldPlaySmoke", value.shouldPlaySmoke());
+        writeField(provider, "sourceExplosive", value.getSourceExplosive());
         gen.writeEndObject();
     }
 }

@@ -14,9 +14,9 @@ public class InventorySerializer extends WebAPISerializer<Inventory> {
     @Override
     public void serialize(Inventory value, JsonGenerator gen, SerializerProvider provider) throws IOException {
         gen.writeStartObject();
-        gen.writeStringField("name", value.getName().get());
-        gen.writeNumberField("stackCount", value.size());
-        gen.writeNumberField("itemCount", value.totalItems());
+        writeField(provider, "name", value.getName().get());
+        writeField(provider, "stackCount", value.size());
+        writeField(provider, "itemCount", value.totalItems());
 
         gen.writeArrayFieldStart("items");
 
@@ -25,7 +25,7 @@ public class InventorySerializer extends WebAPISerializer<Inventory> {
             Optional<ItemStack> stack = slot.peek();
             if (!stack.isPresent()) continue;
 
-            gen.writeObject(stack.get());
+            writeValue(provider, stack.get());
         }
         gen.writeEndArray();
 

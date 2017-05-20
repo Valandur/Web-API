@@ -1,16 +1,9 @@
 package valandur.webapi.servlets;
 
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.spongepowered.api.Platform;
 import org.spongepowered.api.Server;
 import org.spongepowered.api.Sponge;
-import org.spongepowered.api.plugin.PluginContainer;
-import valandur.webapi.json.JsonConverter;
-import valandur.webapi.misc.Permission;
-
-import javax.servlet.http.HttpServletResponse;
-import java.util.Optional;
+import valandur.webapi.permissions.Permission;
 
 public class InfoServlet extends WebAPIServlet {
     @Override
@@ -19,30 +12,16 @@ public class InfoServlet extends WebAPIServlet {
         Server server = Sponge.getServer();
         Platform platform = Sponge.getPlatform();
 
-        data.addJson("motd", server.getMotd().toPlain());
-        data.addJson("players", server.getOnlinePlayers().size());
-        data.addJson("maxPlayers", server.getMaxPlayers());
-        data.addJson("uptimeTicks", server.getRunningTimeTicks());
-        data.addJson("tps", server.getTicksPerSecond());
-        data.addJson("hasWhitelist", server.hasWhitelist());
-        data.addJson("minecraftVersion", platform.getMinecraftVersion().getName());
+        data.addJson("motd", server.getMotd().toPlain(), false);
+        data.addJson("players", server.getOnlinePlayers().size(), false);
+        data.addJson("maxPlayers", server.getMaxPlayers(), false);
+        data.addJson("uptimeTicks", server.getRunningTimeTicks(), false);
+        data.addJson("tps", server.getTicksPerSecond(), false);
+        data.addJson("hasWhitelist", server.hasWhitelist(), false);
+        data.addJson("minecraftVersion", platform.getMinecraftVersion().getName(), false);
 
-        data.addJson("game", containerToJson(platform.getContainer(Platform.Component.GAME)));
-        data.addJson("api", containerToJson(platform.getContainer(Platform.Component.API)));
-        data.addJson("implementation", containerToJson(platform.getContainer(Platform.Component.IMPLEMENTATION)));
-    }
-
-    private ObjectNode containerToJson(PluginContainer container) {
-        ObjectNode obj = JsonNodeFactory.instance.objectNode();
-        obj.put("id", container.getId());
-        obj.put("name", container.getName());
-        Optional<String> version = container.getVersion();
-        obj.put("version", version.orElse(null));
-        Optional<String> descr = container.getDescription();
-        obj.put("description", descr.orElse(null));
-        Optional<String> url = container.getVersion();
-        obj.put("url", url.orElse(null));
-        obj.set("authors", JsonConverter.toJson(container.getAuthors()));
-        return obj;
+        data.addJson("game", platform.getContainer(Platform.Component.GAME), true);
+        data.addJson("api", platform.getContainer(Platform.Component.API), true);
+        data.addJson("implementation", platform.getContainer(Platform.Component.IMPLEMENTATION), true);
     }
 }

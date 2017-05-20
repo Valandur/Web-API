@@ -6,8 +6,10 @@ import com.flowpowered.math.vector.Vector3i;
 import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.util.Tuple;
 import org.spongepowered.api.world.World;
+import org.spongepowered.api.world.extent.BlockVolume;
+import org.spongepowered.api.world.extent.StorageType;
 import valandur.webapi.WebAPI;
-import valandur.webapi.cache.CachedWorld;
+import valandur.webapi.cache.world.CachedWorld;
 import valandur.webapi.json.JsonConverter;
 
 import java.util.*;
@@ -34,30 +36,26 @@ public class Blocks {
         return Optional.of(blockUpdates.get(uuid));
     }
 
-    public static JsonNode getBlockVolume(CachedWorld world, Vector3i min, Vector3i max) {
-        Optional<JsonNode> node = WebAPI.runOnMain(() -> {
+    public static Optional<BlockVolume> getBlockVolume(CachedWorld world, Vector3i min, Vector3i max) {
+        return WebAPI.runOnMain(() -> {
             Optional<?> obj = world.getLive();
 
             if (!obj.isPresent())
                 return null;
 
             World w = (World)obj.get();
-            return JsonConverter.toJson(w.getBlockView(min, max));
+            return w.getBlockView(min, max).getBlockCopy(StorageType.THREAD_SAFE);
         });
-
-        return node.orElseGet(JsonNodeFactory.instance::nullNode);
     }
-    public static JsonNode getBlockAt(CachedWorld world, Vector3i pos) {
-        Optional<JsonNode> node = WebAPI.runOnMain(() -> {
+    public static Optional<BlockState> getBlockAt(CachedWorld world, Vector3i pos) {
+        return WebAPI.runOnMain(() -> {
             Optional<?> obj = world.getLive();
 
             if (!obj.isPresent())
                 return null;
 
             World w = (World)obj.get();
-            return JsonConverter.toJson(w.getBlock(pos));
+            return w.getBlock(pos).copy();
         });
-
-        return node.orElseGet(JsonNodeFactory.instance::nullNode);
     }
 }

@@ -11,8 +11,8 @@ public class JoinDataSerializer extends WebAPISerializer<JoinData> {
     @Override
     public void serialize(JoinData value, JsonGenerator gen, SerializerProvider provider) throws IOException {
         gen.writeStartObject();
-        gen.writeNumberField("first", value.firstPlayed().get().getEpochSecond());
-        gen.writeNumberField("last", value.lastPlayed().get().getEpochSecond());
+        writeField(provider, "first", value.firstPlayed().get().getEpochSecond());
+        writeField(provider, "last", value.lastPlayed().get().getEpochSecond());
         gen.writeEndObject();
     }
 }

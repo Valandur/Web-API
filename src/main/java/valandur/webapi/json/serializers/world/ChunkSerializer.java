@@ -11,11 +11,11 @@ public class ChunkSerializer extends WebAPISerializer<Chunk>{
     @Override
     public void serialize(Chunk value, JsonGenerator gen, SerializerProvider provider) throws IOException {
         gen.writeStartObject();
-        gen.writeStringField("uuid", value.getUniqueId().toString());
-        gen.writeObjectField("world", value.getWorld());
-        gen.writeObjectField("position", value.getPosition());
-        gen.writeBooleanField("isPopulated", value.isPopulated());
-        gen.writeBooleanField("isLoaded", value.isLoaded());
+        writeField(provider, "uuid", value.getUniqueId());
+        writeField(provider, "world", value.getWorld());
+        writeField(provider, "position", value.getPosition());
+        writeField(provider, "isPopulated", value.isPopulated());
+        writeField(provider, "isLoaded", value.isLoaded());
         gen.writeEndObject();
     }
 }

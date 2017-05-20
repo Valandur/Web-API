@@ -1,7 +1,5 @@
 package valandur.webapi.command.hooks;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.NullNode;
 import org.spongepowered.api.command.CommandException;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
@@ -16,22 +14,20 @@ import java.util.*;
 
 public class CmdNotifyHook implements CommandExecutor {
 
-    private String name;
-    private CommandWebHook hook;
+    private CommandWebHook cmdHook;
 
-    public CmdNotifyHook(String name, CommandWebHook hook) {
-        this.name = name;
-        this.hook = hook;
+    public CmdNotifyHook(CommandWebHook cmdHook) {
+        this.cmdHook = cmdHook;
     }
 
     @Override
     public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
-        Map<String, Tuple<String, JsonNode>> params = new LinkedHashMap<>();
-        for (WebHookParam param : hook.getParams()) {
-            params.put(param.getName(), param.getValue(args).orElse(new Tuple<>("null", NullNode.getInstance())));
+        Map<String, Tuple<String, Object>> data = new LinkedHashMap<>();
+        for (WebHookParam param : cmdHook.getParams()) {
+            data.put(param.getName(), param.getValue(args).orElse(null));
         }
 
-        WebHooks.notifyHook(name, src.getIdentifier(), params);
+        WebHooks.notifyHook(cmdHook, src.getIdentifier(), data);
 
         return CommandResult.success();
     }

@@ -47,7 +47,7 @@ tags:
   - name: History
     description: Provides access to the command and chat history.
   - name: Info
-    description: Get general information about the minecraft server
+    description: Get misc information about the minecraft server
   - name: Player
     description: List all players and get detailed information about them.
   - name: Plugin
@@ -201,7 +201,7 @@ paths:
     delete:
       summary: Cancel block update
       parameters:
-        - name: world
+        - name: uuid
           in: path
           type: string
           description: The uuid of the block update.

@@ -34,9 +34,9 @@ public class CauseSerializer extends WebAPISerializer<Cause> {
         for (Map.Entry<String, Object> entry : value.getNamedCauses().entrySet()) {
             String key = Util.lowerFirst(entry.getKey());
             if (blockedCauseClasses.stream().anyMatch(c -> entry.getValue().getClass().getName().startsWith(c)))
-                gen.writeStringField(key, entry.getValue().getClass().getName());
+                writeField(provider, key, entry.getValue().getClass().getName());
             else
-                gen.writeObjectField(key, entry.getValue());
+                writeField(provider, key, entry.getValue());
         }
 
         gen.writeEndObject();

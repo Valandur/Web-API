@@ -11,8 +11,8 @@ public class ItemStackSnapshotSerializer extends WebAPISerializer<ItemStackSnaps
     @Override
     public void serialize(ItemStackSnapshot value, JsonGenerator gen, SerializerProvider provider) throws IOException {
         gen.writeStartObject();
-        gen.writeStringField("id", value.getType().getId());
-        gen.writeNumberField("quantity", value.getCount());
+        writeField(provider, "id", value.getType().getId());
+        writeField(provider, "quantity", value.getCount());
         gen.writeEndObject();
     }
 }

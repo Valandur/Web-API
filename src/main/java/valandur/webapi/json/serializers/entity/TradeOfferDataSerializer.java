@@ -13,7 +13,7 @@ public class TradeOfferDataSerializer extends WebAPISerializer<TradeOfferData> {
     public void serialize(TradeOfferData value, JsonGenerator gen, SerializerProvider provider) throws IOException {
         gen.writeStartArray();
         for (TradeOffer offer : value.asList()) {
-            gen.writeObject(offer);
+            writeValue(provider, offer);
         }
         gen.writeEndArray();
     }

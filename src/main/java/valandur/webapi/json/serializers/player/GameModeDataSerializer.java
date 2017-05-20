@@ -10,6 +10,6 @@ import java.io.IOException;
 public class GameModeDataSerializer extends WebAPISerializer<GameModeData> {
     @Override
     public void serialize(GameModeData value, JsonGenerator gen, SerializerProvider provider) throws IOException {
-        gen.writeObject(value.type().get());
+        writeValue(provider, value.type().get());
     }
 }

@@ -11,10 +11,10 @@ public class BlockUpdateSerializer  extends WebAPISerializer<BlockUpdate>{
     @Override
     public void serialize(BlockUpdate value, JsonGenerator gen, SerializerProvider provider) throws IOException {
         gen.writeStartObject();
-        gen.writeStringField("uuid", value.getUUID().toString());
-        gen.writeStringField("status", value.getStatus().toString());
-        gen.writeNumberField("progress", value.getProgress());
-        gen.writeNumberField("blocksSet", value.getBlocksSet());
+        writeField(provider, "uuid", value.getUUID());
+        writeField(provider, "status", value.getStatus().toString());
+        writeField(provider, "progress", value.getProgress());
+        writeField(provider, "blocksSet", value.getBlocksSet());
         gen.writeEndObject();
     }
 }

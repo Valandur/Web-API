@@ -15,7 +15,7 @@ public class AchievementDataSerializer extends WebAPISerializer<AchievementData>
         gen.writeStartArray();
 
         for (Achievement a : value.achievements().get()) {
-            gen.writeObject(JsonConverter.toJson(a));
+            writeValue(provider, a);
         }
 
         gen.writeEndArray();

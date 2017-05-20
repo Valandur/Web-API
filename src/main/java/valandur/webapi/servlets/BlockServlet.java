@@ -2,18 +2,18 @@ package valandur.webapi.servlets;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.flowpowered.math.vector.Vector3i;
-import jdk.nashorn.internal.ir.Block;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.block.BlockType;
 import org.spongepowered.api.block.trait.BlockTrait;
 import org.spongepowered.api.util.Tuple;
+import org.spongepowered.api.world.extent.BlockVolume;
 import valandur.webapi.blocks.BlockUpdate;
 import valandur.webapi.blocks.Blocks;
-import valandur.webapi.cache.CachedWorld;
+import valandur.webapi.cache.world.CachedWorld;
 import valandur.webapi.cache.DataCache;
-import valandur.webapi.misc.Permission;
+import valandur.webapi.permissions.Permission;
 import valandur.webapi.misc.Util;
 
 import javax.servlet.http.HttpServletResponse;
@@ -95,18 +95,28 @@ public class BlockServlet extends WebAPIServlet {
         }
 
         if (numBlocks > 1) {
-            JsonNode node = Blocks.getBlockVolume(world.get(), new Vector3i(minX, minY, minZ), new Vector3i(maxX, maxY, maxZ));
-            data.addJson("volume", node);
+            Optional<BlockVolume> vol = Blocks.getBlockVolume(world.get(), new Vector3i(minX, minY, minZ), new Vector3i(maxX, maxY, maxZ));
+            if (!vol.isPresent()) {
+                data.sendError(HttpServletResponse.SC_NOT_FOUND, "Could not get world");
+                return;
+            }
+
+            data.addJson("volume", vol.get(), true);
         } else {
-            JsonNode node = Blocks.getBlockAt(world.get(), new Vector3i(minX, minY, minZ));
-            data.addJson("block", node);
+            Optional<BlockState> state = Blocks.getBlockAt(world.get(), new Vector3i(minX, minY, minZ));
+            if (!state.isPresent()) {
+                data.sendError(HttpServletResponse.SC_NOT_FOUND, "Could not get world");
+                return;
+            }
+
+            data.addJson("block", state.get(), true);
         }
     }
 
     @Override
     @Permission(perm = "block.post")
     protected void handlePost(ServletData data) {
-        JsonNode reqJson = (JsonNode) data.getAttribute("body");
+        JsonNode reqJson = data.getRequestBody();
 
         if (reqJson == null || !reqJson.isArray()) {
             data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid areas");
@@ -224,8 +234,8 @@ public class BlockServlet extends WebAPIServlet {
                 }
             }
 
-            UUID updateUUID = Blocks.startBlockUpdate(UUID.fromString(world.get().uuid), blocks);
-            data.addJson("uuid", updateUUID);
+            UUID updateUUID = Blocks.startBlockUpdate(world.get().getUUID(), blocks);
+            data.addJson("uuid", updateUUID, false);
         }
     }
 
@@ -233,7 +243,7 @@ public class BlockServlet extends WebAPIServlet {
     @Permission(perm = "block.put")
     protected void handlePut(ServletData data) {
         String[] parts = data.getPathParts();
-        JsonNode reqJson = (JsonNode) data.getAttribute("body");
+        JsonNode reqJson = data.getRequestBody();
 
         if (parts.length < 1 || parts[0].isEmpty()) {
             data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid block update UUID");

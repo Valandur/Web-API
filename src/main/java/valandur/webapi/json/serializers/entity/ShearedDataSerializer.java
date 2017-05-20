@@ -10,6 +10,6 @@ import java.io.IOException;
 public class ShearedDataSerializer extends WebAPISerializer<ShearedData> {
     @Override
     public void serialize(ShearedData value, JsonGenerator gen, SerializerProvider provider) throws IOException {
-        gen.writeBoolean(value.sheared().get());
+        writeValue(provider, value.sheared().get());
     }
 }

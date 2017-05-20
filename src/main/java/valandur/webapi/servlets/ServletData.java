@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.gson.JsonObject;
 import valandur.webapi.json.JsonConverter;
+import valandur.webapi.misc.TreeNode;
 import valandur.webapi.misc.Util;
 
 import javax.servlet.http.HttpServletRequest;
@@ -21,6 +22,11 @@ public class ServletData {
     private String[] pathParts;
     private Map<String, String> queryParts;
 
+    private TreeNode<String, Boolean> permissions;
+    public TreeNode<String, Boolean> getPermissions() {
+        return permissions;
+    }
+
     public PrintWriter getWriter() throws IOException {
         return resp.getWriter();
     }
@@ -34,6 +40,7 @@ public class ServletData {
         return errorSent;
     }
 
+
     public ServletData(HttpServletRequest req, HttpServletResponse resp) {
         this.req = req;
         this.resp = resp;
@@ -41,18 +48,15 @@ public class ServletData {
 
         this.pathParts = Util.getPathParts(req);
         this.queryParts = Util.getQueryParts(req);
+        this.permissions = (TreeNode<String, Boolean>)req.getAttribute("dataPerms");
     }
 
-    public Object getAttribute(String name) {
-        return req.getAttribute(name);
+    public JsonNode getRequestBody() {
+        return (JsonNode)req.getAttribute("body");
     }
 
-    public void addJson(String key, Object value) {
-        if (value instanceof JsonNode) {
-            node.replace(key, (JsonNode)value);
-        } else {
-            node.set(key, JsonConverter.toJson(value, true));
-        }
+    public void addJson(String key, Object value, boolean details) {
+        node.replace(key, JsonConverter.toJson(value, details, permissions));
     }
 
     public String[] getPathParts() {

@@ -1,11 +1,9 @@
 package valandur.webapi.hooks;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.reflect.TypeToken;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
 import ninja.leaping.configurate.objectmapping.ObjectMappingException;
-import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.spongepowered.api.Platform;
 import org.spongepowered.api.Sponge;
@@ -101,43 +99,44 @@ public class WebHooks {
         }
     }
 
-    public static void notifyHooks(WebHookType type, String message) {
+    public static void notifyHooks(WebHookType type, Object data) {
         List<WebHook> notifyHooks = new ArrayList<>(eventHooks.get(type));
         notifyHooks.addAll(eventHooks.get(WebHookType.ALL));
         for (WebHook hook : notifyHooks) {
-            notifyHook(hook, type, null, new HashMap<>(), message);
+            notifyHook(hook, type, null, new HashMap<>(), data);
         }
     }
-    public static void notifyHook(String name, String source, Map<String, Tuple<String, JsonNode>> params) {
-        CommandWebHook cmdHook = commandHooks.get(name);
-        Map<String, JsonNode> contentMap = params.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, v -> v.getValue().getSecond()));
+    public static void notifyHook(CommandWebHook cmdHook, String source, Map<String, Tuple<String, Object>> data) {
+        Map<String, String> params = data.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, v -> v.getValue().getFirst()));
+        Map<String, Object> body = data.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, v -> v.getValue().getSecond()));
+
         for (WebHook hook : cmdHook.getHooks()) {
-            notifyHook(hook, WebHookType.CUSTOM_COMMAND, source, params, JsonConverter.toString(contentMap, true));
+            notifyHook(hook, WebHookType.CUSTOM_COMMAND, source, params, body);
         }
     }
-    public static void notifyHooks(Class<? extends Event> clazz, String message) {
+    public static void notifyHooks(Class<? extends Event> clazz, Object data) {
         List<WebHook> notifyHooks = new ArrayList<>(customHooks.get(clazz).getFirst());
         for (WebHook hook : notifyHooks) {
-            notifyHook(hook, WebHookType.CUSTOM_EVENT, null, new HashMap<>(), message);
+            notifyHook(hook, WebHookType.CUSTOM_EVENT, null, new HashMap<>(), data);
         }
     }
 
-    private static void notifyHook(WebHook hook, WebHookType eventType, String source, Map<String, Tuple<String, JsonNode>> params, String content) {
+    private static void notifyHook(WebHook hook, WebHookType eventType, String source, Map<String, String> params, Object data) {
         String address = hook.getAddress();
-        for (Map.Entry<String, Tuple<String, JsonNode>> entry : params.entrySet()) {
-            address = address.replace("{" + entry.getKey() + "}", entry.getValue().getFirst());
+        for (Map.Entry<String, String> entry : params.entrySet()) {
+            address = address.replace("{" + entry.getKey() + "}", entry.getValue());
         }
         final String finalAddress = address;
 
-        String data = null;
-        if (content != null) {
+        String stringData = JsonConverter.toString(data, hook.includeDetails(), hook.getPermissions());
+        if (data != null) {
             try {
-                data = hook.getDataType() == WebHook.WebHookDataType.JSON ? content : "body=" + URLEncoder.encode(content, "UTF-8");
+                stringData = hook.getDataType() == WebHook.WebHookDataType.JSON ? stringData : "body=" + URLEncoder.encode(stringData, "UTF-8");
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
-        final String finalData = data;
+        final String finalData = stringData;
 
         final Logger logger = WebAPI.getInstance().getLogger();
         CompletableFuture.runAsync(() -> {
@@ -149,8 +148,8 @@ public class WebHooks {
                 connection.setRequestMethod(hook.getMethod().toString());
                 for (WebHookHeader header : hook.getHeaders()) {
                     String val = header.getValue();
-                    for (Map.Entry<String, Tuple<String, JsonNode>> entry : params.entrySet()) {
-                        val = val.replace("{" + entry.getKey() + "}", entry.getValue().getFirst());
+                    for (Map.Entry<String, String> entry : params.entrySet()) {
+                        val = val.replace("{" + entry.getKey() + "}", entry.getValue());
                     }
                     connection.setRequestProperty(header.getName(), val);
                 }

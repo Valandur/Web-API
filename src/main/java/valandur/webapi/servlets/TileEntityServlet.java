@@ -3,11 +3,10 @@ package valandur.webapi.servlets;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.spongepowered.api.util.Tuple;
-import valandur.webapi.misc.Permission;
-import valandur.webapi.cache.CachedTileEntity;
-import valandur.webapi.cache.CachedWorld;
+import valandur.webapi.permissions.Permission;
+import valandur.webapi.cache.tileentity.CachedTileEntity;
+import valandur.webapi.cache.world.CachedWorld;
 import valandur.webapi.cache.DataCache;
-import valandur.webapi.json.JsonConverter;
 import valandur.webapi.misc.Util;
 
 import javax.servlet.http.HttpServletResponse;
@@ -28,7 +27,7 @@ public class TileEntityServlet extends WebAPIServlet {
                 return;
             }
 
-            data.addJson("tileEntities", JsonConverter.toJson(coll.get()));
+            data.addJson("tileEntities", coll.get(), false);
             return;
         }
 
@@ -66,11 +65,11 @@ public class TileEntityServlet extends WebAPIServlet {
             String[] fields = strFields != null ? strFields.split(",") : new String[]{};
             String[] methods = strMethods != null ? strMethods.split(",") : new String[]{};
             Tuple extra = DataCache.getExtraData(te.get(), fields, methods);
-            data.addJson("fields", extra.getFirst());
-            data.addJson("methods", extra.getSecond());
+            data.addJson("fields", extra.getFirst(), true);
+            data.addJson("methods", extra.getSecond(), true);
         }
 
-        data.addJson("tileEntity", JsonConverter.toJson(te.get(), true));
+        data.addJson("tileEntity", te.get(), true);
     }
 
     @Override
@@ -110,7 +109,7 @@ public class TileEntityServlet extends WebAPIServlet {
             return;
         }
 
-        final JsonNode reqJson = (JsonNode) data.getAttribute("body");
+        final JsonNode reqJson = data.getRequestBody();
 
         if (!reqJson.has("method")) {
             data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Request must define the 'method' property");
@@ -125,7 +124,12 @@ public class TileEntityServlet extends WebAPIServlet {
             return;
         }
 
-        JsonNode res = DataCache.executeMethod(te.get(), mName, params.get());
-        data.addJson("result", res);
+        Optional<Object> res = DataCache.executeMethod(te.get(), mName, params.get());
+        if (!res.isPresent()) {
+            data.sendError(HttpServletResponse.SC_NOT_FOUND, "Could not get tile entity");
+            return;
+        }
+
+        data.addJson("result", res.get(), true);
     }
 }

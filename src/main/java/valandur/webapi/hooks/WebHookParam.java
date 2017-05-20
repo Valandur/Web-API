@@ -1,6 +1,5 @@
 package valandur.webapi.hooks;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import ninja.leaping.configurate.objectmapping.Setting;
 import ninja.leaping.configurate.objectmapping.serialize.ConfigSerializable;
 import org.spongepowered.api.command.args.CommandContext;
@@ -9,13 +8,10 @@ import org.spongepowered.api.command.args.GenericArguments;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.util.Tuple;
-import org.spongepowered.api.world.DimensionType;
-import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.storage.WorldProperties;
-import valandur.webapi.cache.CachedPlayer;
-import valandur.webapi.cache.CachedWorld;
+import valandur.webapi.cache.player.CachedPlayer;
+import valandur.webapi.cache.world.CachedWorld;
 import valandur.webapi.cache.DataCache;
-import valandur.webapi.json.JsonConverter;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -24,7 +20,7 @@ import java.util.UUID;
 public class WebHookParam {
 
     public enum WebHookParamType {
-        STRING, BOOL, INTEGER, DOUBLE, PLAYER, WORLD, DIMENSION, LOCATION, VECTOR3D, VECTOR3I
+        STRING, BOOL, INTEGER, DOUBLE, PLAYER, WORLD, LOCATION, VECTOR3D, VECTOR3I
     }
 
     @Setting
@@ -86,16 +82,13 @@ public class WebHookParam {
                 break;
         }
 
-        if (elem == null)
-            return Optional.empty();
-
         if (isOptional)
             elem = GenericArguments.optional(elem);
 
         return Optional.of(elem);
     }
 
-    public Optional<Tuple<String, JsonNode>> getValue(CommandContext args) {
+    public Optional<Tuple<String, Object>> getValue(CommandContext args) {
         Optional<String> arg = args.getOne(name);
         if (!arg.isPresent()) return Optional.empty();
 
@@ -106,25 +99,19 @@ public class WebHookParam {
             case BOOL:
             case INTEGER:
             case DOUBLE:
-                return Optional.of(new Tuple<>(obj.toString(), JsonConverter.toJson(obj)));
+            case LOCATION:
+            case VECTOR3D:
+                return Optional.of(new Tuple<>(obj.toString(), obj));
 
             case PLAYER:
                 UUID pUuid = ((Player)obj).getUniqueId();
                 CachedPlayer p = DataCache.getPlayer(pUuid).orElse(null);
-                return Optional.of(new Tuple<>(p.uuid, JsonConverter.toJson(p)));
+                return Optional.of(new Tuple<>(p.getUUID().toString(), p));
 
             case WORLD:
                 UUID wUuid = ((WorldProperties)obj).getUniqueId();
                 CachedWorld w = DataCache.getWorld(wUuid).orElse(null);
-                return Optional.of(new Tuple<>(w.uuid, JsonConverter.toJson(w)));
-
-            case DIMENSION:
-                String t = ((DimensionType)obj).getName();
-                return Optional.of(new Tuple<>(t, JsonConverter.toJson(t)));
-
-            case LOCATION:
-            case VECTOR3D:
-                return Optional.of(new Tuple<>(JsonConverter.toString(obj), JsonConverter.toJson(obj)));
+                return Optional.of(new Tuple<>(w.getUUID().toString(), w));
         }
 
         return Optional.empty();

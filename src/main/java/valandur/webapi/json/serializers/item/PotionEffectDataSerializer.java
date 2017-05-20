@@ -13,7 +13,7 @@ public class PotionEffectDataSerializer extends WebAPISerializer<PotionEffectDat
     public void serialize(PotionEffectData value, JsonGenerator gen, SerializerProvider provider) throws IOException {
         gen.writeStartArray();
         for (PotionEffect effect : value.asList()) {
-            gen.writeObject(effect);
+            writeValue(provider, effect);
         }
         gen.writeEndArray();
     }

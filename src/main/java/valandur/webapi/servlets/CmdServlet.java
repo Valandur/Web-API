@@ -1,16 +1,15 @@
 package valandur.webapi.servlets;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import valandur.webapi.misc.Permission;
+import valandur.webapi.permissions.Permission;
 import valandur.webapi.WebAPI;
-import valandur.webapi.cache.CachedCommand;
+import valandur.webapi.cache.command.CachedCommand;
 import valandur.webapi.cache.DataCache;
-import valandur.webapi.json.JsonConverter;
 import valandur.webapi.misc.WebAPICommandSource;
+import valandur.webapi.permissions.Permissions;
 
 import javax.servlet.http.HttpServletResponse;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,7 +23,7 @@ public class CmdServlet extends WebAPIServlet {
         String[] paths = data.getPathParts();
 
         if (paths.length == 0 || paths[0].isEmpty()) {
-            data.addJson("commands", JsonConverter.toJson(DataCache.getCommands()));
+            data.addJson("commands", DataCache.getCommands(), false);
             return;
         }
 
@@ -35,43 +34,39 @@ public class CmdServlet extends WebAPIServlet {
             return;
         }
 
-        data.addJson("command", JsonConverter.toJson(cmd.get(), true));
+        data.addJson("command", cmd.get(), true);
     }
 
     @Override
     @Permission(perm = "cmd.post")
     protected void handlePost(ServletData data) {
-        List<String> permissions = (List<String>) data.getAttribute("perms");
-        boolean allowAll = permissions.contains("*") || permissions.contains("cmd.*") || permissions.contains("cmd.post.*");
-
-        final JsonNode reqJson = (JsonNode) data.getAttribute("body");
+        final JsonNode reqJson = data.getRequestBody();
 
         if (!reqJson.isArray()) {
             String cmd = reqJson.get("command").asText().split(" ")[0];
-            if (!allowAll && !permissions.contains("cmd.post." + cmd)) {
+            if (!Permissions.permits(data.getPermissions(), new String[]{ "cmd", "post", cmd })) {
                 data.sendError(HttpServletResponse.SC_FORBIDDEN, "Access denied");
                 return;
             }
 
-            data.addJson("result", runCommand(reqJson));
+            data.addJson("result", runCommand(reqJson), true);
             return;
         }
 
-        ArrayNode arr = JsonNodeFactory.instance.arrayNode();
+        List<Object> res = new ArrayList<>();
         for (JsonNode node : reqJson) {
             String cmd = node.get("command").asText().split(" ")[0];
-            if (!allowAll && !permissions.contains("cmd." + cmd)) {
-                arr.add(JsonConverter.toJson(HttpServletResponse.SC_FORBIDDEN));
+            if (!Permissions.permits(data.getPermissions(), new String[]{ "cmd", "post", cmd })) {
+                res.add(new Exception("Not allowed"));
                 continue;
             }
 
-            JsonNode res = runCommand(node);
-            arr.add(res);
+            res.add(runCommand(node));
         }
-        data.addJson("results", arr);
+        data.addJson("results", res, true);
     }
 
-    private JsonNode runCommand(JsonNode node) {
+    private List<String> runCommand(JsonNode node) {
         final String cmd = node.get("command").asText();
         final String name = node.has("name") ? node.get("name").asText() : WebAPI.NAME;
         final int waitTime = node.has("waitTime") ? node.get("waitTime").asInt() : 0;
@@ -88,7 +83,7 @@ public class CmdServlet extends WebAPIServlet {
                 }
             }
 
-            return JsonConverter.toJson(src.getLines(), true);
+            return src.getLines();
         } catch (InterruptedException e) {
             e.printStackTrace();
             return null;

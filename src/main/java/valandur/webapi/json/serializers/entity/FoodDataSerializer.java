@@ -11,9 +11,9 @@ public class FoodDataSerializer extends WebAPISerializer<FoodData> {
     @Override
     public void serialize(FoodData value, JsonGenerator gen, SerializerProvider provider) throws IOException {
         gen.writeStartObject();
-        gen.writeNumberField("foodLevel", value.foodLevel().get());
-        gen.writeNumberField("exhaustion", value.exhaustion().get());
-        gen.writeNumberField("saturation", value.saturation().get());
+        writeField(provider, "foodLevel", value.foodLevel().get());
+        writeField(provider, "exhaustion", value.exhaustion().get());
+        writeField(provider, "saturation", value.saturation().get());
         gen.writeEndObject();
     }
 }

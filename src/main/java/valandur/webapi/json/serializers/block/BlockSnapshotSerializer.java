@@ -11,9 +11,9 @@ public class BlockSnapshotSerializer extends WebAPISerializer<BlockSnapshot> {
     @Override
     public void serialize(BlockSnapshot value, JsonGenerator gen, SerializerProvider provider) throws IOException {
         gen.writeStartObject();
-        if (value.getCreator().isPresent()) gen.writeStringField("creator", value.getCreator().get().toString());
-        if (value.getLocation().isPresent()) gen.writeObjectField("location", value.getLocation().get());
-        gen.writeObjectField("state", value.getState());
+        if (value.getCreator().isPresent()) writeField(provider, "creator", value.getCreator().get());
+        if (value.getLocation().isPresent()) writeField(provider, "location", value.getLocation().get());
+        writeField(provider, "state", value.getState());
         gen.writeEndObject();
     }
 }

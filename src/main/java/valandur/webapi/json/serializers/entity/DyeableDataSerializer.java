@@ -10,6 +10,6 @@ import java.io.IOException;
 public class DyeableDataSerializer extends WebAPISerializer<DyeableData> {
     @Override
     public void serialize(DyeableData value, JsonGenerator gen, SerializerProvider provider) throws IOException {
-        gen.writeString(value.type().get().getId());
+        writeValue(provider, value.type().get().getId());
     }
 }

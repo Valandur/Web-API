@@ -13,7 +13,7 @@ public class SignDataSerializer extends WebAPISerializer<SignData> {
     public void serialize(SignData value, JsonGenerator gen, SerializerProvider provider) throws IOException {
         gen.writeStartArray();
         for (Text line : value.asList()) {
-            gen.writeString(line.toPlain());
+            writeValue(provider, line.toPlain());
         }
         gen.writeEndArray();
     }

@@ -1,17 +1,12 @@
 package valandur.webapi.servlets;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import org.reflections.Reflections;
-import org.spongepowered.api.event.Event;
 import valandur.webapi.WebAPI;
-import valandur.webapi.misc.Permission;
+import valandur.webapi.permissions.Permission;
 import valandur.webapi.cache.DataCache;
-import valandur.webapi.json.JsonConverter;
 
 import javax.servlet.http.HttpServletResponse;
-import java.util.Map;
 import java.util.Set;
 
 public class ClassServlet extends WebAPIServlet {
@@ -23,7 +18,7 @@ public class ClassServlet extends WebAPIServlet {
 
         if (paths.length == 0 || paths[0].isEmpty()) {
             ArrayNode node = JsonNodeFactory.instance.arrayNode();
-            data.addJson("classes", JsonConverter.toJson(DataCache.getClasses().keySet().stream().map(Class::getName).toArray(String[]::new)));
+            data.addJson("classes", DataCache.getClasses().keySet().stream().map(Class::getName).toArray(String[]::new), false);
             return;
         }
 
@@ -33,7 +28,7 @@ public class ClassServlet extends WebAPIServlet {
             Class c = Class.forName(className);
 
             if (paths.length <= 1) {
-                data.addJson("class", DataCache.getClass(c));
+                data.addJson("class", DataCache.getClass(c), true);
                 return;
             }
 
@@ -43,8 +38,8 @@ public class ClassServlet extends WebAPIServlet {
                 Set classes = WebAPI.getInstance().getReflections().getSubTypesOf(c);
                 WebAPI.getInstance().getLogger().info("Found " + classes.size() + " subclasses of '" + c.getName() + "'");
 
-                data.addJson("base", c.getName());
-                data.addJson("classes", classes);
+                data.addJson("base", c.getName(), false);
+                data.addJson("classes", classes, false);
             } else {
                 data.sendError(HttpServletResponse.SC_NOT_FOUND, "Unknown operation '" + op + "'");
             }

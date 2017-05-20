@@ -2,10 +2,9 @@ package valandur.webapi.servlets;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import org.spongepowered.api.util.Tuple;
-import valandur.webapi.misc.Permission;
-import valandur.webapi.cache.CachedPlayer;
+import valandur.webapi.permissions.Permission;
+import valandur.webapi.cache.player.CachedPlayer;
 import valandur.webapi.cache.DataCache;
-import valandur.webapi.json.JsonConverter;
 import valandur.webapi.misc.Util;
 
 import javax.servlet.http.HttpServletResponse;
@@ -19,7 +18,7 @@ public class PlayerServlet extends WebAPIServlet {
         String[] paths = data.getPathParts();
 
         if (paths.length == 0 || paths[0].isEmpty()) {
-            data.addJson("players", JsonConverter.toJson(DataCache.getPlayers()));
+            data.addJson("players", DataCache.getPlayers(), false);
             return;
         }
 
@@ -41,11 +40,11 @@ public class PlayerServlet extends WebAPIServlet {
             String[] fields = strFields != null ? strFields.split(",") : new String[]{};
             String[] methods = strMethods != null ? strMethods.split(",") : new String[]{};
             Tuple extra = DataCache.getExtraData(player.get(), fields, methods);
-            data.addJson("fields", extra.getFirst());
-            data.addJson("methods", extra.getSecond());
+            data.addJson("fields", extra.getFirst(), true);
+            data.addJson("methods", extra.getSecond(), true);
         }
 
-        data.addJson("player", JsonConverter.toJson(player.get(), true));
+        data.addJson("player", player.get(), true);
     }
 
     @Override
@@ -70,7 +69,7 @@ public class PlayerServlet extends WebAPIServlet {
             return;
         }
 
-        final JsonNode reqJson = (JsonNode) data.getAttribute("body");
+        final JsonNode reqJson = data.getRequestBody();
 
         if (!reqJson.has("method")) {
             data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Request must define the 'method' property");
@@ -85,7 +84,12 @@ public class PlayerServlet extends WebAPIServlet {
             return;
         }
 
-        JsonNode res = DataCache.executeMethod(player.get(), mName, params.get());
-        data.addJson("result", res);
+        Optional<Object> res = DataCache.executeMethod(player.get(), mName, params.get());
+        if (!res.isPresent()) {
+            data.sendError(HttpServletResponse.SC_NOT_FOUND, "Could not get player");
+            return;
+        }
+
+        data.addJson("result", res.get(), true);
     }
 }

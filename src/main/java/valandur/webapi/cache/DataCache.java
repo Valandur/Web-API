@@ -1,25 +1,32 @@
 package valandur.webapi.cache;
 
+import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.flowpowered.math.vector.Vector3i;
+import com.fasterxml.jackson.databind.node.TextNode;
 import org.spongepowered.api.Sponge;
-import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.block.tileentity.TileEntity;
 import org.spongepowered.api.command.CommandMapping;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.living.player.Player;
-import org.spongepowered.api.event.cause.Cause;
 import org.spongepowered.api.event.command.SendCommandEvent;
 import org.spongepowered.api.event.message.MessageEvent;
 import org.spongepowered.api.plugin.PluginContainer;
 import org.spongepowered.api.util.Tuple;
-import org.spongepowered.api.world.Chunk;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 import valandur.webapi.WebAPI;
+import valandur.webapi.cache.chat.CachedChatMessage;
+import valandur.webapi.cache.command.CachedCommand;
+import valandur.webapi.cache.command.CachedCommandCall;
+import valandur.webapi.cache.entity.CachedEntity;
+import valandur.webapi.cache.player.CachedPlayer;
+import valandur.webapi.cache.plugin.CachedPluginContainer;
+import valandur.webapi.cache.tileentity.CachedTileEntity;
+import valandur.webapi.cache.world.CachedWorld;
 import valandur.webapi.json.JsonConverter;
 import valandur.webapi.misc.Util;
+import valandur.webapi.permissions.Permissions;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -31,7 +38,7 @@ public class DataCache {
 
     private static ConcurrentLinkedQueue<CachedChatMessage> chatMessages = new ConcurrentLinkedQueue<>();
     private static ConcurrentLinkedQueue<CachedCommandCall> commandCalls = new ConcurrentLinkedQueue<>();
-    private static Collection<CachedPlugin> plugins = new LinkedHashSet<>();
+    private static Collection<CachedPluginContainer> plugins = new LinkedHashSet<>();
     private static Collection<CachedCommand> commands = new LinkedHashSet<>();
     private static Map<UUID, CachedWorld> worlds = new ConcurrentHashMap<>();
     private static Map<UUID, CachedPlayer> players = new ConcurrentHashMap<>();
@@ -78,8 +85,8 @@ public class DataCache {
         return cache;
     }
 
-    public static JsonNode executeMethod(CachedObject cache, String methodName, Object[] paramValues) {
-        Optional<JsonNode> node = WebAPI.runOnMain(() -> {
+    public static Optional<Object> executeMethod(CachedObject cache, String methodName, Object[] paramValues) {
+        return WebAPI.runOnMain(() -> {
             Optional<?> obj = cache.getLive();
 
             if (!obj.isPresent())
@@ -90,27 +97,34 @@ public class DataCache {
             Optional<Method> optMethod = Arrays.stream(ms).filter(m -> m.getName().equalsIgnoreCase(methodName)).findAny();
 
             if (!optMethod.isPresent()) {
-                return JsonConverter.toJson("Method not found");
+                return new Exception("Method not found");
             }
 
             try {
                 Method m = optMethod.get();
                 if (m.getParameterCount() != paramValues.length) {
-                    return JsonConverter.toJson("Method must have " + m.getParameterCount() +
-                            " parameters but has " + paramValues.length);
+                    return new Exception("Method must have " + m.getParameterCount() + " parameters but has " + paramValues.length);
                 }
                 m.setAccessible(true);
-                Object res = m.invoke(o, paramValues);
-                return JsonConverter.toJson(res, true);
+                return m.invoke(o, paramValues);
             } catch (Exception e) {
-                e.printStackTrace();
-                return null;
+                return e;
             }
         });
-
-        return node.orElseGet(JsonNodeFactory.instance::nullNode);
     }
 
+    public static Optional<CachedWorld> getWorld(UUID uuid) {
+        if (!worlds.containsKey(uuid)) {
+            return Optional.empty();
+        }
+
+        final CachedWorld res = worlds.get(uuid);
+        if (res.isExpired()) {
+            return updateWorld(uuid);
+        } else {
+            return Optional.of(res);
+        }
+    }
     public static CachedWorld getWorld(World world) {
         Optional<CachedWorld> w = getWorld(world.getUniqueId());
         return w.orElseGet(() -> addWorld(world));
@@ -132,19 +146,19 @@ public class DataCache {
     public static Collection<CachedWorld> getWorlds() {
         return worlds.values();
     }
-    public static Optional<CachedWorld> getWorld(UUID uuid) {
-        if (!worlds.containsKey(uuid)) {
+
+    public static Optional<CachedPlayer> getPlayer(UUID uuid) {
+        if (!players.containsKey(uuid)) {
             return Optional.empty();
         }
 
-        final CachedWorld res = worlds.get(uuid);
+        final CachedPlayer res = players.get(uuid);
         if (res.isExpired()) {
-            return updateWorld(uuid);
+            return updatePlayer(uuid);
         } else {
             return Optional.of(res);
         }
     }
-
     public static CachedPlayer getPlayer(Player player) {
         Optional<CachedPlayer> p = getPlayer(player.getUniqueId());
         return p.orElseGet(() -> addPlayer(player));
@@ -167,19 +181,19 @@ public class DataCache {
     public static Collection<CachedPlayer> getPlayers() {
         return players.values();
     }
-    public static Optional<CachedPlayer> getPlayer(UUID uuid) {
-        if (!players.containsKey(uuid)) {
+
+    public static Optional<CachedEntity> getEntity(UUID uuid) {
+        if (!entities.containsKey(uuid)) {
             return Optional.empty();
         }
 
-        final CachedPlayer res = players.get(uuid);
+        final CachedEntity res = entities.get(uuid);
         if (res.isExpired()) {
-            return updatePlayer(uuid);
+            return updateEntity(uuid);
         } else {
             return Optional.of(res);
         }
     }
-
     public static CachedEntity getEntity(Entity entity) {
         Optional<CachedEntity> e = getEntity(entity.getUniqueId());
         return e.orElseGet(() -> addEntity(entity));
@@ -208,18 +222,6 @@ public class DataCache {
     public static Collection<CachedEntity> getEntities() {
         return entities.values();
     }
-    public static Optional<CachedEntity> getEntity(UUID uuid) {
-        if (!entities.containsKey(uuid)) {
-            return Optional.empty();
-        }
-
-        final CachedEntity res = entities.get(uuid);
-        if (res.isExpired()) {
-            return updateEntity(uuid);
-        } else {
-            return Optional.of(res);
-        }
-    }
 
     public static Tuple<Map<String, JsonNode>, Map<String, JsonNode>> getExtraData(CachedObject cache, String[] reqFields, String[] reqMethods) {
         return WebAPI.runOnMain(() -> {
@@ -237,7 +239,7 @@ public class DataCache {
             for (String fieldName : reqFields) {
                 Optional<Field> field = allFields.stream().filter(f -> f.getName().equalsIgnoreCase(fieldName)).findAny();
                 if (!field.isPresent()) {
-                    fields.put(fieldName, JsonConverter.toJson("ERROR: Field not found"));
+                    fields.put(fieldName, TextNode.valueOf("ERROR: Field not found"));
                     continue;
                 }
 
@@ -245,25 +247,25 @@ public class DataCache {
 
                 try {
                     Object res = field.get().get(obj);
-                    fields.put(fieldName, JsonConverter.toJson(res));
+                    fields.put(fieldName, JsonConverter.toJson(res, true, Permissions.permitAllNode()));
                 } catch (IllegalAccessException e) {
-                    fields.put(fieldName, JsonConverter.toJson("ERROR: " + e.toString()));
+                    fields.put(fieldName, TextNode.valueOf("ERROR: " + e.toString()));
                 }
             }
             for (String methodName : reqMethods) {
                 Optional<Method> method = allMethods.stream().filter(f -> f.getName().equalsIgnoreCase(methodName)).findAny();
                 if (!method.isPresent()) {
-                    methods.put(methodName, JsonConverter.toJson("ERROR: Method not found"));
+                    methods.put(methodName, TextNode.valueOf("ERROR: Method not found"));
                     continue;
                 }
 
                 if (method.get().getParameterCount() > 0) {
-                    methods.put(methodName, JsonConverter.toJson("ERROR: Method must not have parameters"));
+                    methods.put(methodName, TextNode.valueOf("ERROR: Method must not have parameters"));
                     continue;
                 }
 
                 if (method.get().getReturnType().equals(Void.TYPE) || method.get().getReturnType().equals(Void.class)) {
-                    methods.put(methodName, JsonConverter.toJson("ERROR: Method must not return void"));
+                    methods.put(methodName, TextNode.valueOf("ERROR: Method must not return void"));
                     continue;
                 }
 
@@ -271,9 +273,9 @@ public class DataCache {
 
                 try {
                     Object res = method.get().invoke(obj);
-                    methods.put(methodName, JsonConverter.toJson(res));
+                    methods.put(methodName, JsonConverter.toJson(res, true, Permissions.permitAllNode()));
                 } catch (IllegalAccessException | InvocationTargetException e) {
-                    methods.put(methodName, JsonConverter.toJson("ERROR: " + e.toString()));
+                    methods.put(methodName, TextNode.valueOf("ERROR: " + e.toString()));
                 }
             }
 
@@ -283,21 +285,25 @@ public class DataCache {
 
     public static void updatePlugins() {
         Collection<PluginContainer> plugins = Sponge.getPluginManager().getPlugins();
-        Collection<CachedPlugin> cachedPlugins = new LinkedHashSet<>();
+        Collection<CachedPluginContainer> cachedPlugins = new LinkedHashSet<>();
         for (PluginContainer plugin : plugins) {
-            cachedPlugins.add(new CachedPlugin(plugin));
+            cachedPlugins.add(new CachedPluginContainer(plugin));
         }
         DataCache.plugins = cachedPlugins;
     }
-    public static Collection<CachedPlugin> getPlugins() {
+    public static Collection<CachedPluginContainer> getPlugins() {
         return plugins;
     }
-    public static Optional<CachedPlugin> getPlugin(String id) {
-        for (CachedPlugin plugin : plugins) {
-            if (plugin.id.equalsIgnoreCase(id))
+    public static Optional<CachedPluginContainer> getPlugin(String id) {
+        for (CachedPluginContainer plugin : plugins) {
+            if (plugin.getId().equalsIgnoreCase(id))
                 return Optional.of(plugin);
         }
         return Optional.empty();
+    }
+    public static CachedPluginContainer getPlugin(PluginContainer plugin) {
+        Optional<CachedPluginContainer> e = getPlugin(plugin.getId());
+        return e.orElseGet(() -> new CachedPluginContainer(plugin));
     }
 
     public static void updateCommands() {
@@ -313,7 +319,7 @@ public class DataCache {
     }
     public static Optional<CachedCommand> getCommand(String name) {
         for (CachedCommand cmd : commands) {
-            if (cmd.name.equalsIgnoreCase(name))
+            if (cmd.getName().equalsIgnoreCase(name))
                 return Optional.of(cmd);
         }
         return Optional.empty();

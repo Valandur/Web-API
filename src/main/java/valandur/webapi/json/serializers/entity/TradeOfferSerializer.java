@@ -11,13 +11,13 @@ public class TradeOfferSerializer extends WebAPISerializer<TradeOffer> {
     @Override
     public void serialize(TradeOffer value, JsonGenerator gen, SerializerProvider provider) throws IOException {
         gen.writeStartObject();
-        gen.writeBooleanField("hasExpired", value.hasExpired());
-        gen.writeBooleanField("grantsExp", value.doesGrantExperience());
-        gen.writeNumberField("uses", value.getUses());
-        gen.writeNumberField("maxUses", value.getUses());
-        gen.writeObjectField("firstBuyingItem", value.getFirstBuyingItem());
-        gen.writeObjectField("secondBuyingItem", value.getSecondBuyingItem().orElse(null));
-        gen.writeObjectField("sellingItem", value.getSellingItem());
+        writeField(provider, "hasExpired", value.hasExpired());
+        writeField(provider, "grantsExp", value.doesGrantExperience());
+        writeField(provider, "uses", value.getUses());
+        writeField(provider, "maxUses", value.getUses());
+        writeField(provider, "firstBuyingItem", value.getFirstBuyingItem());
+        writeField(provider, "secondBuyingItem", value.getSecondBuyingItem().orElse(null));
+        writeField(provider, "sellingItem", value.getSellingItem());
         gen.writeEndObject();
     }
 }

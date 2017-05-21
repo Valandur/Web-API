@@ -66,7 +66,7 @@ public class CachedEntity extends CachedObject {
             try {
                 Inventory inv = ((Carrier) entity).getInventory();
                 this.inventory = Inventory.builder().from(inv).build(inv.getPlugin());
-            } catch (AbstractMethodError ignored) {
+            } catch (Exception | AbstractMethodError ignored) {
             }
         }
     }

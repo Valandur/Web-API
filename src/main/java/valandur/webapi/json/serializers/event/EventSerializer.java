@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.event.Event;
 import org.spongepowered.api.event.achievement.GrantAchievementEvent;
+import org.spongepowered.api.event.block.TargetBlockEvent;
 import org.spongepowered.api.event.entity.TargetEntityEvent;
 import org.spongepowered.api.event.entity.living.humanoid.player.KickPlayerEvent;
 import org.spongepowered.api.event.item.inventory.InteractInventoryEvent;
@@ -63,6 +64,10 @@ public class EventSerializer extends WebAPISerializer<Event> {
 
         if (value instanceof TargetWorldEvent) {
             writeField(provider, "world", ((TargetWorldEvent)value).getTargetWorld());
+        }
+
+        if (value instanceof TargetBlockEvent) {
+            writeField(provider, "block", ((TargetBlockEvent)value).getTargetBlock());
         }
 
         try {

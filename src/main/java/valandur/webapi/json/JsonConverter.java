@@ -298,7 +298,7 @@ public class JsonConverter {
                 }
 
                 // Write back to file
-                Files.write(file.toPath(), fileContent.getBytes(), StandardOpenOption.CREATE);
+                Files.write(file.toPath(), fileContent.getBytes(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
 
                 // Compile the file
                 Iterable<? extends JavaFileObject> compilationUnits = fm.getJavaFileObjectsFromFiles(Collections.singletonList(file));

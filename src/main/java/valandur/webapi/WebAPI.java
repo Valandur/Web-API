@@ -428,7 +428,7 @@ public class WebAPI {
     }
 
     @Listener(order = Order.POST)
-    public void onBlockInteract(InteractBlockEvent event) {
+    public void onInteractBlock(InteractBlockEvent event) {
         WebHooks.notifyHooks(WebHooks.WebHookType.INTERACT_BLOCK, event);
     }
     @Listener(order = Order.POST)

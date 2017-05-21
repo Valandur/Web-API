@@ -1,5 +1,6 @@
 package valandur.webapi.hooks;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.reflect.TypeToken;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
@@ -7,8 +8,10 @@ import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 import org.slf4j.Logger;
 import org.spongepowered.api.Platform;
 import org.spongepowered.api.Sponge;
+import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.*;
 import org.spongepowered.api.event.EventListener;
+import org.spongepowered.api.text.Text;
 import org.spongepowered.api.util.Tuple;
 import valandur.webapi.WebAPI;
 import valandur.webapi.json.JsonConverter;
@@ -182,18 +185,38 @@ public class WebHooks {
                 int code = connection.getResponseCode();
                 if (code != 200) {
                     WebAPI.getInstance().getLogger().warn("Hook '" + hook.getAddress() + "' responded with code: " + code);
-                } else {
-                    InputStream is = connection.getInputStream();
-                    BufferedReader rd = new BufferedReader(new InputStreamReader(is));
-                    StringBuilder response = new StringBuilder();
-                    String line;
-                    while ((line = rd.readLine()) != null) {
-                        response.append(line);
-                        response.append('\r');
-                    }
-                    rd.close();
-                    WebAPI.getInstance().getLogger().info(hook.getAddress() + ": " + response.toString());
+                    return;
                 }
+
+                InputStream is = connection.getInputStream();
+                BufferedReader rd = new BufferedReader(new InputStreamReader(is));
+                StringBuilder response = new StringBuilder();
+                String line;
+                while ((line = rd.readLine()) != null) {
+                    response.append(line);
+                    response.append('\r');
+                }
+                rd.close();
+
+                String respString = response.toString().trim();
+                if (respString.isEmpty() || respString.equalsIgnoreCase("OK")) return;
+
+                final WebHookResponse resp = new ObjectMapper().readValue(respString, WebHookResponse.class);
+
+                WebAPI.runOnMain(() -> {
+                    for (String target : resp.getTargets()) {
+                        if (target.equalsIgnoreCase("server")) {
+                            Sponge.getServer().getBroadcastChannel().send(Text.of(resp.getMessage()));
+                            continue;
+                        }
+
+                        Optional<Player> p = Sponge.getServer().getPlayer(UUID.fromString(target));
+                        if (!p.isPresent())
+                            continue;
+
+                        p.get().sendMessage(Text.of(resp.getMessage()));
+                    }
+                });
             } catch (ConnectException e) {
                 logger.warn("Could not connect to hook '" + hook.getAddress() + "': " + e.getMessage());
             } catch (ProtocolException e) {

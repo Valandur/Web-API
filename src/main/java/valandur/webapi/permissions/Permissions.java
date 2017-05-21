@@ -106,7 +106,7 @@ public class Permissions {
      */
     public static TreeNode<String, Boolean> subPermissions(TreeNode<String, Boolean> perms, List<String> path) {
         // Check if we ourselves already are a permit-all permission
-        if (perms.getKey().equalsIgnoreCase("*") && perms.getValue()) {
+        if (perms.getKey() != null && perms.getKey().equalsIgnoreCase("*") && perms.getValue()) {
             return perms;
         }
 

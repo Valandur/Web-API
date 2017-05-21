@@ -27,6 +27,7 @@ import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.Order;
 import org.spongepowered.api.event.achievement.GrantAchievementEvent;
+import org.spongepowered.api.event.block.InteractBlockEvent;
 import org.spongepowered.api.event.command.SendCommandEvent;
 import org.spongepowered.api.event.entity.DestructEntityEvent;
 import org.spongepowered.api.event.entity.SpawnEntityEvent;
@@ -426,6 +427,10 @@ public class WebAPI {
         WebHooks.notifyHooks(WebHooks.WebHookType.CHAT, msg);
     }
 
+    @Listener(order = Order.POST)
+    public void onBlockInteract(InteractBlockEvent event) {
+        WebHooks.notifyHooks(WebHooks.WebHookType.INTERACT_BLOCK, event);
+    }
     @Listener(order = Order.POST)
     public void onInteractInventory(InteractInventoryEvent.Open event) {
         WebHooks.notifyHooks(WebHooks.WebHookType.INVENTORY_OPEN, event);

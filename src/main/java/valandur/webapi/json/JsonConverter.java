@@ -90,7 +90,7 @@ import java.util.stream.Collectors;
 
 public class JsonConverter {
 
-    private static Map<Class, JsonSerializer> serializers;
+    private static Map<Class, WebAPISerializer> serializers;
     private static Map<String, String> relocatedPackages;
     private static Map<String, Class> supportedData;
     public static Map<String, Class> getSupportedData() {
@@ -331,6 +331,12 @@ public class JsonConverter {
                     forClass = (Class) f.get(null);
                 } catch (NoSuchFieldException ignored) {}
 
+                // Check if we already have a serializer for that class
+                WebAPISerializer prev = serializers.remove(forClass);
+                if (prev != null) {
+                    logger.info("    Replacing existing serializer...");
+                }
+
                 // Add to serializers
                 serializers.put(forClass, instance);
                 logger.info("    -> " + forClass.getName());
@@ -392,7 +398,7 @@ public class JsonConverter {
         om.disable(MapperFeature.AUTO_DETECT_CREATORS, MapperFeature.AUTO_DETECT_FIELDS, MapperFeature.AUTO_DETECT_GETTERS, MapperFeature.AUTO_DETECT_IS_GETTERS);
 
         SimpleModule mod = new SimpleModule();
-        for (Map.Entry<Class, JsonSerializer> entry : serializers.entrySet()) {
+        for (Map.Entry<Class, WebAPISerializer> entry : serializers.entrySet()) {
             mod.addSerializer(entry.getKey(), entry.getValue());
         }
         om.registerModule(mod);

@@ -74,6 +74,7 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 @Plugin(
@@ -428,7 +429,7 @@ public class WebAPI {
     }
 
     @Listener(order = Order.POST)
-    public void onBlockInteract(InteractBlockEvent event) {
+    public void onInteractBlock(InteractBlockEvent event) {
         WebHooks.notifyHooks(WebHooks.WebHookType.INTERACT_BLOCK, event);
     }
     @Listener(order = Order.POST)
@@ -492,6 +493,18 @@ public class WebAPI {
         WebHooks.notifyHooks(WebHooks.WebHookType.BLOCK_UPDATE_STATUS, event);
     }
 
+    public static void runOnMain(Runnable runnable) {
+        if (Sponge.getServer().isMainThread()) {
+            runnable.run();
+        } else {
+            CompletableFuture future = CompletableFuture.runAsync(runnable, WebAPI.syncExecutor);
+            try {
+                future.get();
+            } catch (InterruptedException | ExecutionException e) {
+                e.printStackTrace();
+            }
+        }
+    }
     public static <T> Optional<T> runOnMain(Supplier<T> supplier) {
         if (Sponge.getServer().isMainThread()) {
             T obj = supplier.get();

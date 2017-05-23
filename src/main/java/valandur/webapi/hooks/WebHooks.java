@@ -12,6 +12,8 @@ import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.*;
 import org.spongepowered.api.event.EventListener;
 import org.spongepowered.api.text.Text;
+import org.spongepowered.api.text.serializer.TextSerializer;
+import org.spongepowered.api.text.serializer.TextSerializers;
 import org.spongepowered.api.util.Tuple;
 import valandur.webapi.WebAPI;
 import valandur.webapi.json.JsonConverter;
@@ -203,10 +205,12 @@ public class WebHooks {
 
                 final WebHookResponse resp = new ObjectMapper().readValue(respString, WebHookResponse.class);
 
+                Text msg = resp.getMessage();
+
                 WebAPI.runOnMain(() -> {
                     for (String target : resp.getTargets()) {
                         if (target.equalsIgnoreCase("server")) {
-                            Sponge.getServer().getBroadcastChannel().send(Text.of(resp.getMessage()));
+                            Sponge.getServer().getBroadcastChannel().send(msg);
                             continue;
                         }
 
@@ -214,7 +218,7 @@ public class WebHooks {
                         if (!p.isPresent())
                             continue;
 
-                        p.get().sendMessage(Text.of(resp.getMessage()));
+                        p.get().sendMessage(msg);
                     }
                 });
             } catch (ConnectException e) {

@@ -1,13 +1,21 @@
 # Web-API WebHooks
-
-
-## Introduction
 WebHooks are ways to subscribe to the Web-API to get informed when certain events happen on the
 server. Hooks can be configured in the `config/webapi/hooks.conf`. The configuration options available
 will be described in this documentation.
 
 
+## Table of Contents
+1. [General settings](#general)
+1. [Hook types](#types)
+1. [Event hooks](#event)
+1. [Custom event hooks](#custom-event)
+1. [Command hooks](#command)
+1. [Hook responses](#responses)
+
+
+<a name="general"></a>
 ## General settings
+
 Each WebHook supports various configuration settings, which are described below.
 
 - The `address` defines which endpoint is contacted when an event occurs.
@@ -90,14 +98,24 @@ WebHook are lists. These hooks are all fired when that particular thing happens,
 guaranteed to be executed in any specific order, and **MIGHT** even be executed simultaneously.
 
 
+<a name="types"></a>
 ## Hook types
+
 There are currently 3 different kinds of hooks:
-1. Event hooks
-1. Custom event hooks
-1. Command hooks
+
+1. **[Event hooks](#event)**  
+These hooks are executed for certain Minecraft events
+
+1. **[Custom event hooks](#custom-event)**  
+These hooks are executed for any custom events that you define
+
+1. **[Command hooks](#command)**  
+These hooks are executed by calling a specific command, and support arguments
 
 
+<a name="event"></a>
 ## Event hooks
+
 Event hooks are fired when a specific Minecraft event happens. The Web-API supports quite a lot
 of events out of the box, but if you need any event that isn't listed here you can always use
 a **custom event hook**, described in the next section.  
@@ -138,7 +156,10 @@ events {
 }
 ```
 
+
+<a name="custom"></a>
 ## Custom event hooks
+
 Some events are not included in the Web-API, usually because I didn't know about them, or didn't have
 enough time to add them. **Events of other plugins and/or mods are also not included**, this is for
 obvious reasons as there are way too many mods to support.
@@ -157,7 +178,10 @@ custom={
 }
 ```
 
+
+<a name="command"></a>
 ## Command hooks
+
 Command hooks are invoked with specific commands and can even contain arguments. This is a good way
 to offer players a way to trigger certain actions.
 
@@ -211,3 +235,35 @@ this value is replaced with the value of the parameter during execution. For wor
 is their UUID, for all other types it's the exact value.
 
 All parameters are also automatically included in the payload of the HTTP request.
+
+
+<a name="general"></a>
+## Hook responses
+
+If the endpoint that the WebAPI contacts returns any other HTTP Code than 200 it will
+be logged to the console.
+
+The endpoint may return a JSON object to instruct the Web-API to send messages to players. This can
+be used to give players a feedback in response to their actions (useful for command hooks) or inform
+admins of certain events.
+
+The structure of the JSON response should look as follows:
+```json
+{
+    "targets": [ "357427c6-3b91-4ead-aad4-15a3e18e6452", "server" ],
+    "formatting": "CODE",
+    "message": "Hello there!"
+}
+```
+The `targets` property is an array of strings. These can either be player UUIDs, to which the 
+message is sent directly, or the string `"server"`, which means the message will be broadcast to 
+the whole server.
+
+The `formatting` property defines how the `message` property is parsed. This can be used to apply
+color codes and other text formatting. Valid options are:
+- `CODE`  
+which corresponds to the [Ampersand formatting](https://docs.spongepowered.org/stable/en-GB/plugin/text/representations/formatting-code-legacy.html#ampersand-formatting)
+- `JSON`  
+which requires the `message` to be a string containing JSON, according to [JSON format](https://docs.spongepowered.org/stable/en-GB/plugin/text/representations/json.html)
+
+The `message` property is the actual message that is sent to the players/server.

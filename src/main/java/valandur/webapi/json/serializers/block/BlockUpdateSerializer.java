@@ -2,7 +2,7 @@ package valandur.webapi.json.serializers.block;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
-import valandur.webapi.blocks.BlockUpdate;
+import valandur.webapi.block.BlockUpdate;
 import valandur.webapi.json.serializers.WebAPISerializer;
 
 import java.io.IOException;

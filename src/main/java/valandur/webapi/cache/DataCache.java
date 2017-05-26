@@ -1,8 +1,6 @@
 package valandur.webapi.cache;
 
-import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.TextNode;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.block.tileentity.TileEntity;
@@ -26,7 +24,7 @@ import valandur.webapi.cache.tileentity.CachedTileEntity;
 import valandur.webapi.cache.world.CachedWorld;
 import valandur.webapi.json.JsonConverter;
 import valandur.webapi.misc.Util;
-import valandur.webapi.permissions.Permissions;
+import valandur.webapi.permission.Permissions;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;

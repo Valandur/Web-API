@@ -7,7 +7,7 @@ import org.spongepowered.api.data.DataHolder;
 import org.spongepowered.api.util.Tristate;
 import valandur.webapi.json.JsonConverter;
 import valandur.webapi.misc.TreeNode;
-import valandur.webapi.permissions.Permissions;
+import valandur.webapi.permission.Permissions;
 
 import java.io.IOException;
 import java.util.List;

@@ -7,7 +7,7 @@ import org.spongepowered.api.command.args.CommandContext;
 import org.spongepowered.api.command.spec.CommandExecutor;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
-import valandur.webapi.blocks.BlockUpdate;
+import valandur.webapi.block.BlockUpdate;
 
 import java.util.Optional;
 

@@ -37,7 +37,7 @@ import org.spongepowered.api.world.*;
 import org.spongepowered.api.world.explosion.Explosion;
 import org.spongepowered.api.world.extent.BlockVolume;
 import valandur.webapi.WebAPI;
-import valandur.webapi.blocks.BlockUpdate;
+import valandur.webapi.block.BlockUpdate;
 import valandur.webapi.cache.chat.CachedChatMessage;
 import valandur.webapi.cache.command.CachedCommandCall;
 import valandur.webapi.cache.command.CachedCommandResult;
@@ -50,11 +50,13 @@ import valandur.webapi.cache.world.CachedDimension;
 import valandur.webapi.cache.world.CachedGeneratorType;
 import valandur.webapi.cache.world.CachedWorld;
 import valandur.webapi.cache.world.CachedWorldBorder;
+import valandur.webapi.command.CommandSource;
 import valandur.webapi.json.serializers.WebAPISerializer;
 import valandur.webapi.json.serializers.block.*;
 import valandur.webapi.json.serializers.chat.CachedChatMessageSerializer;
 import valandur.webapi.json.serializers.command.CachedCommandCallSerializer;
 import valandur.webapi.json.serializers.command.CachedCommandResultSerializer;
+import valandur.webapi.json.serializers.message.MessageResponseSerializer;
 import valandur.webapi.json.serializers.plugin.CachedPluginContainerSerializer;
 import valandur.webapi.json.serializers.tileentity.CachedTileEntitySerializer;
 import valandur.webapi.json.serializers.tileentity.ConnectedDirectionDataSerializer;
@@ -70,9 +72,9 @@ import valandur.webapi.json.serializers.plugin.PluginContainerSerializer;
 import valandur.webapi.json.serializers.tileentity.SignDataSerializer;
 import valandur.webapi.json.serializers.tileentity.TileEntitySerializer;
 import valandur.webapi.json.serializers.world.*;
+import valandur.webapi.message.MessageResponse;
 import valandur.webapi.misc.TreeNode;
 import valandur.webapi.misc.Util;
-import valandur.webapi.misc.WebAPIDiagnosticListener;
 
 import javax.tools.*;
 import java.io.File;
@@ -139,10 +141,15 @@ public class JsonConverter {
         serializers.put(PotionEffect.class, new PotionEffectSerializer());
         serializers.put(SpawnableData.class, new SpawnableDataSerializer());
 
+        // Message
+        serializers.put(MessageResponse.class, new MessageResponseSerializer());
+
         // Misc.
         serializers.put(CachedCatalogType.class, new CachedCatalogTypeSerializer());
         serializers.put(CachedLocation.class, new CachedLocationSerializer());
         serializers.put(CatalogType.class, new CatalogTypeSerializer());
+        serializers.put(CommandSource.class, new CommandSourceSerializer());
+        serializers.put(Exception.class, new ExceptionSerializer());
         serializers.put(Location.class, new LocationSerializer());
         serializers.put(UUID.class, new UUIDSerializer());
         serializers.put(Vector3d.class, new Vector3dSerializer());
@@ -248,7 +255,7 @@ public class JsonConverter {
         URL[] urls = ((URLClassLoader) currentCl).getURLs();
         String classpath = Arrays.stream(urls).map(URL::getPath).filter(Objects::nonNull).collect(Collectors.joining(File.pathSeparator));
 
-        WebAPIDiagnosticListener diag = new WebAPIDiagnosticListener();
+        DiagnosticListener diag = new DiagnosticListener();
 
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
         if (compiler == null) {
@@ -403,7 +410,7 @@ public class JsonConverter {
         }
         om.registerModule(mod);
 
-        om.setAnnotationIntrospector(new WebAPIAnnotationIntrospector(!details));
+        om.setAnnotationIntrospector(new AnnotationIntrospector(!details));
         om.setConfig(om.getSerializationConfig()
                 .withAttribute("includes", perms)
                 .withAttribute("parents", new ArrayList<String>())

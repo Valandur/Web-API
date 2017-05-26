@@ -49,24 +49,24 @@ import org.spongepowered.api.scheduler.SpongeExecutorService;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
 import org.spongepowered.api.util.Tuple;
-import valandur.webapi.blocks.BlockUpdate;
-import valandur.webapi.blocks.BlockUpdateStatusChangeEvent;
-import valandur.webapi.blocks.Blocks;
+import valandur.webapi.block.BlockUpdate;
+import valandur.webapi.block.BlockUpdateStatusChangeEvent;
+import valandur.webapi.block.Blocks;
 import valandur.webapi.cache.*;
 import valandur.webapi.cache.chat.CachedChatMessage;
 import valandur.webapi.cache.command.CachedCommandCall;
 import valandur.webapi.command.*;
-import valandur.webapi.handlers.AuthHandler;
-import valandur.webapi.handlers.RateLimitHandler;
-import valandur.webapi.handlers.WebAPIErrorHandler;
-import valandur.webapi.hooks.WebHook;
-import valandur.webapi.hooks.WebHookSerializer;
-import valandur.webapi.hooks.WebHooks;
+import valandur.webapi.handler.AuthHandler;
+import valandur.webapi.handler.RateLimitHandler;
+import valandur.webapi.handler.ErrorHandler;
+import valandur.webapi.hook.WebHook;
+import valandur.webapi.hook.WebHookSerializer;
+import valandur.webapi.hook.WebHooks;
 import valandur.webapi.json.JsonConverter;
 import valandur.webapi.misc.Util;
-import valandur.webapi.misc.WebAPICommandSource;
+import valandur.webapi.command.CommandSource;
 import valandur.webapi.misc.JettyLogger;
-import valandur.webapi.servlets.*;
+import valandur.webapi.servlet.*;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -75,6 +75,7 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 @Plugin(
@@ -217,7 +218,7 @@ public class WebAPI {
             server.addConnector(http);
 
             // Add error handler
-            server.addBean(new WebAPIErrorHandler(server));
+            server.addBean(new ErrorHandler(server));
 
             // Collection of all handlers
             List<Handler> handlers = new LinkedList<>();
@@ -236,19 +237,18 @@ public class WebAPI {
             list.setHandlers(new Handler[]{ authHandler, new RateLimitHandler(), servletsContext });
             handlers.add(list);
 
-            servletsContext.addServlet(InfoServlet.class, "/info");
-
             servletsContext.addServlet(BlockServlet.class, "/block/*");
-            servletsContext.addServlet(HistoryServlet.class, "/history/*");
+            servletsContext.addServlet(ClassServlet.class, "/class/*");
             servletsContext.addServlet(CmdServlet.class, "/cmd/*");
-            servletsContext.addServlet(WorldServlet.class, "/world/*");
+            servletsContext.addServlet(EntityServlet.class, "/entity/*");
+            servletsContext.addServlet(HistoryServlet.class, "/history/*");
+            servletsContext.addServlet(InfoServlet.class, "/info");
+            servletsContext.addServlet(MessageServlet.class, "/message/*");
             servletsContext.addServlet(PlayerServlet.class, "/player/*");
             servletsContext.addServlet(PluginServlet.class, "/plugin/*");
             servletsContext.addServlet(RecipeServlet.class, "/recipe/*");
-            servletsContext.addServlet(EntityServlet.class, "/entity/*");
             servletsContext.addServlet(TileEntityServlet.class, "/tile-entity/*");
-
-            servletsContext.addServlet(ClassServlet.class, "/class/*");
+            servletsContext.addServlet(WorldServlet.class, "/world/*");
 
             // Add collection of handlers to server
             ContextHandlerCollection coll = new ContextHandlerCollection();
@@ -328,7 +328,7 @@ public class WebAPI {
         }
     }
 
-    public static CommandResult executeCommand(String command, WebAPICommandSource source) {
+    public static CommandResult executeCommand(String command, CommandSource source) {
         CommandManager cmdManager = Sponge.getGame().getCommandManager();
         return cmdManager.process(source, command);
     }

@@ -7,8 +7,8 @@ import org.spongepowered.api.command.args.CommandContext;
 import org.spongepowered.api.command.spec.CommandExecutor;
 import org.spongepowered.api.service.pagination.PaginationList;
 import org.spongepowered.api.text.Text;
-import valandur.webapi.blocks.BlockUpdate;
-import valandur.webapi.blocks.Blocks;
+import valandur.webapi.block.BlockUpdate;
+import valandur.webapi.block.Blocks;
 
 import java.util.ArrayList;
 import java.util.Collection;

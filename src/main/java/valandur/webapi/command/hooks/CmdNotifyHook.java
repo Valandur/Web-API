@@ -6,9 +6,9 @@ import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.command.args.CommandContext;
 import org.spongepowered.api.command.spec.CommandExecutor;
 import org.spongepowered.api.util.Tuple;
-import valandur.webapi.hooks.CommandWebHook;
-import valandur.webapi.hooks.WebHookParam;
-import valandur.webapi.hooks.WebHooks;
+import valandur.webapi.hook.CommandWebHook;
+import valandur.webapi.hook.WebHookParam;
+import valandur.webapi.hook.WebHooks;
 
 import java.util.*;
 

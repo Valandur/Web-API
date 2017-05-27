@@ -3,7 +3,6 @@ package valandur.webapi.hook;
 import valandur.webapi.misc.TreeNode;
 import valandur.webapi.permission.Permissions;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class WebHook {
@@ -21,16 +20,16 @@ public class WebHook {
         return address;
     }
 
-    private boolean enabled = true;
+    private boolean enabled;
     public boolean isEnabled() {
         return enabled;
     }
 
 
-    private WebHookMethod method = WebHookMethod.GET;
+    private WebHookMethod method;
     public WebHookMethod getMethod() { return method; }
 
-    private WebHookDataType dataType = WebHookDataType.JSON;
+    private WebHookDataType dataType;
     public WebHookDataType getDataType() {
         return dataType;
     }
@@ -38,7 +37,7 @@ public class WebHook {
         return "application/" + (dataType == WebHookDataType.JSON ? "json" : "x-www-form-urlencoded");
     }
 
-    private List<WebHookHeader> headers = new ArrayList<>();
+    private List<WebHookHeader> headers;
     public List<WebHookHeader> getHeaders() { return headers; }
 
     private boolean details;
@@ -51,9 +50,15 @@ public class WebHook {
         return permissions;
     }
 
+    private WebAPIFilter filter;
+    public WebAPIFilter getFilter() {
+        return filter;
+    }
+
 
     public WebHook(String address, boolean enabled, WebHookMethod method, WebHookDataType dataType,
-                   List<WebHookHeader> headers, boolean details, TreeNode<String, Boolean> permissions) {
+                   List<WebHookHeader> headers, boolean details, TreeNode<String, Boolean> permissions,
+                   WebAPIFilter filter) {
         this.address = address;
         this.enabled = enabled;
         this.method = method;
@@ -61,5 +66,6 @@ public class WebHook {
         this.headers = headers;
         this.details = details;
         this.permissions = permissions;
+        this.filter = filter;
     }
 }

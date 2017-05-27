@@ -43,7 +43,7 @@ public class AuthHandler extends AbstractHandler {
         api = WebAPI.getInstance();
     }
 
-    public void reloadConfig() {
+    public void init() {
         Tuple<ConfigurationLoader, ConfigurationNode> tup = api.loadWithDefaults(configFileName, "defaults/" + configFileName);
         loader = tup.getFirst();
         config = tup.getSecond();

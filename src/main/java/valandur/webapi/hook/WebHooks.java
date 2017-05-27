@@ -15,6 +15,7 @@ import org.spongepowered.api.text.Text;
 import org.spongepowered.api.util.Tuple;
 import valandur.webapi.WebAPI;
 import valandur.webapi.json.JsonConverter;
+import valandur.webapi.misc.Extensions;
 
 import java.io.*;
 import java.net.*;
@@ -34,6 +35,7 @@ public class WebHooks {
     private static Map<String, CommandWebHook> commandHooks = new HashMap<>();
     private static Map<WebHookType, List<WebHook>> eventHooks = new HashMap<>();
     private static Map<Class<? extends Event>, Tuple<List<WebHook>, EventListener>> customHooks = new HashMap<>();
+    private static Map<String, WebAPIFilter> filters = new HashMap<>();
 
     public static Map<String, CommandWebHook> getCommandHooks() {
         return commandHooks;
@@ -42,8 +44,11 @@ public class WebHooks {
     private static final String configFileName = "hooks.conf";
     private static String userAgent = WebAPI.NAME + "/" + WebAPI.VERSION;
 
-    public static void reloadConfig() {
+    public static void init() {
         WebAPI api = WebAPI.getInstance();
+        Logger logger = api.getLogger();
+
+        logger.info("Initializing web hooks...");
 
         // Remove existing listeners to prevent multiple subscriptions on config reload
         for (Tuple<List<WebHook>, EventListener> entry : customHooks.values()) {
@@ -61,17 +66,30 @@ public class WebHooks {
         eventHooks.clear();
         customHooks.clear();
 
+        // Load filters
+        logger.info("Loading filters...");
+
+        Extensions.loadPlugins("filters", WebAPIFilter.class, filter -> {
+            filters.put(filter.getName(), filter);
+        });
+
+        logger.info("Done loading filters");
+
         // Load config
         Tuple<ConfigurationLoader, ConfigurationNode> tup = api.loadWithDefaults(configFileName, "defaults/" + configFileName);
         ConfigurationNode config = tup.getSecond();
 
         try {
+            logger.info("Loading command hooks...");
+
             // Add command hooks
             Map<Object, ? extends ConfigurationNode> cmdMap = config.getNode("command").getChildrenMap();
             for (Map.Entry<Object, ? extends ConfigurationNode> entry : cmdMap.entrySet()) {
                 CommandWebHook hook = entry.getValue().getValue(TypeToken.of(CommandWebHook.class));
                 commandHooks.put(entry.getKey().toString(), hook);
             }
+
+            logger.info("Loading event hooks...");
 
             // Add event hooks (this also adds the "all" hooks)
             ConfigurationNode eventNode = config.getNode("events");
@@ -83,6 +101,8 @@ public class WebHooks {
                 List<WebHook> hooks = eventNode.getNode(type.toString().toLowerCase()).getList(TypeToken.of(WebHook.class));
                 eventHooks.put(type, hooks.stream().filter(WebHook::isEnabled).collect(Collectors.toList()));
             }
+
+            logger.info("Loading custom event hooks...");
 
             // Add custom event hooks
             Map<Object, ? extends ConfigurationNode> customMap = config.getNode("custom").getChildrenMap();
@@ -101,6 +121,10 @@ public class WebHooks {
         } catch (ObjectMappingException | ClassNotFoundException e) {
             e.printStackTrace();
         }
+    }
+
+    public static Optional<WebAPIFilter> getFilter(String name) {
+        return filters.containsKey(name) ? Optional.of(filters.get(name)) : Optional.empty();
     }
 
     public static void notifyHooks(WebHookType type, Object data) {
@@ -128,6 +152,11 @@ public class WebHooks {
     }
 
     private static void notifyHook(WebHook hook, WebHookType eventType, String source, Map<String, String> params, Object data) {
+        // First check the filter before we do any processing
+        if (hook.getFilter() != null && !hook.getFilter().process(hook, data)) {
+            return;
+        }
+
         String address = hook.getAddress();
         for (Map.Entry<String, String> entry : params.entrySet()) {
             address = address.replace("{" + entry.getKey() + "}", entry.getValue());

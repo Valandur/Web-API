@@ -23,7 +23,7 @@ public class Messages {
             for (Map.Entry<String, String> entry : msg.getOptions().entrySet()) {
                 final String data = entry.getKey();
 
-                Text opt = Text.builder(entry.getValue()).onClick(TextActions.executeCallback(source -> {
+                Text opt = Text.builder("[" + entry.getValue() + "]").onClick(TextActions.executeCallback(source -> {
                     MessageResponse response = new MessageResponse(msg.getId(), data, msg.getTarget());
                     WebHooks.notifyHooks(WebHooks.WebHookType.CUSTOM_MESSAGE, response);
                 })).color(TextColors.BLUE).style(TextStyles.UNDERLINE).build();

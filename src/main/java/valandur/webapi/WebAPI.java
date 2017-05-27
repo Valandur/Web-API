@@ -63,6 +63,7 @@ import valandur.webapi.hook.WebHook;
 import valandur.webapi.hook.WebHookSerializer;
 import valandur.webapi.hook.WebHooks;
 import valandur.webapi.json.JsonConverter;
+import valandur.webapi.misc.Extensions;
 import valandur.webapi.misc.Util;
 import valandur.webapi.command.CommandSource;
 import valandur.webapi.misc.JettyLogger;
@@ -74,8 +75,6 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 @Plugin(
@@ -164,8 +163,10 @@ public class WebAPI {
         // Create permission handler
         authHandler = new AuthHandler();
 
-        loadConfig(null);
+        // Main init function, that is also called when reloading the plugin
+        init(null);
 
+        // Initialize additional stuff that we don't reload
         CommandRegistry.init();
 
         Reflections.log = null;
@@ -174,7 +175,7 @@ public class WebAPI {
         logger.info(WebAPI.NAME + " ready");
     }
 
-    private void loadConfig(Player player) {
+    private void init(Player triggeringPlayer) {
         logger.info("Loading configuration...");
 
         Tuple<ConfigurationLoader, ConfigurationNode> tup = loadWithDefaults("config.conf", "defaults/config.conf");
@@ -191,16 +192,20 @@ public class WebAPI {
         if (devMode)
             logger.info("WebAPI IS RUNNING IN DEV MODE. USING NON-SHADOWED REFERENCES!");
 
-        authHandler.reloadConfig();
+        authHandler.init();
 
-        WebHooks.reloadConfig();
+        Extensions.init();
 
-        JsonConverter.initSerializers();
-        JsonConverter.loadExtraSerializers();
+        WebHooks.init();
+
+        JsonConverter.init();
 
         CacheConfig.init();
 
-        if (player != null) player.sendMessage(Text.builder().color(TextColors.AQUA).append(Text.of("[" + WebAPI.NAME + "] The configuration files have been reloaded!")).toText());
+        if (triggeringPlayer != null) {
+            triggeringPlayer.sendMessage(Text.builder().color(TextColors.AQUA)
+                    .append(Text.of("[" + WebAPI.NAME + "] " + WebAPI.NAME + " has been reloaded!")).build());
+        }
     }
 
     private void startWebServer(Player player) {
@@ -359,7 +364,7 @@ public class WebAPI {
 
         stopWebServer();
 
-        loadConfig(p.orElse(null));
+        init(p.orElse(null));
 
         startWebServer(p.orElse(null));
 
@@ -469,7 +474,7 @@ public class WebAPI {
         WebHooks.notifyHooks(WebHooks.WebHookType.COMMAND, call);
     }
 
-    @Listener
+    @Listener(order = Order.POST)
     public void onBlockUpdateStatusChange(BlockUpdateStatusChangeEvent event) {
         BlockUpdate update = event.getBlockUpdate();
         switch (update.getStatus()) {

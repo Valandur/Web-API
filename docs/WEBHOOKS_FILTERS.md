@@ -59,14 +59,20 @@ The following filter would filter out all events that are not a button press on 
 ```java
 package filters;
 
+import ninja.leaping.configurate.ConfigurationNode;
 import org.spongepowered.api.block.BlockTypes;
 import org.spongepowered.api.event.block.InteractBlockEvent;
-import valandur.webapi.hook.WebAPIFilter;
 import valandur.webapi.hook.WebHook;
+import valandur.webapi.hook.WebHookFilter;
+import valandur.webapi.WebAPI;
 
 public class BlockUpdateFilter extends WebHookFilter {
-    
+
     public static String name = "BlockUpdate-ButtonOnly";
+
+    public BlockUpdateFilter(WebHook hook, ConfigurationNode config) {
+        super(hook, config);
+    }
 
     @Override
     public boolean process(Object data) {
@@ -79,7 +85,6 @@ public class BlockUpdateFilter extends WebHookFilter {
         return true;
     }
 }
-
 ```
 
 With the following hook configuration the hook would only send button presses to the specified address

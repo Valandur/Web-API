@@ -9,6 +9,8 @@ import valandur.webapi.WebAPI;
 import valandur.webapi.misc.TreeNode;
 import valandur.webapi.permission.Permissions;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -27,9 +29,10 @@ public class WebHookSerializer implements TypeSerializer<WebHook> {
         WebHook.WebHookDataType dataType = value.getNode("dataType").getValue(TypeToken.of(WebHook.WebHookDataType.class));
         List<WebHookHeader> headers = value.getNode("headers").getList(TypeToken.of(WebHookHeader.class));
         boolean details = value.getNode("details").getBoolean();
-        String filterName = value.getNode("filter").getString();
 
-        WebAPIFilter filter = null;
+        ConfigurationNode filterBase = value.getNode("filter");
+        String filterName = filterBase.getNode("name").getString();
+        ConfigurationNode filterConfig = filterBase.getNode("config");
 
         TreeNode<String, Boolean> permissions = Permissions.permitAllNode();
 
@@ -42,33 +45,42 @@ public class WebHookSerializer implements TypeSerializer<WebHook> {
 
             if (method == null) {
                 method = WebHook.WebHookMethod.POST;
-                logger.warn("   Does not specify 'method', defaulting to 'POST'");
+                logger.warn("    Does not specify 'method', defaulting to 'POST'");
             }
 
             if (dataType == null) {
                 dataType = WebHook.WebHookDataType.JSON;
-                logger.warn("   Does not specify 'dataType', defaulting to 'JSON'");
+                logger.warn("    Does not specify 'dataType', defaulting to 'JSON'");
             }
 
             if (value.getNode("permissions").isVirtual()) {
-                logger.warn("   Does not specify 'permissions', defaulting to '*'");
+                logger.warn("    Does not specify 'permissions', defaulting to '*'");
             } else {
                 permissions = Permissions.permissionTreeFromConfig(value.getNode("permissions"));
             }
+        }
 
+        WebHook hook = new WebHook(address, enabled, method, dataType, headers, details, permissions);
+
+        if (enabled) {
             if (filterName != null) {
-                Optional<WebAPIFilter> opt = WebHooks.getFilter(filterName);
+                Optional<Class<? extends WebHookFilter>> opt = WebHooks.getFilter(filterName);
                 if (!opt.isPresent()) {
-                    logger.warn("   Could not find filter with name '" + filterName + "'");
+                    logger.warn("    Could not find filter with name '" + filterName + "'");
                 } else {
-                    filter = opt.get();
+                    try {
+                        Constructor ctor = opt.get().getConstructor(WebHook.class, ConfigurationNode.class);
+                        hook.setFilter((WebHookFilter) ctor.newInstance(hook, filterConfig));
+                    } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
+                        logger.warn("    Could not setup filter '" + filterName + "': " + e.getMessage());
+                    }
                 }
             }
 
             logger.info("    -> Ok");
         }
 
-        return new WebHook(address, enabled, method, dataType, headers, details, permissions, filter);
+        return hook;
     }
 
     @Override

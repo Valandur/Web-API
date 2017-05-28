@@ -33,12 +33,12 @@ public class Extensions {
         relocatedPackages.put("import net.jodah",             "import valandur.webapi.shadow.net.jodah");
     }
 
-    public static <T> void loadPlugins(String pkg, Class<T> baseClass, Consumer<T> done) {
+    public static <T> void loadPlugins(String pkg, Class<T> baseClass, Consumer<Class<T>> done) {
         Logger logger = WebAPI.getInstance().getLogger();
 
         File folder = new File("webapi/" + pkg);
         if (!folder.exists() && !folder.mkdirs()) {
-            logger.warn("Could not create folder " + folder.getAbsolutePath());
+            logger.error("Could not create folder " + folder.getAbsolutePath());
             return;
         }
 
@@ -68,7 +68,7 @@ public class Extensions {
 
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
         if (compiler == null) {
-            logger.warn("You need to install a JDK to use extensions");
+            logger.error("You need to install a JDK to use extensions");
             return;
         }
 
@@ -136,14 +136,11 @@ public class Extensions {
                     continue;
                 }
 
-                // Instantiate
-                T instance = (T)cls.newInstance();
-
                 // Do whatever we want with the successfully loaded extension
-                done.accept(instance);
+                done.accept((Class<T>) cls);
 
-                logger.info("    -> " + instance.getClass().getName());
-            } catch (IOException | IllegalAccessException | InstantiationException | ClassNotFoundException e) {
+                logger.info("    -> " + cls.getName());
+            } catch (IOException | ClassNotFoundException e) {
                 logger.error("   Error: See the log file at " + logFile + " for details");
                 diag.writeException(e);
             }

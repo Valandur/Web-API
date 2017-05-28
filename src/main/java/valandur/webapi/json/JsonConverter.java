@@ -215,14 +215,20 @@ public class JsonConverter {
         // Load extra serializers
         logger.info("Loading custom serializers...");
 
-        Extensions.loadPlugins("serializers", WebAPISerializer.class, serz -> {
-            // Check if we already have a serializer for that class
-            WebAPISerializer prev = serializers.remove(serz.getHandledClass());
-            if (prev != null) {
-                logger.info("    Replacing existing serializer for '" + serz.getHandledClass().getName() + "'");
-            }
+        Extensions.loadPlugins("serializers", WebAPISerializer.class, serializerClass -> {
+            try {
+                WebAPISerializer serializer = serializerClass.newInstance();
 
-            serializers.put(serz.getHandledClass(), serz);
+                // Check if we already have a serializer for that class
+                WebAPISerializer prev = serializers.remove(serializer.getHandledClass());
+                if (prev != null) {
+                    logger.info("    Replacing existing serializer for '" + serializer.getHandledClass().getName() + "'");
+                }
+
+                serializers.put(serializer.getHandledClass(), serializer);
+            } catch (IllegalAccessException | InstantiationException e) {
+                logger.warn("   Could not instantiate serializer '" + serializerClass.getName() + "': " + e.getMessage());
+            }
         });
 
         logger.info("Done loading custom serializers");

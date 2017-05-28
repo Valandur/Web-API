@@ -50,15 +50,17 @@ public class WebHook {
         return permissions;
     }
 
-    private WebAPIFilter filter;
-    public WebAPIFilter getFilter() {
+    private WebHookFilter filter;
+    public WebHookFilter getFilter() {
         return filter;
+    }
+    public void setFilter(WebHookFilter filter) {
+        this.filter = filter;
     }
 
 
     public WebHook(String address, boolean enabled, WebHookMethod method, WebHookDataType dataType,
-                   List<WebHookHeader> headers, boolean details, TreeNode<String, Boolean> permissions,
-                   WebAPIFilter filter) {
+                   List<WebHookHeader> headers, boolean details, TreeNode<String, Boolean> permissions) {
         this.address = address;
         this.enabled = enabled;
         this.method = method;
@@ -66,6 +68,5 @@ public class WebHook {
         this.headers = headers;
         this.details = details;
         this.permissions = permissions;
-        this.filter = filter;
     }
 }

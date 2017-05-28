@@ -14,6 +14,9 @@ import org.spongepowered.api.event.EventListener;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.util.Tuple;
 import valandur.webapi.WebAPI;
+import valandur.webapi.hook.filter.BlockTypeFilter;
+import valandur.webapi.hook.filter.ItemTypeFilter;
+import valandur.webapi.hook.filter.PlayerFilter;
 import valandur.webapi.json.JsonConverter;
 import valandur.webapi.misc.Extensions;
 
@@ -35,7 +38,7 @@ public class WebHooks {
     private static Map<String, CommandWebHook> commandHooks = new HashMap<>();
     private static Map<WebHookType, List<WebHook>> eventHooks = new HashMap<>();
     private static Map<Class<? extends Event>, Tuple<List<WebHook>, EventListener>> customHooks = new HashMap<>();
-    private static Map<String, WebAPIFilter> filters = new HashMap<>();
+    private static Map<String, Class<? extends WebHookFilter>> filters = new HashMap<>();
 
     public static Map<String, CommandWebHook> getCommandHooks() {
         return commandHooks;
@@ -69,8 +72,24 @@ public class WebHooks {
         // Load filters
         logger.info("Loading filters...");
 
-        Extensions.loadPlugins("filters", WebAPIFilter.class, filter -> {
-            filters.put(filter.getName(), filter);
+        filters.clear();
+
+        // Add some default filters
+        filters.put(BlockTypeFilter.name, BlockTypeFilter.class);
+        filters.put(PlayerFilter.name, PlayerFilter.class);
+        filters.put(ItemTypeFilter.name, ItemTypeFilter.class);
+
+        // Load custom filters
+        Extensions.loadPlugins("filters", WebHookFilter.class, filterClass -> {
+            try {
+                String name = (String) filterClass.getField("name").get(null);
+                filterClass.getConstructor(WebHook.class, ConfigurationNode.class);
+                filters.put(name, filterClass);
+            } catch (NoSuchMethodException e) {
+                logger.error("   Requires a constructor like so: (WebHook hook, ConfigurationNode node)");
+            } catch (NoSuchFieldException | IllegalAccessException e) {
+                logger.error("   Requires a 'public static String name' field");
+            }
         });
 
         logger.info("Done loading filters");
@@ -123,7 +142,7 @@ public class WebHooks {
         }
     }
 
-    public static Optional<WebAPIFilter> getFilter(String name) {
+    public static Optional<Class<? extends WebHookFilter>> getFilter(String name) {
         return filters.containsKey(name) ? Optional.of(filters.get(name)) : Optional.empty();
     }
 
@@ -153,7 +172,7 @@ public class WebHooks {
 
     private static void notifyHook(WebHook hook, WebHookType eventType, String source, Map<String, String> params, Object data) {
         // First check the filter before we do any processing
-        if (hook.getFilter() != null && !hook.getFilter().process(hook, data)) {
+        if (hook.getFilter() != null && !hook.getFilter().process(data)) {
             return;
         }
 

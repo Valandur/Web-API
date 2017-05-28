@@ -93,15 +93,20 @@ public class DataCache {
 
             Object o = obj.get();
             Method[] ms = Arrays.stream(Util.getAllMethods(o.getClass())).filter(m -> {
+                if (!m.getName().equalsIgnoreCase(methodName))
+                    return false;
+
                 Class<?>[] reqTypes = m.getParameterTypes();
                 if (reqTypes.length != paramTypes.length)
                     return false;
+
                 for (int i = 0; i < reqTypes.length; i++) {
                     if (!reqTypes[i].isAssignableFrom(paramTypes[i])) {
                         return false;
                     }
                 }
-                return m.getName().equalsIgnoreCase(methodName);
+
+                return true;
             }).toArray(Method[]::new);
 
             if (ms.length == 0) {

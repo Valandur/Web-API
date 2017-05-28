@@ -1,6 +1,10 @@
 package valandur.webapi.servlet;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.flowpowered.math.vector.Vector3d;
+import org.spongepowered.api.Sponge;
+import org.spongepowered.api.data.key.Keys;
+import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.util.Tuple;
 import valandur.webapi.permission.Permission;
 import valandur.webapi.cache.player.CachedPlayer;
@@ -77,14 +81,14 @@ public class PlayerServlet extends WebAPIServlet {
         }
 
         String mName = reqJson.get("method").asText();
-        Optional<Object[]> params = Util.parseParams(reqJson.get("params"));
+        Optional<Tuple<Class[], Object[]>> params = Util.parseParams(reqJson.get("params"));
 
         if (!params.isPresent()) {
             data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid parameters");
             return;
         }
 
-        Optional<Object> res = DataCache.executeMethod(player.get(), mName, params.get());
+        Optional<Object> res = DataCache.executeMethod(player.get(), mName, params.get().getFirst(), params.get().getSecond());
         if (!res.isPresent()) {
             data.sendError(HttpServletResponse.SC_NOT_FOUND, "Could not get player");
             return;

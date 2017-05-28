@@ -77,14 +77,14 @@ public class WorldServlet extends WebAPIServlet {
         }
 
         String mName = reqJson.get("method").asText();
-        Optional<Object[]> params = Util.parseParams(reqJson.get("params"));
+        Optional<Tuple<Class[], Object[]>> params = Util.parseParams(reqJson.get("params"));
 
         if (!params.isPresent()) {
             data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid parameters");
             return;
         }
 
-        Optional<Object> res = DataCache.executeMethod(world.get(), mName, params.get());
+        Optional<Object> res = DataCache.executeMethod(world.get(), mName, params.get().getFirst(), params.get().getSecond());
         if (!res.isPresent()) {
             data.sendError(HttpServletResponse.SC_NOT_FOUND, "Could not get entity");
             return;

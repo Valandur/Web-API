@@ -31,6 +31,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.stream.Collectors;
 
 public class DataCache {
 
@@ -83,7 +84,7 @@ public class DataCache {
         return cache;
     }
 
-    public static Optional<Object> executeMethod(CachedObject cache, String methodName, Object[] paramValues) {
+    public static Optional<Object> executeMethod(CachedObject cache, String methodName, Class[] paramTypes, Object[] paramValues) {
         return WebAPI.runOnMain(() -> {
             Optional<?> obj = cache.getLive();
 
@@ -91,18 +92,24 @@ public class DataCache {
                 return null;
 
             Object o = obj.get();
-            Method[] ms = Util.getAllMethods(o.getClass());
-            Optional<Method> optMethod = Arrays.stream(ms).filter(m -> m.getName().equalsIgnoreCase(methodName)).findAny();
+            Method[] ms = Arrays.stream(Util.getAllMethods(o.getClass())).filter(m -> {
+                Class<?>[] reqTypes = m.getParameterTypes();
+                if (reqTypes.length != paramTypes.length)
+                    return false;
+                for (int i = 0; i < reqTypes.length; i++) {
+                    if (!reqTypes[i].isAssignableFrom(paramTypes[i])) {
+                        return false;
+                    }
+                }
+                return m.getName().equalsIgnoreCase(methodName);
+            }).toArray(Method[]::new);
 
-            if (!optMethod.isPresent()) {
+            if (ms.length == 0) {
                 return new Exception("Method not found");
             }
 
             try {
-                Method m = optMethod.get();
-                if (m.getParameterCount() != paramValues.length) {
-                    return new Exception("Method must have " + m.getParameterCount() + " parameters but has " + paramValues.length);
-                }
+                Method m = ms[0];
                 m.setAccessible(true);
                 return m.invoke(o, paramValues);
             } catch (Exception e) {

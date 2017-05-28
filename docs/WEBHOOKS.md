@@ -10,6 +10,7 @@ will be described in this documentation.
 1. [Event hooks](#event)
 1. [Custom event hooks](#custom-event)
 1. [Command hooks](#command)
+1. [Filter](#filters)
 1. [Hook responses](#responses)
 
 
@@ -58,6 +59,7 @@ Each WebHook supports various configuration settings, which are described below.
         value=MY-SUPER-SECRET-KEY
     }]
     ```
+- `filter` defines if and which filter is applied to this WebHook
 
 Here is an example of a hook:
 ```yaml
@@ -72,11 +74,20 @@ Here is an example of a hook:
         name=X-WEBAPI-KEY
         value=MY-SUPER-SECRET-KEY
     }]
+    filter {
+        name="WebAPI-BlockType"
+        config=[
+            "minecraft:wooden_button"
+            "minecraft:stone_button"
+        ]
+    }
 }
 ```
 This hook would contact the server running at `127.0.0.1:25000` and send an HTTP POST request to it.
 The request would contain an additional header called `X-WEBAPI-KEY` with the value
-`MY-SUPER-SECRET-KEY`. The data would be formatted as JSON and would not include details.
+`MY-SUPER-SECRET-KEY`. The data would be formatted as JSON and would not include details. The hook would
+only be executed if the `WebAPI-BlockType` filter would allow it - in this case when either a 
+`wooden_button` or `stone_button` block are being targeted.
 
 Let's look at another example:
 ```yaml
@@ -235,6 +246,12 @@ this value is replaced with the value of the parameter during execution. For wor
 is their UUID, for all other types it's the exact value.
 
 All parameters are also automatically included in the payload of the HTTP request.
+
+
+<a name="filters"></a>
+## WebHook Filters
+WebHook filters can be used to filter out only certain events. Read more about them
+[here](WEBHOOKS_FILTERS.md).
 
 
 <a name="general"></a>

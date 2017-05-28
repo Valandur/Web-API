@@ -41,7 +41,7 @@ public class Blocks {
                 return null;
 
             World w = (World)obj.get();
-            return w.getBlockView(min, max).getBlockCopy(StorageType.THREAD_SAFE);
+            return w.getBlockView(min, max).getBlockCopy(StorageType.STANDARD);
         });
     }
     public static Optional<BlockState> getBlockAt(CachedWorld world, Vector3i pos) {

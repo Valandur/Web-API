@@ -90,7 +90,7 @@ public class PlayerServlet extends WebAPIServlet {
 
         Optional<Object> res = DataCache.executeMethod(player.get(), mName, params.get().getFirst(), params.get().getSecond());
         if (!res.isPresent()) {
-            data.sendError(HttpServletResponse.SC_NOT_FOUND, "Could not get player");
+            data.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not execute method");
             return;
         }
 

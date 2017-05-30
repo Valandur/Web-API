@@ -76,8 +76,7 @@
     <option name="OPEN_IN_BROWSER" value="true" />
   </component>
   <component name="KotlinCommonCompilerArguments">
-    <option name="languageVersion" value="1.1" />
-    <option name="apiVersion" value="1.1" />
+    <option name="coroutinesWarn" value="false" />
   </component>
   <component name="ProjectModuleManager">
     <modules>
@@ -392,11 +391,11 @@
     </library>
     <library name="Gradle: org.spongepowered:spongeapi:7.0.0-SNAPSHOT">
       <CLASSES>
-        <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.spongepowered/spongeapi/7.0.0-SNAPSHOT/7b0f5121c86c509ffcd2a738b5cc4739e3fb42a0/spongeapi-7.0.0-SNAPSHOT.jar!/" />
+        <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.spongepowered/spongeapi/7.0.0-SNAPSHOT/3c6619e5670ee103ff0ba97e9cb383a1ca13e3b6/spongeapi-7.0.0-SNAPSHOT.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES>
-        <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.spongepowered/spongeapi/7.0.0-SNAPSHOT/9b4d2adda24a4b2694b060e883bf7ab137f52769/spongeapi-7.0.0-SNAPSHOT-sources.jar!/" />
+        <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.spongepowered/spongeapi/7.0.0-SNAPSHOT/36aff7817d089fc5ad0cd0ff68c6b3595e63cadb/spongeapi-7.0.0-SNAPSHOT-sources.jar!/" />
       </SOURCES>
     </library>
     <library name="Gradle: org.yaml:snakeyaml:1.16">

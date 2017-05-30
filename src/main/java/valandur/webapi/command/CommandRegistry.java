@@ -3,12 +3,13 @@ package valandur.webapi.command;
 import org.slf4j.Logger;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandManager;
+import org.spongepowered.api.command.CommandMapping;
 import org.spongepowered.api.command.args.CommandElement;
 import org.spongepowered.api.command.args.GenericArguments;
 import org.spongepowered.api.command.spec.CommandSpec;
 import org.spongepowered.api.text.Text;
 import valandur.webapi.WebAPI;
-import valandur.webapi.blocks.Blocks;
+import valandur.webapi.block.Blocks;
 import valandur.webapi.command.auth.CmdAuthListAdd;
 import valandur.webapi.command.auth.CmdAuthListDisable;
 import valandur.webapi.command.auth.CmdAuthListEnable;
@@ -16,21 +17,29 @@ import valandur.webapi.command.auth.CmdAuthListRemove;
 import valandur.webapi.command.blocks.CmdBlockUpdatesList;
 import valandur.webapi.command.elements.CmdIpElement;
 import valandur.webapi.command.hooks.CmdNotifyHook;
-import valandur.webapi.hooks.CommandWebHook;
-import valandur.webapi.hooks.WebHookParam;
-import valandur.webapi.hooks.WebHooks;
+import valandur.webapi.hook.CommandWebHook;
+import valandur.webapi.hook.WebHookParam;
+import valandur.webapi.hook.WebHooks;
 import valandur.webapi.misc.Util;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class CommandRegistry {
+    private static List<CommandMapping> mappings =  new ArrayList<>();
+
     public static void init() {
         CommandManager manager = Sponge.getCommandManager();
         Logger logger = WebAPI.getInstance().getLogger();
 
         // Register commands
         logger.info("Registering commands...");
+
+        // Remove old commands
+        for (CommandMapping mapping : mappings) {
+            manager.removeMapping(mapping);
+        }
+        mappings.clear();
 
         // Whitelist
         CommandSpec specWhitelistAdd = CommandSpec.builder()
@@ -134,6 +143,9 @@ public class CommandRegistry {
             String name = entry.getKey();
             CommandWebHook hook = entry.getValue();
 
+            if (!hook.isEnabled())
+                continue;
+
             if (hook.getParams() != null) {
                 for (WebHookParam param : hook.getParams()) {
                     Optional<CommandElement> e = param.getCommandElement();
@@ -167,11 +179,11 @@ public class CommandRegistry {
                 .child(specNotifyHook, "notify")
                 .child(specBlockUpdates, "blocks")
                 .build();
-        manager.register(WebAPI.getInstance(), spec, "webapi");
+        manager.register(WebAPI.getInstance(), spec, "webapi").map(m -> mappings.add(m));
 
         // Register aliases for notify commands
         for (Map.Entry<List<String>, CommandSpec> entry : hookAliases.entrySet()) {
-            manager.register(WebAPI.getInstance(), entry.getValue(), entry.getKey());
+            manager.register(WebAPI.getInstance(), entry.getValue(), entry.getKey()).map(m -> mappings.add(m));
         }
     }
 }

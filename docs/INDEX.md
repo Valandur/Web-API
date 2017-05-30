@@ -17,6 +17,10 @@ to adjust the Web-API to your needs, specifically the permissions that restrict 
 This documentation explains how to use WebHooks to have your own app stay informed about stuff
 that happens on the minecraft server, without constantly requesting data.
 
+1. [WebHook Filters](WEBHOOKS_FILTERS.md)  
+WebHook filters can be used to filter out certain web hook events and greatly reduce the amount
+of events that are sent to your server. Read the [WebHook documentation](WEBHOOKS.md) first.
+
 1. [Additional Data](DATA.md)  
 This documentation talks about additional data that is included with player, world and entity
 endpoints, as well as the implementation progress of further data which is not yet supported.

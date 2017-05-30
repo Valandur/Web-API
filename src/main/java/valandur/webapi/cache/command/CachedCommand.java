@@ -3,7 +3,7 @@ package valandur.webapi.cache.command;
 import org.spongepowered.api.command.CommandMapping;
 import org.spongepowered.api.text.Text;
 import valandur.webapi.cache.CachedObject;
-import valandur.webapi.misc.WebAPICommandSource;
+import valandur.webapi.command.CommandSource;
 
 public class CachedCommand extends CachedObject {
 
@@ -38,9 +38,9 @@ public class CachedCommand extends CachedObject {
 
         this.name = cmd.getPrimaryAlias();
         this.aliases = cmd.getAllAliases().toArray(new String[cmd.getAllAliases().size()]);
-        this.usage = cmd.getCallable().getUsage(WebAPICommandSource.instance).toPlain();
-        this.description = cmd.getCallable().getShortDescription(WebAPICommandSource.instance).orElse(Text.EMPTY).toPlain();
-        this.help = cmd.getCallable().getHelp(WebAPICommandSource.instance).orElse(Text.EMPTY).toPlain();
+        this.usage = cmd.getCallable().getUsage(CommandSource.instance).toPlain();
+        this.description = cmd.getCallable().getShortDescription(CommandSource.instance).orElse(Text.EMPTY).toPlain();
+        this.help = cmd.getCallable().getHelp(CommandSource.instance).orElse(Text.EMPTY).toPlain();
     }
 
     @Override

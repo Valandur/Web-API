@@ -131,12 +131,12 @@ me or submit a pull request.
 |   | PlayingData |
 |   | PortionData |
 | + | PotionEffectData |
-|   | PoweredData |
+| + | PoweredData |
 |   | PrismarineData |
 |   | QuartzData |
 |   | RabbitData |
 |   | RailDirectionData |
-|   | RedstonePoweredData |
+| + | RedstonePoweredData |
 |   | RepresentedItemData |
 |   | RepresentedPlayerData |
 |   | RespawnLocationData |

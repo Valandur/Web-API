@@ -1,8 +1,6 @@
 package valandur.webapi.cache;
 
-import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.TextNode;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.block.tileentity.TileEntity;
@@ -26,13 +24,14 @@ import valandur.webapi.cache.tileentity.CachedTileEntity;
 import valandur.webapi.cache.world.CachedWorld;
 import valandur.webapi.json.JsonConverter;
 import valandur.webapi.misc.Util;
-import valandur.webapi.permissions.Permissions;
+import valandur.webapi.permission.Permissions;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.stream.Collectors;
 
 public class DataCache {
 
@@ -85,7 +84,7 @@ public class DataCache {
         return cache;
     }
 
-    public static Optional<Object> executeMethod(CachedObject cache, String methodName, Object[] paramValues) {
+    public static Optional<Object> executeMethod(CachedObject cache, String methodName, Class[] paramTypes, Object[] paramValues) {
         return WebAPI.runOnMain(() -> {
             Optional<?> obj = cache.getLive();
 
@@ -93,18 +92,29 @@ public class DataCache {
                 return null;
 
             Object o = obj.get();
-            Method[] ms = Util.getAllMethods(o.getClass());
-            Optional<Method> optMethod = Arrays.stream(ms).filter(m -> m.getName().equalsIgnoreCase(methodName)).findAny();
+            Method[] ms = Arrays.stream(Util.getAllMethods(o.getClass())).filter(m -> {
+                if (!m.getName().equalsIgnoreCase(methodName))
+                    return false;
 
-            if (!optMethod.isPresent()) {
+                Class<?>[] reqTypes = m.getParameterTypes();
+                if (reqTypes.length != paramTypes.length)
+                    return false;
+
+                for (int i = 0; i < reqTypes.length; i++) {
+                    if (!reqTypes[i].isAssignableFrom(paramTypes[i])) {
+                        return false;
+                    }
+                }
+
+                return true;
+            }).toArray(Method[]::new);
+
+            if (ms.length == 0) {
                 return new Exception("Method not found");
             }
 
             try {
-                Method m = optMethod.get();
-                if (m.getParameterCount() != paramValues.length) {
-                    return new Exception("Method must have " + m.getParameterCount() + " parameters but has " + paramValues.length);
-                }
+                Method m = ms[0];
                 m.setAccessible(true);
                 return m.invoke(o, paramValues);
             } catch (Exception e) {

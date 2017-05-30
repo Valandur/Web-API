@@ -223,7 +223,7 @@ paths:
       description: |
         Gets information about one block in the world.
 
-        > Required permission: block
+        > Required permission: block.get
       parameters:
         - name: world
           in: path
@@ -266,7 +266,7 @@ paths:
 
         The blocks in the returned block volume can be accessed by using `responseData.blocks[x][y][z]` where x, y, and z are the coordinates of the block.
 
-        > Required permission: block
+        > Required permission: block.get
       parameters:
         - name: world
           in: path
@@ -323,7 +323,7 @@ paths:
       description: |
         Get a list of all the classes available on the server.
 
-        > Required permission: class
+        > Required permission: class.get
       tags:
         - Class
       responses:
@@ -343,7 +343,7 @@ paths:
         Get the fields and methods of a specific class loaded on the server.
         Use the fully quilified classname (e.g. "net.minecraft.tileentity.TileEntityChest").
 
-        > Required permission: class
+        > Required permission: class.get
       parameters:
         - name: classname
           in: path
@@ -370,7 +370,7 @@ paths:
       description: |
         Gets all the subclasses of a specific class.
 
-        > Required permission: class
+        > Required permission: class.get
       parameters:
         - name: classname
           in: path
@@ -430,7 +430,7 @@ paths:
       description: |
         Gets a list of all the commands available on the server.
 
-        > Required permission: cmd
+        > Required permission: cmd.get
       tags:
         - Command
       responses:
@@ -447,8 +447,8 @@ paths:
         Pass a list of commands to execute them in succession, if only passing one command the
         array is not required.
 
-        > Required permission: cmd
-        > Required permission: cmd.[command]
+        > Required permission: cmd.post
+        > Required permission: cmd.post.[command]
       parameters:
         - name: Request
           in: body
@@ -471,7 +471,7 @@ paths:
       description: |
         Get detailed information about a command.
 
-        > Required permission: cmd
+        > Required permission: cmd.get
       parameters:
         - name: name
           in: path
@@ -494,7 +494,7 @@ paths:
       description: |
         Get a list of all entities on the server (in all worlds).
 
-        > Required permission: entity
+        > Required permission: entity.get
       tags:
         - Entity
       responses:
@@ -510,7 +510,7 @@ paths:
       description: |
         Get detailed information about an entity.
 
-        > Required permission: entity
+        > Required permission: entity.get
       parameters:
         - name: uuid
           in: path
@@ -543,7 +543,7 @@ paths:
       description: |
         Provides direct access to the underlaying entity object and can execute any method on it.
 
-        > Required permission: entity
+        > Required permission: entity.post
       parameters:
         - name: uuid
           in: path
@@ -576,7 +576,7 @@ paths:
       description: |
         View a history of the server chat.
 
-        > Required permission: history
+        > Required permission: history.get
       tags:
         - History
       responses:
@@ -592,7 +592,7 @@ paths:
       description: |
         View a history of the server commands.
 
-        > Required permission: history
+        > Required permission: history.get
       tags:
         - History
       responses:
@@ -609,7 +609,7 @@ paths:
       description: |
         Get general information about the minecraft server.
 
-        > Required permission: info
+        > Required permission: info.get
       tags:
         - Info
       responses:
@@ -620,13 +620,44 @@ paths:
           schema:
             $ref: '#/definitions/ServerInfo'
 
+  /message:
+    post:
+      summary: Send an interactive message
+      description: |
+        Send an interactive message to a player. Make sure to have an event hook for "custom_message" to receive
+        the response.
+
+        > Required permission: message.post
+      parameters:
+        - name: Request
+          in: body
+          description: Details of the message sent to the player
+          required: true
+          schema:
+            $ref: '#/definitions/MessageRequest'
+      tags:
+        - Message
+      responses:
+        400:
+          $ref: '#/responses/400'
+        403:
+          $ref: '#/responses/403'
+        404:
+          $ref: '#/responses/404'
+        200:
+          description: Message sent
+          schema:
+            ok:
+              type: boolean
+              description: True if the message was sent successfully, false otherwise.
+
   /player:
     get:
       summary: Player list
       description: |
         Get a list of all the players on the server.
 
-        > Required permission: player
+        > Required permission: player.get
       tags:
         - Player
       responses:
@@ -642,7 +673,7 @@ paths:
       description: |
         Get detailed information about a player.
 
-        > Required permission: player
+        > Required permission: player.get
       parameters:
         - name: uuid
           in: path
@@ -675,7 +706,7 @@ paths:
       description: |
         Provides direct access to the underlaying player object and can execute any method on it.
 
-        > Required permission: player
+        > Required permission: player.post
       parameters:
         - name: uuid
           in: path
@@ -708,7 +739,7 @@ paths:
       description: |
         Get a list of all the plugins running on the server.
 
-        > Required permission: plugin
+        > Required permission: plugin.get
       tags:
         - Plugin
       responses:
@@ -724,7 +755,7 @@ paths:
       description: |
         Gets detailed information about a plugin.
 
-        > Required permission: plugin
+        > Required permission: plugin.get
       parameters:
         - name: id
           in: path
@@ -749,7 +780,7 @@ paths:
       description: |
         Get a list of all tile entities on the server (in all worlds).
 
-        > Required permission: tile-entity
+        > Required permission: tile-entity.get
       tags:
         - Tile Entity
       responses:
@@ -765,7 +796,7 @@ paths:
       description: |
         Get detailed information about a tile entity.
 
-        > Required permission: tile-entity
+        > Required permission: tile-entity.get
       parameters:
         - name: worldUuid
           in: path
@@ -813,7 +844,7 @@ paths:
       description: |
         Provides direct access to the underlaying tile entity object and can execute any method on it.
 
-        > Required permission: tile-entity
+        > Required permission: tile-entity.post
       parameters:
         - name: worldUuid
           in: path
@@ -861,7 +892,7 @@ paths:
       description: |
         Get a list of all the worlds on the server.
 
-        > Required permission: world
+        > Required permission: world.get
       tags:
         - World
       responses:
@@ -877,7 +908,7 @@ paths:
       description: |
         Get detailed information about a world.
 
-        > Required permission: world
+        > Required permission: world.get
       parameters:
         - name: uuid
           in: path
@@ -910,7 +941,7 @@ paths:
       description: |
         Provides direct access to the underlaying world object and can execute any method on it.
 
-        > Required permission: world
+        > Required permission: world.post
       parameters:
         - name: uuid
           in: path
@@ -1758,6 +1789,24 @@ definitions:
           params: []
           return: void
           from: java.lang.Object
+
+  MessageRequest:
+    type: object
+    properties:
+      id:
+        type: string
+        description: The id of the message. This will be sent back in the reply, so you can identify the request.
+      target:
+        type: string
+        description: The UUID of the player this message is sent to.
+      message:
+        type: string
+        description: The message sent to the player. Text formatting can be applied with ampersand formatting.
+      options:
+        type: object
+        description: |
+          These are the options the player can choose from. The key is sent back to the server,
+          the value is displayed to the player.
 
   ServerInfo:
     type: object

@@ -18,7 +18,7 @@ Most of the `permissions.conf` file contains comments to explain what each part 
 
 
 <a name="whitelist"></a>
-#Whitelist
+# Whitelist
 ```yaml
 # Set this to true to enable the whitelist, false to turn it off
 useWhitelist = true
@@ -39,7 +39,7 @@ running on, you will have to add that IP here, or turn off whitelisting.
 
 
 <a name="blacklist"></a>
-#Blacklist
+# Blacklist
 ```yaml
 # Set this to true to enable the blacklist, false to turn it off
 useBlacklist = false
@@ -55,7 +55,7 @@ out possible hosts spamming your server with requests.
 
 
 <a name="default-perms"></a>
-#Default permissions (key-less clients)
+# Default permissions (key-less clients)
 ```yaml
 # These are the default permissions that a client without a key receives
 default {
@@ -87,7 +87,7 @@ endpoints and what data from those endpoints a client can access.
 
 
 <a name="key-perms"></a>
-#Permissions with keys
+# Permissions with keys
 ```yaml
 # This is an array of keys, defining which keys give access to which endpoints.
 keys = [{
@@ -115,7 +115,7 @@ The client then has two ways to pass this key when accessing the Web-API:
 
 
 <a name="permissions-tree"></a>
-#PermissionsTree
+# PermissionsTree
 The `permissions` properties above as well as the `permissions` properties listed in the
 `hooks.conf` file use what is here referred to as a `PermissionsTree`. The tree defines
 which endpoints of the API can be accessed and what data is returned for those endpoints.

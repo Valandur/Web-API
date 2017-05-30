@@ -16,6 +16,8 @@ import org.spongepowered.api.block.tileentity.TileEntity;
 import org.spongepowered.api.data.manipulator.mutable.DyeableData;
 import org.spongepowered.api.data.manipulator.mutable.PotionEffectData;
 import org.spongepowered.api.data.manipulator.mutable.block.ConnectedDirectionData;
+import org.spongepowered.api.data.manipulator.mutable.block.PoweredData;
+import org.spongepowered.api.data.manipulator.mutable.block.RedstonePoweredData;
 import org.spongepowered.api.data.manipulator.mutable.entity.*;
 import org.spongepowered.api.data.manipulator.mutable.item.DurabilityData;
 import org.spongepowered.api.data.manipulator.mutable.item.SpawnableData;
@@ -37,7 +39,7 @@ import org.spongepowered.api.world.*;
 import org.spongepowered.api.world.explosion.Explosion;
 import org.spongepowered.api.world.extent.BlockVolume;
 import valandur.webapi.WebAPI;
-import valandur.webapi.blocks.BlockUpdate;
+import valandur.webapi.block.BlockUpdate;
 import valandur.webapi.cache.chat.CachedChatMessage;
 import valandur.webapi.cache.command.CachedCommandCall;
 import valandur.webapi.cache.command.CachedCommandResult;
@@ -50,54 +52,51 @@ import valandur.webapi.cache.world.CachedDimension;
 import valandur.webapi.cache.world.CachedGeneratorType;
 import valandur.webapi.cache.world.CachedWorld;
 import valandur.webapi.cache.world.CachedWorldBorder;
-import valandur.webapi.json.serializers.WebAPISerializer;
-import valandur.webapi.json.serializers.block.*;
-import valandur.webapi.json.serializers.chat.CachedChatMessageSerializer;
-import valandur.webapi.json.serializers.command.CachedCommandCallSerializer;
-import valandur.webapi.json.serializers.command.CachedCommandResultSerializer;
-import valandur.webapi.json.serializers.plugin.CachedPluginContainerSerializer;
-import valandur.webapi.json.serializers.tileentity.CachedTileEntitySerializer;
-import valandur.webapi.json.serializers.tileentity.ConnectedDirectionDataSerializer;
-import valandur.webapi.json.serializers.world.CachedWorldSerializer;
-import valandur.webapi.json.serializers.entity.*;
-import valandur.webapi.json.serializers.entity.TradeOfferSerializer;
-import valandur.webapi.json.serializers.event.CauseSerializer;
-import valandur.webapi.json.serializers.event.EventSerializer;
-import valandur.webapi.json.serializers.misc.*;
-import valandur.webapi.json.serializers.item.*;
-import valandur.webapi.json.serializers.player.*;
-import valandur.webapi.json.serializers.plugin.PluginContainerSerializer;
-import valandur.webapi.json.serializers.tileentity.SignDataSerializer;
-import valandur.webapi.json.serializers.tileentity.TileEntitySerializer;
-import valandur.webapi.json.serializers.world.*;
+import valandur.webapi.command.CommandSource;
+import valandur.webapi.json.serializer.WebAPISerializer;
+import valandur.webapi.json.serializer.block.*;
+import valandur.webapi.json.serializer.chat.CachedChatMessageSerializer;
+import valandur.webapi.json.serializer.command.CachedCommandCallSerializer;
+import valandur.webapi.json.serializer.command.CachedCommandResultSerializer;
+import valandur.webapi.json.serializer.message.MessageResponseSerializer;
+import valandur.webapi.json.serializer.plugin.CachedPluginContainerSerializer;
+import valandur.webapi.json.serializer.tileentity.*;
+import valandur.webapi.json.serializer.world.CachedWorldSerializer;
+import valandur.webapi.json.serializer.entity.*;
+import valandur.webapi.json.serializer.entity.TradeOfferSerializer;
+import valandur.webapi.json.serializer.event.CauseSerializer;
+import valandur.webapi.json.serializer.event.EventSerializer;
+import valandur.webapi.json.serializer.misc.*;
+import valandur.webapi.json.serializer.item.*;
+import valandur.webapi.json.serializer.player.*;
+import valandur.webapi.json.serializer.plugin.PluginContainerSerializer;
+import valandur.webapi.json.serializer.world.*;
+import valandur.webapi.message.MessageResponse;
+import valandur.webapi.misc.Extensions;
 import valandur.webapi.misc.TreeNode;
 import valandur.webapi.misc.Util;
-import valandur.webapi.misc.WebAPIDiagnosticListener;
 
-import javax.tools.*;
-import java.io.File;
-import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Parameter;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.nio.file.*;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Collectors;
 
 public class JsonConverter {
 
     private static Map<Class, WebAPISerializer> serializers;
-    private static Map<String, String> relocatedPackages;
+
     private static Map<String, Class> supportedData;
     public static Map<String, Class> getSupportedData() {
         return supportedData;
     }
 
-    public static void initSerializers() {
+    public static void init() {
+        Logger logger = WebAPI.getInstance().getLogger();
+
+        logger.info("Loading serializers...");
+
         serializers = new HashMap<>();
 
         // Block
@@ -139,10 +138,15 @@ public class JsonConverter {
         serializers.put(PotionEffect.class, new PotionEffectSerializer());
         serializers.put(SpawnableData.class, new SpawnableDataSerializer());
 
+        // Message
+        serializers.put(MessageResponse.class, new MessageResponseSerializer());
+
         // Misc.
         serializers.put(CachedCatalogType.class, new CachedCatalogTypeSerializer());
         serializers.put(CachedLocation.class, new CachedLocationSerializer());
         serializers.put(CatalogType.class, new CatalogTypeSerializer());
+        serializers.put(CommandSource.class, new CommandSourceSerializer());
+        serializers.put(Exception.class, new ExceptionSerializer());
         serializers.put(Location.class, new LocationSerializer());
         serializers.put(UUID.class, new UUIDSerializer());
         serializers.put(Vector3d.class, new Vector3dSerializer());
@@ -167,6 +171,8 @@ public class JsonConverter {
         // Tile-Entity
         serializers.put(CachedTileEntity.class, new CachedTileEntitySerializer());
         serializers.put(ConnectedDirectionData.class, new ConnectedDirectionDataSerializer());
+        serializers.put(PoweredData.class, new PoweredDataSerializer());
+        serializers.put(RedstonePoweredData.class, new RedstonePoweredDataSerializer());
         serializers.put(SignData.class, new SignDataSerializer());
         serializers.put(TileEntity.class, new TileEntitySerializer());
 
@@ -183,7 +189,6 @@ public class JsonConverter {
         serializers.put(World.class, new WorldSerializer());
 
 
-
         // Data
         supportedData = new HashMap<>();
         supportedData.put("achievements", AchievementData.class);
@@ -197,6 +202,8 @@ public class JsonConverter {
         supportedData.put("health", HealthData.class);
         supportedData.put("joined", JoinData.class);
         supportedData.put("potionEffects", PotionEffectData.class);
+        supportedData.put("powered", PoweredData.class);
+        supportedData.put("redstonePower", RedstonePoweredData.class);
         supportedData.put("sheared", ShearedData.class);
         supportedData.put("sign", SignData.class);
         supportedData.put("spawn", SpawnableData.class);
@@ -205,152 +212,26 @@ public class JsonConverter {
         supportedData.put("trades", TradeOfferData.class);
 
 
+        // Load extra serializers
+        logger.info("Loading custom serializers...");
 
-        // Relocated packages
-        relocatedPackages = new HashMap<>();
-        relocatedPackages.put("import org.eclipse.jetty",     "import valandur.webapi.shadow.org.eclipse.jetty");
-        relocatedPackages.put("import com.fasterxml.jackson", "import valandur.webapi.shadow.fasterxml.jackson");
-        relocatedPackages.put("import javax.servlet",         "import valandur.webapi.shadow.javax.servlet");
-        relocatedPackages.put("import org.reflections",       "import valandur.webapi.shadow.org.reflections");
-        relocatedPackages.put("import net.jodah",             "import valandur.webapi.shadow.net.jodah");
-    }
-    public static void loadExtraSerializers() {
-        Logger logger = WebAPI.getInstance().getLogger();
-        logger.info("Loading additional serializers...");
-
-        // Get root directory
-        File root = new File("webapi");
-        File folder = new File("webapi/serializers");
-        if (!folder.exists() && !folder.mkdirs()) {
-            logger.warn("Could not create folder for additional serializers");
-            return;
-        }
-
-        List<File> files = null;
-        try {
-            files = Files.walk(Paths.get(root.toURI()))
-                    .filter(Files::isRegularFile)
-                    .filter(f -> f.toString().endsWith(".java"))
-                    .map(Path::toFile)
-                    .collect(Collectors.toList());
-        } catch (IOException e) {
-            e.printStackTrace();
-            return;
-        }
-
-        logger.info("Found " + files.size() + " serializer files in " + root.getAbsolutePath());
-        if (files.size() == 0) {
-            return;
-        }
-
-        // Setup java compiler
-        ClassLoader currentCl = Thread.currentThread().getContextClassLoader();
-        URL[] urls = ((URLClassLoader) currentCl).getURLs();
-        String classpath = Arrays.stream(urls).map(URL::getPath).filter(Objects::nonNull).collect(Collectors.joining(File.pathSeparator));
-
-        WebAPIDiagnosticListener diag = new WebAPIDiagnosticListener();
-
-        JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
-        if (compiler == null) {
-            logger.warn("You need to install & use a JDK to support custom serializers. ");
-            return;
-        }
-
-        StandardJavaFileManager fm = compiler.getStandardFileManager(diag, null, null);
-        List<String> optionList = Arrays.asList("-classpath", classpath);
-
-        // Compile, load and instantiate compiled class.
-        for (File file : files) {
-            String logFile = file.getAbsolutePath().replace(".java", ".log");
-            diag.startLog(logFile);
-
+        Extensions.loadPlugins("serializers", WebAPISerializer.class, serializerClass -> {
             try {
-                logger.info("  - " + file.getName());
-
-                // Read file to check for some basic things like package and shadowed references
-                String fileContent = new String(Files.readAllBytes(file.toPath()));
-
-                if (!fileContent.contains("package serializers;")) {
-                    logger.error("   The class must be in the 'serializers' package.");
-                    continue;
-                }
-
-                int start = fileContent.indexOf("class ") + 6;
-                int end = fileContent.indexOf(" ", start);
-                String cName = fileContent.substring(start, end);
-                if (!cName.equalsIgnoreCase(file.getName().substring(0, file.getName().length() - 5))) {
-                    logger.error("   File name '" + file.getName().substring(0, file.getName().length() - 5) + "' must match class name '" + cName + "'");
-                    continue;
-                }
-
-                if (!fileContent.contains("extends WebAPISerializer<")) {
-                    logger.error("   Class must extend WebAPISerializer, and must provide the event class as a " +
-                            "generic parameter, e.g: WebAPISerializer<InteractBlockEvent>");
-                    continue;
-                }
-
-                // Replace shadowed references
-                for (Map.Entry<String, String> entry : relocatedPackages.entrySet()) {
-                    if (WebAPI.getInstance().isDevMode())
-                        fileContent = fileContent.replace(entry.getValue(), entry.getKey());
-                    else
-                        fileContent = fileContent.replace(entry.getKey(), entry.getValue());
-                }
-
-                // Write back to file
-                Files.write(file.toPath(), fileContent.getBytes(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
-
-                // Compile the file
-                Iterable<? extends JavaFileObject> compilationUnits = fm.getJavaFileObjectsFromFiles(Collections.singletonList(file));
-                JavaCompiler.CompilationTask task = compiler.getTask(null, fm, diag, optionList, null, compilationUnits);
-
-                boolean res = task.call();
-
-                if (!res) {
-                    logger.error("   Compilation failed. See the log file at " + logFile + " for details");
-                    continue;
-                }
-
-                String className = file.getName().substring(0, file.getName().length() - 5);
-
-                // Load the class
-                URLClassLoader classLoader = URLClassLoader.newInstance(new URL[]{root.toURI().toURL()}, currentCl);
-                Class<?> cls = Class.forName("serializers." + className, true, classLoader);
-                if (!WebAPISerializer.class.isAssignableFrom(cls)) {
-                    logger.error("   Must extend " + WebAPISerializer.class.getName());
-                    continue;
-                }
-
-                // Instantiate
-                WebAPISerializer instance = (WebAPISerializer)cls.newInstance();
-
-                // Get handled class
-                Class forClass = instance.getHandledClass();
-                try {
-                    Field f = cls.getField("forClass");
-                    forClass = (Class) f.get(null);
-                } catch (NoSuchFieldException ignored) {}
+                WebAPISerializer serializer = serializerClass.newInstance();
 
                 // Check if we already have a serializer for that class
-                WebAPISerializer prev = serializers.remove(forClass);
+                WebAPISerializer prev = serializers.remove(serializer.getHandledClass());
                 if (prev != null) {
-                    logger.info("    Replacing existing serializer...");
+                    logger.info("    Replacing existing serializer for '" + serializer.getHandledClass().getName() + "'");
                 }
 
-                // Add to serializers
-                serializers.put(forClass, instance);
-                logger.info("    -> " + forClass.getName());
-            } catch (IOException | IllegalAccessException | InstantiationException | ClassNotFoundException e) {
-                logger.error("   Error. See the log file at " + logFile + " for details");
-                diag.writeException(e);
+                serializers.put(serializer.getHandledClass(), serializer);
+            } catch (IllegalAccessException | InstantiationException e) {
+                logger.warn("   Could not instantiate serializer '" + serializerClass.getName() + "': " + e.getMessage());
             }
+        });
 
-            diag.stopLog();
-        }
-
-        diag.stopLog();
-
-        logger.info("Done loading additional serializers");
+        logger.info("Done loading custom serializers");
     }
 
     /**
@@ -403,7 +284,7 @@ public class JsonConverter {
         }
         om.registerModule(mod);
 
-        om.setAnnotationIntrospector(new WebAPIAnnotationIntrospector(!details));
+        om.setAnnotationIntrospector(new AnnotationIntrospector(!details));
         om.setConfig(om.getSerializationConfig()
                 .withAttribute("includes", perms)
                 .withAttribute("parents", new ArrayList<String>())

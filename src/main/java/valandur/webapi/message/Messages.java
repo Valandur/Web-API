@@ -15,7 +15,7 @@ import java.util.Optional;
 
 public class Messages {
     public static boolean sendMessage(Message msg) {
-        Text.Builder builder = Text.builder(msg.getMessage());
+        Text.Builder builder = Text.builder().append(msg.getMessage());
 
         if (msg.getOptions().size() > 0) {
             builder.append(Text.of("\n"));

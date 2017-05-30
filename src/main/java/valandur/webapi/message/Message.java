@@ -1,6 +1,8 @@
 package valandur.webapi.message;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import org.spongepowered.api.text.Text;
+import org.spongepowered.api.text.serializer.TextSerializers;
 
 import java.util.Map;
 import java.util.UUID;
@@ -22,8 +24,8 @@ public class Message {
 
     @JsonDeserialize
     private String message;
-    public String getMessage() {
-        return message;
+    public Text getMessage() {
+        return TextSerializers.FORMATTING_CODE.deserializeUnchecked(message);
     }
 
     @JsonDeserialize

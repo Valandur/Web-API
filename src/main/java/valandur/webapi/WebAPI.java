@@ -166,9 +166,6 @@ public class WebAPI {
         // Main init function, that is also called when reloading the plugin
         init(null);
 
-        // Initialize additional stuff that we don't reload
-        CommandRegistry.init();
-
         Reflections.log = null;
         this.reflections = new Reflections();
 
@@ -201,6 +198,8 @@ public class WebAPI {
         JsonConverter.init();
 
         CacheConfig.init();
+
+        CommandRegistry.init();
 
         if (triggeringPlayer != null) {
             triggeringPlayer.sendMessage(Text.builder().color(TextColors.AQUA)

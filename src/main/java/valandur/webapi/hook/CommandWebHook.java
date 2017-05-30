@@ -10,6 +10,12 @@ import java.util.List;
 public class CommandWebHook {
 
     @Setting
+    private boolean enabled = false;
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    @Setting
     private List<String> aliases;
     public List<String> getAliases() {
         return aliases;

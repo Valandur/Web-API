@@ -200,6 +200,8 @@ Command hooks are defined in the `command` object in the config. Let's start wit
 ```yaml
 command = {
     test={
+        enabled=true
+        
         aliases=[
             testing
         ]
@@ -228,6 +230,9 @@ command = {
 }
 ```
 This command hook is called `test`, and is therefor invoked by calling `/webapi notify test`. 
+
+The property `enabled` can be set to false to disable the whole command hook, including registering
+the command with the command registry.
 
 It has `testing` set up as an alias, and can therefor also be called by using `/testing`. Be careful
 with aliases, as they can overwrite existing minecraft commands.

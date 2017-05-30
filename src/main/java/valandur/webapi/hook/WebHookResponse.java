@@ -7,27 +7,11 @@ import org.spongepowered.api.text.serializer.TextSerializers;
 @JsonDeserialize
 public class WebHookResponse {
 
-    public enum FormattingStyle {
-        CODE, JSON,
-    }
-
     @JsonDeserialize
     private String message;
     public Text getMessage() {
-        switch (formatting) {
-            case CODE:
-                return TextSerializers.FORMATTING_CODE.deserialize(message);
-
-            case JSON:
-                return TextSerializers.JSON.deserialize(message);
-
-            default:
-                return Text.of(message);
-        }
+        return TextSerializers.FORMATTING_CODE.deserializeUnchecked(message);
     }
-
-    @JsonDeserialize
-    private FormattingStyle formatting;
 
     @JsonDeserialize
     private String[] targets;

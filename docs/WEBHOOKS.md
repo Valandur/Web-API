@@ -276,11 +276,5 @@ The `targets` property is an array of strings. These can either be player UUIDs,
 message is sent directly, or the string `"server"`, which means the message will be broadcast to 
 the whole server.
 
-The `formatting` property defines how the `message` property is parsed. This can be used to apply
-color codes and other text formatting. Valid options are:
-- `CODE`  
-which corresponds to the [Ampersand formatting](https://docs.spongepowered.org/stable/en-GB/plugin/text/representations/formatting-code-legacy.html#ampersand-formatting)
-- `JSON`  
-which requires the `message` to be a string containing JSON, according to [JSON format](https://docs.spongepowered.org/stable/en-GB/plugin/text/representations/json.html)
-
-The `message` property is the actual message that is sent to the players/server.
+The `message` property is the actual message that is sent to the players/server. It is formatted with 
+[Ampersand formatting](https://docs.spongepowered.org/stable/en-GB/plugin/text/representations/formatting-code-legacy.html#ampersand-formatting)

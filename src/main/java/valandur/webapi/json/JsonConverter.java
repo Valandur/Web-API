@@ -46,6 +46,7 @@ import valandur.webapi.cache.command.CachedCommandResult;
 import valandur.webapi.cache.entity.CachedEntity;
 import valandur.webapi.cache.misc.CachedCatalogType;
 import valandur.webapi.cache.misc.CachedLocation;
+import valandur.webapi.cache.player.CachedPlayer;
 import valandur.webapi.cache.plugin.CachedPluginContainer;
 import valandur.webapi.cache.tileentity.CachedTileEntity;
 import valandur.webapi.cache.world.CachedDimension;
@@ -156,7 +157,7 @@ public class JsonConverter {
         serializers.put(AchievementData.class, new AchievementDataSerializer());
         serializers.put(Achievement.class, new AchievementSerializer());
         serializers.put(Ban.Profile.class, new BanSerializer());
-        serializers.put(CachedPlayerSerializer.class, new CachedPlayerSerializer());
+        serializers.put(CachedPlayer.class, new CachedPlayerSerializer());
         serializers.put(ExperienceHolderData.class, new ExperienceHolderDataSerializer());
         serializers.put(GameModeData.class, new GameModeDataSerializer());
         serializers.put(GameProfile.class, new GameProfileSerializer());

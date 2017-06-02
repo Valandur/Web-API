@@ -6,6 +6,7 @@ import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.item.inventory.Carrier;
 import org.spongepowered.api.item.inventory.Inventory;
 import org.spongepowered.api.world.World;
+import valandur.webapi.WebAPI;
 import valandur.webapi.cache.CacheConfig;
 import valandur.webapi.cache.misc.CachedLocation;
 import valandur.webapi.cache.CachedObject;
@@ -65,7 +66,7 @@ public class CachedEntity extends CachedObject {
         if (entity instanceof Carrier) {
             try {
                 Inventory inv = ((Carrier) entity).getInventory();
-                this.inventory = Inventory.builder().from(inv).build(inv.getPlugin());
+                this.inventory = Inventory.builder().from(inv).build(WebAPI.getInstance());
             } catch (Exception | AbstractMethodError ignored) {
             }
         }

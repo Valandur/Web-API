@@ -19,6 +19,16 @@ import java.lang.reflect.Method;
 public abstract class WebAPIServlet extends HttpServlet {
 
     private void handleVerb(String verb, HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        resp.addHeader("Access-Control-Allow-Origin","*");
+        resp.addHeader("Access-Control-Allow-Methods","GET,PUT,POST,DELETE");
+        resp.addHeader("Access-Control-Allow-Headers","Origin, X-Requested-With, Content-Type, Accept");
+
+        // Return early if OPTIONS
+        if (req.getMethod().equals("OPTIONS") ) {
+            resp.setStatus(HttpServletResponse.SC_OK);
+            return;
+        }
+
         resp.setContentType("application/json; charset=utf-8");
 
         try {
@@ -95,6 +105,11 @@ public abstract class WebAPIServlet extends HttpServlet {
     @Override
     protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         this.handleVerb("Delete", req, resp);
+    }
+
+    @Override
+    protected void doOptions(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        this.handleVerb("Options", req, resp);
     }
 
     protected void handleGet(ServletData data) {

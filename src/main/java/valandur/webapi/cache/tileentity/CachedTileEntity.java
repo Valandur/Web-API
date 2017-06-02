@@ -5,6 +5,7 @@ import org.spongepowered.api.block.tileentity.carrier.TileEntityCarrier;
 import org.spongepowered.api.item.inventory.Inventory;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
+import valandur.webapi.WebAPI;
 import valandur.webapi.cache.CacheConfig;
 import valandur.webapi.cache.misc.CachedLocation;
 import valandur.webapi.cache.CachedObject;
@@ -37,7 +38,7 @@ public class CachedTileEntity extends CachedObject {
 
         if (te instanceof TileEntityCarrier) {
             Inventory inv = ((TileEntityCarrier)te).getInventory();
-            this.inventory = Inventory.builder().from(inv).build(inv.getPlugin());
+            this.inventory = Inventory.builder().from(inv).build(WebAPI.getInstance());
         }
     }
 

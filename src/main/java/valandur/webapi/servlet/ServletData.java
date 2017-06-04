@@ -66,6 +66,12 @@ public class ServletData {
         }
     }
 
+    public void setHeader(String name, String value) {
+        resp.setHeader(name, value);
+    }
+    public void setStatus(int status) {
+        resp.setStatus(status);
+    }
     public void addJson(String key, Object value, boolean details) {
         node.replace(key, JsonConverter.toJson(value, details, permissions));
     }

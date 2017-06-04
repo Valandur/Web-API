@@ -19,13 +19,13 @@ import java.lang.reflect.Method;
 public abstract class WebAPIServlet extends HttpServlet {
 
     private void handleVerb(String verb, HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        resp.setStatus(HttpServletResponse.SC_OK);
         resp.addHeader("Access-Control-Allow-Origin","*");
         resp.addHeader("Access-Control-Allow-Methods","GET,PUT,POST,DELETE");
         resp.addHeader("Access-Control-Allow-Headers","Origin, X-Requested-With, Content-Type, Accept");
 
         // Return early if OPTIONS
         if (req.getMethod().equals("OPTIONS") ) {
-            resp.setStatus(HttpServletResponse.SC_OK);
             return;
         }
 
@@ -74,12 +74,11 @@ public abstract class WebAPIServlet extends HttpServlet {
 
             ObjectMapper om = new ObjectMapper();
             if (!data.isErrorSent()) {
-                resp.setStatus(HttpServletResponse.SC_OK);
                 out.write(om.writeValueAsString(data.getNode()));
             }
         } catch (NoSuchMethodException e) {
             // Method does not exist (endpoint/verb not supported)
-            resp.sendError(HttpServletResponse.SC_NOT_FOUND);
+            resp.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
         } catch (InvocationTargetException | IllegalAccessException e) {
             // Error executing the method
             e.printStackTrace();

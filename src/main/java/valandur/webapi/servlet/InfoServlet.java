@@ -15,9 +15,13 @@ public class InfoServlet extends WebAPIServlet {
         data.addJson("motd", server.getMotd().toPlain(), false);
         data.addJson("players", server.getOnlinePlayers().size(), false);
         data.addJson("maxPlayers", server.getMaxPlayers(), false);
+        data.addJson("address", server.getBoundAddress().map(Object::toString).orElse(null), false);
+        data.addJson("onlineMode", server.getOnlineMode(), false);
+        data.addJson("resourcePack", server.getDefaultResourcePack().orElse(null), false);
+        data.addJson("hasWhitelist", server.hasWhitelist(), false);
+
         data.addJson("uptimeTicks", server.getRunningTimeTicks(), false);
         data.addJson("tps", server.getTicksPerSecond(), false);
-        data.addJson("hasWhitelist", server.hasWhitelist(), false);
         data.addJson("minecraftVersion", platform.getMinecraftVersion().getName(), false);
 
         data.addJson("game", platform.getContainer(Platform.Component.GAME), true);

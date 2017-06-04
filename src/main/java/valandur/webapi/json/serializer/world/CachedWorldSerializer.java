@@ -19,6 +19,7 @@ public class CachedWorldSerializer extends WebAPISerializer<CachedWorld> {
 
         if (((AtomicBoolean)provider.getAttribute("details")).get()) {
             writeField(provider, "class", value.getClass().getName());
+            writeField(provider, "isLoaded", value.isLoaded());
             writeField(provider, "border", value.getBorder());
             writeField(provider, "difficulty", value.getDifficulty());
             writeField(provider, "dimension", value.getDimension());

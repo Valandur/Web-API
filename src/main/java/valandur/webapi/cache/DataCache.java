@@ -13,6 +13,7 @@ import org.spongepowered.api.plugin.PluginContainer;
 import org.spongepowered.api.util.Tuple;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
+import org.spongepowered.api.world.storage.WorldProperties;
 import valandur.webapi.WebAPI;
 import valandur.webapi.cache.chat.CachedChatMessage;
 import valandur.webapi.cache.command.CachedCommand;
@@ -31,7 +32,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.*;
-import java.util.stream.Collectors;
 
 public class DataCache {
 
@@ -123,6 +123,21 @@ public class DataCache {
         });
     }
 
+    public static void updateWorlds() {
+        WebAPI.runOnMain(() -> {
+            worlds.clear();
+
+            Collection<World> worlds = Sponge.getServer().getWorlds();
+            for (World world : worlds) {
+                updateWorld(world);
+            }
+
+            Collection<WorldProperties> unloadedWorlds = Sponge.getServer().getUnloadedWorlds();
+            for (WorldProperties world : unloadedWorlds) {
+                updateWorld(world);
+            }
+        });
+    }
     public static Optional<CachedWorld> getWorld(UUID uuid) {
         if (!worlds.containsKey(uuid)) {
             return Optional.empty();
@@ -130,28 +145,30 @@ public class DataCache {
 
         final CachedWorld res = worlds.get(uuid);
         if (res.isExpired()) {
-            return updateWorld(uuid);
+            return WebAPI.runOnMain(() -> {
+                Optional<World> world = Sponge.getServer().getWorld(uuid);
+                if (world.isPresent())
+                    return DataCache.updateWorld(world.get());
+                Optional<WorldProperties> props = Sponge.getServer().getWorldProperties(uuid);
+                return props.map(DataCache::updateWorld).orElse(null);
+            });
         } else {
             return Optional.of(res);
         }
     }
     public static CachedWorld getWorld(World world) {
         Optional<CachedWorld> w = getWorld(world.getUniqueId());
-        return w.orElseGet(() -> addWorld(world));
+        return w.orElseGet(() -> updateWorld(world));
     }
-    public static CachedWorld addWorld(World world) {
+    public static CachedWorld updateWorld(World world) {
         CachedWorld w = new CachedWorld(world);
         worlds.put(world.getUniqueId(), w);
         return w;
     }
-    public static CachedWorld removeWorld(UUID uuid) {
-        return worlds.remove(uuid);
-    }
-    private static Optional<CachedWorld> updateWorld(UUID uuid) {
-        return WebAPI.runOnMain(() -> {
-            Optional<World> world = Sponge.getServer().getWorld(uuid);
-            return world.map(DataCache::addWorld).orElse(null);
-        });
+    public static CachedWorld updateWorld(WorldProperties world) {
+        CachedWorld w = new CachedWorld(world);
+        worlds.put(world.getUniqueId(), w);
+        return w;
     }
     public static Collection<CachedWorld> getWorlds() {
         return worlds.values();
@@ -164,29 +181,26 @@ public class DataCache {
 
         final CachedPlayer res = players.get(uuid);
         if (res.isExpired()) {
-            return updatePlayer(uuid);
+            return WebAPI.runOnMain(() -> {
+                Optional<Player> player = Sponge.getServer().getPlayer(uuid);
+                return player.map(DataCache::updatePlayer).orElse(null);
+
+            });
         } else {
             return Optional.of(res);
         }
     }
     public static CachedPlayer getPlayer(Player player) {
         Optional<CachedPlayer> p = getPlayer(player.getUniqueId());
-        return p.orElseGet(() -> addPlayer(player));
+        return p.orElseGet(() -> updatePlayer(player));
     }
-    public static CachedPlayer addPlayer(Player player) {
+    public static CachedPlayer updatePlayer(Player player) {
         CachedPlayer p = new CachedPlayer(player);
         players.put(player.getUniqueId(), p);
         return p;
     }
     public static CachedPlayer removePlayer(UUID uuid) {
         return players.remove(uuid);
-    }
-    private static Optional<CachedPlayer> updatePlayer(UUID uuid) {
-        return WebAPI.runOnMain(() -> {
-            Optional<Player> player = Sponge.getServer().getPlayer(uuid);
-            return player.map(DataCache::addPlayer).orElse(null);
-
-        });
     }
     public static Collection<CachedPlayer> getPlayers() {
         return players.values();
@@ -199,35 +213,32 @@ public class DataCache {
 
         final CachedEntity res = entities.get(uuid);
         if (res.isExpired()) {
-            return updateEntity(uuid);
+            return WebAPI.runOnMain(() -> {
+                Optional<Entity> entity = Optional.empty();
+                for (World world : Sponge.getServer().getWorlds()) {
+                    Optional<Entity> ent = world.getEntity(uuid);
+                    if (ent.isPresent()) {
+                        entity = ent;
+                        break;
+                    }
+                }
+                return entity.map(DataCache::updateEntity).orElse(null);
+            });
         } else {
             return Optional.of(res);
         }
     }
     public static CachedEntity getEntity(Entity entity) {
         Optional<CachedEntity> e = getEntity(entity.getUniqueId());
-        return e.orElseGet(() -> addEntity(entity));
+        return e.orElseGet(() -> updateEntity(entity));
     }
-    public static CachedEntity addEntity(Entity entity) {
+    public static CachedEntity updateEntity(Entity entity) {
         CachedEntity e = new CachedEntity(entity);
         entities.put(entity.getUniqueId(), e);
         return e;
     }
     public static CachedEntity removeEntity(UUID uuid) {
         return entities.remove(uuid);
-    }
-    private static Optional<CachedEntity> updateEntity(UUID uuid) {
-        return WebAPI.runOnMain(() -> {
-            Optional<Entity> entity = Optional.empty();
-            for (World world : Sponge.getServer().getWorlds()) {
-                Optional<Entity> ent = world.getEntity(uuid);
-                if (ent.isPresent()) {
-                    entity = ent;
-                    break;
-                }
-            }
-            return entity.map(DataCache::addEntity).orElse(null);
-        });
     }
     public static Collection<CachedEntity> getEntities() {
         return entities.values();

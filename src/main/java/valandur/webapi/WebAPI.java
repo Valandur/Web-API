@@ -157,7 +157,7 @@ public class WebAPI {
     public void onInitialization(GameInitializationEvent event) {
         logger.info(WebAPI.NAME + " v" + WebAPI.VERSION + " is starting...");
 
-        logger.info("Setting up jetty logger");
+        logger.info("Setting up jetty logger...");
         Log.setLog(new JettyLogger());
 
         // Create permission handler
@@ -168,6 +168,11 @@ public class WebAPI {
 
         Reflections.log = null;
         this.reflections = new Reflections();
+
+        logger.info("Loading base data...");
+        DataCache.updateWorlds();
+        DataCache.updatePlugins();
+        DataCache.updateCommands();
 
         logger.info(WebAPI.NAME + " ready");
     }
@@ -339,9 +344,6 @@ public class WebAPI {
 
     @Listener
     public void onServerStart(GameStartedServerEvent event) {
-        DataCache.updatePlugins();
-        DataCache.updateCommands();
-
         startWebServer(null);
 
         WebHooks.notifyHooks(WebHooks.WebHookType.SERVER_START, event);
@@ -372,13 +374,13 @@ public class WebAPI {
 
     @Listener(order = Order.POST)
     public void onWorldLoad(LoadWorldEvent event) {
-        DataCache.addWorld(event.getTargetWorld());
+        DataCache.updateWorld(event.getTargetWorld());
 
         WebHooks.notifyHooks(WebHooks.WebHookType.WORLD_LOAD, event);
     }
     @Listener(order = Order.POST)
     public void onWorldUnload(UnloadWorldEvent event) {
-        DataCache.removeWorld(event.getTargetWorld().getUniqueId());
+        DataCache.updateWorld(event.getTargetWorld().getProperties());
 
         WebHooks.notifyHooks(WebHooks.WebHookType.WORLD_UNLOAD, event);
     }
@@ -389,7 +391,7 @@ public class WebAPI {
 
     @Listener(order = Order.POST)
     public void onPlayerJoin(ClientConnectionEvent.Join event) {
-        DataCache.addPlayer(event.getTargetEntity());
+        DataCache.updatePlayer(event.getTargetEntity());
 
         WebHooks.notifyHooks(WebHooks.WebHookType.PLAYER_JOIN, event);
     }
@@ -413,7 +415,7 @@ public class WebAPI {
     @Listener(order = Order.POST)
     public void onEntitySpawn(SpawnEntityEvent event) {
         for (Entity entity : event.getEntities()) {
-            DataCache.addEntity(entity);
+            DataCache.updateEntity(entity);
         }
     }
     @Listener(order = Order.POST)

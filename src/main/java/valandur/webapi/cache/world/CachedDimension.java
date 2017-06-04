@@ -1,6 +1,7 @@
 package valandur.webapi.cache.world;
 
 import org.spongepowered.api.world.Dimension;
+import org.spongepowered.api.world.DimensionType;
 import valandur.webapi.cache.CachedObject;
 import valandur.webapi.cache.misc.CachedCatalogType;
 
@@ -28,5 +29,11 @@ public class CachedDimension extends CachedObject {
         this.type = new CachedCatalogType(dimension.getType());
         this.height = dimension.getHeight();
         this.buildHeight = dimension.getBuildHeight();
+    }
+
+    public CachedDimension(DimensionType type) {
+        super(type);
+
+        this.type = new CachedCatalogType(type);
     }
 }

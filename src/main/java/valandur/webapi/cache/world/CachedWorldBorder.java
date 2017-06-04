@@ -2,6 +2,7 @@ package valandur.webapi.cache.world;
 
 import com.flowpowered.math.vector.Vector3d;
 import org.spongepowered.api.world.WorldBorder;
+import org.spongepowered.api.world.storage.WorldProperties;
 import valandur.webapi.cache.CachedObject;
 
 public class CachedWorldBorder extends CachedObject {
@@ -58,5 +59,18 @@ public class CachedWorldBorder extends CachedObject {
         this.timeRemaining = border.getTimeRemaining();
         this.warningDistance = border.getWarningDistance();
         this.warningTime = border.getWarningTime();
+    }
+
+    public CachedWorldBorder(WorldProperties properties) {
+        super(properties);
+
+        this.center = properties.getWorldBorderCenter();
+        this.diameter = properties.getWorldBorderDiameter();
+        this.damageAmount = properties.getWorldBorderDamageAmount();
+        this.damageThreshold = properties.getWorldBorderDamageThreshold();
+        this.newDiameter = properties.getWorldBorderTargetDiameter();
+        this.timeRemaining = properties.getWorldBorderTimeRemaining();
+        this.warningDistance = properties.getWorldBorderWarningDistance();
+        this.warningTime = properties.getWorldBorderWarningTime();
     }
 }

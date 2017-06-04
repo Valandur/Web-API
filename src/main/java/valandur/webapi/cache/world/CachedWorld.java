@@ -3,6 +3,7 @@ package valandur.webapi.cache.world;
 import com.flowpowered.math.vector.Vector3i;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.world.World;
+import org.spongepowered.api.world.storage.WorldProperties;
 import valandur.webapi.cache.CacheConfig;
 import valandur.webapi.cache.CachedObject;
 import valandur.webapi.cache.misc.CachedCatalogType;
@@ -22,6 +23,11 @@ public class CachedWorld extends CachedObject {
     private String name;
     public String getName() {
         return name;
+    }
+
+    private boolean loaded;
+    public boolean isLoaded() {
+        return loaded;
     }
 
     private CachedWorldBorder border;
@@ -80,6 +86,7 @@ public class CachedWorld extends CachedObject {
 
         this.uuid = UUID.fromString(world.getUniqueId().toString());
         this.name = world.getName();
+        this.loaded = world.isLoaded();
         this.border = new CachedWorldBorder(world.getWorldBorder());
         this.difficulty = new CachedCatalogType(world.getDifficulty());
         this.dimension = new CachedDimension(world.getDimension());
@@ -91,6 +98,22 @@ public class CachedWorld extends CachedObject {
         this.time = world.getProperties().getWorldTime();
         this.weather = new CachedCatalogType(world.getWeather());
     }
+    public CachedWorld(WorldProperties world) {
+        super(world);
+
+        this.uuid = UUID.fromString(world.getUniqueId().toString());
+        this.name = world.getWorldName();
+        this.loaded = false;
+        this.border = new CachedWorldBorder(world);
+        this.difficulty = new CachedCatalogType(world.getDifficulty());
+        this.dimension = new CachedDimension(world.getDimensionType());
+        this.gameMode = new CachedCatalogType(world.getGameMode());
+        this.gameRules = new HashMap<>(world.getGameRules());
+        this.generatorType = new CachedGeneratorType(world.getGeneratorType());
+        this.seed = world.getSeed();
+        this.spawn = world.getSpawnPosition();
+        this.time = world.getWorldTime();
+    }
 
     @Override
     public int getCacheDuration() {
@@ -98,7 +121,11 @@ public class CachedWorld extends CachedObject {
     }
     @Override
     public Optional<?> getLive() {
-        return Sponge.getServer().getWorld(uuid);
+        if (loaded) {
+            return Sponge.getServer().getWorld(uuid);
+        } else {
+            return Sponge.getServer().getWorldProperties(uuid);
+        }
     }
 
     @Override

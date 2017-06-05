@@ -45,3 +45,4 @@ Examples of such data can be found [here](docs/DATA.md).
 ## Contributors
 
 - @johnfg10
+- @r15ch13

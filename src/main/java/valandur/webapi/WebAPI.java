@@ -65,6 +65,7 @@ import valandur.webapi.misc.Util;
 import valandur.webapi.command.CommandSource;
 import valandur.webapi.misc.JettyLogger;
 import valandur.webapi.servlet.*;
+import valandur.webapi.servlet.world.WorldServlet;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -149,7 +150,6 @@ public class WebAPI {
         // Register custom serializer for WebHook class
         TypeSerializers.getDefaultSerializers().registerType(TypeToken.of(WebHook.class), new WebHookSerializer());
     }
-
     @Listener
     public void onInitialization(GameInitializationEvent event) {
         logger.info(WebAPI.NAME + " v" + WebAPI.VERSION + " is starting...");
@@ -165,11 +165,6 @@ public class WebAPI {
 
         Reflections.log = null;
         this.reflections = new Reflections();
-
-        logger.info("Loading base data...");
-        DataCache.updateWorlds();
-        DataCache.updatePlugins();
-        DataCache.updateCommands();
 
         logger.info(WebAPI.NAME + " ready");
     }
@@ -342,6 +337,11 @@ public class WebAPI {
 
     @Listener
     public void onServerStart(GameStartedServerEvent event) {
+        logger.info("Loading base data...");
+        DataCache.updateWorlds();
+        DataCache.updatePlugins();
+        DataCache.updateCommands();
+
         startWebServer(null);
 
         WebHooks.notifyHooks(WebHooks.WebHookType.SERVER_START, event);

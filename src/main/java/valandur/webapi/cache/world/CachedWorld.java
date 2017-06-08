@@ -30,6 +30,31 @@ public class CachedWorld extends CachedObject {
         return loaded;
     }
 
+    private boolean loadOnStartup;
+    public boolean doesLoadOnStartup() {
+        return loadOnStartup;
+    }
+
+    private boolean keepSpawnLoaded;
+    public boolean doesKeepSpawnLoaded() {
+        return keepSpawnLoaded;
+    }
+
+    private boolean allowCommands;
+    public boolean doesAllowCommands() {
+        return allowCommands;
+    }
+
+    private boolean generateBonusChests;
+    public boolean doesGenerateBonusChests() {
+        return generateBonusChests;
+    }
+
+    private boolean mapFeaturesEnabled;
+    public boolean areMapFeaturesEnabled() {
+        return mapFeaturesEnabled;
+    }
+
     private CachedWorldBorder border;
     public CachedWorldBorder getBorder() {
         return border;
@@ -40,9 +65,9 @@ public class CachedWorld extends CachedObject {
         return difficulty;
     }
 
-    private CachedDimension dimension;
-    public CachedDimension getDimension() {
-        return dimension;
+    private CachedCatalogType dimensionType;
+    public CachedCatalogType getDimensionType() {
+        return dimensionType;
     }
 
     private CachedCatalogType gameMode;
@@ -82,21 +107,8 @@ public class CachedWorld extends CachedObject {
 
 
     public CachedWorld(World world) {
-        super(world);
-
-        this.uuid = UUID.fromString(world.getUniqueId().toString());
-        this.name = world.getName();
+        this(world.getProperties());
         this.loaded = world.isLoaded();
-        this.border = new CachedWorldBorder(world.getWorldBorder());
-        this.difficulty = new CachedCatalogType(world.getDifficulty());
-        this.dimension = new CachedDimension(world.getDimension());
-        this.gameMode = new CachedCatalogType(world.getProperties().getGameMode());
-        this.gameRules = new HashMap<>(world.getGameRules());
-        this.generatorType = new CachedGeneratorType(world.getProperties().getGeneratorType());
-        this.seed = world.getProperties().getSeed();
-        this.spawn = world.getProperties().getSpawnPosition();
-        this.time = world.getProperties().getWorldTime();
-        this.weather = new CachedCatalogType(world.getWeather());
     }
     public CachedWorld(WorldProperties world) {
         super(world);
@@ -104,9 +116,14 @@ public class CachedWorld extends CachedObject {
         this.uuid = UUID.fromString(world.getUniqueId().toString());
         this.name = world.getWorldName();
         this.loaded = false;
+        this.loadOnStartup = world.loadOnStartup();
+        this.keepSpawnLoaded = world.doesKeepSpawnLoaded();
+        this.allowCommands = world.areCommandsAllowed();
+        this.generateBonusChests = world.doesGenerateBonusChest();
+        this.mapFeaturesEnabled = world.usesMapFeatures();
         this.border = new CachedWorldBorder(world);
         this.difficulty = new CachedCatalogType(world.getDifficulty());
-        this.dimension = new CachedDimension(world.getDimensionType());
+        this.dimensionType = new CachedCatalogType(world.getDimensionType());
         this.gameMode = new CachedCatalogType(world.getGameMode());
         this.gameRules = new HashMap<>(world.getGameRules());
         this.generatorType = new CachedGeneratorType(world.getGeneratorType());

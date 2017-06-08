@@ -49,7 +49,6 @@ import valandur.webapi.cache.misc.CachedLocation;
 import valandur.webapi.cache.player.CachedPlayer;
 import valandur.webapi.cache.plugin.CachedPluginContainer;
 import valandur.webapi.cache.tileentity.CachedTileEntity;
-import valandur.webapi.cache.world.CachedDimension;
 import valandur.webapi.cache.world.CachedGeneratorType;
 import valandur.webapi.cache.world.CachedWorld;
 import valandur.webapi.cache.world.CachedWorldBorder;
@@ -178,7 +177,6 @@ public class JsonConverter {
         serializers.put(TileEntity.class, new TileEntitySerializer());
 
         // World
-        serializers.put(CachedDimension.class, new CachedDimensionSerializer());
         serializers.put(CachedGeneratorType.class, new CachedGeneratorTypeSerializer());
         serializers.put(CachedWorldBorder.class, new CachedWorldBorderSerializer());
         serializers.put(CachedWorld.class, new CachedWorldSerializer());

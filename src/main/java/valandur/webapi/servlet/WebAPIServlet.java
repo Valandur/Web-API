@@ -33,6 +33,8 @@ public abstract class WebAPIServlet extends HttpServlet {
 
         try {
             Method method = this.getClass().getDeclaredMethod("handle" + verb, ServletData.class);
+            method.setAccessible(true);
+
             if (method.isAnnotationPresent(Permission.class)) {
                 String[] reqPerms = method.getAnnotation(Permission.class).perm().split("\\.");
                 TreeNode<String, Boolean> permissions = (TreeNode<String, Boolean>)req.getAttribute("perms");

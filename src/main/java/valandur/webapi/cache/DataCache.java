@@ -138,6 +138,15 @@ public class DataCache {
             }
         });
     }
+    public static Optional<CachedWorld> getWorld(String nameOrUuid) {
+        if (Util.isValidUUID(nameOrUuid)) {
+            return getWorld(UUID.fromString(nameOrUuid));
+        }
+
+        Optional<CachedWorld> world = worlds.values().stream().filter(w -> w.getName().equalsIgnoreCase(nameOrUuid)).findAny();
+        return world.flatMap(cachedWorld -> getWorld(cachedWorld.getUUID()));
+
+    }
     public static Optional<CachedWorld> getWorld(UUID uuid) {
         if (!worlds.containsKey(uuid)) {
             return Optional.empty();

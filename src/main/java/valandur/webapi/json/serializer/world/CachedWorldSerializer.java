@@ -20,9 +20,14 @@ public class CachedWorldSerializer extends WebAPISerializer<CachedWorld> {
         if (((AtomicBoolean)provider.getAttribute("details")).get()) {
             writeField(provider, "class", value.getClass().getName());
             writeField(provider, "isLoaded", value.isLoaded());
+            writeField(provider, "loadOnStartup", value.doesLoadOnStartup());
+            writeField(provider, "keepSpawnLoaded", value.doesKeepSpawnLoaded());
+            writeField(provider, "allowCommands", value.doesAllowCommands());
+            writeField(provider, "generateBonusChests", value.doesGenerateBonusChests());
+            writeField(provider, "mapFeaturesEnabled", value.areMapFeaturesEnabled());
             writeField(provider, "border", value.getBorder());
             writeField(provider, "difficulty", value.getDifficulty());
-            writeField(provider, "dimension", value.getDimension());
+            writeField(provider, "dimensionType", value.getDimensionType());
             writeField(provider, "gameMode", value.getGameMode());
             writeField(provider, "gameRules", value.getGameRules());
             writeField(provider, "generatorType", value.getGeneratorType());

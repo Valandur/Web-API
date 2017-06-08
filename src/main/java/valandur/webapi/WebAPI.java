@@ -34,10 +34,7 @@ import org.spongepowered.api.event.entity.SpawnEntityEvent;
 import org.spongepowered.api.event.entity.living.humanoid.player.KickPlayerEvent;
 import org.spongepowered.api.event.filter.cause.First;
 import org.spongepowered.api.event.game.GameReloadEvent;
-import org.spongepowered.api.event.game.state.GameInitializationEvent;
-import org.spongepowered.api.event.game.state.GamePreInitializationEvent;
-import org.spongepowered.api.event.game.state.GameStartedServerEvent;
-import org.spongepowered.api.event.game.state.GameStoppedServerEvent;
+import org.spongepowered.api.event.game.state.*;
 import org.spongepowered.api.event.item.inventory.InteractInventoryEvent;
 import org.spongepowered.api.event.message.MessageChannelEvent;
 import org.spongepowered.api.event.network.ClientConnectionEvent;
@@ -256,6 +253,7 @@ public class WebAPI {
             servletsContext.addServlet(PlayerServlet.class, "/player/*");
             servletsContext.addServlet(PluginServlet.class, "/plugin/*");
             servletsContext.addServlet(RecipeServlet.class, "/recipe/*");
+            servletsContext.addServlet(RegistryServlet.class, "/registry/*");
             servletsContext.addServlet(TileEntityServlet.class, "/tile-entity/*");
             servletsContext.addServlet(WorldServlet.class, "/world/*");
 

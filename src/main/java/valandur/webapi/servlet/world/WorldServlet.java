@@ -101,6 +101,12 @@ public class WorldServlet extends WebAPIServlet {
                         }
                     } else {
                         Sponge.getServer().unloadWorld((World)live);
+                        Optional<WorldProperties> optProps = Sponge.getServer().getUnloadedWorlds()
+                                .stream().filter(w -> w.getUniqueId().equals(world.get().getUUID())).findAny();
+                        if (optProps.isPresent()) {
+                            live = optProps.get();
+                            props = optProps.get();
+                        }
                     }
                 }
             }
@@ -173,7 +179,6 @@ public class WorldServlet extends WebAPIServlet {
     @Permission(perm = "world.post")
     protected void handlePost(ServletData data) {
         final String[] paths = data.getPathParts();
-        final JsonNode reqJson = data.getRequestBody();
 
         // A post directly to /api/world creates a new world
         if (paths.length < 1 || paths[0].isEmpty()) {
@@ -181,7 +186,7 @@ public class WorldServlet extends WebAPIServlet {
 
             Optional<CreateWorldRequest> optReq = data.getRequestBody(CreateWorldRequest.class);
             if (!optReq.isPresent()) {
-                data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid world data");
+                data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid world data: " + data.getLastParseError().getMessage());
                 return;
             }
 
@@ -192,60 +197,28 @@ public class WorldServlet extends WebAPIServlet {
                 return;
             }
 
-            if (reqJson.has("dimension")) {
-                String dim = reqJson.get("dimension").asText();
-                Collection<DimensionType> types = Sponge.getRegistry().getAllOf(DimensionType.class);
-                Optional<DimensionType> type = types.stream().filter(t -> t.getId().equalsIgnoreCase(dim) || t.getName().equalsIgnoreCase(dim)).findAny();
-                type.ifPresent(builder::dimension);
-            }
+            req.getDimensionType().ifPresent(builder::dimension);
+            req.getGeneratorType().ifPresent(builder::generator);
+            req.getGameMode().ifPresent(builder::gameMode);
+            req.getDifficulty().ifPresent(builder::difficulty);
 
-            if (reqJson.has("generator")) {
-                String gen = reqJson.get("generator").asText();
-                Collection<GeneratorType> types = Sponge.getRegistry().getAllOf(GeneratorType.class);
-                Optional<GeneratorType> type = types.stream().filter(g -> g.getId().equalsIgnoreCase(gen) || g.getName().equalsIgnoreCase(gen)).findAny();
-                type.ifPresent(builder::generator);
+            if (req.getSeed() != null) {
+                builder.seed(req.getSeed());
             }
-
-            if (reqJson.has("seed")) {
-                if (reqJson.get("seed").isLong()) {
-                    builder.seed(reqJson.get("seed").asLong());
-                } else {
-                    builder.seed(reqJson.get("seed").asInt());
-                }
+            if (req.doesLoadOnStartup() != null) {
+                builder.loadsOnStartup(req.doesLoadOnStartup());
             }
-
-            if (reqJson.has("gameMode")) {
-                String gm = reqJson.get("gameMode").asText();
-                Collection<GameMode> types = Sponge.getRegistry().getAllOf(GameMode.class);
-                Optional<GameMode> type = types.stream().filter(g -> g.getId().equalsIgnoreCase(gm) || g.getName().equalsIgnoreCase(gm)).findAny();
-                type.ifPresent(builder::gameMode);
+            if (req.doesKeepSpawnLoaded() != null) {
+                builder.keepsSpawnLoaded(req.doesKeepSpawnLoaded());
             }
-
-            if (reqJson.has("difficulty")) {
-                String diff = reqJson.get("difficulty").asText();
-                Collection<Difficulty> types = Sponge.getRegistry().getAllOf(Difficulty.class);
-                Optional<Difficulty> type = types.stream().filter(g -> g.getId().equalsIgnoreCase(diff) || g.getName().equalsIgnoreCase(diff)).findAny();
-                type.ifPresent(builder::difficulty);
+            if (req.doesAllowCommands() != null) {
+                builder.commandsAllowed(req.doesAllowCommands());
             }
-
-            if (reqJson.has("loadOnStartup")) {
-                builder.loadsOnStartup(reqJson.get("loadOnStartup").asBoolean());
+            if (req.doesGenerateBonusChest() != null) {
+                builder.generateBonusChest(req.doesGenerateBonusChest());
             }
-
-            if (reqJson.has("keepSpawnLoaded")) {
-                builder.keepsSpawnLoaded(reqJson.get("keepSpawnLoaded").asBoolean());
-            }
-
-            if (reqJson.has("commandsAllowed")) {
-                builder.commandsAllowed(reqJson.get("commandsAllowed").asBoolean());
-            }
-
-            if (reqJson.has("generateBonusChest")) {
-                builder.generateBonusChest(reqJson.get("generateBonusChest").asBoolean());
-            }
-
-            if (reqJson.has("usesMapFeatures")) {
-                builder.usesMapFeatures(reqJson.get("usesMapFeatures").asBoolean());
+            if (req.doesUseMapFeatures() != null) {
+                builder.usesMapFeatures(req.doesUseMapFeatures());
             }
 
             String archTypeName = UUID.randomUUID().toString();
@@ -292,6 +265,8 @@ public class WorldServlet extends WebAPIServlet {
         }
 
         String method = paths[1].toLowerCase();
+        final JsonNode reqJson = data.getRequestBody();
+
         switch (method) {
             case "method":
                 if (!reqJson.has("method")) {
@@ -363,7 +338,7 @@ public class WorldServlet extends WebAPIServlet {
             return;
         }
 
-        DataCache.updateWorlds();
+        DataCache.removeWorld(world.get().getUUID());
 
         data.addJson("ok", true, false);
     }

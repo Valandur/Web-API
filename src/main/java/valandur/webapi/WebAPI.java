@@ -166,6 +166,11 @@ public class WebAPI {
         Reflections.log = null;
         this.reflections = new Reflections();
 
+        logger.info("Loading base data...");
+        DataCache.updateWorlds();
+        DataCache.updatePlugins();
+        DataCache.updateCommands();
+
         logger.info(WebAPI.NAME + " ready");
     }
 
@@ -337,11 +342,6 @@ public class WebAPI {
 
     @Listener
     public void onServerStart(GameStartedServerEvent event) {
-        logger.info("Loading base data...");
-        DataCache.updateWorlds();
-        DataCache.updatePlugins();
-        DataCache.updateCommands();
-
         startWebServer(null);
 
         WebHooks.notifyHooks(WebHooks.WebHookType.SERVER_START, event);

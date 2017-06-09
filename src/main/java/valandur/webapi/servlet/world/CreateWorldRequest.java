@@ -1,6 +1,7 @@
 package valandur.webapi.servlet.world;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.gamemode.GameMode;
 import org.spongepowered.api.world.DimensionType;
@@ -54,32 +55,32 @@ public class CreateWorldRequest {
     }
 
     @JsonDeserialize
-    private boolean loadsOnStartup;
-    public boolean doesLoadOnStartup() {
-        return loadsOnStartup;
+    private Boolean loadOnStartup;
+    public Boolean doesLoadOnStartup() {
+        return loadOnStartup;
     }
 
     @JsonDeserialize
-    private boolean keepsSpawnLoaded;
-    public boolean doesKeepSpawnLoaded() {
-        return keepsSpawnLoaded;
+    private Boolean keepSpawnLoaded;
+    public Boolean doesKeepSpawnLoaded() {
+        return keepSpawnLoaded;
     }
 
     @JsonDeserialize
-    private boolean commandsAllowed;
-    public boolean areCommandsAllowed() {
-        return commandsAllowed;
+    private Boolean allowCommands;
+    public Boolean doesAllowCommands() {
+        return allowCommands;
     }
 
     @JsonDeserialize
-    private boolean generateBonusChest;
-    public boolean doesGenerateBonusChests() {
+    private Boolean generateBonusChest;
+    public Boolean doesGenerateBonusChest() {
         return generateBonusChest;
     }
 
     @JsonDeserialize
-    private boolean usesMapFeatures;
-    public boolean doesUseMapFeatures() {
+    private Boolean usesMapFeatures;
+    public Boolean doesUseMapFeatures() {
         return usesMapFeatures;
     }
 }

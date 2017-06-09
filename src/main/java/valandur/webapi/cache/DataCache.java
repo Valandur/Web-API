@@ -127,12 +127,8 @@ public class DataCache {
         WebAPI.runOnMain(() -> {
             worlds.clear();
 
-            Collection<World> worlds = Sponge.getServer().getWorlds();
-            for (World world : worlds) {
-                updateWorld(world);
-            }
-
-            Collection<WorldProperties> unloadedWorlds = Sponge.getServer().getUnloadedWorlds();
+            // The worlds that are loaded on server start are overwritten by the world load event later
+            Collection<WorldProperties> unloadedWorlds = Sponge.getServer().getAllWorldProperties();
             for (WorldProperties world : unloadedWorlds) {
                 updateWorld(world);
             }
@@ -181,6 +177,9 @@ public class DataCache {
     }
     public static Collection<CachedWorld> getWorlds() {
         return worlds.values();
+    }
+    public static void removeWorld(UUID worldUuid) {
+        worlds.remove(worldUuid);
     }
 
     public static Optional<CachedPlayer> getPlayer(UUID uuid) {

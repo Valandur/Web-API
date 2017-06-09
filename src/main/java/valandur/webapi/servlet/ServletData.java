@@ -37,6 +37,11 @@ public class ServletData {
         return node;
     }
 
+    private Exception lastParseError;
+    public Exception getLastParseError() {
+        return lastParseError;
+    }
+
     public boolean isErrorSent() {
         return errorSent;
     }
@@ -61,7 +66,7 @@ public class ServletData {
             T data = mapper.treeToValue(getRequestBody(), clazz);
             return Optional.of(data);
         } catch (JsonProcessingException e) {
-            e.printStackTrace();
+            lastParseError = e;
             return Optional.empty();
         }
     }

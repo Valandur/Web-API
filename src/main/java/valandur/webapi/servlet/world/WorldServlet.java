@@ -80,7 +80,13 @@ public class WorldServlet extends WebAPIServlet {
             return;
         }
 
-        final JsonNode reqJson = data.getRequestBody();
+        Optional<UpdateWorldRequest> optReq = data.getRequestBody(UpdateWorldRequest.class);
+        if (!optReq.isPresent()) {
+            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid world data: " + data.getLastParseError().getMessage());
+            return;
+        }
+
+        final UpdateWorldRequest req = optReq.get();
 
         Optional<CachedWorld> resWorld = WebAPI.runOnMain(() -> {
             Optional<?> optLive = world.get().getLive();
@@ -90,79 +96,46 @@ public class WorldServlet extends WebAPIServlet {
             Object live = optLive.get();
             WorldProperties props = live instanceof World ? ((World) live).getProperties() : (WorldProperties) live;
 
-            if (reqJson.has("loaded")) {
-                boolean loaded = reqJson.get("loaded").asBoolean();
-                if (loaded != world.get().isLoaded()) {
-                    if (loaded) {
-                        Optional<World> newWorld = Sponge.getServer().loadWorld(props);
-                        if (newWorld.isPresent()) {
-                            live = newWorld.get();
-                            props = newWorld.get().getProperties();
-                        }
-                    } else {
-                        Sponge.getServer().unloadWorld((World)live);
-                        Optional<WorldProperties> optProps = Sponge.getServer().getUnloadedWorlds()
-                                .stream().filter(w -> w.getUniqueId().equals(world.get().getUUID())).findAny();
-                        if (optProps.isPresent()) {
-                            live = optProps.get();
-                            props = optProps.get();
-                        }
+            if (req.isLoaded() != null && req.isLoaded() != world.get().isLoaded()) {
+                if (req.isLoaded()) {
+                    Optional<World> newWorld = Sponge.getServer().loadWorld(props);
+                    if (newWorld.isPresent()) {
+                        live = newWorld.get();
+                        props = newWorld.get().getProperties();
+                    }
+                } else {
+                    Sponge.getServer().unloadWorld((World)live);
+                    Optional<WorldProperties> optProps = Sponge.getServer().getUnloadedWorlds()
+                            .stream().filter(w -> w.getUniqueId().equals(world.get().getUUID())).findAny();
+                    if (optProps.isPresent()) {
+                        live = optProps.get();
+                        props = optProps.get();
                     }
                 }
             }
 
-            if (reqJson.has("rules")) {
-                Map<String, String> gameRules = props.getGameRules();
-                Iterator<Map.Entry<String, JsonNode>> nodes = reqJson.get("rules").fields();
-                while (nodes.hasNext()) {
-                    Map.Entry<String, JsonNode> entry = nodes.next();
-                    props.setGameRule(entry.getKey(), entry.getValue().asText());
-                }
+            for (Map.Entry<String, String> entry : req.getGameRules().entrySet()) {
+                props.setGameRule(entry.getKey(), entry.getValue());
             }
 
-            if (reqJson.has("generator")) {
-                String gen = reqJson.get("generator").asText();
-                Collection<GeneratorType> types = Sponge.getRegistry().getAllOf(GeneratorType.class);
-                Optional<GeneratorType> type = types.stream().filter(g -> g.getId().equalsIgnoreCase(gen) || g.getName().equalsIgnoreCase(gen)).findAny();
-                type.ifPresent(props::setGeneratorType);
-            }
+            req.getGeneratorType().ifPresent(props::setGeneratorType);
+            req.getGameMode().ifPresent(props::setGameMode);
+            req.getDifficulty().ifPresent(props::setDifficulty);
 
-            if (reqJson.has("seed")) {
-                if (reqJson.get("seed").isLong()) {
-                    props.setSeed(reqJson.get("seed").asLong());
-                } else {
-                    props.setSeed(reqJson.get("seed").asInt());
-                }
+            if (req.getSeed() != null) {
+                props.setSeed(req.getSeed());
             }
-
-            if (reqJson.has("gameMode")) {
-                String gm = reqJson.get("gameMode").asText();
-                Collection<GameMode> types = Sponge.getRegistry().getAllOf(GameMode.class);
-                Optional<GameMode> type = types.stream().filter(g -> g.getId().equalsIgnoreCase(gm) || g.getName().equalsIgnoreCase(gm)).findAny();
-                type.ifPresent(props::setGameMode);
+            if (req.doesLoadOnStartup() != null) {
+                props.setLoadOnStartup(req.doesLoadOnStartup());
             }
-
-            if (reqJson.has("difficulty")) {
-                String diff = reqJson.get("difficulty").asText();
-                Collection<Difficulty> types = Sponge.getRegistry().getAllOf(Difficulty.class);
-                Optional<Difficulty> type = types.stream().filter(g -> g.getId().equalsIgnoreCase(diff) || g.getName().equalsIgnoreCase(diff)).findAny();
-                type.ifPresent(props::setDifficulty);
+            if (req.doesKeepSpawnLoaded() != null) {
+                props.setKeepSpawnLoaded(req.doesKeepSpawnLoaded());
             }
-
-            if (reqJson.has("loadOnStartup")) {
-                props.setLoadOnStartup(reqJson.get("loadOnStartup").asBoolean());
+            if (req.doesAllowCommands() != null) {
+                props.setCommandsAllowed(req.doesAllowCommands());
             }
-
-            if (reqJson.has("keepSpawnLoaded")) {
-                props.setKeepSpawnLoaded(reqJson.get("keepSpawnLoaded").asBoolean());
-            }
-
-            if (reqJson.has("commandsAllowed")) {
-                props.setCommandsAllowed(reqJson.get("commandsAllowed").asBoolean());
-            }
-
-            if (reqJson.has("usesMapFeatures")) {
-                props.setMapFeaturesEnabled(reqJson.get("usesMapFeatures").asBoolean());
+            if (req.doesUseMapFeatures() != null) {
+                props.setMapFeaturesEnabled(req.doesUseMapFeatures());
             }
 
             if (live instanceof World)

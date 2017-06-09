@@ -109,6 +109,7 @@ public class CachedWorld extends CachedObject {
     public CachedWorld(World world) {
         this(world.getProperties());
         this.loaded = world.isLoaded();
+        this.weather = new CachedCatalogType(world.getWeather());
     }
     public CachedWorld(WorldProperties world) {
         super(world);

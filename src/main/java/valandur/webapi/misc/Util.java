@@ -30,7 +30,7 @@ public class Util {
      * @return True if the provided string is a valid UUID, false otherwise.
      */
     public static boolean isValidUUID(String uuid) {
-        return uuid.split("-").length == 5;
+        return uuid != null && uuid.split("-").length == 5;
     }
 
     /**

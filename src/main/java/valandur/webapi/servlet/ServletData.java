@@ -85,8 +85,9 @@ public class ServletData {
         return pathParts;
     }
 
-    public String getQueryPart(String key) {
-        return queryParts.get(key);
+    public Optional<String> getQueryPart(String key) {
+        String value = queryParts.get(key);
+        return value != null ? Optional.of(value) : Optional.empty();
     }
 
     public void sendError(int error, String message) {

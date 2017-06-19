@@ -28,7 +28,7 @@ public class WorldServlet extends WebAPIServlet {
 
         if (paths.length == 0 || paths[0].isEmpty()) {
             data.addJson("ok", true, false);
-            data.addJson("worlds", DataCache.getWorlds(), false);
+            data.addJson("worlds", DataCache.getWorlds(), data.getQueryPart("details").isPresent());
             return;
         }
 
@@ -44,11 +44,11 @@ public class WorldServlet extends WebAPIServlet {
             return;
         }
 
-        String strFields = data.getQueryPart("fields");
-        String strMethods = data.getQueryPart("methods");
-        if (strFields != null || strMethods != null) {
-            String[] fields = strFields != null ? strFields.split(",") : new String[]{};
-            String[] methods = strMethods != null ? strMethods.split(",") : new String[]{};
+        Optional<String> strFields = data.getQueryPart("fields");
+        Optional<String> strMethods = data.getQueryPart("methods");
+        if (strFields.isPresent() || strMethods.isPresent()) {
+            String[] fields = strFields.map(s -> s.split(",")).orElse(new String[]{});
+            String[] methods = strMethods.map(s -> s.split(",")).orElse(new String[]{});
             Tuple extra = DataCache.getExtraData(world.get(), fields, methods);
             data.addJson("fields", extra.getFirst(), true);
             data.addJson("methods", extra.getSecond(), true);
@@ -114,8 +114,10 @@ public class WorldServlet extends WebAPIServlet {
                 }
             }
 
-            for (Map.Entry<String, String> entry : req.getGameRules().entrySet()) {
-                props.setGameRule(entry.getKey(), entry.getValue());
+            if (req.getGameRules() != null) {
+                for (Map.Entry<String, String> entry : req.getGameRules().entrySet()) {
+                    props.setGameRule(entry.getKey(), entry.getValue());
+                }
             }
 
             req.getGeneratorType().ifPresent(props::setGeneratorType);

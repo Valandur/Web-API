@@ -59,11 +59,11 @@ public class TileEntityServlet extends WebAPIServlet {
             return;
         }
 
-        String strFields = data.getQueryPart("fields");
-        String strMethods = data.getQueryPart("methods");
-        if (strFields != null || strMethods != null) {
-            String[] fields = strFields != null ? strFields.split(",") : new String[]{};
-            String[] methods = strMethods != null ? strMethods.split(",") : new String[]{};
+        Optional<String> strFields = data.getQueryPart("fields");
+        Optional<String> strMethods = data.getQueryPart("methods");
+        if (strFields.isPresent() || strMethods.isPresent()) {
+            String[] fields = strFields.map(s -> s.split(",")).orElse(new String[]{});
+            String[] methods = strMethods.map(s -> s.split(",")).orElse(new String[]{});
             Tuple extra = DataCache.getExtraData(te.get(), fields, methods);
             data.addJson("fields", extra.getFirst(), true);
             data.addJson("methods", extra.getSecond(), true);

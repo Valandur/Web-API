@@ -23,7 +23,7 @@ public class CmdServlet extends WebAPIServlet {
         String[] paths = data.getPathParts();
 
         if (paths.length == 0 || paths[0].isEmpty()) {
-            data.addJson("commands", DataCache.getCommands(), false);
+            data.addJson("commands", DataCache.getCommands(), data.getQueryPart("details").isPresent());
             return;
         }
 

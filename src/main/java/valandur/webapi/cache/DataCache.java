@@ -116,7 +116,10 @@ public class DataCache {
             try {
                 Method m = ms[0];
                 m.setAccessible(true);
-                return m.invoke(o, paramValues);
+                Object res = m.invoke(o, paramValues);
+                if (m.getReturnType() == Void.class || m.getReturnType() == void.class)
+                    return true;
+                return res;
             } catch (Exception e) {
                 return e;
             }

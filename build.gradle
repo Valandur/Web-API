@@ -35,6 +35,7 @@ dependencies {
     compile group: "com.fasterxml.jackson.core", name: "jackson-annotations", version: "2.8.7"
     compile group: "org.reflections", name: "reflections", version: "0.9.10"
     compile group: "net.jodah", name: "typetools", version: "0.4.9"
+    compile group: "org.mindrot", name: "jbcrypt", version: "0.4"
 }
 
 jar {
@@ -49,6 +50,7 @@ shadowJar {
     relocate "javax.servlet", "valandur.webapi.shadow.javax.servlet"
     relocate "org.reflections", "valandur.webapi.shadow.org.reflections"
     relocate "net.jodah", "valandur.webapi.shadow.net.jodah"
+    relocate "org.mindrot", "valandur.webapi.shadow.org.mindrot"
 
     exclude "/about.html"
     exclude "/jetty-dir.css"

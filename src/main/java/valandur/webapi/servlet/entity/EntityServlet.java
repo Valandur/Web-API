@@ -1,12 +1,8 @@
 package valandur.webapi.servlet.entity;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.flowpowered.math.vector.Vector3d;
-import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.Entity;
-import org.spongepowered.api.entity.EntityType;
 import org.spongepowered.api.event.cause.Cause;
-import org.spongepowered.api.event.cause.entity.damage.DamageType;
 import org.spongepowered.api.event.cause.entity.damage.source.DamageSource;
 import org.spongepowered.api.util.Tuple;
 import org.spongepowered.api.world.World;
@@ -123,7 +119,7 @@ public class EntityServlet extends WebAPIServlet {
         });
 
         data.addJson("ok", resEntity.isPresent(), false);
-        data.addJson("entity", resEntity.orElse(null), false);
+        data.addJson("entity", resEntity.orElse(null), true);
     }
 
     @Override
@@ -181,7 +177,7 @@ public class EntityServlet extends WebAPIServlet {
 
             data.setStatus(HttpServletResponse.SC_CREATED);
             data.addJson("ok", true, false);
-            data.addJson("entity", entity, false);
+            data.addJson("entity", entity, true);
             data.setHeader("Location", entity.getLink());
             return;
         }
@@ -229,6 +225,7 @@ public class EntityServlet extends WebAPIServlet {
                 }
 
                 data.addJson("ok", true, false);
+                data.addJson("entity", entity.get(), true);
                 data.addJson("result", res.get(), true);
                 break;
 
@@ -253,14 +250,16 @@ public class EntityServlet extends WebAPIServlet {
             return;
         }
 
-        Optional<CachedEntity> entity = DataCache.getEntity(UUID.fromString(uuid));
-        if (!entity.isPresent()) {
+        Optional<CachedEntity> optEntity = DataCache.getEntity(UUID.fromString(uuid));
+        if (!optEntity.isPresent()) {
             data.sendError(HttpServletResponse.SC_NOT_FOUND, "Entity with UUID '" + uuid + "' could not be found");
             return;
         }
 
+        CachedEntity entity = optEntity.get();
+
         Optional<Boolean> deleted = WebAPI.runOnMain(() -> {
-            Optional<?> live = entity.get().getLive();
+            Optional<?> live = entity.getLive();
             if (!live.isPresent())
                 return false;
 
@@ -274,8 +273,9 @@ public class EntityServlet extends WebAPIServlet {
             return;
         }
 
-        DataCache.removeEntity(entity.get().getUUID());
+        DataCache.removeEntity(entity.getUUID());
 
         data.addJson("ok", true, false);
+        data.addJson("entity", entity, true);
     }
 }

@@ -147,7 +147,7 @@ public class WorldServlet extends WebAPIServlet {
         });
 
         data.addJson("ok", resWorld.isPresent(), false);
-        data.addJson("world", resWorld.orElse(null), false);
+        data.addJson("world", resWorld.orElse(null), true);
     }
 
     @Override
@@ -216,7 +216,7 @@ public class WorldServlet extends WebAPIServlet {
 
             data.setStatus(HttpServletResponse.SC_CREATED);
             data.addJson("ok", true, false);
-            data.addJson("world", world, false);
+            data.addJson("world", world, true);
             data.setHeader("Location", world.getLink());
             return;
         }
@@ -264,6 +264,7 @@ public class WorldServlet extends WebAPIServlet {
                 }
 
                 data.addJson("ok", true, false);
+                data.addJson("world", world.get(), true);
                 data.addJson("result", res.get(), true);
                 break;
 
@@ -288,14 +289,16 @@ public class WorldServlet extends WebAPIServlet {
             return;
         }
 
-        Optional<CachedWorld> world = DataCache.getWorld(UUID.fromString(uuid));
-        if (!world.isPresent()) {
+        Optional<CachedWorld> optWorld = DataCache.getWorld(UUID.fromString(uuid));
+        if (!optWorld.isPresent()) {
             data.sendError(HttpServletResponse.SC_NOT_FOUND, "World with UUID '" + uuid + "' could not be found");
             return;
         }
 
+        CachedWorld world = optWorld.get();
+
         Optional<Boolean> deleted = WebAPI.runOnMain(() -> {
-            Optional<?> live = world.get().getLive();
+            Optional<?> live = world.getLive();
             if (!live.isPresent())
                 return false;
 
@@ -313,8 +316,9 @@ public class WorldServlet extends WebAPIServlet {
             return;
         }
 
-        DataCache.removeWorld(world.get().getUUID());
+        DataCache.removeWorld(world.getUUID());
 
         data.addJson("ok", true, false);
+        data.addJson("world", world, true);
     }
 }

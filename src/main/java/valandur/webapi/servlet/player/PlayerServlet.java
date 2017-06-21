@@ -1,10 +1,6 @@
 package valandur.webapi.servlet.player;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.flowpowered.math.vector.Vector3d;
-import org.spongepowered.api.Sponge;
-import org.spongepowered.api.data.key.Keys;
-import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.util.Tuple;
 import valandur.webapi.permission.Permission;
 import valandur.webapi.cache.player.CachedPlayer;
@@ -24,6 +20,7 @@ public class PlayerServlet extends WebAPIServlet {
         String[] paths = data.getPathParts();
 
         if (paths.length == 0 || paths[0].isEmpty()) {
+            data.addJson("ok", true, false);
             data.addJson("players", DataCache.getPlayers(), data.getQueryPart("details").isPresent());
             return;
         }
@@ -50,6 +47,7 @@ public class PlayerServlet extends WebAPIServlet {
             data.addJson("methods", extra.getSecond(), true);
         }
 
+        data.addJson("ok", true, false);
         data.addJson("player", player.get(), true);
     }
 
@@ -96,6 +94,8 @@ public class PlayerServlet extends WebAPIServlet {
             return;
         }
 
+        data.addJson("ok", true, false);
+        data.addJson("player", player.get(), true);
         data.addJson("result", res.get(), true);
     }
 }

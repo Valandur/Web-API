@@ -14,9 +14,10 @@ import valandur.webapi.command.auth.CmdAuthListAdd;
 import valandur.webapi.command.auth.CmdAuthListDisable;
 import valandur.webapi.command.auth.CmdAuthListEnable;
 import valandur.webapi.command.auth.CmdAuthListRemove;
-import valandur.webapi.command.blocks.CmdBlockUpdatesList;
-import valandur.webapi.command.elements.CmdIpElement;
-import valandur.webapi.command.hooks.CmdNotifyHook;
+import valandur.webapi.command.block.CmdBlockUpdatesList;
+import valandur.webapi.command.element.CmdIpElement;
+import valandur.webapi.command.hook.CmdNotifyHook;
+import valandur.webapi.command.user.CmdUserAdd;
 import valandur.webapi.hook.CommandWebHook;
 import valandur.webapi.hook.WebHookParam;
 import valandur.webapi.hook.WebHooks;
@@ -135,6 +136,22 @@ public class CommandRegistry {
                 .child(specBlockUpdatesStop, "stop", "delete", "remove")
                 .build();
 
+        // Users
+        CommandSpec specUserAdd = CommandSpec.builder()
+                .description(Text.of("Add a new user that can access the admin panel"))
+                .permission("webapi.user.add")
+                .arguments(
+                        GenericArguments.onlyOne(GenericArguments.string(Text.of("username"))),
+                        GenericArguments.optional(GenericArguments.string(Text.of("password")))
+                )
+                .executor(new CmdUserAdd())
+                .build();
+        CommandSpec specUsers = CommandSpec.builder()
+                .description(Text.of("Manage the users of the admin panel"))
+                .permission("webapi.user")
+                .child(specUserAdd, "add")
+                .build();
+
         // Notify commands
         Map<List<String>, CommandSpec> hookSpecs = new HashMap<>();
         Map<List<String>, CommandSpec> hookAliases = new HashMap<>();
@@ -178,6 +195,7 @@ public class CommandRegistry {
                 .child(specBlacklist, "blacklist")
                 .child(specNotifyHook, "notify")
                 .child(specBlockUpdates, "blocks")
+                .child(specUsers, "users")
                 .build();
         manager.register(WebAPI.getInstance(), spec, "webapi").map(m -> mappings.add(m));
 

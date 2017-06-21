@@ -1,4 +1,4 @@
-package valandur.webapi.command.elements;
+package valandur.webapi.command.element;
 
 import com.google.common.net.InetAddresses;
 import org.spongepowered.api.command.CommandSource;
@@ -9,8 +9,6 @@ import org.spongepowered.api.command.args.CommandElement;
 import org.spongepowered.api.text.Text;
 
 import javax.annotation.Nullable;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.Collections;
 import java.util.List;
 

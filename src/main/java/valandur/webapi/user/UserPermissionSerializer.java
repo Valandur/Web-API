@@ -1,4 +1,4 @@
-package valandur.webapi.servlet.user;
+package valandur.webapi.user;
 
 import com.google.common.reflect.TypeToken;
 import ninja.leaping.configurate.ConfigurationNode;
@@ -10,7 +10,7 @@ import valandur.webapi.permission.Permissions;
 public class UserPermissionSerializer implements TypeSerializer<UserPermission> {
     @Override
     public UserPermission deserialize(TypeToken<?> type, ConfigurationNode value) throws ObjectMappingException {
-        String username = value.getNode("username").getString();
+        String username = value.getKey().toString();
         String password = value.getNode("password").getString();
 
         TreeNode<String, Boolean> perms = Permissions.permissionTreeFromConfig(value.getNode("permissions"));
@@ -20,7 +20,6 @@ public class UserPermissionSerializer implements TypeSerializer<UserPermission> 
 
     @Override
     public void serialize(TypeToken<?> type, UserPermission obj, ConfigurationNode value) throws ObjectMappingException {
-        value.getNode("username").setValue(obj.getUsername());
         value.getNode("password").setValue(obj.getPassword());
         Permissions.permissionTreeToConfig(value.getNode("permissions"), obj.getPermissions());
     }

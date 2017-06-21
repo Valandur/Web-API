@@ -1,4 +1,4 @@
-package valandur.webapi.command.hooks;
+package valandur.webapi.command.hook;
 
 import org.spongepowered.api.command.CommandException;
 import org.spongepowered.api.command.CommandResult;

@@ -1,4 +1,4 @@
-package valandur.webapi.servlet.user;
+package valandur.webapi.user;
 
 import ninja.leaping.configurate.objectmapping.Setting;
 import ninja.leaping.configurate.objectmapping.serialize.ConfigSerializable;

@@ -1,4 +1,4 @@
-package valandur.webapi.command.blocks;
+package valandur.webapi.command.block;
 
 import org.spongepowered.api.command.CommandException;
 import org.spongepowered.api.command.CommandResult;

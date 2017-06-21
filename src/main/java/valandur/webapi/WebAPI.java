@@ -63,12 +63,13 @@ import valandur.webapi.json.JsonConverter;
 import valandur.webapi.misc.*;
 import valandur.webapi.command.CommandSource;
 import valandur.webapi.servlet.*;
-import valandur.webapi.servlet.user.UserPermission;
-import valandur.webapi.servlet.user.UserPermissionSerializer;
+import valandur.webapi.user.UserPermission;
+import valandur.webapi.user.UserPermissionSerializer;
 import valandur.webapi.servlet.user.UserServlet;
 import valandur.webapi.servlet.entity.EntityServlet;
 import valandur.webapi.servlet.player.PlayerServlet;
 import valandur.webapi.servlet.world.WorldServlet;
+import valandur.webapi.user.Users;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -206,6 +207,8 @@ public class WebAPI {
         CacheConfig.init();
 
         CommandRegistry.init();
+
+        Users.init();
 
         if (triggeringPlayer != null) {
             triggeringPlayer.sendMessage(Text.builder().color(TextColors.AQUA)

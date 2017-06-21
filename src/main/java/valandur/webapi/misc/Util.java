@@ -16,6 +16,8 @@ import org.spongepowered.api.world.World;
 import javax.servlet.http.HttpServletRequest;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.math.BigInteger;
+import java.security.SecureRandom;
 import java.util.*;
 
 public class Util {
@@ -23,6 +25,16 @@ public class Util {
     private static Map<Class, Field[]> fields = new HashMap<>();
     private static Map<Class, Method[]> methods = new HashMap<>();
 
+    private static SecureRandom random = new SecureRandom();
+
+
+    /**
+     * Generate a random id from a secure number generator
+     * @return A random unique id
+     */
+    public static String generateUniqueId() {
+        return new BigInteger(130, random).toString(32);
+    }
 
     /**
      * Checks if the provided string is  valid UUID.

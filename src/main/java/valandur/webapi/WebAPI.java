@@ -60,11 +60,14 @@ import valandur.webapi.hook.WebHook;
 import valandur.webapi.hook.WebHookSerializer;
 import valandur.webapi.hook.WebHooks;
 import valandur.webapi.json.JsonConverter;
-import valandur.webapi.misc.Extensions;
-import valandur.webapi.misc.Util;
+import valandur.webapi.misc.*;
 import valandur.webapi.command.CommandSource;
-import valandur.webapi.misc.JettyLogger;
 import valandur.webapi.servlet.*;
+import valandur.webapi.servlet.user.UserPermission;
+import valandur.webapi.servlet.user.UserPermissionSerializer;
+import valandur.webapi.servlet.user.UserServlet;
+import valandur.webapi.servlet.entity.EntityServlet;
+import valandur.webapi.servlet.player.PlayerServlet;
 import valandur.webapi.servlet.world.WorldServlet;
 
 import java.io.IOException;
@@ -147,8 +150,9 @@ public class WebAPI {
         // Reusable sync executor to run code on main server thread
         syncExecutor = Sponge.getScheduler().createSyncExecutor(this);
 
-        // Register custom serializer for WebHook class
+        // Register custom serializers
         TypeSerializers.getDefaultSerializers().registerType(TypeToken.of(WebHook.class), new WebHookSerializer());
+        TypeSerializers.getDefaultSerializers().registerType(TypeToken.of(UserPermission.class), new UserPermissionSerializer());
     }
     @Listener
     public void onInitialization(GameInitializationEvent event) {
@@ -255,6 +259,7 @@ public class WebAPI {
             servletsContext.addServlet(RecipeServlet.class, "/recipe/*");
             servletsContext.addServlet(RegistryServlet.class, "/registry/*");
             servletsContext.addServlet(TileEntityServlet.class, "/tile-entity/*");
+            servletsContext.addServlet(UserServlet.class, "/user/*");
             servletsContext.addServlet(WorldServlet.class, "/world/*");
 
             // Add collection of handlers to server

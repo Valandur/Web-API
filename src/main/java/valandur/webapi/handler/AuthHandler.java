@@ -32,6 +32,8 @@ public class AuthHandler extends AbstractHandler {
     private PermissionStruct defaultPerms;
     private Map<String, PermissionStruct> permMap = new HashMap<>();
 
+    private Map<String, PermissionStruct> tempPermMap = new HashMap<>();
+
     private boolean useWhitelist;
     private List<String> whitelist = new ArrayList<>();
 
@@ -41,6 +43,10 @@ public class AuthHandler extends AbstractHandler {
 
     public AuthHandler() {
         api = WebAPI.getInstance();
+    }
+
+    public void addTempPerm(String key, PermissionStruct perms) {
+        tempPermMap.put(key, perms);
     }
 
     public void init() {
@@ -125,6 +131,10 @@ public class AuthHandler extends AbstractHandler {
             return;
         }
 
+        if (target.startsWith("/api/user")) {
+            return;
+        }
+
         String key = request.getHeader("x-webapi-key");
 
         if (key == null && request.getQueryString() != null) {
@@ -133,6 +143,9 @@ public class AuthHandler extends AbstractHandler {
         }
 
         PermissionStruct perms = permMap.get(key);
+        if (perms == null)
+            perms = tempPermMap.get(key);
+
         if (perms != null) {
             request.setAttribute("key", key);
             request.setAttribute("perms", perms.getPermissions());

@@ -54,9 +54,7 @@ public abstract class WebAPIServlet extends HttpServlet {
 
                 req.setAttribute("dataPerms", methodPerms);
             } else {
-                WebAPI.getInstance().getLogger().warn(verb + " in " + this.getClass().getName() + " is not annotated with @Permission");
-                resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-                return;
+                req.setAttribute("dataPerms", Permissions.permitAllNode());
             }
 
             if (verb.equalsIgnoreCase("Post") || verb.equalsIgnoreCase("Put")) {

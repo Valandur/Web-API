@@ -237,9 +237,9 @@ public class WebAPI {
             List<Handler> handlers = new LinkedList<>();
 
             // Asset handlers
-            handlers.add(newContext("/", new AssetHandler(loadAssetString("pages/redoc.html"), "text/html; charset=utf-8")));
+            handlers.add(newContext("/docs", new AssetHandler(loadAssetString("pages/redoc.html"), "text/html; charset=utf-8")));
             String swaggerString = loadAssetString("swagger.yaml").replaceFirst("<host>", serverHost + ":" + serverPort).replaceFirst("<version>", WebAPI.VERSION);
-            handlers.add(newContext("/docs", new AssetHandler(swaggerString, "application/x-yaml")));
+            handlers.add(newContext("/swagger", new AssetHandler(swaggerString, "application/x-yaml")));
 
             // Main servlet context
             ServletContextHandler servletsContext = new ServletContextHandler();

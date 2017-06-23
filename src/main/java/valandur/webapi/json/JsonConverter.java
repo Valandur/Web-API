@@ -1,7 +1,10 @@
 package valandur.webapi.json;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.MapperFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
@@ -27,7 +30,6 @@ import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Event;
 import org.spongepowered.api.event.cause.Cause;
-import org.spongepowered.api.item.inventory.Inventory;
 import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.item.inventory.ItemStackSnapshot;
 import org.spongepowered.api.item.merchant.TradeOffer;
@@ -44,6 +46,7 @@ import valandur.webapi.cache.chat.CachedChatMessage;
 import valandur.webapi.cache.command.CachedCommandCall;
 import valandur.webapi.cache.command.CachedCommandResult;
 import valandur.webapi.cache.entity.CachedEntity;
+import valandur.webapi.cache.misc.CachedInventory;
 import valandur.webapi.cache.misc.CachedCatalogType;
 import valandur.webapi.cache.misc.CachedLocation;
 import valandur.webapi.cache.player.CachedPlayer;
@@ -54,33 +57,39 @@ import valandur.webapi.cache.world.CachedWorld;
 import valandur.webapi.cache.world.CachedWorldBorder;
 import valandur.webapi.command.CommandSource;
 import valandur.webapi.json.serializer.WebAPISerializer;
-import valandur.webapi.json.serializer.block.*;
+import valandur.webapi.json.serializer.block.BlockSnapshotSerializer;
+import valandur.webapi.json.serializer.block.BlockStateSerializer;
+import valandur.webapi.json.serializer.block.BlockUpdateSerializer;
+import valandur.webapi.json.serializer.block.BlockVolumeSerializer;
 import valandur.webapi.json.serializer.chat.CachedChatMessageSerializer;
 import valandur.webapi.json.serializer.command.CachedCommandCallSerializer;
 import valandur.webapi.json.serializer.command.CachedCommandResultSerializer;
-import valandur.webapi.json.serializer.message.MessageResponseSerializer;
-import valandur.webapi.json.serializer.plugin.CachedPluginContainerSerializer;
-import valandur.webapi.json.serializer.tileentity.*;
-import valandur.webapi.json.serializer.world.CachedWorldSerializer;
 import valandur.webapi.json.serializer.entity.*;
-import valandur.webapi.json.serializer.entity.TradeOfferSerializer;
 import valandur.webapi.json.serializer.event.CauseSerializer;
 import valandur.webapi.json.serializer.event.EventSerializer;
-import valandur.webapi.json.serializer.misc.*;
 import valandur.webapi.json.serializer.item.*;
+import valandur.webapi.json.serializer.message.MessageResponseSerializer;
+import valandur.webapi.json.serializer.misc.*;
 import valandur.webapi.json.serializer.player.*;
+import valandur.webapi.json.serializer.plugin.CachedPluginContainerSerializer;
 import valandur.webapi.json.serializer.plugin.PluginContainerSerializer;
+import valandur.webapi.json.serializer.tileentity.*;
+import valandur.webapi.json.serializer.user.UserPermissionSerializer;
 import valandur.webapi.json.serializer.world.*;
 import valandur.webapi.message.MessageResponse;
 import valandur.webapi.misc.Extensions;
 import valandur.webapi.misc.TreeNode;
 import valandur.webapi.misc.Util;
+import valandur.webapi.user.UserPermission;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Parameter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class JsonConverter {
@@ -130,8 +139,8 @@ public class JsonConverter {
         serializers.put(Event.class, new EventSerializer());
 
         // Item
+        serializers.put(CachedInventory.class, new CachedInventorySerializer());
         serializers.put(DurabilityData.class, new DurabilityDataSerializer());
-        serializers.put(Inventory.class, new InventorySerializer());
         serializers.put(ItemStack.class, new ItemStackSerializer());
         serializers.put(ItemStackSnapshot.class, new ItemStackSnapshotSerializer());
         serializers.put(PotionEffectData.class, new PotionEffectDataSerializer());
@@ -148,6 +157,7 @@ public class JsonConverter {
         serializers.put(CommandSource.class, new CommandSourceSerializer());
         serializers.put(Exception.class, new ExceptionSerializer());
         serializers.put(Location.class, new LocationSerializer());
+        serializers.put(TreeNode.class, new TreeNodeSerializer());
         serializers.put(UUID.class, new UUIDSerializer());
         serializers.put(Vector3d.class, new Vector3dSerializer());
         serializers.put(Vector3i.class, new Vector3iSerializer());
@@ -175,6 +185,9 @@ public class JsonConverter {
         serializers.put(RedstonePoweredData.class, new RedstonePoweredDataSerializer());
         serializers.put(SignData.class, new SignDataSerializer());
         serializers.put(TileEntity.class, new TileEntitySerializer());
+
+        // User
+        serializers.put(UserPermission.class, new UserPermissionSerializer());
 
         // World
         serializers.put(CachedGeneratorType.class, new CachedGeneratorTypeSerializer());

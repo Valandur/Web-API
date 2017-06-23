@@ -7,7 +7,7 @@ import ninja.leaping.configurate.objectmapping.serialize.TypeSerializer;
 import valandur.webapi.misc.TreeNode;
 import valandur.webapi.permission.Permissions;
 
-public class UserPermissionSerializer implements TypeSerializer<UserPermission> {
+public class UserPermissionConfigSerializer implements TypeSerializer<UserPermission> {
     @Override
     public UserPermission deserialize(TypeToken<?> type, ConfigurationNode value) throws ObjectMappingException {
         String username = value.getKey().toString();

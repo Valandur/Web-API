@@ -31,6 +31,8 @@ public class Users {
         loader = tup.getFirst();
         config = tup.getSecond();
 
+        users.clear();
+
         try {
             Map<Object, ? extends ConfigurationNode> nodes = config.getNode("users").getChildrenMap();
             for (Map.Entry<Object, ? extends ConfigurationNode> entry : nodes.entrySet()) {

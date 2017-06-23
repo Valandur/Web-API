@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import valandur.webapi.json.JsonConverter;
 import valandur.webapi.misc.TreeNode;
 import valandur.webapi.misc.Util;
+import valandur.webapi.user.UserPermission;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -71,6 +72,10 @@ public class ServletData {
         }
     }
 
+    public UserPermission getUser() {
+        return (UserPermission)req.getAttribute("user");
+    }
+
     public void setHeader(String name, String value) {
         resp.setHeader(name, value);
     }
@@ -84,7 +89,6 @@ public class ServletData {
     public String[] getPathParts() {
         return pathParts;
     }
-
     public Optional<String> getQueryPart(String key) {
         String value = queryParts.get(key);
         return value != null ? Optional.of(value) : Optional.empty();

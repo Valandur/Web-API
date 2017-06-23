@@ -1,28 +1,28 @@
 package valandur.webapi.user;
 
-import ninja.leaping.configurate.objectmapping.Setting;
-import ninja.leaping.configurate.objectmapping.serialize.ConfigSerializable;
 import valandur.webapi.misc.TreeNode;
+import valandur.webapi.permission.PermissionStruct;
 
-@ConfigSerializable
 public class UserPermission {
 
-    @Setting
     private String username;
     public String getUsername() {
         return username;
     }
 
-    @Setting
     private String password;
     public String getPassword() {
         return password;
     }
 
-    @Setting
     private TreeNode<String, Boolean> permissions;
     public TreeNode<String, Boolean> getPermissions() {
         return permissions;
+    }
+
+    private PermissionStruct pStruct;
+    public PermissionStruct getPermissionStruct() {
+        return pStruct;
     }
 
 
@@ -30,5 +30,6 @@ public class UserPermission {
         this.username = username;
         this.password = password;
         this.permissions = permissions;
+        this.pStruct = new PermissionStruct(this.permissions, 0);
     }
 }

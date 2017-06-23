@@ -53,6 +53,7 @@ import valandur.webapi.cache.*;
 import valandur.webapi.cache.chat.CachedChatMessage;
 import valandur.webapi.cache.command.CachedCommandCall;
 import valandur.webapi.command.*;
+import valandur.webapi.handler.AssetHandler;
 import valandur.webapi.handler.AuthHandler;
 import valandur.webapi.handler.RateLimitHandler;
 import valandur.webapi.handler.ErrorHandler;
@@ -64,7 +65,7 @@ import valandur.webapi.misc.*;
 import valandur.webapi.command.CommandSource;
 import valandur.webapi.servlet.*;
 import valandur.webapi.user.UserPermission;
-import valandur.webapi.user.UserPermissionSerializer;
+import valandur.webapi.user.UserPermissionConfigSerializer;
 import valandur.webapi.servlet.user.UserServlet;
 import valandur.webapi.servlet.entity.EntityServlet;
 import valandur.webapi.servlet.player.PlayerServlet;
@@ -112,6 +113,11 @@ public class WebAPI {
         return devMode;
     }
 
+    private boolean adminPanelEnabled = true;
+    public boolean isAdminPanelEnabled() {
+        return adminPanelEnabled;
+    }
+
     @Inject
     private Logger logger;
     public Logger getLogger() {
@@ -153,7 +159,7 @@ public class WebAPI {
 
         // Register custom serializers
         TypeSerializers.getDefaultSerializers().registerType(TypeToken.of(WebHook.class), new WebHookSerializer());
-        TypeSerializers.getDefaultSerializers().registerType(TypeToken.of(UserPermission.class), new UserPermissionSerializer());
+        TypeSerializers.getDefaultSerializers().registerType(TypeToken.of(UserPermission.class), new UserPermissionConfigSerializer());
     }
     @Listener
     public void onInitialization(GameInitializationEvent event) {
@@ -188,6 +194,7 @@ public class WebAPI {
         devMode = config.getNode("devMode").getBoolean();
         serverHost = config.getNode("host").getString();
         serverPort = config.getNode("port").getInt();
+        adminPanelEnabled = config.getNode("adminPanel").getBoolean();
         CmdServlet.CMD_WAIT_TIME = config.getNode("cmdWaitTime").getInt();
         Blocks.MAX_BLOCK_GET_SIZE = config.getNode("maxBlockGetSize").getInt();
         Blocks.MAX_BLOCK_UPDATE_SIZE = config.getNode("maxBlockUpdateSize").getInt();
@@ -240,6 +247,9 @@ public class WebAPI {
             handlers.add(newContext("/docs", new AssetHandler(loadAssetString("pages/redoc.html"), "text/html; charset=utf-8")));
             String swaggerString = loadAssetString("swagger.yaml").replaceFirst("<host>", serverHost + ":" + serverPort).replaceFirst("<version>", WebAPI.VERSION);
             handlers.add(newContext("/swagger", new AssetHandler(swaggerString, "application/x-yaml")));
+
+            if (adminPanelEnabled)
+                handlers.add(newContext("/admin/*", new AssetHandler("admin")));
 
             // Main servlet context
             ServletContextHandler servletsContext = new ServletContextHandler();

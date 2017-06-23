@@ -13,6 +13,7 @@ public class ItemStackSerializer extends WebAPISerializer<ItemStack> {
         gen.writeStartObject();
 
         writeField(provider, "id", value.getItem().getId());
+        writeField(provider, "name", value.getTranslation().get());
         writeField(provider, "quantity", value.getQuantity());
 
         gen.writeObjectFieldStart("data");

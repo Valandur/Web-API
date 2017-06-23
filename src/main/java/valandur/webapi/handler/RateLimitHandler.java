@@ -20,6 +20,10 @@ public class RateLimitHandler extends AbstractHandler {
 
     @Override
     public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+        if (target.startsWith("/api/user")) {
+            return;
+        }
+
         String key = request.getAttribute("key").toString();
         int limit = (int)request.getAttribute("rate");
 

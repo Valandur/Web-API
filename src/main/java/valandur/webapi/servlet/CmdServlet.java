@@ -23,7 +23,7 @@ public class CmdServlet extends WebAPIServlet {
         String[] paths = data.getPathParts();
 
         if (paths.length == 0 || paths[0].isEmpty()) {
-            data.addJson("commands", DataCache.getCommands(), false);
+            data.addJson("commands", DataCache.getCommands(), data.getQueryPart("details").isPresent());
             return;
         }
 
@@ -34,6 +34,7 @@ public class CmdServlet extends WebAPIServlet {
             return;
         }
 
+        data.addJson("ok", true, false);
         data.addJson("command", cmd.get(), true);
     }
 
@@ -49,6 +50,7 @@ public class CmdServlet extends WebAPIServlet {
                 return;
             }
 
+            data.addJson("ok", true, false);
             data.addJson("result", runCommand(reqJson), true);
             return;
         }
@@ -63,6 +65,8 @@ public class CmdServlet extends WebAPIServlet {
 
             res.add(runCommand(node));
         }
+
+        data.addJson("ok", true, false);
         data.addJson("results", res, true);
     }
 

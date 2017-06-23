@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import valandur.webapi.json.JsonConverter;
 import valandur.webapi.misc.TreeNode;
 import valandur.webapi.misc.Util;
+import valandur.webapi.user.UserPermission;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -37,6 +38,11 @@ public class ServletData {
         return node;
     }
 
+    private Exception lastParseError;
+    public Exception getLastParseError() {
+        return lastParseError;
+    }
+
     public boolean isErrorSent() {
         return errorSent;
     }
@@ -61,11 +67,21 @@ public class ServletData {
             T data = mapper.treeToValue(getRequestBody(), clazz);
             return Optional.of(data);
         } catch (JsonProcessingException e) {
-            e.printStackTrace();
+            lastParseError = e;
             return Optional.empty();
         }
     }
 
+    public UserPermission getUser() {
+        return (UserPermission)req.getAttribute("user");
+    }
+
+    public void setHeader(String name, String value) {
+        resp.setHeader(name, value);
+    }
+    public void setStatus(int status) {
+        resp.setStatus(status);
+    }
     public void addJson(String key, Object value, boolean details) {
         node.replace(key, JsonConverter.toJson(value, details, permissions));
     }
@@ -73,9 +89,9 @@ public class ServletData {
     public String[] getPathParts() {
         return pathParts;
     }
-
-    public String getQueryPart(String key) {
-        return queryParts.get(key);
+    public Optional<String> getQueryPart(String key) {
+        String value = queryParts.get(key);
+        return value != null ? Optional.of(value) : Optional.empty();
     }
 
     public void sendError(int error, String message) {

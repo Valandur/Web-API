@@ -34,10 +34,7 @@ import org.spongepowered.api.event.entity.SpawnEntityEvent;
 import org.spongepowered.api.event.entity.living.humanoid.player.KickPlayerEvent;
 import org.spongepowered.api.event.filter.cause.First;
 import org.spongepowered.api.event.game.GameReloadEvent;
-import org.spongepowered.api.event.game.state.GameInitializationEvent;
-import org.spongepowered.api.event.game.state.GamePreInitializationEvent;
-import org.spongepowered.api.event.game.state.GameStartedServerEvent;
-import org.spongepowered.api.event.game.state.GameStoppedServerEvent;
+import org.spongepowered.api.event.game.state.*;
 import org.spongepowered.api.event.item.inventory.InteractInventoryEvent;
 import org.spongepowered.api.event.message.MessageChannelEvent;
 import org.spongepowered.api.event.network.ClientConnectionEvent;
@@ -56,6 +53,7 @@ import valandur.webapi.cache.*;
 import valandur.webapi.cache.chat.CachedChatMessage;
 import valandur.webapi.cache.command.CachedCommandCall;
 import valandur.webapi.command.*;
+import valandur.webapi.handler.AssetHandler;
 import valandur.webapi.handler.AuthHandler;
 import valandur.webapi.handler.RateLimitHandler;
 import valandur.webapi.handler.ErrorHandler;
@@ -63,11 +61,16 @@ import valandur.webapi.hook.WebHook;
 import valandur.webapi.hook.WebHookSerializer;
 import valandur.webapi.hook.WebHooks;
 import valandur.webapi.json.JsonConverter;
-import valandur.webapi.misc.Extensions;
-import valandur.webapi.misc.Util;
+import valandur.webapi.misc.*;
 import valandur.webapi.command.CommandSource;
-import valandur.webapi.misc.JettyLogger;
 import valandur.webapi.servlet.*;
+import valandur.webapi.user.UserPermission;
+import valandur.webapi.user.UserPermissionConfigSerializer;
+import valandur.webapi.servlet.user.UserServlet;
+import valandur.webapi.servlet.entity.EntityServlet;
+import valandur.webapi.servlet.player.PlayerServlet;
+import valandur.webapi.servlet.world.WorldServlet;
+import valandur.webapi.user.Users;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -110,6 +113,11 @@ public class WebAPI {
         return devMode;
     }
 
+    private boolean adminPanelEnabled = true;
+    public boolean isAdminPanelEnabled() {
+        return adminPanelEnabled;
+    }
+
     @Inject
     private Logger logger;
     public Logger getLogger() {
@@ -149,15 +157,15 @@ public class WebAPI {
         // Reusable sync executor to run code on main server thread
         syncExecutor = Sponge.getScheduler().createSyncExecutor(this);
 
-        // Register custom serializer for WebHook class
+        // Register custom serializers
         TypeSerializers.getDefaultSerializers().registerType(TypeToken.of(WebHook.class), new WebHookSerializer());
+        TypeSerializers.getDefaultSerializers().registerType(TypeToken.of(UserPermission.class), new UserPermissionConfigSerializer());
     }
-
     @Listener
     public void onInitialization(GameInitializationEvent event) {
         logger.info(WebAPI.NAME + " v" + WebAPI.VERSION + " is starting...");
 
-        logger.info("Setting up jetty logger");
+        logger.info("Setting up jetty logger...");
         Log.setLog(new JettyLogger());
 
         // Create permission handler
@@ -168,6 +176,11 @@ public class WebAPI {
 
         Reflections.log = null;
         this.reflections = new Reflections();
+
+        logger.info("Loading base data...");
+        DataCache.updateWorlds();
+        DataCache.updatePlugins();
+        DataCache.updateCommands();
 
         logger.info(WebAPI.NAME + " ready");
     }
@@ -181,6 +194,7 @@ public class WebAPI {
         devMode = config.getNode("devMode").getBoolean();
         serverHost = config.getNode("host").getString();
         serverPort = config.getNode("port").getInt();
+        adminPanelEnabled = config.getNode("adminPanel").getBoolean();
         CmdServlet.CMD_WAIT_TIME = config.getNode("cmdWaitTime").getInt();
         Blocks.MAX_BLOCK_GET_SIZE = config.getNode("maxBlockGetSize").getInt();
         Blocks.MAX_BLOCK_UPDATE_SIZE = config.getNode("maxBlockUpdateSize").getInt();
@@ -200,6 +214,8 @@ public class WebAPI {
         CacheConfig.init();
 
         CommandRegistry.init();
+
+        Users.init();
 
         if (triggeringPlayer != null) {
             triggeringPlayer.sendMessage(Text.builder().color(TextColors.AQUA)
@@ -228,9 +244,12 @@ public class WebAPI {
             List<Handler> handlers = new LinkedList<>();
 
             // Asset handlers
-            handlers.add(newContext("/", new AssetHandler(loadAssetString("pages/redoc.html"), "text/html; charset=utf-8")));
+            handlers.add(newContext("/docs", new AssetHandler(loadAssetString("pages/redoc.html"), "text/html; charset=utf-8")));
             String swaggerString = loadAssetString("swagger.yaml").replaceFirst("<host>", serverHost + ":" + serverPort).replaceFirst("<version>", WebAPI.VERSION);
-            handlers.add(newContext("/docs", new AssetHandler(swaggerString, "application/x-yaml")));
+            handlers.add(newContext("/swagger", new AssetHandler(swaggerString, "application/x-yaml")));
+
+            if (adminPanelEnabled)
+                handlers.add(newContext("/admin/*", new AssetHandler("admin")));
 
             // Main servlet context
             ServletContextHandler servletsContext = new ServletContextHandler();
@@ -251,7 +270,9 @@ public class WebAPI {
             servletsContext.addServlet(PlayerServlet.class, "/player/*");
             servletsContext.addServlet(PluginServlet.class, "/plugin/*");
             servletsContext.addServlet(RecipeServlet.class, "/recipe/*");
+            servletsContext.addServlet(RegistryServlet.class, "/registry/*");
             servletsContext.addServlet(TileEntityServlet.class, "/tile-entity/*");
+            servletsContext.addServlet(UserServlet.class, "/user/*");
             servletsContext.addServlet(WorldServlet.class, "/world/*");
 
             // Add collection of handlers to server
@@ -339,9 +360,6 @@ public class WebAPI {
 
     @Listener
     public void onServerStart(GameStartedServerEvent event) {
-        DataCache.updatePlugins();
-        DataCache.updateCommands();
-
         startWebServer(null);
 
         WebHooks.notifyHooks(WebHooks.WebHookType.SERVER_START, event);
@@ -372,13 +390,13 @@ public class WebAPI {
 
     @Listener(order = Order.POST)
     public void onWorldLoad(LoadWorldEvent event) {
-        DataCache.addWorld(event.getTargetWorld());
+        DataCache.updateWorld(event.getTargetWorld());
 
         WebHooks.notifyHooks(WebHooks.WebHookType.WORLD_LOAD, event);
     }
     @Listener(order = Order.POST)
     public void onWorldUnload(UnloadWorldEvent event) {
-        DataCache.removeWorld(event.getTargetWorld().getUniqueId());
+        DataCache.updateWorld(event.getTargetWorld().getProperties());
 
         WebHooks.notifyHooks(WebHooks.WebHookType.WORLD_UNLOAD, event);
     }
@@ -389,7 +407,7 @@ public class WebAPI {
 
     @Listener(order = Order.POST)
     public void onPlayerJoin(ClientConnectionEvent.Join event) {
-        DataCache.addPlayer(event.getTargetEntity());
+        DataCache.updatePlayer(event.getTargetEntity());
 
         WebHooks.notifyHooks(WebHooks.WebHookType.PLAYER_JOIN, event);
     }
@@ -413,7 +431,7 @@ public class WebAPI {
     @Listener(order = Order.POST)
     public void onEntitySpawn(SpawnEntityEvent event) {
         for (Entity entity : event.getEntities()) {
-            DataCache.addEntity(entity);
+            DataCache.updateEntity(entity);
         }
     }
     @Listener(order = Order.POST)

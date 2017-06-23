@@ -11,7 +11,8 @@ public class PotionEffectSerializer extends WebAPISerializer<PotionEffect> {
     @Override
     public void serialize(PotionEffect value, JsonGenerator gen, SerializerProvider provider) throws IOException {
         gen.writeStartObject();
-        writeField(provider, "type", value.getType().getId());
+        writeField(provider, "id", value.getType().getId());
+        writeField(provider, "name", value.getType().getTranslation().get());
         writeField(provider, "amplifier", value.getAmplifier());
         writeField(provider, "duration", value.getDuration());
         gen.writeEndObject();

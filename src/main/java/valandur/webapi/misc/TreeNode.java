@@ -1,7 +1,5 @@
 package valandur.webapi.misc;
 
-import ninja.leaping.configurate.ConfigurationNode;
-
 import java.util.*;
 
 public class TreeNode<K, V> {

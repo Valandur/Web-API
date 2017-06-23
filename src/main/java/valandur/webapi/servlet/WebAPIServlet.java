@@ -19,13 +19,13 @@ import java.lang.reflect.Method;
 public abstract class WebAPIServlet extends HttpServlet {
 
     private void handleVerb(String verb, HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        resp.setStatus(HttpServletResponse.SC_OK);
         resp.addHeader("Access-Control-Allow-Origin","*");
         resp.addHeader("Access-Control-Allow-Methods","GET,PUT,POST,DELETE");
         resp.addHeader("Access-Control-Allow-Headers","Origin, X-Requested-With, Content-Type, Accept");
 
         // Return early if OPTIONS
         if (req.getMethod().equals("OPTIONS") ) {
-            resp.setStatus(HttpServletResponse.SC_OK);
             return;
         }
 
@@ -33,6 +33,8 @@ public abstract class WebAPIServlet extends HttpServlet {
 
         try {
             Method method = this.getClass().getDeclaredMethod("handle" + verb, ServletData.class);
+            method.setAccessible(true);
+
             if (method.isAnnotationPresent(Permission.class)) {
                 String[] reqPerms = method.getAnnotation(Permission.class).perm().split("\\.");
                 TreeNode<String, Boolean> permissions = (TreeNode<String, Boolean>)req.getAttribute("perms");
@@ -52,9 +54,7 @@ public abstract class WebAPIServlet extends HttpServlet {
 
                 req.setAttribute("dataPerms", methodPerms);
             } else {
-                WebAPI.getInstance().getLogger().warn(verb + " in " + this.getClass().getName() + " is not annotated with @Permission");
-                resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-                return;
+                req.setAttribute("dataPerms", Permissions.permitAllNode());
             }
 
             if (verb.equalsIgnoreCase("Post") || verb.equalsIgnoreCase("Put")) {
@@ -74,12 +74,11 @@ public abstract class WebAPIServlet extends HttpServlet {
 
             ObjectMapper om = new ObjectMapper();
             if (!data.isErrorSent()) {
-                resp.setStatus(HttpServletResponse.SC_OK);
                 out.write(om.writeValueAsString(data.getNode()));
             }
         } catch (NoSuchMethodException e) {
             // Method does not exist (endpoint/verb not supported)
-            resp.sendError(HttpServletResponse.SC_NOT_FOUND);
+            resp.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
         } catch (InvocationTargetException | IllegalAccessException e) {
             // Error executing the method
             e.printStackTrace();

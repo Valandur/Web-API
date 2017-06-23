@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.flowpowered.math.vector.Vector3d;
 import com.flowpowered.math.vector.Vector3i;
-import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.Player;
@@ -17,6 +16,8 @@ import org.spongepowered.api.world.World;
 import javax.servlet.http.HttpServletRequest;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.math.BigInteger;
+import java.security.SecureRandom;
 import java.util.*;
 
 public class Util {
@@ -24,6 +25,16 @@ public class Util {
     private static Map<Class, Field[]> fields = new HashMap<>();
     private static Map<Class, Method[]> methods = new HashMap<>();
 
+    private static SecureRandom random = new SecureRandom();
+
+
+    /**
+     * Generate a random id from a secure number generator
+     * @return A random unique id
+     */
+    public static String generateUniqueId() {
+        return new BigInteger(130, random).toString(32);
+    }
 
     /**
      * Checks if the provided string is  valid UUID.
@@ -31,7 +42,7 @@ public class Util {
      * @return True if the provided string is a valid UUID, false otherwise.
      */
     public static boolean isValidUUID(String uuid) {
-        return uuid.split("-").length == 5;
+        return uuid != null && uuid.split("-").length == 5;
     }
 
     /**

@@ -14,7 +14,7 @@ public class PluginServlet extends WebAPIServlet {
         String[] paths = data.getPathParts();
 
         if (paths.length == 0 || paths[0].isEmpty()) {
-            data.addJson("plugins", DataCache.getPlugins(), false);
+            data.addJson("plugins", DataCache.getPlugins(), data.getQueryPart("details").isPresent());
             return;
         }
 

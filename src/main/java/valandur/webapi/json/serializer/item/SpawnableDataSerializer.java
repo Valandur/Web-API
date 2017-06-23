@@ -10,6 +10,9 @@ import java.io.IOException;
 public class SpawnableDataSerializer extends WebAPISerializer<SpawnableData> {
     @Override
     public void serialize(SpawnableData value, JsonGenerator gen, SerializerProvider provider) throws IOException {
-        writeValue(provider, value.type().get().getId());
+        gen.writeStartObject();
+        writeField(provider, "id", value.type().get().getId());
+        writeField(provider, "name", value.type().get().getTranslation().get());
+        gen.writeEndObject();
     }
 }

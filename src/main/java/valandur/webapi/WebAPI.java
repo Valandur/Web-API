@@ -144,6 +144,7 @@ public class WebAPI {
     private String serverHost;
     private int serverPortHttp;
     private int serverPortHttps;
+    private String keyStoreLocation;
     private Server server;
 
     private AuthHandler authHandler;
@@ -206,6 +207,7 @@ public class WebAPI {
         serverPortHttp = config.getNode("http").getInt(-1);
         serverPortHttps = config.getNode("https").getInt(-1);
         adminPanelEnabled = config.getNode("adminPanel").getBoolean();
+        keyStoreLocation = config.getNode("customKeyStore").getString();
         CmdServlet.CMD_WAIT_TIME = config.getNode("cmdWaitTime").getInt();
         Blocks.MAX_BLOCK_GET_SIZE = config.getNode("maxBlockGetSize").getInt();
         Blocks.MAX_BLOCK_UPDATE_SIZE = config.getNode("maxBlockUpdateSize").getInt();
@@ -264,10 +266,15 @@ public class WebAPI {
                 httpConfig.setSecureScheme("https");
                 httpConfig.setSecurePort(serverPortHttps);
 
+                String loc = keyStoreLocation;
+                if (loc == null || loc.isEmpty()) {
+                    loc = Sponge.getAssetManager().getAsset(WebAPI.getInstance(), "keystore.jks")
+                            .map(a -> a.getUrl().toString()).orElse(null);
+                }
+
                 // SSL Factory
                 SslContextFactory sslFactory = new SslContextFactory();
-                String url = Sponge.getAssetManager().getAsset(WebAPI.getInstance(), "keystore.jks").get().getUrl().toString();
-                sslFactory.setKeyStorePath(url);
+                sslFactory.setKeyStorePath(loc);
                 sslFactory.setKeyStorePassword("mX4z%&uJ2E6VN#5f");
                 sslFactory.setKeyManagerPassword("mX4z%&uJ2E6VN#5f");
 

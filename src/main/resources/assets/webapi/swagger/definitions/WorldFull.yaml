@@ -1,7 +1,7 @@
-title: WorldFull
 allOf:
   - $ref: "./World.yaml"
-  - type: object
+  - title: WorldFull
+    type: object
     properties:
       border:
         type: object

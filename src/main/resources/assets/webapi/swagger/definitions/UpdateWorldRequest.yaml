@@ -1,0 +1,11 @@
+allOf:
+  - $ref: "./WorldRequest.yaml"
+  - title: UpdateWorldRequest
+    type: object
+    properties:
+      loaded:
+        type: boolean
+        description: True to load the world, false to unload it.
+      gameRules:
+        type: object
+        description: A map of keys to values for the game rules of the world.

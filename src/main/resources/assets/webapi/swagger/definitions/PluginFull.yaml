@@ -1,7 +1,7 @@
-title: PluginFull
 allOf:
   - $ref: "./Plugin.yaml"
-  - type: object
+  - title: PluginFull
+    type: object
     properties:
       description:
         type: string

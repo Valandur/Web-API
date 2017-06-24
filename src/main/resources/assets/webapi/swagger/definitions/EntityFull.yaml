@@ -1,7 +1,7 @@
-title: EntityFull
 allOf:
   - $ref: "./Entity.yaml"
-  - type: object
+  - title: EntityFull
+    type: object
     properties:
       velocity:
         $ref: "./Vector3.yaml"

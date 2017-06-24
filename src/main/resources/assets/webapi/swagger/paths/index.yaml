@@ -53,6 +53,9 @@
 /tile-entity/{worldUuid}/{x}/{y}/{z}:
   $ref: "./tile-entity_one.yaml"
 
+/user:
+  $ref: "./user.yaml"
+
 /world:
   $ref: "./world.yaml"
 /world/{uuid}:

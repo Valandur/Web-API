@@ -1,7 +1,7 @@
-title: TileEntityFull
 allOf:
   - $ref: "./TileEntity.yaml"
-  - type: object
+  - title: TileEntityFull
+    type: object
 example:
   type: chest
   location:

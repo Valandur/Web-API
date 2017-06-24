@@ -27,6 +27,7 @@ host: "<host>"
 
 schemes:
   - http
+  - https
 basePath: /api
 
 consumes:
@@ -56,10 +57,10 @@ tags:
     description: Query Sponge registry values, such as DimensionTypes and EntityTypes.
   - name: Tile Entity
     description: List all tile entities and get detailed information about them.
+  - name: User
+    description: Authenticate and get user information.
   - name: World
     description: List all worlds and get detailed information about them.
-
-#parameters:
 
 securityDefinitions:
   headerKey:

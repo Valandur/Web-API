@@ -31,6 +31,43 @@ get:
       description: Detailed entity info
       schema:
         $ref: "../definitions/EntityFull.yaml"
+put:
+  summary: Edit entity
+  description: |
+    Update the properties of an existing entity.
+
+    > Required permission: entity.put
+  parameters:
+    - name: uuid
+      in: path
+      type: string
+      description: The uuid of the entity.
+      required: true
+    - name: UpdateEntityRequest
+      in: body
+      description: The new properties of the entity
+      required: true
+      schema:
+        $ref: "../definitions/UpdateEntityRequest.yaml"
+  tags:
+    - Entity
+  responses:
+    400:
+      $ref: "../responses/400.yaml"
+    403:
+      $ref: "../responses/403.yaml"
+    404:
+      $ref: "../responses/404.yaml"
+    200:
+      description: The changed entity
+      schema:
+        type: object
+        properties:
+          ok:
+            type: boolean
+            description: True if the operation was successful, false otherwise.
+          entity:
+            $ref: "../definitions/EntityFull.yaml"
 post:
   summary: Execute entity method
   description: |
@@ -62,3 +99,34 @@ post:
       description: Method return value
       schema:
         $ref: "../definitions/RawResponse.yaml"
+delete:
+  summary: Destroy an entity
+  description: |
+    Destroys an entity.
+
+    > Required permission: entity.delete
+  parameters:
+    - name: uuid
+      in: path
+      type: string
+      description: The uuid of the entity.
+      required: true
+  tags:
+   - World
+  responses:
+    400:
+      $ref: "../responses/400.yaml"
+    403:
+      $ref: "../responses/403.yaml"
+    404:
+      $ref: "../responses/404.yaml"
+    200:
+      description: The deleted entity
+      schema:
+        type: object
+        properties:
+          ok:
+            type: boolean
+            description: True if the operation was successful, false otherwise.
+          entity:
+            $ref: "../definitions/EntityFull.yaml"

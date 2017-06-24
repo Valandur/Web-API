@@ -34,7 +34,10 @@ import org.spongepowered.api.event.entity.SpawnEntityEvent;
 import org.spongepowered.api.event.entity.living.humanoid.player.KickPlayerEvent;
 import org.spongepowered.api.event.filter.cause.First;
 import org.spongepowered.api.event.game.GameReloadEvent;
-import org.spongepowered.api.event.game.state.*;
+import org.spongepowered.api.event.game.state.GameInitializationEvent;
+import org.spongepowered.api.event.game.state.GamePreInitializationEvent;
+import org.spongepowered.api.event.game.state.GameStartedServerEvent;
+import org.spongepowered.api.event.game.state.GameStoppedServerEvent;
 import org.spongepowered.api.event.item.inventory.InteractInventoryEvent;
 import org.spongepowered.api.event.message.MessageChannelEvent;
 import org.spongepowered.api.event.network.ClientConnectionEvent;
@@ -49,33 +52,41 @@ import org.spongepowered.api.util.Tuple;
 import valandur.webapi.block.BlockUpdate;
 import valandur.webapi.block.BlockUpdateStatusChangeEvent;
 import valandur.webapi.block.Blocks;
-import valandur.webapi.cache.*;
+import valandur.webapi.cache.CacheConfig;
+import valandur.webapi.cache.DataCache;
 import valandur.webapi.cache.chat.CachedChatMessage;
 import valandur.webapi.cache.command.CachedCommandCall;
-import valandur.webapi.command.*;
+import valandur.webapi.command.CommandRegistry;
+import valandur.webapi.command.CommandSource;
 import valandur.webapi.handler.AssetHandler;
 import valandur.webapi.handler.AuthHandler;
-import valandur.webapi.handler.RateLimitHandler;
 import valandur.webapi.handler.ErrorHandler;
+import valandur.webapi.handler.RateLimitHandler;
 import valandur.webapi.hook.WebHook;
 import valandur.webapi.hook.WebHookSerializer;
 import valandur.webapi.hook.WebHooks;
 import valandur.webapi.json.JsonConverter;
-import valandur.webapi.misc.*;
-import valandur.webapi.command.CommandSource;
+import valandur.webapi.misc.Extensions;
+import valandur.webapi.misc.JettyLogger;
+import valandur.webapi.misc.Util;
 import valandur.webapi.servlet.*;
-import valandur.webapi.user.UserPermission;
-import valandur.webapi.user.UserPermissionConfigSerializer;
-import valandur.webapi.servlet.user.UserServlet;
 import valandur.webapi.servlet.entity.EntityServlet;
 import valandur.webapi.servlet.player.PlayerServlet;
+import valandur.webapi.servlet.user.UserServlet;
 import valandur.webapi.servlet.world.WorldServlet;
+import valandur.webapi.user.UserPermission;
+import valandur.webapi.user.UserPermissionConfigSerializer;
 import valandur.webapi.user.Users;
 
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Supplier;
@@ -231,11 +242,11 @@ public class WebAPI {
             server = new Server();
 
             // HTTP connector
-            ServerConnector http = new ServerConnector(server);
-            http.setHost(serverHost);
-            http.setPort(serverPort);
-            http.setIdleTimeout(30000);
-            server.addConnector(http);
+            ServerConnector connector = new ServerConnector(server);
+            connector.setHost(serverHost);
+            connector.setPort(serverPort);
+            connector.setIdleTimeout(30000);
+            server.addConnector(connector);
 
             // Add error handler
             server.addBean(new ErrorHandler(server));
@@ -244,9 +255,17 @@ public class WebAPI {
             List<Handler> handlers = new LinkedList<>();
 
             // Asset handlers
-            handlers.add(newContext("/docs", new AssetHandler(loadAssetString("pages/redoc.html"), "text/html; charset=utf-8")));
-            String swaggerString = loadAssetString("swagger.yaml").replaceFirst("<host>", serverHost + ":" + serverPort).replaceFirst("<version>", WebAPI.VERSION);
-            handlers.add(newContext("/swagger", new AssetHandler(swaggerString, "application/x-yaml")));
+            handlers.add(newContext("/docs", new AssetHandler("pages/redoc.html")));
+            handlers.add(newContext("/swagger/*", new AssetHandler("swagger", (path) -> {
+                if (!path.endsWith("/swagger/index.yaml"))
+                    return null;
+                return (data) -> {
+                    String text = new String(data);
+                    text = text.replaceFirst("<host>", serverHost + ":" + serverPort);
+                    text = text.replaceFirst("<version>", WebAPI.VERSION);
+                    return text.getBytes();
+                };
+            })));
 
             if (adminPanelEnabled)
                 handlers.add(newContext("/admin/*", new AssetHandler("admin")));
@@ -282,11 +301,25 @@ public class WebAPI {
 
             server.start();
 
+            String protocol = connector.getDefaultConnectionFactory().getProtocol();
+            String scheme = "http";
+            if (protocol.startsWith("SSL-") || protocol.equals("SSL"))
+                scheme = "https";
+
+            String host = connector.getHost();
+            if (host == null)
+                host = InetAddress.getLocalHost().getHostAddress();
+
+            int port = connector.getLocalPort();
+
+            URI uriPanel = new URI(scheme, null, host, port, "/admin", null, null);
+            logger.info("Admin Panel: " + uriPanel);
+
+            URI uriDocs = new URI(scheme, null, host, port, "/docs", null, null);
+            logger.info("API Docs: " + uriDocs);
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-        logger.info("Web server running on " + server.getURI());
 
         if (player != null) {
             player.sendMessage(Text.builder().color(TextColors.AQUA).append(Text.of("[" + WebAPI.NAME + "] The web server has been restarted!")).toText());
@@ -303,14 +336,6 @@ public class WebAPI {
         }
     }
 
-    private String loadAssetString(String assetPath) throws IOException {
-        String res = "";
-        Optional<Asset> asset = Sponge.getAssetManager().getAsset(this, assetPath);
-        if (asset.isPresent()) {
-            res = asset.get().readString();
-        }
-        return res;
-    }
     private ContextHandler newContext(String path, Handler handler) {
         ContextHandler context = new ContextHandler();
         context.setContextPath(path);

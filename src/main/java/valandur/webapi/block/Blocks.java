@@ -17,11 +17,11 @@ public class Blocks {
     public static int MAX_BLOCK_GET_SIZE = 1000;
     public static int MAX_BLOCK_UPDATE_SIZE = 100;
 
-    public static UUID startBlockUpdate(UUID worldId, List<Tuple<Vector3i, BlockState>> blocks) {
+    public static BlockUpdate startBlockUpdate(UUID worldId, List<Tuple<Vector3i, BlockState>> blocks) {
         BlockUpdate update = new BlockUpdate(worldId, blocks);
         blockUpdates.put(update.getUUID(), update);
         update.start();
-        return update.getUUID();
+        return update;
     }
 
     public static Collection<BlockUpdate> getBlockUpdates() {

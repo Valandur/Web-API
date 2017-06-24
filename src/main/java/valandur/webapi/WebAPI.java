@@ -7,14 +7,14 @@ import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
 import ninja.leaping.configurate.objectmapping.serialize.TypeSerializers;
-import org.eclipse.jetty.server.Handler;
-import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.http.HttpVersion;
+import org.eclipse.jetty.server.*;
 import org.eclipse.jetty.server.handler.ContextHandler;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
 import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.util.log.Log;
+import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.spongepowered.api.Sponge;
@@ -79,8 +79,6 @@ import valandur.webapi.user.UserPermissionConfigSerializer;
 import valandur.webapi.user.Users;
 
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.LinkedList;
@@ -144,7 +142,8 @@ public class WebAPI {
     public PluginContainer getContainer() { return this.container; }
 
     private String serverHost;
-    private int serverPort;
+    private int serverPortHttp;
+    private int serverPortHttps;
     private Server server;
 
     private AuthHandler authHandler;
@@ -204,7 +203,8 @@ public class WebAPI {
 
         devMode = config.getNode("devMode").getBoolean();
         serverHost = config.getNode("host").getString();
-        serverPort = config.getNode("port").getInt();
+        serverPortHttp = config.getNode("http").getInt(-1);
+        serverPortHttps = config.getNode("https").getInt(-1);
         adminPanelEnabled = config.getNode("adminPanel").getBoolean();
         CmdServlet.CMD_WAIT_TIME = config.getNode("cmdWaitTime").getInt();
         Blocks.MAX_BLOCK_GET_SIZE = config.getNode("maxBlockGetSize").getInt();
@@ -241,18 +241,67 @@ public class WebAPI {
         try {
             server = new Server();
 
-            // HTTP connector
-            ServerConnector connector = new ServerConnector(server);
-            connector.setHost(serverHost);
-            connector.setPort(serverPort);
-            connector.setIdleTimeout(30000);
-            server.addConnector(connector);
+            // HTTP config
+            HttpConfiguration httpConfig = new HttpConfiguration();
+            httpConfig.setOutputBufferSize(32768);
+
+            String tempUri = null;
+
+            // HTTP
+            if (serverPortHttp >= 0) {
+                ServerConnector httpConn = new ServerConnector(server, new HttpConnectionFactory(httpConfig));
+                httpConn.setHost(serverHost);
+                httpConn.setPort(serverPortHttp);
+                httpConn.setIdleTimeout(30000);
+                server.addConnector(httpConn);
+
+                tempUri = "http://" + serverHost + ":" + serverPortHttp;
+            }
+
+            // HTTPS
+            if (serverPortHttps >= 0) {
+                // Update http config
+                httpConfig.setSecureScheme("https");
+                httpConfig.setSecurePort(serverPortHttps);
+
+                // SSL Factory
+                SslContextFactory sslFactory = new SslContextFactory();
+                String url = Sponge.getAssetManager().getAsset(WebAPI.getInstance(), "keystore.jks").get().getUrl().toString();
+                sslFactory.setKeyStorePath(url);
+                sslFactory.setKeyStorePassword("mX4z%&uJ2E6VN#5f");
+                sslFactory.setKeyManagerPassword("mX4z%&uJ2E6VN#5f");
+
+                // HTTPS config
+                HttpConfiguration httpsConfig = new HttpConfiguration(httpConfig);
+                SecureRequestCustomizer src = new SecureRequestCustomizer();
+                src.setStsMaxAge(2000);
+                src.setStsIncludeSubDomains(true);
+                httpsConfig.addCustomizer(src);
+
+
+                ServerConnector httpsConn = new ServerConnector(server,
+                        new SslConnectionFactory(sslFactory, HttpVersion.HTTP_1_1.asString()),
+                        new HttpConnectionFactory(httpsConfig)
+                );
+                httpsConn.setHost(serverHost);
+                httpsConn.setPort(serverPortHttps);
+                httpsConn.setIdleTimeout(30000);
+                server.addConnector(httpsConn);
+
+                tempUri = "https://" + serverHost + ":" + serverPortHttps;
+            }
+
+            if (tempUri == null) {
+                logger.error("You have disabled both HTTP and HTTPS - The WebAPI will be unreachable!");
+            }
 
             // Add error handler
             server.addBean(new ErrorHandler(server));
 
             // Collection of all handlers
             List<Handler> handlers = new LinkedList<>();
+
+            final String baseUri = tempUri;
 
             // Asset handlers
             handlers.add(newContext("/docs", new AssetHandler("pages/redoc.html")));
@@ -261,7 +310,7 @@ public class WebAPI {
                     return null;
                 return (data) -> {
                     String text = new String(data);
-                    text = text.replaceFirst("<host>", serverHost + ":" + serverPort);
+                    text = text.replaceFirst("<host>", baseUri);
                     text = text.replaceFirst("<version>", WebAPI.VERSION);
                     return text.getBytes();
                 };
@@ -301,22 +350,8 @@ public class WebAPI {
 
             server.start();
 
-            String protocol = connector.getDefaultConnectionFactory().getProtocol();
-            String scheme = "http";
-            if (protocol.startsWith("SSL-") || protocol.equals("SSL"))
-                scheme = "https";
-
-            String host = connector.getHost();
-            if (host == null)
-                host = InetAddress.getLocalHost().getHostAddress();
-
-            int port = connector.getLocalPort();
-
-            URI uriPanel = new URI(scheme, null, host, port, "/admin", null, null);
-            logger.info("Admin Panel: " + uriPanel);
-
-            URI uriDocs = new URI(scheme, null, host, port, "/docs", null, null);
-            logger.info("API Docs: " + uriDocs);
+            logger.info("AdminPanel: " + baseUri + "/admin");
+            logger.info("API Docs: " + baseUri + "/docs");
         } catch (Exception e) {
             e.printStackTrace();
         }

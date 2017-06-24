@@ -8,6 +8,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.Optional;
 
 public class PluginServlet extends WebAPIServlet {
+
     @Override
     @Permission(perm = "plugin.get")
     protected void handleGet(ServletData data) {

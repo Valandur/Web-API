@@ -10,6 +10,7 @@ import java.util.Collection;
 import java.util.Optional;
 
 public class BaseWorldRequest {
+
     @JsonDeserialize
     private String name;
     public String getName() {
@@ -17,16 +18,16 @@ public class BaseWorldRequest {
     }
 
     @JsonDeserialize
+    private Long seed;
+    public Long getSeed() {
+        return seed;
+    }
+
+    @JsonDeserialize
     private String generator;
     public Optional<GeneratorType> getGeneratorType() {
         Collection<GeneratorType> types = Sponge.getRegistry().getAllOf(GeneratorType.class);
         return types.stream().filter(g -> g.getId().equalsIgnoreCase(generator) || g.getName().equalsIgnoreCase(generator)).findAny();
-    }
-
-    @JsonDeserialize
-    private Long seed;
-    public Long getSeed() {
-        return seed;
     }
 
     @JsonDeserialize

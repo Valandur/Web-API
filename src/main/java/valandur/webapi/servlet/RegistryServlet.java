@@ -8,6 +8,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.Collection;
 
 public class RegistryServlet extends WebAPIServlet {
+
     @Override
     @Permission(perm = "registry.get")
     public void handleGet(ServletData data) {

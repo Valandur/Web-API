@@ -6,6 +6,7 @@ import valandur.webapi.cache.DataCache;
 import javax.servlet.http.HttpServletResponse;
 
 public class HistoryServlet extends WebAPIServlet {
+
     @Override
     @Permission(perm = "history.get")
     protected void handleGet(ServletData data) {

@@ -6,6 +6,7 @@ import org.spongepowered.api.Sponge;
 import valandur.webapi.permission.Permission;
 
 public class InfoServlet extends WebAPIServlet {
+
     @Override
     @Permission(perm = "info.get")
     protected void handleGet(ServletData data) {

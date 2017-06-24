@@ -15,6 +15,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 public class TileEntityServlet extends WebAPIServlet {
+
     @Override
     @Permission(perm = "tile-entity.get")
     protected void handleGet(ServletData data) {

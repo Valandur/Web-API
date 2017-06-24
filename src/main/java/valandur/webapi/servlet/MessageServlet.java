@@ -8,6 +8,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.Optional;
 
 public class MessageServlet extends WebAPIServlet {
+
     @Override
     @Permission(perm = "message.post")
     protected void handlePost(ServletData data) {

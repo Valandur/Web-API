@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.Optional;
 
 public class ServletData {
+
     private HttpServletRequest req;
     private HttpServletResponse resp;
     private boolean errorSent = false;

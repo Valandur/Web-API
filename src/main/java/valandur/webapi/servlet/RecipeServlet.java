@@ -5,6 +5,7 @@ import valandur.webapi.permission.Permission;
 import javax.servlet.http.HttpServletResponse;
 
 public class RecipeServlet extends WebAPIServlet {
+
     @Override
     @Permission(perm = "recipe.get")
     protected void handleGet(ServletData data) {

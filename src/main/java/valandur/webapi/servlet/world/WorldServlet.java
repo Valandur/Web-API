@@ -22,6 +22,7 @@ import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
 public class WorldServlet extends WebAPIServlet {
+
     @Override
     @Permission(perm = "world.get")
     protected void handleGet(ServletData data) {

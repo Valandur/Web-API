@@ -7,12 +7,12 @@ import org.spongepowered.api.command.args.CommandContext;
 import org.spongepowered.api.command.spec.CommandExecutor;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
-import valandur.webapi.misc.Util;
+import valandur.webapi.user.UserPermission;
 import valandur.webapi.user.Users;
 
 import java.util.Optional;
 
-public class CmdUserAdd implements CommandExecutor {
+public class CmdUserChangePassword implements CommandExecutor {
 
     @Override
     public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
@@ -23,25 +23,23 @@ public class CmdUserAdd implements CommandExecutor {
         String username = optUsername.get();
 
         Optional<String> optPassword = args.getOne("password");
-        String password = optPassword.orElse(Util.generateUniqueId().substring(0, 8));
+        if (!optPassword.isPresent()) {
+            return CommandResult.empty();
+        }
+        String password = optPassword.get();
 
-        boolean res = Users.addUser(username, password);
-        if (!res) {
-            src.sendMessage(Text.builder("A user with this name already exists").color(TextColors.RED).build());
+        Optional<UserPermission> optUser = Users.getUser(username);
+        if (!optUser.isPresent()) {
+            src.sendMessage(Text.builder("Could not find user '" + username + "'").color(TextColors.RED).build());
             return CommandResult.empty();
         }
 
-        if (!optPassword.isPresent()) {
-            src.sendMessage(Text.builder("Created user ")
-                    .append(Text.builder(username).color(TextColors.GOLD).build())
-                    .append(Text.of(" with password "))
-                    .append(Text.builder(password).color(TextColors.GOLD).build())
-                    .build());
-        } else {
-            src.sendMessage(Text.builder("Created user ")
-                    .append(Text.builder(username).color(TextColors.GOLD).build())
-                    .build());
-        }
+        UserPermission user = optUser.get();
+
+        user.setPassword(Users.hashPassword(password));
+        src.sendMessage(Text.builder("Changed password for ")
+                .append(Text.builder(username).color(TextColors.GOLD).build())
+                .build());
 
         return CommandResult.success();
     }

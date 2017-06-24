@@ -18,6 +18,8 @@ import valandur.webapi.command.block.CmdBlockUpdatesList;
 import valandur.webapi.command.element.CmdIpElement;
 import valandur.webapi.command.hook.CmdNotifyHook;
 import valandur.webapi.command.user.CmdUserAdd;
+import valandur.webapi.command.user.CmdUserChangePassword;
+import valandur.webapi.command.user.CmdUserList;
 import valandur.webapi.hook.CommandWebHook;
 import valandur.webapi.hook.WebHookParam;
 import valandur.webapi.hook.WebHooks;
@@ -137,6 +139,11 @@ public class CommandRegistry {
                 .build();
 
         // Users
+        CommandSpec specUserList = CommandSpec.builder()
+                .description(Text.of("List all the users which have access to the admin panel"))
+                .permission("webapi.user.list")
+                .executor(new CmdUserList())
+                .build();
         CommandSpec specUserAdd = CommandSpec.builder()
                 .description(Text.of("Add a new user that can access the admin panel"))
                 .permission("webapi.user.add")
@@ -146,10 +153,21 @@ public class CommandRegistry {
                 )
                 .executor(new CmdUserAdd())
                 .build();
+        CommandSpec specUserChangePw = CommandSpec.builder()
+                .description(Text.of("Change the password of an existing user"))
+                .permission("webapi.user.changepw")
+                .arguments(
+                        GenericArguments.onlyOne(GenericArguments.string(Text.of("username"))),
+                        GenericArguments.onlyOne(GenericArguments.string(Text.of("password")))
+                )
+                .executor(new CmdUserChangePassword())
+                .build();
         CommandSpec specUsers = CommandSpec.builder()
                 .description(Text.of("Manage the users of the admin panel"))
                 .permission("webapi.user")
+                .child(specUserList, "list")
                 .child(specUserAdd, "add")
+                .child(specUserChangePw, "pw", "changepw", "password")
                 .build();
 
         // Notify commands

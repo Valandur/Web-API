@@ -11,6 +11,7 @@ import valandur.webapi.WebAPI;
 import valandur.webapi.permission.Permissions;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -21,6 +22,9 @@ public class Users {
     private static ConfigurationLoader loader;
     private static ConfigurationNode config;
     private static Map<String, UserPermission> users = new HashMap<>();
+    public static Collection<UserPermission> getUsers() {
+        return users.values();
+    }
 
     public static void init() {
         Logger logger = WebAPI.getInstance().getLogger();
@@ -58,6 +62,10 @@ public class Users {
         }
     }
 
+    public static Optional<UserPermission> getUser(String username) {
+        UserPermission user = users.get(username);
+        return user != null ? Optional.of(user) : Optional.empty();
+    }
     public static Optional<UserPermission> getUser(String username, String password) {
         if (!users.containsKey(username)) {
             return Optional.empty();
@@ -75,10 +83,13 @@ public class Users {
         }
     }
 
+    public static String hashPassword(String password) {
+        return BCrypt.hashpw(password, BCrypt.gensalt());
+    }
     public static boolean addUser(String username, String password) {
         if (users.containsKey(username))
             return false;
-        users.put(username, new UserPermission(username, BCrypt.hashpw(password, BCrypt.gensalt()), Permissions.permitAllNode()));
+        users.put(username, new UserPermission(username, hashPassword(password), Permissions.permitAllNode()));
         save();
         return true;
     }

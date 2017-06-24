@@ -1,0 +1,21 @@
+get:
+  summary: Entities list
+  description: |
+    Get a list of all entities on the server (in all worlds).
+
+    > Required permission: entity.get
+  tags:
+    - Entity
+  responses:
+    403:
+      $ref: "../responses/403.yaml"
+    200:
+      description: List of entities
+      schema:
+        type: object
+        properties:
+          entities:
+            type: array
+            description: A list of entities.
+            items:
+              $ref: "../definitions/Entity.yaml"

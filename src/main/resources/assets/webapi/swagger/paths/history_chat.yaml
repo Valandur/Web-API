@@ -1,0 +1,21 @@
+get:
+  summary: Chat History
+  description: |
+    View a history of the server chat.
+
+    > Required permission: history.get
+  tags:
+    - History
+  responses:
+    403:
+      $ref: "../responses/403.yaml"
+    200:
+      description: Chat history
+      schema:
+        type: object
+        properties:
+          messages:
+            type: array
+            description: A list of chat messages.
+            items:
+              $ref: "../definitions/ChatMessage.yaml"

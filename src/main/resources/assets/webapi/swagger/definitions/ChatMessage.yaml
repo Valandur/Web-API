@@ -1,0 +1,34 @@
+title: ChatMessage
+type: object
+properties:
+  timestamp:
+    type: string
+    description: The timestamp when the message was sent (server time).
+  sender:
+    type: string
+    description: The name of the player that sent the message.
+  message:
+    type: string
+    description: The message that was sent.
+  wasCancelled:
+    type: boolean
+    description: True if the execution of the command was cancelled.
+example:
+  timestamp: 1490533107
+  sender:
+    type: player
+    uuid: 357427c6-3b91-4ead-aad4-15a3e18e6452
+    location:
+      world:
+        name: world
+        uuid: c574ab53-831b-4410-b3ad-955a2a504843
+        link: "/api/world/c574ab53-831b-4410-b3ad-955a2a504843"
+      position:
+        x: -1289.0203529877956
+        y: 4
+        z: -1065.111295771125
+    name: Valandur
+    link: "/api/player/357427c6-3b91-4ead-aad4-15a3e18e6452"
+    class: net.minecraft.entity.player.EntityPlayerMP
+  message: Valandur joined the game
+  wasCancelled: false

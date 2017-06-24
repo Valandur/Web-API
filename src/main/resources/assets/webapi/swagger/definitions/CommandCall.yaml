@@ -1,0 +1,27 @@
+title: CommandCall
+type: object
+properties:
+  timestamp:
+    type: string
+    description: The timestamp when the message was sent (server time).
+  command:
+    type: string
+    description: The name of the command that was executed.
+  args:
+    type: array
+    description: The command arguments passed to the command.
+    items:
+      type: string
+  source:
+    type: object
+    description: An object describing the source (executor) of the command. Usually a player or the console.
+  result:
+    $ref: "./CommandResult.yaml"
+example:
+  timestamp: 1490533099
+  command: unban
+  args: Valandur
+  cause:
+    Source: net.minecraft.server.dedicated.DedicatedServer
+  wasCancelled: false
+  result: {}

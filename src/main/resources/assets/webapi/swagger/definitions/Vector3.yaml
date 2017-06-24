@@ -1,0 +1,16 @@
+title: Vector3
+type: object
+description: Describes a location.
+properties:
+  x:
+    type: number
+    format: double
+    description: The x-coordinate of the vector.
+  y:
+    type: number
+    format: double
+    description: The y-coordinate of the vector.
+  z:
+    type: number
+    format: double
+    description: The z-coordinate of the vector.

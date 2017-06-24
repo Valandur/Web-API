@@ -1,0 +1,23 @@
+get:
+  summary: Detailed plugin info
+  description: |
+    Gets detailed information about a plugin.
+
+    > Required permission: plugin.get
+  parameters:
+    - name: id
+      in: path
+      type: string
+      description: The id of the plugin to get detailed information about.
+      required: true
+  tags:
+    - Plugin
+  responses:
+    403:
+      $ref: "../responses/403.yaml"
+    404:
+      $ref: "../responses/404.yaml"
+    200:
+      description: Detailed plugin info
+      schema:
+        $ref: "../definitions/PluginFull.yaml"

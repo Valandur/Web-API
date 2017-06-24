@@ -1,0 +1,18 @@
+get:
+  summary: Cached classes
+  description: |
+    Get a list of all the classes available on the server.
+
+    > Required permission: class.get
+  tags:
+    - Class
+  responses:
+    403:
+      $ref: "../responses/403.yaml"
+    200:
+      description: List of cached classes
+      schema:
+        type: array
+        items:
+          type: string
+          description: The name of the class

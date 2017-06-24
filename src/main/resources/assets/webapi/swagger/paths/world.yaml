@@ -1,0 +1,21 @@
+get:
+  summary: World list
+  description: |
+    Get a list of all the worlds on the server.
+
+    > Required permission: world.get
+  tags:
+    - World
+  responses:
+    403:
+      $ref: "../responses/403.yaml"
+    200:
+      description: List of worlds
+      schema:
+        type: object
+        properties:
+          worlds:
+            type: array
+            description: A list of worlds.
+            items:
+              $ref: "../definitions/World.yaml"

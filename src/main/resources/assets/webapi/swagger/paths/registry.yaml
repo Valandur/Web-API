@@ -1,0 +1,32 @@
+get:
+    summary: List catalog values
+    description: |
+      Lists all the catalog values of a specified CatalogType.
+
+      > Required permission: registry.get
+    parameters:
+      - name: className
+        in: path
+        type: string
+        description: The fully qualified class name of the CatalogType to get.
+        required: true
+    tags:
+      - Registry
+    responses:
+      400:
+        $ref: "../responses/400.yaml"
+      403:
+        $ref: "../responses/403.yaml"
+      404:
+        $ref: "../responses/404.yaml"
+      405:
+        $ref: "../responses/405.yaml"
+      200:
+        description: List of all values in the CatalogType
+        schema:
+          type: object
+          properties:
+            types:
+              type: array
+              items:
+                $ref: "../definitions/CatalogType.yaml"

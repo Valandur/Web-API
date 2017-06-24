@@ -1,0 +1,20 @@
+title: Plugin
+type: object
+properties:
+  id:
+    type: string
+    description: The unique id of the plugin.
+  name:
+    type: string
+    description: The name of the plugin.
+  version:
+    type: string
+    description: The version of the plugin.
+  link:
+    type: string
+    description: The API URL which contains detailed information about this plugin.
+example:
+  id: minecraft
+  name: Minecraft
+  version: 1.11.2
+  link: "/api/plugin/minecraft"

@@ -1,0 +1,21 @@
+get:
+  summary: Tile entities list
+  description: |
+    Get a list of all tile entities on the server (in all worlds).
+
+    > Required permission: tile-entity.get
+  tags:
+    - Tile Entity
+  responses:
+    403:
+      $ref: "../responses/403.yaml"
+    200:
+      description: List of tile entities
+      schema:
+        type: object
+        properties:
+          tileEntities:
+            type: array
+            description: A list of tile entities.
+            items:
+              $ref: "../definitions/TileEntity.yaml"

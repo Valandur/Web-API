@@ -1,0 +1,59 @@
+/block:
+  $ref: "./block.yaml"
+/block/{uuid}:
+  $ref: "./block_update.yaml"
+/block/{world}/{x}/{y}/{z}:
+  $ref: "./block_one.yaml"
+/block/{world}/{minX}/{minY}/{minZ}/{maxX}/{maxY}/{maxZ}:
+  $ref: "./block_volume.yaml"
+
+/class:
+  $ref: "./class.yaml"
+/class/{classname}:
+  $ref: "./class_one.yaml"
+/class/{classname}/subclasses:
+  $ref: "./class_subclasses.yaml"
+
+/cmd:
+  $ref: "./cmd.yaml"
+/cmd/{name}:
+  $ref: "./cmd_one.yaml"
+
+/entity:
+  $ref: "./entity.yaml"
+/entity/{uuid}:
+  $ref: "./entity_one.yaml"
+
+/history/chat:
+  $ref: "./history_chat.yaml"
+/history/cmd:
+  $ref: "./history_cmd.yaml"
+
+/info:
+  $ref: "./info.yaml"
+
+/message:
+  $ref: "./message.yaml"
+
+/player:
+  $ref: "./player.yaml"
+/player/{uuid}:
+  $ref: "./player_one.yaml"
+
+/plugin:
+  $ref: "./plugin.yaml"
+/plugin/{id}:
+  $ref: "./plugin_one.yaml"
+
+/registry/{className}:
+  $ref: "./registry.yaml"
+
+/tile-entity:
+  $ref: "./tile-entity.yaml"
+/tile-entity/{worldUuid}/{x}/{y}/{z}:
+  $ref: "./tile-entity_one.yaml"
+
+/world:
+  $ref: "./world.yaml"
+/world/{uuid}:
+  $ref: "./world_one.yaml"

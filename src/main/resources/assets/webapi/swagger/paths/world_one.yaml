@@ -1,0 +1,64 @@
+get:
+  summary: Detailed world info
+  description: |
+    Get detailed information about a world.
+
+    > Required permission: world.get
+  parameters:
+    - name: uuid
+      in: path
+      type: string
+      description: The uuid of the world to get detailed information about.
+      required: true
+    - name: fields
+      in: query
+      type: string
+      description: An optional list of additional fields to get.
+    - name: methods
+      in: query
+      type: string
+      description: An optional list of additional methods to get.
+  tags:
+    - World
+  responses:
+    400:
+      $ref: "../responses/400.yaml"
+    403:
+      $ref: "../responses/403.yaml"
+    404:
+      $ref: "../responses/404.yaml"
+    200:
+      description: Detailed world info
+      schema:
+        $ref: "../definitions/WorldFull.yaml"
+post:
+  summary: Execute world methods
+  description: |
+    Provides direct access to the underlaying world object and can execute any method on it.
+
+    > Required permission: world.post
+  parameters:
+    - name: uuid
+      in: path
+      type: string
+      description: The uuid of the world.
+      required: true
+    - name: Request
+      in: body
+      description: Information about which method to execute.
+      required: true
+      schema:
+        $ref: "../definitions/RawRequest.yaml"
+  tags:
+    - World
+  responses:
+    400:
+      $ref: "../responses/400.yaml"
+    403:
+      $ref: "../responses/403.yaml"
+    404:
+      $ref: "../responses/404.yaml"
+    200:
+      description: Method return value
+      schema:
+        $ref: "../definitions/RawResponse.yaml"

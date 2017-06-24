@@ -1,0 +1,21 @@
+get:
+  summary: Plugin list
+  description: |
+    Get a list of all the plugins running on the server.
+
+    > Required permission: plugin.get
+  tags:
+    - Plugin
+  responses:
+    403:
+      $ref: "../responses/403.yaml"
+    200:
+      description: List of plugins
+      schema:
+        type: object
+        properties:
+          plugins:
+            type: array
+            description: A list of plugin ids.
+            items:
+              $ref: "../definitions/Plugin.yaml"

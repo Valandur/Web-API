@@ -1,0 +1,57 @@
+get:
+  summary: Get block volume
+  description: |
+    Gets information about a block volume (multiple blocks) in the world.
+
+    The blocks in the returned block volume can be accessed by using `responseData.blocks[x][y][z]` where x, y, and z are the coordinates of the block.
+
+    > Required permission: block.get
+  parameters:
+    - name: world
+      in: path
+      type: string
+      description: The uuid of the world the block is in.
+      required: true
+    - name: minX
+      in: path
+      type: integer
+      description: The minimum x-coordinate of the volume.
+      required: true
+    - name: minY
+      in: path
+      type: integer
+      description: The minimum y-coordinate of the volume.
+      required: true
+    - name: minZ
+      in: path
+      type: integer
+      description: The minimum z-coordinate of the volume.
+      required: true
+    - name: maxX
+      in: path
+      type: integer
+      description: The maximum x-coordinate of the volume.
+      required: true
+    - name: maxY
+      in: path
+      type: integer
+      description: The maximum y-coordinate of the volume.
+      required: true
+    - name: maxZ
+      in: path
+      type: integer
+      description: The maximum z-coordinate of the volume.
+      required: true
+  tags:
+    - Block
+  responses:
+    400:
+      $ref: "../responses/400.yaml"
+    403:
+      $ref: "../responses/403.yaml"
+    404:
+      $ref: "../responses/404.yaml"
+    200:
+      description: Block volume
+      schema:
+        $ref: "../definitions/BlockVolume.yaml"

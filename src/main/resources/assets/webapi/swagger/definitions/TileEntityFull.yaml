@@ -1,0 +1,84 @@
+title: TileEntityFull
+allOf:
+  - $ref: "./TileEntity.yaml"
+  - type: object
+example:
+  type: chest
+  location:
+    world:
+      name: world
+      uuid: c574ab53-831b-4410-b3ad-955a2a504843
+      link: "/api/world/c574ab53-831b-4410-b3ad-955a2a504843"
+    position:
+      x: -1291
+      y: 4
+      z: -1066
+  data:
+    worldUuid: c574ab53-831b-4410-b3ad-955a2a504843
+    x: -1291
+    y: 4
+    z: -1066
+    tileType: chest
+    data:
+    - dataClass: org.spongepowered.common.data.manipulator.mutable.block.SpongeConnectedDirectionData
+      manipulatorData:
+        connectedDirections:
+        - SOUTH
+        connectedNorth: false
+        connectedSouth: true
+        connectedEast: false
+        connectedWest: false
+    lock: ''
+    contents:
+    - slotId: 0
+      item:
+        itemType: minecraft:iron_pickaxe
+        count: 1
+        unsafeDamage: 0
+    - slotId: 1
+      item:
+        itemType: minecraft:glass
+        count: 1
+        unsafeDamage: 0
+    - slotId: 3
+      item:
+        itemType: minecraft:iron_axe
+        count: 1
+        unsafeDamage: 0
+    - slotId: 5
+      item:
+        itemType: minecraft:planks
+        count: 27
+        unsafeDamage: 3
+    - slotId: 15
+      item:
+        itemType: minecraft:glass
+        count: 1
+        unsafeDamage: 0
+    - slotId: 16
+      item:
+        itemType: minecraft:glass
+        count: 1
+        unsafeDamage: 0
+    - slotId: 21
+      item:
+        itemType: minecraft:gold_ore
+        count: 1
+        unsafeDamage: 0
+    - slotId: 22
+      item:
+        itemType: minecraft:glass
+        count: 1
+        unsafeDamage: 0
+    - slotId: 23
+      item:
+        itemType: minecraft:gold_ore
+        count: 23
+        unsafeDamage: 0
+    - slotId: 24
+      item:
+        itemType: minecraft:glass
+        count: 1
+        unsafeDamage: 0
+  link: "/api/tile-entity/c574ab53-831b-4410-b3ad-955a2a504843/-1291/4/-1066"
+  class: net.minecraft.tileentity.TileEntityChest

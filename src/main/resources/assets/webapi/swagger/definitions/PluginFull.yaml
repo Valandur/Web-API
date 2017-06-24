@@ -1,0 +1,26 @@
+title: PluginFull
+allOf:
+  - $ref: "./Plugin.yaml"
+  - type: object
+    properties:
+      description:
+        type: string
+        description: The description of the plugin.
+      url:
+        type: string
+        description: The website that the plugin belongs to.
+      authors:
+        type: array
+        description: The list of authors that worked on the plugin.
+        items:
+          type: string
+          description: The name of the author.
+example:
+  id: webapi
+  name: Web-API
+  version: 2.0.2-S6.0
+  description: Access Minecraft through a Web API
+  url: https://github.com/Valandur/Web-API
+  authors:
+  - Valandur
+  link: "/api/plugin/webapi"

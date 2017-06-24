@@ -27,7 +27,6 @@ public class TileEntityServlet extends WebAPIServlet {
                 return;
             }
 
-            data.addJson("ok", true, false);
             data.addJson("tileEntities", coll.get(), data.getQueryPart("details").isPresent());
             return;
         }
@@ -70,7 +69,6 @@ public class TileEntityServlet extends WebAPIServlet {
             data.addJson("methods", extra.getSecond(), true);
         }
 
-        data.addJson("ok", true, false);
         data.addJson("tileEntity", te.get(), true);
     }
 

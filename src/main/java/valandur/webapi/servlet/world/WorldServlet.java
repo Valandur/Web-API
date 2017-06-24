@@ -2,22 +2,23 @@ package valandur.webapi.servlet.world;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import org.spongepowered.api.Sponge;
-import org.spongepowered.api.entity.living.player.gamemode.GameMode;
 import org.spongepowered.api.util.Tuple;
-import org.spongepowered.api.world.*;
-import org.spongepowered.api.world.difficulty.Difficulty;
+import org.spongepowered.api.world.World;
+import org.spongepowered.api.world.WorldArchetype;
 import org.spongepowered.api.world.storage.WorldProperties;
 import valandur.webapi.WebAPI;
-import valandur.webapi.permission.Permission;
-import valandur.webapi.cache.world.CachedWorld;
 import valandur.webapi.cache.DataCache;
+import valandur.webapi.cache.world.CachedWorld;
 import valandur.webapi.misc.Util;
+import valandur.webapi.permission.Permission;
 import valandur.webapi.servlet.ServletData;
 import valandur.webapi.servlet.WebAPIServlet;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.*;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
 public class WorldServlet extends WebAPIServlet {

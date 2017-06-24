@@ -12,6 +12,8 @@ public class InfoServlet extends WebAPIServlet {
         Server server = Sponge.getServer();
         Platform platform = Sponge.getPlatform();
 
+        data.addJson("ok", true, false);
+
         data.addJson("motd", server.getMotd().toPlain(), false);
         data.addJson("players", server.getOnlinePlayers().size(), false);
         data.addJson("maxPlayers", server.getMaxPlayers(), false);

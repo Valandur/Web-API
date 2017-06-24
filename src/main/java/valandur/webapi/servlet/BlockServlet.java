@@ -101,6 +101,7 @@ public class BlockServlet extends WebAPIServlet {
                 return;
             }
 
+            data.addJson("ok", true, false);
             data.addJson("volume", vol.get(), true);
         } else {
             Optional<BlockState> state = Blocks.getBlockAt(world.get(), new Vector3i(minX, minY, minZ));
@@ -109,6 +110,7 @@ public class BlockServlet extends WebAPIServlet {
                 return;
             }
 
+            data.addJson("ok", true, false);
             data.addJson("block", state.get(), true);
         }
     }
@@ -234,8 +236,9 @@ public class BlockServlet extends WebAPIServlet {
                 }
             }
 
-            UUID updateUUID = Blocks.startBlockUpdate(world.get().getUUID(), blocks);
-            data.addJson("uuid", updateUUID, false);
+            BlockUpdate update = Blocks.startBlockUpdate(world.get().getUUID(), blocks);
+            data.addJson("ok", true, false);
+            data.addJson("update", update, true);
         }
     }
 

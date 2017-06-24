@@ -9,7 +9,7 @@ import java.util.Collection;
 
 public class RegistryServlet extends WebAPIServlet {
     @Override
-    @Permission(perm = "registry")
+    @Permission(perm = "registry.get")
     public void handleGet(ServletData data) {
         String[] paths = data.getPathParts();
 
@@ -26,7 +26,6 @@ public class RegistryServlet extends WebAPIServlet {
             }
 
             Collection<CatalogType> types = Sponge.getRegistry().getAllOf(type);
-            data.addJson("ok", true, false);
             data.addJson("types", types, false);
         } catch (ClassNotFoundException e) {
             data.sendError(HttpServletResponse.SC_NOT_FOUND, "Class " + paths[0] + " could not be found");

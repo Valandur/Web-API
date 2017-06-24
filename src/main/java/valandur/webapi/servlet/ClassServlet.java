@@ -18,6 +18,7 @@ public class ClassServlet extends WebAPIServlet {
 
         if (paths.length == 0 || paths[0].isEmpty()) {
             ArrayNode node = JsonNodeFactory.instance.arrayNode();
+            data.addJson("ok", true, false);
             data.addJson("classes", DataCache.getClasses().keySet().stream().map(Class::getName).toArray(String[]::new), false);
             return;
         }
@@ -38,6 +39,7 @@ public class ClassServlet extends WebAPIServlet {
                 Set classes = WebAPI.getInstance().getReflections().getSubTypesOf(c);
                 WebAPI.getInstance().getLogger().info("Found " + classes.size() + " subclasses of '" + c.getName() + "'");
 
+                data.addJson("ok", true, false);
                 data.addJson("base", c.getName(), false);
                 data.addJson("classes", classes, false);
             } else {

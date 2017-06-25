@@ -135,7 +135,7 @@ public class AuthHandler extends AbstractHandler {
         String key = request.getHeader("x-webapi-key");
 
         if (key == null && request.getQueryString() != null) {
-            Map<String, String> query = Util.getQueryParts(request);
+            Map<String, String> query = Util.getQueryParams(request);
             key = query.get("key");
         }
 

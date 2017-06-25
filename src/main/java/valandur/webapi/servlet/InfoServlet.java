@@ -3,13 +3,12 @@ package valandur.webapi.servlet;
 import org.spongepowered.api.Platform;
 import org.spongepowered.api.Server;
 import org.spongepowered.api.Sponge;
-import valandur.webapi.permission.Permission;
+import valandur.webapi.annotation.WebAPISpec;
 
 public class InfoServlet extends WebAPIServlet {
 
-    @Override
-    @Permission(perm = "info.get")
-    protected void handleGet(ServletData data) {
+    @WebAPISpec(method = "GET", path = "/", perm = "info.get")
+    public void getInfo(ServletData data) {
         Server server = Sponge.getServer();
         Platform platform = Sponge.getPlatform();
 

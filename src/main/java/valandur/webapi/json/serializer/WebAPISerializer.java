@@ -30,6 +30,7 @@ public abstract class WebAPISerializer<T> extends StdSerializer<T> {
         super(t);
     }
 
+
     protected void writeData(SerializerProvider provider, DataHolder holder) throws IOException {
         for (Map.Entry<String, Class> entry : JsonConverter.getSupportedData().entrySet()) {
             Optional<?> m = holder.get(entry.getValue());

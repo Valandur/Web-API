@@ -2,18 +2,17 @@ package valandur.webapi.servlet;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.flowpowered.math.vector.Vector3i;
-import org.apache.commons.lang3.math.NumberUtils;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.block.BlockType;
 import org.spongepowered.api.block.trait.BlockTrait;
 import org.spongepowered.api.util.Tuple;
 import org.spongepowered.api.world.extent.BlockVolume;
+import valandur.webapi.annotation.WebAPISpec;
 import valandur.webapi.block.BlockUpdate;
 import valandur.webapi.block.Blocks;
-import valandur.webapi.cache.world.CachedWorld;
 import valandur.webapi.cache.DataCache;
-import valandur.webapi.permission.Permission;
+import valandur.webapi.cache.world.CachedWorld;
 import valandur.webapi.misc.Util;
 
 import javax.servlet.http.HttpServletResponse;
@@ -22,18 +21,10 @@ import java.util.stream.Collectors;
 
 public class BlockServlet extends WebAPIServlet {
 
-    @Override
-    @Permission(perm = "block.get")
-    protected void handleGet(ServletData data) {
-        String[] parts = data.getPathParts();
-
-        if (parts.length < 1 || parts[0].isEmpty()) {
-            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid world UUID");
-            return;
-        }
-
+    @WebAPISpec(method = "GET", path = "/:world/:x/:y/:z", perm = "block.get")
+    public void getBlock(ServletData data) {
         // Check uuid
-        String uuid = parts[0];
+        String uuid = data.getPathParam("world");
         if (!Util.isValidUUID(uuid)) {
             data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid world UUID");
             return;
@@ -46,30 +37,42 @@ public class BlockServlet extends WebAPIServlet {
             return;
         }
 
-        // Check min coordinates
-        if (parts.length < 4 || !NumberUtils.isNumber(parts[1]) || !NumberUtils.isNumber(parts[2]) || !NumberUtils.isNumber(parts[3])) {
-            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid block coordinates / min coordinates");
+        int x = Integer.parseInt(data.getPathParam("x"));
+        int y = Integer.parseInt(data.getPathParam("y"));
+        int z = Integer.parseInt(data.getPathParam("z"));
+
+        Optional<BlockState> state = Blocks.getBlockAt(world.get(), new Vector3i(x, y, z));
+        if (!state.isPresent()) {
+            data.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not get world");
             return;
         }
 
-        int minX = Integer.parseInt(parts[1]);
-        int minY = Integer.parseInt(parts[2]);
-        int minZ = Integer.parseInt(parts[3]);
+        data.addJson("ok", true, false);
+        data.addJson("block", state.get(), true);
+    }
 
-        int maxX = minX;
-        int maxY = minY;
-        int maxZ = minZ;
-
-        if (parts.length > 4) {
-            if (parts.length < 7 || !NumberUtils.isNumber(parts[4]) || !NumberUtils.isNumber(parts[5]) || !NumberUtils.isNumber(parts[6])) {
-                data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid max coordinates");
-                return;
-            }
-
-            maxX = Integer.parseInt(parts[4]);
-            maxY = Integer.parseInt(parts[5]);
-            maxZ = Integer.parseInt(parts[6]);
+    @WebAPISpec(method = "GET", path = "/:world/:minX/:minY/:minZ/:maxX/:maxY/:maxZ", perm = "block.get")
+    public void getBlockVolume(ServletData data) {
+        // Check uuid
+        String uuid = data.getPathParam("world");
+        if (!Util.isValidUUID(uuid)) {
+            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid world UUID");
+            return;
         }
+
+        // Check world
+        Optional<CachedWorld> world = DataCache.getWorld(UUID.fromString(uuid));
+        if (!world.isPresent()) {
+            data.sendError(HttpServletResponse.SC_NOT_FOUND, "World with UUID '" + uuid + "' could not be found");
+            return;
+        }
+
+        int minX = Integer.parseInt(data.getPathParam("x"));
+        int minY = Integer.parseInt(data.getPathParam("y"));
+        int minZ = Integer.parseInt(data.getPathParam("z"));
+        int maxX = Integer.parseInt(data.getPathParam("maxX"));
+        int maxY = Integer.parseInt(data.getPathParam("maxY"));
+        int maxZ = Integer.parseInt(data.getPathParam("maxZ"));
 
         // Swap around min & max if needed
         int tmpX = Math.max(minX, maxX);
@@ -94,30 +97,18 @@ public class BlockServlet extends WebAPIServlet {
             return;
         }
 
-        if (numBlocks > 1) {
-            Optional<BlockVolume> vol = Blocks.getBlockVolume(world.get(), new Vector3i(minX, minY, minZ), new Vector3i(maxX, maxY, maxZ));
-            if (!vol.isPresent()) {
-                data.sendError(HttpServletResponse.SC_NOT_FOUND, "Could not get world");
-                return;
-            }
-
-            data.addJson("ok", true, false);
-            data.addJson("volume", vol.get(), true);
-        } else {
-            Optional<BlockState> state = Blocks.getBlockAt(world.get(), new Vector3i(minX, minY, minZ));
-            if (!state.isPresent()) {
-                data.sendError(HttpServletResponse.SC_NOT_FOUND, "Could not get world");
-                return;
-            }
-
-            data.addJson("ok", true, false);
-            data.addJson("block", state.get(), true);
+        Optional<BlockVolume> vol = Blocks.getBlockVolume(world.get(), new Vector3i(minX, minY, minZ), new Vector3i(maxX, maxY, maxZ));
+        if (!vol.isPresent()) {
+            data.sendError(HttpServletResponse.SC_NOT_FOUND, "Could not get world");
+            return;
         }
+
+        data.addJson("ok", true, false);
+        data.addJson("volume", vol.get(), true);
     }
 
-    @Override
-    @Permission(perm = "block.post")
-    protected void handlePost(ServletData data) {
+    @WebAPISpec(method = "POST", path = "/", perm = "block.post")
+    public void setBlocks(ServletData data) {
         JsonNode reqJson = data.getRequestBody();
 
         if (reqJson == null || !reqJson.isArray()) {
@@ -242,19 +233,12 @@ public class BlockServlet extends WebAPIServlet {
         }
     }
 
-    @Override
-    @Permission(perm = "block.put")
-    protected void handlePut(ServletData data) {
-        String[] parts = data.getPathParts();
+    @WebAPISpec(method = "PUT", path = "/:uuid", perm = "block.put")
+    public void updateBlockRequest(ServletData data) {
         JsonNode reqJson = data.getRequestBody();
 
-        if (parts.length < 1 || parts[0].isEmpty()) {
-            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid block update UUID");
-            return;
-        }
-
         // Check uuid
-        String uuid = parts[0];
+        String uuid = data.getPathParam("uuid");
         if (!Util.isValidUUID(uuid)) {
             data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid block update UUID");
             return;
@@ -272,20 +256,15 @@ public class BlockServlet extends WebAPIServlet {
         } else {
             update.get().start();
         }
+
+        data.addJson("ok", true, false);
+        data.addJson("update", update, true);
     }
 
-    @Override
-    @Permission(perm = "block.delete")
-    protected void handleDelete(ServletData data) {
-        String[] parts = data.getPathParts();
-
-        if (parts.length < 1 || parts[0].isEmpty()) {
-            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid block update UUID");
-            return;
-        }
-
+    @WebAPISpec(method = "DELETE", path = "/:uuid", perm = "block.delete")
+    public void deleteBlockRequest(ServletData data) {
         // Check uuid
-        String uuid = parts[0];
+        String uuid = data.getPathParam("uuid");
         if (!Util.isValidUUID(uuid)) {
             data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid block update UUID");
             return;
@@ -299,6 +278,9 @@ public class BlockServlet extends WebAPIServlet {
         }
 
         update.get().stop("Cancelled by request");
+
+        data.addJson("ok", true, false);
+        data.addJson("update", update, true);
     }
 
     private Optional<Vector3i> getVector3i(JsonNode rootNode, String name) {

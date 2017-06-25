@@ -1,6 +1,7 @@
 package valandur.webapi.servlet.user;
 
 import valandur.webapi.WebAPI;
+import valandur.webapi.annotation.WebAPISpec;
 import valandur.webapi.misc.Util;
 import valandur.webapi.servlet.ServletData;
 import valandur.webapi.servlet.WebAPIServlet;
@@ -12,8 +13,8 @@ import java.util.Optional;
 
 public class UserServlet extends WebAPIServlet {
 
-    @Override
-    protected void handleGet(ServletData data) {
+    @WebAPISpec(method = "GET", path = "/")
+    public void getUserDetails(ServletData data) {
         UserPermission user = data.getUser();
         if (user != null) {
             data.addJson("ok", true, false);
@@ -23,8 +24,8 @@ public class UserServlet extends WebAPIServlet {
         }
     }
 
-    @Override
-    protected void handlePost(ServletData data) {
+    @WebAPISpec(method = "POST", path = "/")
+    public void authUser(ServletData data) {
         Optional<AuthRequest> optReq = data.getRequestBody(AuthRequest.class);
         if (!optReq.isPresent()) {
             data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid auth data: " + data.getLastParseError().getMessage());

@@ -312,7 +312,7 @@ public class WebAPI {
 
             // Asset handlers
             handlers.add(newContext("/docs", new AssetHandler("pages/redoc.html")));
-            handlers.add(newContext("/swagger/*", new AssetHandler("swagger", (path) -> {
+            handlers.add(newContext("/swagger", new AssetHandler("swagger", (path) -> {
                 if (!path.endsWith("/swagger/index.yaml"))
                     return null;
                 return (data) -> {
@@ -324,7 +324,7 @@ public class WebAPI {
             })));
 
             if (adminPanelEnabled)
-                handlers.add(newContext("/admin/*", new AssetHandler("admin")));
+                handlers.add(newContext("/admin", new AssetHandler("admin")));
 
             // Main servlet context
             ServletContextHandler servletsContext = new ServletContextHandler();

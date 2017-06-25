@@ -2,9 +2,12 @@ package valandur.webapi.servlet;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import valandur.webapi.permission.Permission;
+import org.spongepowered.api.util.Tuple;
 import valandur.webapi.WebAPI;
+import valandur.webapi.annotation.WebAPISpec;
 import valandur.webapi.misc.TreeNode;
+import valandur.webapi.misc.Util;
+import valandur.webapi.permission.Permission;
 import valandur.webapi.permission.Permissions;
 
 import javax.servlet.ServletException;
@@ -15,6 +18,11 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public abstract class WebAPIServlet extends HttpServlet {
 
@@ -32,7 +40,55 @@ public abstract class WebAPIServlet extends HttpServlet {
         resp.setContentType("application/json; charset=utf-8");
 
         try {
-            Method method = this.getClass().getDeclaredMethod("handle" + verb, ServletData.class);
+            // Get all methods that are correctly annotated and match the verb
+            List<Tuple<Method, WebAPISpec>> methods = Arrays.stream(this.getClass().getMethods())
+                    .filter(m -> m.isAnnotationPresent(WebAPISpec.class))
+                    .map(m -> new Tuple<>(m, m.getAnnotation(WebAPISpec.class)))
+                    .filter(m -> m.getSecond().method().equalsIgnoreCase(verb))
+                    .collect(Collectors.toList());
+
+            // Find the most suitable method according to the path
+            List<String> pathParts = Util.getPathParts(req.getPathInfo());
+            Map<String, String> bestMatches = null;
+            Tuple<Method, WebAPISpec> bestTuple = null;
+
+            for (Tuple<Method, WebAPISpec> tuple : methods) {
+                WebAPISpec spec = tuple.getSecond();
+                List<String> specPathParts = Util.getPathParts(spec.path());
+
+                if (specPathParts.size() != pathParts.size())
+                    continue;
+
+                boolean doesMatch = true;
+                Map<String, String> matches = new HashMap<>();
+                for (int i = 0; i < specPathParts.size(); i++) {
+                    if (!specPathParts.get(i).startsWith(":")) {
+                        if (!specPathParts.get(i).equalsIgnoreCase(pathParts.get(i))) {
+                            doesMatch = false;
+                            break;
+                        }
+                    } else {
+                        String param = specPathParts.get(i).substring(1);
+                        matches.put(param, pathParts.get(i));
+                    }
+                }
+
+                if (!doesMatch)
+                    continue;
+
+                if (bestMatches == null || matches.size() < bestMatches.size()) {
+                    bestMatches = matches;
+                    bestTuple = tuple;
+                }
+            }
+
+            if (bestTuple == null) {
+                // We couldn't find a method
+                resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Unknown/Invalid request path");
+                return;
+            }
+
+            Method method = bestTuple.getFirst();
             method.setAccessible(true);
 
             if (method.isAnnotationPresent(Permission.class)) {
@@ -41,14 +97,14 @@ public abstract class WebAPIServlet extends HttpServlet {
 
                 if (permissions == null) {
                     WebAPI.getInstance().getLogger().warn(req.getRemoteAddr() + " does not have permisson to access " + req.getRequestURI());
-                    resp.sendError(HttpServletResponse.SC_FORBIDDEN);
+                    resp.sendError(HttpServletResponse.SC_FORBIDDEN, "Not authorized");
                     return;
                 }
 
                 TreeNode<String, Boolean> methodPerms = Permissions.subPermissions(permissions, reqPerms);
                 if (!methodPerms.getValue()) {
                     WebAPI.getInstance().getLogger().warn(req.getRemoteAddr() + " does not have permission to access " + req.getRequestURI());
-                    resp.sendError(HttpServletResponse.SC_FORBIDDEN);
+                    resp.sendError(HttpServletResponse.SC_FORBIDDEN, "Not authorized");
                     return;
                 }
 
@@ -68,7 +124,8 @@ public abstract class WebAPIServlet extends HttpServlet {
                 }
             }
 
-            ServletData data = new ServletData(req, resp);
+            ServletData data = new ServletData(req, resp, bestMatches);
+
             method.invoke(this, data);
             PrintWriter out = data.getWriter();
 
@@ -76,13 +133,10 @@ public abstract class WebAPIServlet extends HttpServlet {
             if (!data.isErrorSent()) {
                 out.write(om.writeValueAsString(data.getNode()));
             }
-        } catch (NoSuchMethodException e) {
-            // Method does not exist (endpoint/verb not supported)
-            resp.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
         } catch (InvocationTargetException | IllegalAccessException e) {
             // Error executing the method
             e.printStackTrace();
-            resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal server error");
         }
     }
 

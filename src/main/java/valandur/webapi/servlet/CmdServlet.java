@@ -1,10 +1,10 @@
 package valandur.webapi.servlet;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import valandur.webapi.permission.Permission;
 import valandur.webapi.WebAPI;
-import valandur.webapi.cache.command.CachedCommand;
+import valandur.webapi.annotation.WebAPISpec;
 import valandur.webapi.cache.DataCache;
+import valandur.webapi.cache.command.CachedCommand;
 import valandur.webapi.command.CommandSource;
 import valandur.webapi.permission.Permissions;
 
@@ -17,18 +17,15 @@ public class CmdServlet extends WebAPIServlet {
 
     public static int CMD_WAIT_TIME = 1000;
 
-    @Override
-    @Permission(perm = "cmd.get")
-    protected void handleGet(ServletData data) {
-        String[] paths = data.getPathParts();
+    @WebAPISpec(method = "GET", path = "/", perm = "cmd.get")
+    public void getCommands(ServletData data) {
+        data.addJson("ok", true, false);
+        data.addJson("commands", DataCache.getCommands(), data.getQueryParam("details").isPresent());
+    }
 
-        if (paths.length == 0 || paths[0].isEmpty()) {
-            data.addJson("ok", true, false);
-            data.addJson("commands", DataCache.getCommands(), data.getQueryPart("details").isPresent());
-            return;
-        }
-
-        String cName = paths[0];
+    @WebAPISpec(method = "GET", path = "/:cmd", perm = "cmd.get")
+    public void getCommand(ServletData data) {
+        String cName = data.getPathParam("cmd");
         Optional<CachedCommand> cmd = DataCache.getCommand(cName);
         if (!cmd.isPresent()) {
             data.sendError(HttpServletResponse.SC_NOT_FOUND, "The command '" + cName + "' could not be found");
@@ -39,9 +36,8 @@ public class CmdServlet extends WebAPIServlet {
         data.addJson("command", cmd.get(), true);
     }
 
-    @Override
-    @Permission(perm = "cmd.post")
-    protected void handlePost(ServletData data) {
+    @WebAPISpec(method = "POST", path = "/", perm = "cmd.post")
+    public void runCommands(ServletData data) {
         final JsonNode reqJson = data.getRequestBody();
 
         if (!reqJson.isArray()) {

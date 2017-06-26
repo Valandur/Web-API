@@ -5,7 +5,7 @@ get:
 
     The blocks in the returned block volume can be accessed by using `responseData.blocks[x][y][z]` where x, y, and z are the coordinates of the block.
 
-    > Required permission: block.get
+    > Required permission: block.volume
   parameters:
     - name: world
       in: path

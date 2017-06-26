@@ -3,7 +3,7 @@ get:
   description: |
     Get a list of all the plugins running on the server.
 
-    > Required permission: plugin.get
+    > Required permission: plugin.list
   tags:
     - Plugin
   responses:

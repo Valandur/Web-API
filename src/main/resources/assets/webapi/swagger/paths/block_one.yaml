@@ -3,7 +3,7 @@ get:
   description: |
     Gets information about one block in the world.
 
-    > Required permission: block.get
+    > Required permission: block.one
   parameters:
     - name: world
       in: path

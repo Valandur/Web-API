@@ -3,7 +3,7 @@ get:
   description: |
     Get detailed information about a player.
 
-    > Required permission: player.get
+    > Required permission: player.one
   parameters:
     - name: uuid
       in: path
@@ -36,7 +36,7 @@ post:
   description: |
     Provides direct access to the underlaying player object and can execute any method on it.
 
-    > Required permission: player.post
+    > Required permission: player.method
   parameters:
     - name: uuid
       in: path

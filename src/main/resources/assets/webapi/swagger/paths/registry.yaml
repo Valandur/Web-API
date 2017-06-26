@@ -3,7 +3,7 @@ get:
     description: |
       Lists all the catalog values of a specified CatalogType.
 
-      > Required permission: registry.get
+      > Required permission: registry.one
     parameters:
       - name: className
         in: path

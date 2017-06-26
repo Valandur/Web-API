@@ -3,7 +3,7 @@ get:
   description: |
     Gets detailed information about a plugin.
 
-    > Required permission: plugin.get
+    > Required permission: plugin.one
   parameters:
     - name: id
       in: path

@@ -3,7 +3,7 @@ get:
   description: |
     View a history of the server chat.
 
-    > Required permission: history.get
+    > Required permission: history.chat
   tags:
     - History
   responses:

@@ -3,7 +3,7 @@ get:
   description: |
     View a history of the server commands.
 
-    > Required permission: history.get
+    > Required permission: history.cmd
   tags:
     - History
   responses:

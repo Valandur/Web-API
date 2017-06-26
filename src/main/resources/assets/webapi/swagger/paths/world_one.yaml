@@ -3,7 +3,7 @@ get:
   description: |
     Get detailed information about a world.
 
-    > Required permission: world.get
+    > Required permission: world.one
   parameters:
     - name: uuid
       in: path
@@ -42,7 +42,7 @@ put:
   description: |
     Update the properties of an existing world.
 
-    > Required permission: world.put
+    > Required permission: world.change
   parameters:
     - name: uuid
       in: path
@@ -79,7 +79,7 @@ post:
   description: |
     Provides direct access to the underlaying world object and can execute any method on it.
 
-    > Required permission: world.post
+    > Required permission: world.method
   parameters:
     - name: uuid
       in: path

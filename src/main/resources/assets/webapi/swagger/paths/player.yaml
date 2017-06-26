@@ -3,7 +3,7 @@ get:
   description: |
     Get a list of all the players on the server.
 
-    > Required permission: player.get
+    > Required permission: player.list
   tags:
     - Player
   responses:

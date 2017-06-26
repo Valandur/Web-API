@@ -1,48 +1,17 @@
-put:
-  summary: Modify block update
-  parameters:
-    - name: uuid
-      in: path
-      type: string
-      description: The uuid of the block update.
-      required: true
-    - name: data
-      in: body
-      required: true
-      description: The new data applied to the block update.
+get:
+  summary: List block updates
+  description: |
+    List all currently running/paused block update operations.
+
+    > Required permission: block.update.list
+  tags:
+    - Block
+  responses:
+    403:
+      $ref: "../responses/403.yaml"
+    200:
+      description: Block updates
       schema:
-        type: object
-        properties:
-          pause:
-            type: boolean
-            description: True if the block operation should be paused, false otherwise.
-  tags:
-    - Block
-  responses:
-    400:
-      $ref: "../responses/400.yaml"
-    403:
-      $ref: "../responses/403.yaml"
-    404:
-      $ref: "../responses/404.yaml"
-    200:
-      description: Status change successful
-delete:
-  summary: Cancel block update
-  parameters:
-    - name: uuid
-      in: path
-      type: string
-      description: The uuid of the block update.
-      required: true
-  tags:
-    - Block
-  responses:
-    400:
-      $ref: "../responses/400.yaml"
-    403:
-      $ref: "../responses/403.yaml"
-    404:
-      $ref: "../responses/404.yaml"
-    200:
-      description: Cancel successful
+        type: array
+        items:
+          $ref: "../definitions/BlockUpdate.yaml"

@@ -3,7 +3,7 @@ get:
   description: |
     Get a list of all entities on the server (in all worlds).
 
-    > Required permission: entity.get
+    > Required permission: entity.list
   parameters:
     - name: details
       in: query
@@ -32,7 +32,7 @@ post:
   description: |
     Creates & Spawns a new entity with the specified properties.
 
-    > Required permission: entity.post
+    > Required permission: entity.create
   parameters:
     - name: CreateEntityRequest
       in: body

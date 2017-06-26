@@ -4,7 +4,7 @@ post:
     Send an interactive message to a player. Make sure to have an event hook for "custom_message" to receive
     the response.
 
-    > Required permission: message.post
+    > Required permission: message.create
   parameters:
     - name: Request
       in: body

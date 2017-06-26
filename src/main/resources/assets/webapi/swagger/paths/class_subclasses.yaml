@@ -3,7 +3,7 @@ get:
   description: |
     Gets all the subclasses of a specific class.
 
-    > Required permission: class.get
+    > Required permission: class.subclasses
   parameters:
     - name: classname
       in: path

@@ -4,7 +4,7 @@ get:
     Get the fields and methods of a specific class loaded on the server.
     Use the fully quilified classname (e.g. "net.minecraft.tileentity.TileEntityChest").
 
-    > Required permission: class.get
+    > Required permission: class.one
   parameters:
     - name: classname
       in: path

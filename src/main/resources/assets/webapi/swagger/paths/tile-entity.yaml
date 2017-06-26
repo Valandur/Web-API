@@ -3,7 +3,7 @@ get:
   description: |
     Get a list of all tile entities on the server (in all worlds).
 
-    > Required permission: tile-entity.get
+    > Required permission: tile-entity.list
   tags:
     - Tile Entity
   responses:

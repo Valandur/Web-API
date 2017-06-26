@@ -3,7 +3,7 @@ get:
   description: |
     Get detailed information about a tile entity.
 
-    > Required permission: tile-entity.get
+    > Required permission: tile-entity.one
   parameters:
     - name: worldUuid
       in: path
@@ -51,7 +51,7 @@ post:
   description: |
     Provides direct access to the underlaying tile entity object and can execute any method on it.
 
-    > Required permission: tile-entity.post
+    > Required permission: tile-entity.method
   parameters:
     - name: worldUuid
       in: path

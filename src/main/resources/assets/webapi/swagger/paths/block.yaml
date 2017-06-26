@@ -1,22 +1,9 @@
-get:
-  summary: List block updates
-  description: |
-    List all currently running/paused block update operations.
-  tags:
-    - Block
-  responses:
-    403:
-      $ref: "../responses/403.yaml"
-    200:
-      description: Block updates
-      schema:
-        type: array
-        items:
-          $ref: "../definitions/BlockUpdate.yaml"
 post:
-  summary: Modify blocks
+  summary: Set blocks
   description: |
     Start a request to change blocks on the server.
+
+    > Required permission: block.set
   parameters:
     - name: Request
       in: body

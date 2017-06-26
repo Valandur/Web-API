@@ -3,7 +3,7 @@ get:
   description: |
     Get a list of all the classes available on the server.
 
-    > Required permission: class.get
+    > Required permission: class.list
   tags:
     - Class
   responses:

@@ -3,7 +3,7 @@ get:
   description: |
     Get a list of all the worlds on the server.
 
-    > Required permission: world.get
+    > Required permission: world.list
   parameters:
     - name: details
       in: query
@@ -32,7 +32,7 @@ post:
   description: |
     Creates a new world with the specified settings. This does not yet load the world.
 
-    > Required permission: world.post
+    > Required permission: world.create
   parameters:
     - name: CreateWorldRequest
       in: body

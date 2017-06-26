@@ -3,7 +3,7 @@ get:
   description: |
     Get detailed information about a command.
 
-    > Required permission: cmd.get
+    > Required permission: cmd.one
   parameters:
     - name: name
       in: path

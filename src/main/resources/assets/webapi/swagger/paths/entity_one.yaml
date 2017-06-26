@@ -3,7 +3,7 @@ get:
   description: |
     Get detailed information about an entity.
 
-    > Required permission: entity.get
+    > Required permission: entity.one
   parameters:
     - name: uuid
       in: path
@@ -36,7 +36,7 @@ put:
   description: |
     Update the properties of an existing entity.
 
-    > Required permission: entity.put
+    > Required permission: entity.change
   parameters:
     - name: uuid
       in: path
@@ -73,7 +73,7 @@ post:
   description: |
     Provides direct access to the underlaying entity object and can execute any method on it.
 
-    > Required permission: entity.post
+    > Required permission: entity.method
   parameters:
     - name: uuid
       in: path

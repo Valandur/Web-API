@@ -1,0 +1,18 @@
+title: BlockUpdate
+type: object
+properties:
+  uuid:
+    type: string
+    description: The UUID of the block update operation.
+  status:
+    type: string
+    description: |
+      The current status of the operation, one of: INIT, RUNNING, PAUSED, DONE, ERRORED.
+  progress:
+    type: number
+    format: float
+    description: The update progress of this operation, from 0 (nothing done) to 1 (completely done).
+  blocksSet:
+    type: number
+    format: integer
+    description: The amount of blocks changed (blocks that are already set to the correct type do not count).

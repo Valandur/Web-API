@@ -1,0 +1,27 @@
+get:
+  summary: Class details
+  description: |
+    Get the fields and methods of a specific class loaded on the server.
+    Use the fully quilified classname (e.g. "net.minecraft.tileentity.TileEntityChest").
+
+    > Required permission: class.one
+  parameters:
+    - name: classname
+      in: path
+      type: string
+      description: The classname of the class to show.
+      required: true
+  tags:
+    - Class
+  responses:
+    403:
+      $ref: "../responses/403.yaml"
+    404:
+      $ref: "../responses/404.yaml"
+    200:
+      description: Class details
+      schema:
+        type: object
+        properties:
+          class:
+            $ref: "../definitions/Class.yaml"

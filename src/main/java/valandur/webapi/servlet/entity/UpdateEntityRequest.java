@@ -12,6 +12,7 @@ import java.util.Optional;
 
 @JsonDeserialize
 public class UpdateEntityRequest {
+
     @JsonDeserialize
     private String world;
     public Optional<CachedWorld> getWorld() {

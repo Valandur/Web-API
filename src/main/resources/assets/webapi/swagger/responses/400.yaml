@@ -1,0 +1,7 @@
+description: Invalid parameter
+schema:
+  type: object
+  properties:
+    error:
+      type: string
+      description: A description of the type of error that occured.

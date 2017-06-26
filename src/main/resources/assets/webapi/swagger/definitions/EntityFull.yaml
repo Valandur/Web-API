@@ -1,0 +1,42 @@
+allOf:
+  - $ref: "./Entity.yaml"
+  - title: EntityFull
+    type: object
+    properties:
+      velocity:
+        $ref: "./Vector3.yaml"
+      rotation:
+        $ref: "./Vector3.yaml"
+      scale:
+        $ref: "./Vector3.yaml"
+example:
+  type: minecraft:sheep
+  uuid: 8835e1b0-b385-416b-aebf-02446bbfa63f
+  location:
+    world:
+      name: world
+      uuid: c574ab53-831b-4410-b3ad-955a2a504843
+      link: "/api/world/c574ab53-831b-4410-b3ad-955a2a504843"
+    position:
+      x: -1263.7945795740736
+      y: 4
+      z: -1119.1971438629455
+  rotation:
+    x: 0
+    y: 224.205078125
+    z: 0
+  scale:
+    x: 1
+    y: 1
+    z: 1
+  link: "/api/entity/8835e1b0-b385-416b-aebf-02446bbfa63f"
+  class: net.minecraft.entity.passive.EntitySheep
+  sheared: false
+  dye: white
+  health:
+    current: 8
+    max: 8
+  velocity:
+    x: 0
+    y: -0.0784000015258789
+    z: 0

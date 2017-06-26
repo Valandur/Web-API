@@ -1,0 +1,11 @@
+allOf:
+  - $ref: "./WorldRequest.yaml"
+  - title: CreateWorldRequest
+    type: object
+    properties:
+      dimension:
+        type: string
+        description: The dimension of the world to use. Check `/registry/org.spongepowered.api.world.DimensionType`.
+      generateBonusChest:
+        type: boolean
+        description: True to generate bonus chests, false otherwise.

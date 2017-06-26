@@ -1,0 +1,15 @@
+get:
+  summary: Server info
+  description: |
+    Get general information about the minecraft server.
+
+    > Required permission: info.get
+  tags:
+    - Info
+  responses:
+    403:
+      $ref: "../responses/403.yaml"
+    200:
+      description: General info
+      schema:
+        $ref: "../definitions/ServerInfo.yaml"

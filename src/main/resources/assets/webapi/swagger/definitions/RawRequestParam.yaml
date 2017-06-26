@@ -1,0 +1,43 @@
+title: RawRequestParam
+type: object
+description: A parameter that is interpreted by the server and passed to the method.
+properties:
+  type:
+    type: string
+    description: The type of the parameter. This defines how the value is interpreted.
+    enum:
+      - int
+      - integer
+      - float
+      - double
+      - bool
+      - boolean
+      - byte
+      - char
+      - long
+      - short
+      - string
+      - enum
+      - class
+      - vector3d
+      - vector3i
+      - text
+      - world
+      - player
+      - itemstack
+  value:
+    type: object
+    description: |
+      The value of the parameter. Base types (like integer, float, boolean, etc.) are converted
+      to the correct type and then passed to the method. Some parameters are handled differently,
+      they are listed below along with their usage:
+
+      - class: Interpreted as the fully qualified classname of a class which is loaded and passed |
+      - vector3(i/d): Converted to a Vector3(i/d) object. Requires the properties "x", "y" and "z"
+      - text: Converted to a sponge text
+      - world: Assumed to be the UUID of a world which is fetched and passed
+      - player: Assumed to be the UUID of the player which is fetched and passed.
+      - itemstack: Converted to a new item stack. Requires the properties "itemType" and "amount"
+  optional:
+    type: boolean
+    description: True if the value should be wrapped into an optional value, false otherwise.

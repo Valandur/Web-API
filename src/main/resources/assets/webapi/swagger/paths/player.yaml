@@ -1,0 +1,24 @@
+get:
+  summary: Player list
+  description: |
+    Get a list of all the players on the server.
+
+    > Required permission: player.list
+  tags:
+    - Player
+  responses:
+    403:
+      $ref: "../responses/403.yaml"
+    200:
+      description: List of players
+      schema:
+        type: object
+        properties:
+          maxPlayers:
+            type: integer
+            description: The maximum amount of players this server supports.
+          players:
+            type: array
+            description: A list of players.
+            items:
+              $ref: "../definitions/Player.yaml"

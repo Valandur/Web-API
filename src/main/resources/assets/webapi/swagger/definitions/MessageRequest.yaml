@@ -1,0 +1,17 @@
+title: MessageRequest
+type: object
+properties:
+  id:
+    type: string
+    description: The id of the message. This will be sent back in the reply, so you can identify the request.
+  target:
+    type: string
+    description: The UUID of the player this message is sent to.
+  message:
+    type: string
+    description: The message sent to the player. Text formatting can be applied with ampersand formatting.
+  options:
+    type: object
+    description: |
+      These are the options the player can choose from. The key is sent back to the server,
+      the value is displayed to the player.

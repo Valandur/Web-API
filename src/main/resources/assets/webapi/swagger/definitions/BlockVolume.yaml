@@ -1,0 +1,15 @@
+title: BlockVolume
+type: object
+properties:
+  min:
+    $ref: "./Vector3.yaml"
+  max:
+    $ref: "./Vector3.yaml"
+  blocks:
+    type: array
+    items:
+      type: array
+      items:
+        type: array
+        items:
+          $ref: "./BlockFull.yaml"

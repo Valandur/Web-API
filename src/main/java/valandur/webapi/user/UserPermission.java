@@ -32,4 +32,8 @@ public class UserPermission {
         this.permissions = permissions;
         this.pStruct = new PermissionStruct(this.permissions, 0);
     }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
 }

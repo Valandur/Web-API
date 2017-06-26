@@ -19,6 +19,7 @@ import java.lang.reflect.Method;
 import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Util {
 
@@ -46,14 +47,14 @@ public class Util {
     }
 
     /**
-     * Gets the path parameters of a given request.
-     * @param req The request from which the path parameters are extracted.
+     * Gets the path parts of a given path.
+     * @param path The complete path.
      * @return The path parameters.
      */
-    public static String[] getPathParts(HttpServletRequest req) {
-        String path = req.getPathInfo();
-        if (path == null) return new String[] { };
-        return path.substring(1).split("/");
+    public static List<String> getPathParts(String path) {
+        if (path == null) return new ArrayList<>();
+        return Arrays.stream(path.replaceFirst("^/", "")
+                .split("/")).filter(s -> !s.isEmpty()).collect(Collectors.toList());
     }
 
     /**
@@ -61,7 +62,7 @@ public class Util {
      * @param req The request from which the query parameters are extracted.
      * @return The query parameters.
      */
-    public static Map<String, String> getQueryParts(HttpServletRequest req) {
+    public static Map<String, String> getQueryParams(HttpServletRequest req) {
         Map<String, String> map = new HashMap<>();
 
         String query = req.getQueryString();

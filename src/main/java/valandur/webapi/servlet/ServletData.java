@@ -18,11 +18,12 @@ import java.util.Map;
 import java.util.Optional;
 
 public class ServletData {
+
     private HttpServletRequest req;
     private HttpServletResponse resp;
     private boolean errorSent = false;
-    private String[] pathParts;
-    private Map<String, String> queryParts;
+    private Map<String, String> pathParams;
+    private Map<String, String> queryParams;
 
     private TreeNode<String, Boolean> permissions;
     public TreeNode<String, Boolean> getPermissions() {
@@ -48,13 +49,13 @@ public class ServletData {
     }
 
 
-    public ServletData(HttpServletRequest req, HttpServletResponse resp) {
+    public ServletData(HttpServletRequest req, HttpServletResponse resp, Map<String, String> pathParams) {
         this.req = req;
         this.resp = resp;
         this.node = JsonNodeFactory.instance.objectNode();
 
-        this.pathParts = Util.getPathParts(req);
-        this.queryParts = Util.getQueryParts(req);
+        this.pathParams = pathParams;
+        this.queryParams = Util.getQueryParams(req);
         this.permissions = (TreeNode<String, Boolean>)req.getAttribute("dataPerms");
     }
 
@@ -86,11 +87,11 @@ public class ServletData {
         node.replace(key, JsonConverter.toJson(value, details, permissions));
     }
 
-    public String[] getPathParts() {
-        return pathParts;
+    public String getPathParam(String key) {
+        return pathParams.get(key);
     }
-    public Optional<String> getQueryPart(String key) {
-        String value = queryParts.get(key);
+    public Optional<String> getQueryParam(String key) {
+        String value = queryParams.get(key);
         return value != null ? Optional.of(value) : Optional.empty();
     }
 

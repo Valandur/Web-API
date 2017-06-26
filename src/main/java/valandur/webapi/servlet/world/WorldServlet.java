@@ -2,37 +2,38 @@ package valandur.webapi.servlet.world;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import org.spongepowered.api.Sponge;
-import org.spongepowered.api.entity.living.player.gamemode.GameMode;
 import org.spongepowered.api.util.Tuple;
-import org.spongepowered.api.world.*;
-import org.spongepowered.api.world.difficulty.Difficulty;
+import org.spongepowered.api.world.World;
+import org.spongepowered.api.world.WorldArchetype;
 import org.spongepowered.api.world.storage.WorldProperties;
 import valandur.webapi.WebAPI;
-import valandur.webapi.permission.Permission;
-import valandur.webapi.cache.world.CachedWorld;
+import valandur.webapi.api.annotation.WebAPIRoute;
+import valandur.webapi.api.annotation.WebAPIServlet;
+import valandur.webapi.api.servlet.IServlet;
 import valandur.webapi.cache.DataCache;
+import valandur.webapi.cache.world.CachedWorld;
 import valandur.webapi.misc.Util;
 import valandur.webapi.servlet.ServletData;
-import valandur.webapi.servlet.WebAPIServlet;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.*;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
-public class WorldServlet extends WebAPIServlet {
-    @Override
-    @Permission(perm = "world.get")
-    protected void handleGet(ServletData data) {
-        String[] paths = data.getPathParts();
+@WebAPIServlet(basePath = "world")
+public class WorldServlet implements IServlet {
 
-        if (paths.length == 0 || paths[0].isEmpty()) {
-            data.addJson("ok", true, false);
-            data.addJson("worlds", DataCache.getWorlds(), data.getQueryPart("details").isPresent());
-            return;
-        }
+    @WebAPIRoute(method = "GET", path = "/", perm = "list")
+    public void getWorlds(ServletData data) {
+        data.addJson("ok", true, false);
+        data.addJson("worlds", DataCache.getWorlds(), data.getQueryParam("details").isPresent());
+    }
 
-        String uuid = paths[0];
+    @WebAPIRoute(method = "GET", path = "/:world", perm = "one")
+    public void getWorld(ServletData data) {
+        String uuid = data.getPathParam("world");
         if (!Util.isValidUUID(uuid)) {
             data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid world UUID");
             return;
@@ -44,8 +45,8 @@ public class WorldServlet extends WebAPIServlet {
             return;
         }
 
-        Optional<String> strFields = data.getQueryPart("fields");
-        Optional<String> strMethods = data.getQueryPart("methods");
+        Optional<String> strFields = data.getQueryParam("fields");
+        Optional<String> strMethods = data.getQueryParam("methods");
         if (strFields.isPresent() || strMethods.isPresent()) {
             String[] fields = strFields.map(s -> s.split(",")).orElse(new String[]{});
             String[] methods = strMethods.map(s -> s.split(",")).orElse(new String[]{});
@@ -58,17 +59,113 @@ public class WorldServlet extends WebAPIServlet {
         data.addJson("world", world.get(), true);
     }
 
-    @Override
-    @Permission(perm = "world.put")
-    protected void handlePut(ServletData data) {
-        String[] paths = data.getPathParts();
+    @WebAPIRoute(method = "POST", path = "/", perm = "create")
+    public void createWorld(ServletData data) {
+        WorldArchetype.Builder builder = WorldArchetype.builder();
 
-        if (paths.length == 0 || paths[0].isEmpty()) {
+        Optional<CreateWorldRequest> optReq = data.getRequestBody(CreateWorldRequest.class);
+        if (!optReq.isPresent()) {
+            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid world data: " + data.getLastParseError().getMessage());
+            return;
+        }
+
+        CreateWorldRequest req = optReq.get();
+
+        if (req.getName().isEmpty()) {
+            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "No name provided");
+            return;
+        }
+
+        req.getDimensionType().ifPresent(builder::dimension);
+        req.getGeneratorType().ifPresent(builder::generator);
+        req.getGameMode().ifPresent(builder::gameMode);
+        req.getDifficulty().ifPresent(builder::difficulty);
+
+        if (req.getSeed() != null) {
+            builder.seed(req.getSeed());
+        }
+        if (req.doesLoadOnStartup() != null) {
+            builder.loadsOnStartup(req.doesLoadOnStartup());
+        }
+        if (req.doesKeepSpawnLoaded() != null) {
+            builder.keepsSpawnLoaded(req.doesKeepSpawnLoaded());
+        }
+        if (req.doesAllowCommands() != null) {
+            builder.commandsAllowed(req.doesAllowCommands());
+        }
+        if (req.doesGenerateBonusChest() != null) {
+            builder.generateBonusChest(req.doesGenerateBonusChest());
+        }
+        if (req.doesUseMapFeatures() != null) {
+            builder.usesMapFeatures(req.doesUseMapFeatures());
+        }
+
+        String archTypeName = UUID.randomUUID().toString();
+        WorldArchetype archType = builder.enabled(true).build(archTypeName, archTypeName);
+
+        Optional<WorldProperties> resProps = WebAPI.runOnMain(() -> {
+            try {
+                return Sponge.getServer().createWorldProperties(req.getName(), archType);
+            } catch (IOException e) {
+                data.addJson("ok", false, false);
+                data.addJson("error", e, false);
+                return null;
+            }
+        });
+
+        if (!resProps.isPresent())
+            return;
+
+        CachedWorld world = DataCache.updateWorld(resProps.get());
+
+        data.setStatus(HttpServletResponse.SC_CREATED);
+        data.addJson("ok", true, false);
+        data.addJson("world", world, true);
+        data.setHeader("Location", world.getLink());
+    }
+
+    @WebAPIRoute(method = "POST", path = "/:world/method", perm = "method")
+    public void executeMethod(ServletData data) {
+        String uuid = data.getPathParam("world");
+        if (uuid.split("-").length != 5) {
             data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid world UUID");
             return;
         }
 
-        String uuid = paths[0];
+        Optional<CachedWorld> world = DataCache.getWorld(UUID.fromString(uuid));
+        if (!world.isPresent()) {
+            data.sendError(HttpServletResponse.SC_NOT_FOUND, "World with UUID '" + uuid + "' could not be found");
+            return;
+        }
+
+        JsonNode reqJson = data.getRequestBody();
+        if (!reqJson.has("method")) {
+            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Request must define the 'method' property");
+            return;
+        }
+
+        String mName = reqJson.get("method").asText();
+        Optional<Tuple<Class[], Object[]>> params = Util.parseParams(reqJson.get("params"));
+
+        if (!params.isPresent()) {
+            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid parameters");
+            return;
+        }
+
+        Optional<Object> res = DataCache.executeMethod(world.get(), mName, params.get().getFirst(), params.get().getSecond());
+        if (!res.isPresent()) {
+            data.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not get world");
+            return;
+        }
+
+        data.addJson("ok", true, false);
+        data.addJson("world", world.get(), true);
+        data.addJson("result", res.get(), true);
+    }
+
+    @WebAPIRoute(method = "PUT", path = "/:world", perm = "change")
+    public void updateWorld(ServletData data) {
+        String uuid = data.getPathParam("world");
         if (!Util.isValidUUID(uuid)) {
             data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid world UUID");
             return;
@@ -150,140 +247,9 @@ public class WorldServlet extends WebAPIServlet {
         data.addJson("world", resWorld.orElse(null), true);
     }
 
-    @Override
-    @Permission(perm = "world.post")
-    protected void handlePost(ServletData data) {
-        final String[] paths = data.getPathParts();
-
-        // A post directly to /api/world creates a new world
-        if (paths.length < 1 || paths[0].isEmpty()) {
-            WorldArchetype.Builder builder = WorldArchetype.builder();
-
-            Optional<CreateWorldRequest> optReq = data.getRequestBody(CreateWorldRequest.class);
-            if (!optReq.isPresent()) {
-                data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid world data: " + data.getLastParseError().getMessage());
-                return;
-            }
-
-            CreateWorldRequest req = optReq.get();
-
-            if (req.getName().isEmpty()) {
-                data.sendError(HttpServletResponse.SC_BAD_REQUEST, "No name provided");
-                return;
-            }
-
-            req.getDimensionType().ifPresent(builder::dimension);
-            req.getGeneratorType().ifPresent(builder::generator);
-            req.getGameMode().ifPresent(builder::gameMode);
-            req.getDifficulty().ifPresent(builder::difficulty);
-
-            if (req.getSeed() != null) {
-                builder.seed(req.getSeed());
-            }
-            if (req.doesLoadOnStartup() != null) {
-                builder.loadsOnStartup(req.doesLoadOnStartup());
-            }
-            if (req.doesKeepSpawnLoaded() != null) {
-                builder.keepsSpawnLoaded(req.doesKeepSpawnLoaded());
-            }
-            if (req.doesAllowCommands() != null) {
-                builder.commandsAllowed(req.doesAllowCommands());
-            }
-            if (req.doesGenerateBonusChest() != null) {
-                builder.generateBonusChest(req.doesGenerateBonusChest());
-            }
-            if (req.doesUseMapFeatures() != null) {
-                builder.usesMapFeatures(req.doesUseMapFeatures());
-            }
-
-            String archTypeName = UUID.randomUUID().toString();
-            WorldArchetype archType = builder.enabled(true).build(archTypeName, archTypeName);
-
-            Optional<WorldProperties> resProps = WebAPI.runOnMain(() -> {
-                try {
-                    return Sponge.getServer().createWorldProperties(req.getName(), archType);
-                } catch (IOException e) {
-                    data.addJson("ok", false, false);
-                    data.addJson("error", e, false);
-                    return null;
-                }
-            });
-
-            if (!resProps.isPresent())
-                return;
-
-            CachedWorld world = DataCache.updateWorld(resProps.get());
-
-            data.setStatus(HttpServletResponse.SC_CREATED);
-            data.addJson("ok", true, false);
-            data.addJson("world", world, true);
-            data.setHeader("Location", world.getLink());
-            return;
-        }
-
-        // A post to /api/world/{uuid}/{method} is handled here
-        String uuid = paths[0];
-        if (uuid.split("-").length != 5) {
-            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid world UUID");
-            return;
-        }
-
-        Optional<CachedWorld> world = DataCache.getWorld(UUID.fromString(uuid));
-        if (!world.isPresent()) {
-            data.sendError(HttpServletResponse.SC_NOT_FOUND, "World with UUID '" + uuid + "' could not be found");
-            return;
-        }
-
-        if (paths.length < 2 || paths[1].isEmpty()) {
-            data.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED, "Invalid method");
-            return;
-        }
-
-        String method = paths[1].toLowerCase();
-        final JsonNode reqJson = data.getRequestBody();
-
-        switch (method) {
-            case "method":
-                if (!reqJson.has("method")) {
-                    data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Request must define the 'method' property");
-                    return;
-                }
-
-                String mName = reqJson.get("method").asText();
-                Optional<Tuple<Class[], Object[]>> params = Util.parseParams(reqJson.get("params"));
-
-                if (!params.isPresent()) {
-                    data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid parameters");
-                    return;
-                }
-
-                Optional<Object> res = DataCache.executeMethod(world.get(), mName, params.get().getFirst(), params.get().getSecond());
-                if (!res.isPresent()) {
-                    data.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not get world");
-                    return;
-                }
-
-                data.addJson("ok", true, false);
-                data.addJson("world", world.get(), true);
-                data.addJson("result", res.get(), true);
-                break;
-
-            default:
-                data.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED, "Invalid method");
-        }
-    }
-
-    @Override
-    @Permission(perm = "world.delete")
-    protected void handleDelete(ServletData data) {
-        String[] paths = data.getPathParts();
-
-        if (paths.length == 0 || paths[0].isEmpty()) {
-            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid world UUID");
-            return;
-        }
-
-        String uuid = paths[0];
+    @WebAPIRoute(method = "DELETE", path = "/:world", perm = "delete")
+    public void deleteWorld(ServletData data) {
+        String uuid = data.getPathParam("world");
         if (uuid.split("-").length != 5) {
             data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid world UUID");
             return;

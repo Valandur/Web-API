@@ -1,0 +1,48 @@
+get:
+  summary: Command list
+  description: |
+    Gets a list of all the commands available on the server.
+
+    > Required permission: cmd.list
+  tags:
+    - Command
+  responses:
+    403:
+      $ref: "../responses/403.yaml"
+    200:
+      description: List of commands
+      schema:
+        type: object
+        properties:
+          commands:
+            type: array
+            description: A list of commands
+            items:
+              $ref: "../definitions/Command.yaml"
+post:
+  summary: Execute command
+  description: |
+    Execute a command on the server. (Almost the same as running it from the console).
+    Pass a list of commands to execute them in succession, if only passing one command the
+    array is not required.
+
+    > Required permission: cmd.run
+    > Required permission: cmd.run.[command]
+  parameters:
+    - name: Request
+      in: body
+      description: The command and arguments sent to the server
+      required: true
+      schema:
+        type: array
+        items:
+          $ref: "../definitions/CommandRequest.yaml"
+  tags:
+    - Command
+  responses:
+    403:
+      $ref: "../responses/403.yaml"
+    200:
+      description: The command responses
+      schema:
+        $ref: "../definitions/CommandResponse.yaml"

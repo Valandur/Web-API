@@ -6,6 +6,7 @@ import java.util.Map;
 
 @JsonDeserialize
 public class UpdateWorldRequest extends BaseWorldRequest {
+
     @JsonDeserialize
     private Boolean loaded;
     public Boolean isLoaded() {

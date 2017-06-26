@@ -1,0 +1,17 @@
+get:
+  summary: List block updates
+  description: |
+    List all currently running/paused block update operations.
+
+    > Required permission: block.update.list
+  tags:
+    - Block
+  responses:
+    403:
+      $ref: "../responses/403.yaml"
+    200:
+      description: Block updates
+      schema:
+        type: array
+        items:
+          $ref: "../definitions/BlockUpdate.yaml"

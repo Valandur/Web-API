@@ -1,0 +1,132 @@
+get:
+  summary: Detailed entity info
+  description: |
+    Get detailed information about an entity.
+
+    > Required permission: entity.one
+  parameters:
+    - name: uuid
+      in: path
+      type: string
+      description: The uuid of the entity to get detailed information about.
+      required: true
+    - name: fields
+      in: query
+      type: string
+      description: An optional list of additional fields to get.
+    - name: methods
+      in: query
+      type: string
+      description: An optional list of additional methods to get.
+  tags:
+    - Entity
+  responses:
+    400:
+      $ref: "../responses/400.yaml"
+    403:
+      $ref: "../responses/403.yaml"
+    404:
+      $ref: "../responses/404.yaml"
+    200:
+      description: Detailed entity info
+      schema:
+        $ref: "../definitions/EntityFull.yaml"
+put:
+  summary: Edit entity
+  description: |
+    Update the properties of an existing entity.
+
+    > Required permission: entity.change
+  parameters:
+    - name: uuid
+      in: path
+      type: string
+      description: The uuid of the entity.
+      required: true
+    - name: UpdateEntityRequest
+      in: body
+      description: The new properties of the entity
+      required: true
+      schema:
+        $ref: "../definitions/UpdateEntityRequest.yaml"
+  tags:
+    - Entity
+  responses:
+    400:
+      $ref: "../responses/400.yaml"
+    403:
+      $ref: "../responses/403.yaml"
+    404:
+      $ref: "../responses/404.yaml"
+    200:
+      description: The changed entity
+      schema:
+        type: object
+        properties:
+          ok:
+            type: boolean
+            description: True if the operation was successful, false otherwise.
+          entity:
+            $ref: "../definitions/EntityFull.yaml"
+post:
+  summary: Execute entity method
+  description: |
+    Provides direct access to the underlaying entity object and can execute any method on it.
+
+    > Required permission: entity.method
+  parameters:
+    - name: uuid
+      in: path
+      type: string
+      description: The uuid of the entity.
+      required: true
+    - name: Request
+      in: body
+      description: Information about which method to execute.
+      required: true
+      schema:
+        $ref: "../definitions/RawRequest.yaml"
+  tags:
+    - Entity
+  responses:
+    400:
+      $ref: "../responses/400.yaml"
+    403:
+      $ref: "../responses/403.yaml"
+    404:
+      $ref: "../responses/404.yaml"
+    200:
+      description: Method return value
+      schema:
+        $ref: "../definitions/RawResponse.yaml"
+delete:
+  summary: Destroy an entity
+  description: |
+    Destroys an entity.
+
+    > Required permission: entity.delete
+  parameters:
+    - name: uuid
+      in: path
+      type: string
+      description: The uuid of the entity.
+      required: true
+  tags:
+   - World
+  responses:
+    400:
+      $ref: "../responses/400.yaml"
+    403:
+      $ref: "../responses/403.yaml"
+    404:
+      $ref: "../responses/404.yaml"
+    200:
+      description: The deleted entity
+      schema:
+        type: object
+        properties:
+          ok:
+            type: boolean
+            description: True if the operation was successful, false otherwise.
+          entity:
+            $ref: "../definitions/EntityFull.yaml"

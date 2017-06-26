@@ -13,6 +13,7 @@ import valandur.webapi.user.Users;
 import java.util.Optional;
 
 public class CmdUserAdd implements CommandExecutor {
+
     @Override
     public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
         Optional<String> optUsername = args.getOne("username");

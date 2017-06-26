@@ -1,0 +1,16 @@
+title: Command
+type: object
+properties:
+  name:
+    type: string
+    description: The main name of the command.
+  description:
+    type: string
+    description: Describes what the command does.
+  link:
+    type: string
+    description: The API URL which contains detailed information about this command.
+example:
+  name: webapi
+  description: Manage Web-API settings
+  link: "/api/cmd/webapi"

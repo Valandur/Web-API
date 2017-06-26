@@ -9,6 +9,7 @@ import java.util.Optional;
 
 @JsonDeserialize
 public class CreateWorldRequest extends BaseWorldRequest {
+
     @JsonDeserialize
     private String dimension;
     public Optional<DimensionType> getDimensionType() {

@@ -1,0 +1,58 @@
+get:
+  summary: Subclasses
+  description: |
+    Gets all the subclasses of a specific class.
+
+    > Required permission: class.subclasses
+  parameters:
+    - name: classname
+      in: path
+      type: string
+      description: The classname of the class to show.
+      required: true
+  tags:
+    - Class
+  responses:
+    403:
+      $ref: "../responses/403.yaml"
+    404:
+      $ref: "../responses/404.yaml"
+    200:
+      description: List of subclasses
+      schema:
+        type: object
+        properties:
+          base:
+            type: string
+            description: The base class.
+          classes:
+            type: array
+            description: An array of all the subclasses of the base class.
+            items:
+              type: string
+        example:
+          base: org.spongepowered.api.event.Event
+          classes:
+          - org.spongepowered.api.event.SaveWorldEvent$Post$Impl
+          - org.spongepowered.api.event.FishingEvent$HookEntity$Impl
+          - org.spongepowered.api.event.item.inventory.ChangeInventoryEvent$Transfer
+          - org.spongepowered.api.event.TameEntityEvent$Impl
+          - org.spongepowered.api.event.CollideEntityEvent$Impl
+          - org.spongepowered.api.event.game.state.GameStartedServerEvent
+          - org.spongepowered.api.event.ClientConnectionEvent$Auth$Impl
+          - org.spongepowered.api.event.block.tileentity.ChangeSignEvent
+          - org.spongepowered.api.event.world.SaveWorldEvent
+          - org.spongepowered.api.event.item.inventory.DropItemEvent$Dispense
+          - org.spongepowered.api.event.ChangeInventoryEvent$Pickup$Impl
+          - org.spongepowered.api.event.ChangeGameModeEvent$Impl
+          - me.ryanhamshire.griefprevention.api.event.ResizeClaimEvent
+          - nl.riebie.mcclans.api.events.ClanSetHomeEvent
+          - org.spongepowered.api.event.BreedEntityEvent$FindMate$Impl
+          - org.spongepowered.api.event.action.SleepingEvent$Tick
+          - org.spongepowered.api.event.game.state.GameStateEvent
+          - org.spongepowered.api.event.TargetAgentEvent$Impl
+          - org.spongepowered.api.event.item.inventory.ClickInventoryEvent$Shift$Primary
+          - org.spongepowered.api.event.ChangeInventoryEvent$Transfer$Impl
+          - org.spongepowered.api.event.BrewingEvent$Tick$Impl
+          - org.spongepowered.api.event.block.TickBlockEvent$Random
+          - org.spongepowered.api.event.TabCompleteEvent$Command$Impl

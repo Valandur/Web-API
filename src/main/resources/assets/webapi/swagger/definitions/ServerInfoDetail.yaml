@@ -1,0 +1,32 @@
+title: ServerInfoDetail
+type: object
+description: Information about the Game/API/Implementation running on the server.
+properties:
+  id:
+    type: string
+    description: The unique id of the api.
+  name:
+    type: string
+    description: The name of the api.
+  version:
+    type: string
+    description: The version of the api.
+  description:
+    type: string
+    description: The description of the api.
+  url:
+    type: string
+    description: The website of the api.
+  authors:
+    type: array
+    description: The list of authors that worked on the api.
+    items:
+      type: string
+      description: The name of the author.
+example:
+  id: sponge
+  name: SpongeVanilla
+  version: 1.11.2-6.0.0-BETA-229
+  description: The SpongeAPI implementation for Vanilla Minecraft
+  url: 1.11.2-6.0.0-BETA-229
+  authors: []

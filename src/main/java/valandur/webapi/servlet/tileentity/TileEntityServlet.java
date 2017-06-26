@@ -1,21 +1,25 @@
-package valandur.webapi.servlet;
+package valandur.webapi.servlet.tileentity;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import org.spongepowered.api.util.Tuple;
-import valandur.webapi.annotation.WebAPISpec;
+import valandur.webapi.api.annotation.WebAPIRoute;
+import valandur.webapi.api.annotation.WebAPIServlet;
+import valandur.webapi.api.servlet.IServlet;
 import valandur.webapi.cache.DataCache;
 import valandur.webapi.cache.tileentity.CachedTileEntity;
 import valandur.webapi.cache.world.CachedWorld;
 import valandur.webapi.misc.Util;
+import valandur.webapi.servlet.ServletData;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.UUID;
 
-public class TileEntityServlet extends WebAPIServlet {
+@WebAPIServlet(basePath = "tile-entity")
+public class TileEntityServlet implements IServlet {
 
-    @WebAPISpec(method = "GET", path = "/", perm = "tile-entity.get")
+    @WebAPIRoute(method = "GET", path = "/", perm = "list")
     public void getTileEntities(ServletData data) {
         Optional<Collection<CachedTileEntity>> coll = DataCache.getTileEntities();
         if (!coll.isPresent()) {
@@ -27,7 +31,7 @@ public class TileEntityServlet extends WebAPIServlet {
         data.addJson("tileEntities", coll.get(), data.getQueryParam("details").isPresent());
     }
 
-    @WebAPISpec(method = "GET", path = "/:world/:x/:y/:z", perm = "tile-entity.get")
+    @WebAPIRoute(method = "GET", path = "/:world/:x/:y/:z", perm = "one")
     public void getTileEntity(ServletData data) {
         String uuid = data.getPathParam("world");
         if (!Util.isValidUUID(uuid)) {
@@ -66,7 +70,7 @@ public class TileEntityServlet extends WebAPIServlet {
         data.addJson("tileEntity", te.get(), true);
     }
 
-    @WebAPISpec(method = "POST", path = "/:world/:x/:y/:z/method", perm = "tile-entity.post")
+    @WebAPIRoute(method = "POST", path = "/:world/:x/:y/:z/method", perm = "method")
     public void executeMethod(ServletData data) {
         String uuid = data.getPathParam("world");
         if (uuid.split("-").length != 5) {

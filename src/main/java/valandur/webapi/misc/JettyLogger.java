@@ -22,13 +22,13 @@ public class JettyLogger implements Logger {
         logger.warn(msg, thrown);
     }
     @Override public void info(String msg, Object... args) {
-        logger.info(msg, args);
+        logger.debug(msg, args);
     }
     @Override public void info(Throwable thrown) {
-        logger.info("THROWN: " + thrown);
+        logger.debug("THROWN: " + thrown);
     }
     @Override public void info(String msg, Throwable thrown) {
-        logger.info(msg, thrown);
+        logger.debug(msg, thrown);
     }
     @Override public boolean isDebugEnabled() { return enableDebug; }
     @Override public void setDebugEnabled(boolean enabled) {

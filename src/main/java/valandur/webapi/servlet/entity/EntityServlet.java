@@ -7,26 +7,28 @@ import org.spongepowered.api.event.cause.entity.damage.source.DamageSource;
 import org.spongepowered.api.util.Tuple;
 import org.spongepowered.api.world.World;
 import valandur.webapi.WebAPI;
-import valandur.webapi.annotation.WebAPISpec;
+import valandur.webapi.api.annotation.WebAPIRoute;
+import valandur.webapi.api.annotation.WebAPIServlet;
+import valandur.webapi.api.servlet.IServlet;
 import valandur.webapi.cache.DataCache;
 import valandur.webapi.cache.entity.CachedEntity;
 import valandur.webapi.misc.Util;
 import valandur.webapi.servlet.ServletData;
-import valandur.webapi.servlet.WebAPIServlet;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.Optional;
 import java.util.UUID;
 
-public class EntityServlet extends WebAPIServlet {
+@WebAPIServlet(basePath = "entity")
+public class EntityServlet implements IServlet {
 
-    @WebAPISpec(method = "GET", path = "/", perm = "entity.get")
+    @WebAPIRoute(method = "GET", path = "/", perm = "list")
     public void getEntities(ServletData data) {
         data.addJson("ok", true, false);
         data.addJson("entities", DataCache.getEntities(), data.getQueryParam("details").isPresent());
     }
 
-    @WebAPISpec(method = "GET", path = "/:entity", perm = "entity.get")
+    @WebAPIRoute(method = "GET", path = "/:entity", perm = "one")
     public void getEntity(ServletData data) {
         String uuid = data.getPathParam("entity");
         if (!Util.isValidUUID(uuid)) {
@@ -54,7 +56,7 @@ public class EntityServlet extends WebAPIServlet {
         data.addJson("entity", entity.get(), true);
     }
 
-    @WebAPISpec(method = "PUT", path = "/:entity", perm = "entity.put")
+    @WebAPIRoute(method = "PUT", path = "/:entity", perm = "change")
     public void updateEntity(ServletData data) {
         String uuid = data.getPathParam("entity");
         if (!Util.isValidUUID(uuid)) {
@@ -111,7 +113,7 @@ public class EntityServlet extends WebAPIServlet {
         data.addJson("entity", resEntity.orElse(null), true);
     }
 
-    @WebAPISpec(method = "POST", path = "/", perm = "entity.post")
+    @WebAPIRoute(method = "POST", path = "/", perm = "create")
     public void createEntity(ServletData data) {
         Optional<CreateEntityRequest> optReq = data.getRequestBody(CreateEntityRequest.class);
         if (!optReq.isPresent()) {
@@ -165,7 +167,7 @@ public class EntityServlet extends WebAPIServlet {
         data.setHeader("Location", entity.getLink());
     }
 
-    @WebAPISpec(method = "POST", path = "/:entity/method", perm = "entity.post")
+    @WebAPIRoute(method = "POST", path = "/:entity/method", perm = "method")
     public void executeMethod(ServletData data) {
         String uuid = data.getPathParam("entity");
         if (uuid.split("-").length != 5) {
@@ -204,7 +206,7 @@ public class EntityServlet extends WebAPIServlet {
         data.addJson("result", res.get(), true);
     }
 
-    @WebAPISpec(method = "DELETE", path = "/:entity", perm = "entity.delete")
+    @WebAPIRoute(method = "DELETE", path = "/:entity", perm = "delete")
     public void removeEntity(ServletData data) {
         String uuid = data.getPathParam("entity");
         if (uuid.split("-").length != 5) {

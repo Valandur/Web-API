@@ -1,15 +1,19 @@
-package valandur.webapi.servlet;
+package valandur.webapi.servlet.message;
 
-import valandur.webapi.annotation.WebAPISpec;
+import valandur.webapi.api.annotation.WebAPIRoute;
+import valandur.webapi.api.annotation.WebAPIServlet;
+import valandur.webapi.api.servlet.IServlet;
 import valandur.webapi.message.Message;
 import valandur.webapi.message.Messages;
+import valandur.webapi.servlet.ServletData;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.Optional;
 
-public class MessageServlet extends WebAPIServlet {
+@WebAPIServlet(basePath = "message")
+public class MessageServlet implements IServlet {
 
-    @WebAPISpec(method = "POST", path = "/", perm = "message.post")
+    @WebAPIRoute(method = "POST", path = "/", perm = "create")
     public void sendMessage(ServletData data) {
         Optional<Message> msg = data.getRequestBody(Message.class);
         if (!msg.isPresent()) {

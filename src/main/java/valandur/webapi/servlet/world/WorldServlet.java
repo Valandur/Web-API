@@ -7,12 +7,13 @@ import org.spongepowered.api.world.World;
 import org.spongepowered.api.world.WorldArchetype;
 import org.spongepowered.api.world.storage.WorldProperties;
 import valandur.webapi.WebAPI;
-import valandur.webapi.annotation.WebAPISpec;
+import valandur.webapi.api.annotation.WebAPIRoute;
+import valandur.webapi.api.annotation.WebAPIServlet;
+import valandur.webapi.api.servlet.IServlet;
 import valandur.webapi.cache.DataCache;
 import valandur.webapi.cache.world.CachedWorld;
 import valandur.webapi.misc.Util;
 import valandur.webapi.servlet.ServletData;
-import valandur.webapi.servlet.WebAPIServlet;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -21,15 +22,16 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
-public class WorldServlet extends WebAPIServlet {
+@WebAPIServlet(basePath = "world")
+public class WorldServlet implements IServlet {
 
-    @WebAPISpec(method = "GET", path = "/", perm = "world.get")
+    @WebAPIRoute(method = "GET", path = "/", perm = "list")
     public void getWorlds(ServletData data) {
         data.addJson("ok", true, false);
         data.addJson("worlds", DataCache.getWorlds(), data.getQueryParam("details").isPresent());
     }
 
-    @WebAPISpec(method = "GET", path = "/:world", perm = "world.get")
+    @WebAPIRoute(method = "GET", path = "/:world", perm = "one")
     public void getWorld(ServletData data) {
         String uuid = data.getPathParam("world");
         if (!Util.isValidUUID(uuid)) {
@@ -57,7 +59,7 @@ public class WorldServlet extends WebAPIServlet {
         data.addJson("world", world.get(), true);
     }
 
-    @WebAPISpec(method = "POST", path = "/", perm = "world.post")
+    @WebAPIRoute(method = "POST", path = "/", perm = "create")
     public void createWorld(ServletData data) {
         WorldArchetype.Builder builder = WorldArchetype.builder();
 
@@ -122,7 +124,7 @@ public class WorldServlet extends WebAPIServlet {
         data.setHeader("Location", world.getLink());
     }
 
-    @WebAPISpec(method = "POST", path = "/:world/method", perm = "world.post")
+    @WebAPIRoute(method = "POST", path = "/:world/method", perm = "method")
     public void executeMethod(ServletData data) {
         String uuid = data.getPathParam("world");
         if (uuid.split("-").length != 5) {
@@ -161,7 +163,7 @@ public class WorldServlet extends WebAPIServlet {
         data.addJson("result", res.get(), true);
     }
 
-    @WebAPISpec(method = "PUT", path = "/:world", perm = "world.put")
+    @WebAPIRoute(method = "PUT", path = "/:world", perm = "change")
     public void updateWorld(ServletData data) {
         String uuid = data.getPathParam("world");
         if (!Util.isValidUUID(uuid)) {
@@ -245,7 +247,7 @@ public class WorldServlet extends WebAPIServlet {
         data.addJson("world", resWorld.orElse(null), true);
     }
 
-    @WebAPISpec(method = "DELETE", path = "/:world", perm = "world.delete")
+    @WebAPIRoute(method = "DELETE", path = "/:world", perm = "delete")
     public void deleteWorld(ServletData data) {
         String uuid = data.getPathParam("world");
         if (uuid.split("-").length != 5) {

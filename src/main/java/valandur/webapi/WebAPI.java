@@ -49,6 +49,8 @@ import org.spongepowered.api.scheduler.SpongeExecutorService;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
 import org.spongepowered.api.util.Tuple;
+import valandur.webapi.api.service.IServletService;
+import valandur.webapi.api.servlet.IServlet;
 import valandur.webapi.block.BlockUpdate;
 import valandur.webapi.block.BlockUpdateStatusChangeEvent;
 import valandur.webapi.block.Blocks;
@@ -69,11 +71,23 @@ import valandur.webapi.json.JsonConverter;
 import valandur.webapi.misc.Extensions;
 import valandur.webapi.misc.JettyLogger;
 import valandur.webapi.misc.Util;
-import valandur.webapi.servlet.*;
+import valandur.webapi.servlet.ApiServlet;
+import valandur.webapi.servlet.Servlets;
+import valandur.webapi.servlet.block.BlockServlet;
+import valandur.webapi.servlet.clazz.ClassServlet;
+import valandur.webapi.servlet.cmd.CmdServlet;
 import valandur.webapi.servlet.entity.EntityServlet;
+import valandur.webapi.servlet.history.HistoryServlet;
+import valandur.webapi.servlet.info.InfoServlet;
+import valandur.webapi.servlet.message.MessageServlet;
 import valandur.webapi.servlet.player.PlayerServlet;
+import valandur.webapi.servlet.plugin.PluginServlet;
+import valandur.webapi.servlet.recipe.RecipeServlet;
+import valandur.webapi.servlet.registry.RegistryServlet;
+import valandur.webapi.servlet.tileentity.TileEntityServlet;
 import valandur.webapi.servlet.user.UserServlet;
 import valandur.webapi.servlet.world.WorldServlet;
+import valandur.webapi.server.ServerProperties;
 import valandur.webapi.user.UserPermission;
 import valandur.webapi.user.UserPermissionConfigSerializer;
 import valandur.webapi.user.Users;
@@ -99,7 +113,7 @@ import java.util.function.Supplier;
                 "Valandur"
         }
 )
-public class WebAPI {
+public class WebAPI implements IServletService {
 
     public static final String ID = "webapi";
     public static final String NAME = "Web-API";
@@ -152,6 +166,8 @@ public class WebAPI {
         return authHandler;
     }
 
+
+
     @Listener
     public void onPreInitialization(GamePreInitializationEvent event) {
         WebAPI.instance = this;
@@ -171,10 +187,13 @@ public class WebAPI {
         // Register custom serializers
         TypeSerializers.getDefaultSerializers().registerType(TypeToken.of(WebHook.class), new WebHookSerializer());
         TypeSerializers.getDefaultSerializers().registerType(TypeToken.of(UserPermission.class), new UserPermissionConfigSerializer());
+
+        // Register API services
+        Sponge.getServiceManager().setProvider(this, IServletService.class, this);
     }
     @Listener
     public void onInitialization(GameInitializationEvent event) {
-        logger.info(WebAPI.NAME + " v" + WebAPI.VERSION + " is starting...");
+        logger.info(NAME + " v" + VERSION + " is starting...");
 
         logger.info("Setting up jetty logger...");
         Log.setLog(new JettyLogger());
@@ -192,6 +211,22 @@ public class WebAPI {
         DataCache.updateWorlds();
         DataCache.updatePlugins();
         DataCache.updateCommands();
+
+        logger.info("Registering servlets...");
+        Servlets.registerServlet(BlockServlet.class);
+        Servlets.registerServlet(ClassServlet.class);
+        Servlets.registerServlet(CmdServlet.class);
+        Servlets.registerServlet(EntityServlet.class);
+        Servlets.registerServlet(HistoryServlet.class);
+        Servlets.registerServlet(InfoServlet.class);
+        Servlets.registerServlet(MessageServlet.class);
+        Servlets.registerServlet(PlayerServlet.class);
+        Servlets.registerServlet(PluginServlet.class);
+        Servlets.registerServlet(RecipeServlet.class);
+        Servlets.registerServlet(RegistryServlet.class);
+        Servlets.registerServlet(TileEntityServlet.class);
+        Servlets.registerServlet(UserServlet.class);
+        Servlets.registerServlet(WorldServlet.class);
 
         logger.info(WebAPI.NAME + " ready");
     }
@@ -229,6 +264,8 @@ public class WebAPI {
         CommandRegistry.init();
 
         Users.init();
+
+        ServerProperties.init();
 
         if (triggeringPlayer != null) {
             triggeringPlayer.sendMessage(Text.builder().color(TextColors.AQUA)
@@ -326,29 +363,18 @@ public class WebAPI {
             if (adminPanelEnabled)
                 handlers.add(newContext("/admin", new AssetHandler("admin")));
 
+            // Setup all servlets
+            Servlets.init();
+
             // Main servlet context
             ServletContextHandler servletsContext = new ServletContextHandler();
             servletsContext.setContextPath("/api");
+            servletsContext.addServlet(ApiServlet.class, "/*");
 
             // Use a list to make requests first go through the auth handler and rate-limit handler
             HandlerList list = new HandlerList();
             list.setHandlers(new Handler[]{ authHandler, new RateLimitHandler(), servletsContext });
             handlers.add(list);
-
-            servletsContext.addServlet(BlockServlet.class, "/block/*");
-            servletsContext.addServlet(ClassServlet.class, "/class/*");
-            servletsContext.addServlet(CmdServlet.class, "/cmd/*");
-            servletsContext.addServlet(EntityServlet.class, "/entity/*");
-            servletsContext.addServlet(HistoryServlet.class, "/history/*");
-            servletsContext.addServlet(InfoServlet.class, "/info");
-            servletsContext.addServlet(MessageServlet.class, "/message/*");
-            servletsContext.addServlet(PlayerServlet.class, "/player/*");
-            servletsContext.addServlet(PluginServlet.class, "/plugin/*");
-            servletsContext.addServlet(RecipeServlet.class, "/recipe/*");
-            servletsContext.addServlet(RegistryServlet.class, "/registry/*");
-            servletsContext.addServlet(TileEntityServlet.class, "/tile-entity/*");
-            servletsContext.addServlet(UserServlet.class, "/user/*");
-            servletsContext.addServlet(WorldServlet.class, "/world/*");
 
             // Add collection of handlers to server
             ContextHandlerCollection coll = new ContextHandlerCollection();
@@ -610,5 +636,10 @@ public class WebAPI {
                 return Optional.empty();
             }
         }
+    }
+
+    @Override
+    public void registerServlet(Class<? extends IServlet> servlet) {
+        Servlets.registerServlet(servlet);
     }
 }

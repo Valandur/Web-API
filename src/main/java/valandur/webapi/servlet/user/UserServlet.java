@@ -1,19 +1,21 @@
 package valandur.webapi.servlet.user;
 
 import valandur.webapi.WebAPI;
-import valandur.webapi.annotation.WebAPISpec;
+import valandur.webapi.api.annotation.WebAPIRoute;
+import valandur.webapi.api.annotation.WebAPIServlet;
+import valandur.webapi.api.servlet.IServlet;
 import valandur.webapi.misc.Util;
 import valandur.webapi.servlet.ServletData;
-import valandur.webapi.servlet.WebAPIServlet;
 import valandur.webapi.user.UserPermission;
 import valandur.webapi.user.Users;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.Optional;
 
-public class UserServlet extends WebAPIServlet {
+@WebAPIServlet(basePath = "user")
+public class UserServlet implements IServlet {
 
-    @WebAPISpec(method = "GET", path = "/")
+    @WebAPIRoute(method = "GET", path = "/")
     public void getUserDetails(ServletData data) {
         UserPermission user = data.getUser();
         if (user != null) {
@@ -24,7 +26,7 @@ public class UserServlet extends WebAPIServlet {
         }
     }
 
-    @WebAPISpec(method = "POST", path = "/")
+    @WebAPIRoute(method = "POST", path = "/")
     public void authUser(ServletData data) {
         Optional<AuthRequest> optReq = data.getRequestBody(AuthRequest.class);
         if (!optReq.isPresent()) {

@@ -3,6 +3,7 @@ package valandur.webapi.misc;
 import java.util.*;
 
 public class TreeNode<K, V> {
+
     private K key;
     public K getKey() {
         return key;

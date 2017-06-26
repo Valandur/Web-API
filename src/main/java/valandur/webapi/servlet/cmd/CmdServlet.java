@@ -1,29 +1,33 @@
-package valandur.webapi.servlet;
+package valandur.webapi.servlet.cmd;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import valandur.webapi.WebAPI;
-import valandur.webapi.annotation.WebAPISpec;
+import valandur.webapi.api.annotation.WebAPIRoute;
+import valandur.webapi.api.annotation.WebAPIServlet;
+import valandur.webapi.api.servlet.IServlet;
 import valandur.webapi.cache.DataCache;
 import valandur.webapi.cache.command.CachedCommand;
 import valandur.webapi.command.CommandSource;
 import valandur.webapi.permission.Permissions;
+import valandur.webapi.servlet.ServletData;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class CmdServlet extends WebAPIServlet {
+@WebAPIServlet(basePath = "cmd")
+public class CmdServlet implements IServlet {
 
     public static int CMD_WAIT_TIME = 1000;
 
-    @WebAPISpec(method = "GET", path = "/", perm = "cmd.get")
+    @WebAPIRoute(method = "GET", path = "/", perm = "list")
     public void getCommands(ServletData data) {
         data.addJson("ok", true, false);
         data.addJson("commands", DataCache.getCommands(), data.getQueryParam("details").isPresent());
     }
 
-    @WebAPISpec(method = "GET", path = "/:cmd", perm = "cmd.get")
+    @WebAPIRoute(method = "GET", path = "/:cmd", perm = "one")
     public void getCommand(ServletData data) {
         String cName = data.getPathParam("cmd");
         Optional<CachedCommand> cmd = DataCache.getCommand(cName);
@@ -36,13 +40,13 @@ public class CmdServlet extends WebAPIServlet {
         data.addJson("command", cmd.get(), true);
     }
 
-    @WebAPISpec(method = "POST", path = "/", perm = "cmd.post")
+    @WebAPIRoute(method = "POST", path = "/", perm = "run")
     public void runCommands(ServletData data) {
         final JsonNode reqJson = data.getRequestBody();
 
         if (!reqJson.isArray()) {
             String cmd = reqJson.get("command").asText().split(" ")[0];
-            if (!Permissions.permits(data.getPermissions(), new String[]{ "cmd", "post", cmd })) {
+            if (!Permissions.permits(data.getPermissions(), new String[]{ cmd })) {
                 data.sendError(HttpServletResponse.SC_FORBIDDEN, "Access denied");
                 return;
             }
@@ -55,7 +59,7 @@ public class CmdServlet extends WebAPIServlet {
         List<Object> res = new ArrayList<>();
         for (JsonNode node : reqJson) {
             String cmd = node.get("command").asText().split(" ")[0];
-            if (!Permissions.permits(data.getPermissions(), new String[]{ "cmd", "post", cmd })) {
+            if (!Permissions.permits(data.getPermissions(), new String[]{ cmd })) {
                 res.add(new Exception("Not allowed"));
                 continue;
             }

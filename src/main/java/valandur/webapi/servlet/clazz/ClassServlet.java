@@ -1,21 +1,25 @@
-package valandur.webapi.servlet;
+package valandur.webapi.servlet.clazz;
 
 import valandur.webapi.WebAPI;
-import valandur.webapi.annotation.WebAPISpec;
+import valandur.webapi.api.annotation.WebAPIRoute;
+import valandur.webapi.api.annotation.WebAPIServlet;
+import valandur.webapi.api.servlet.IServlet;
 import valandur.webapi.cache.DataCache;
+import valandur.webapi.servlet.ServletData;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.Set;
 
-public class ClassServlet extends WebAPIServlet {
+@WebAPIServlet(basePath = "class")
+public class ClassServlet implements IServlet {
 
-    @WebAPISpec(method = "GET", path = "/", perm = "class.get")
+    @WebAPIRoute(method = "GET", path = "/", perm = "list")
     public void getCachedClasses(ServletData data) {
         data.addJson("ok", true, false);
         data.addJson("classes", DataCache.getClasses().keySet().stream().map(Class::getName).toArray(String[]::new), false);
     }
 
-    @WebAPISpec(method = "GET", path = "/:class", perm = "class.get")
+    @WebAPIRoute(method = "GET", path = "/:class", perm = "one")
     public void getClass(ServletData data) {
         String className = data.getPathParam("class");
 
@@ -27,7 +31,7 @@ public class ClassServlet extends WebAPIServlet {
         }
     }
 
-    @WebAPISpec(method = "GET", path = "/:class/subclasses", perm = "class.get")
+    @WebAPIRoute(method = "GET", path = "/:class/subclasses", perm = "subclasses")
     public void getSubclasses(ServletData data) {
         String className = data.getPathParam("class");
 

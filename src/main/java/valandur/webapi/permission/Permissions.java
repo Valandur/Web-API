@@ -6,6 +6,7 @@ import valandur.webapi.misc.TreeNode;
 import java.util.*;
 
 public class Permissions {
+
     /**
      * Returns a permissions tree representing the passed configuration node
      * @param config The configuration node which represents a permission set

@@ -1,8 +1,10 @@
 package valandur.webapi.permission;
 
+
 import valandur.webapi.misc.TreeNode;
 
 public class PermissionStruct {
+
     private TreeNode<String, Boolean> permissions;
     public TreeNode<String, Boolean> getPermissions() {
         return permissions;

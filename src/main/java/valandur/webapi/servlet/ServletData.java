@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import valandur.webapi.api.servlet.IServletData;
 import valandur.webapi.json.JsonConverter;
 import valandur.webapi.misc.TreeNode;
 import valandur.webapi.misc.Util;
@@ -17,7 +18,7 @@ import java.io.PrintWriter;
 import java.util.Map;
 import java.util.Optional;
 
-public class ServletData {
+public class ServletData implements IServletData {
 
     private HttpServletRequest req;
     private HttpServletResponse resp;

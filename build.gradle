@@ -65,12 +65,6 @@ shadowJar {
 }
 shadowJar.dependsOn([':webapi-api:build'])
 
-task cleanJars() {
-    project.file('artifacts').listFiles().each {
-        x -> if (x.name.endsWith("jar")) { x.delete() }
-    }
-}
-
 task copyJars(type: Copy, dependsOn: ':webapi-api:build') {
     from([subprojects.jar, shadowJar])
     into project.file('artifacts')
@@ -80,7 +74,5 @@ artifacts {
     archives shadowJar
 }
 
-clean.dependsOn(cleanJars)
-copyJars.mustRunAfter(cleanJars)
 build.dependsOn(shadowJar)
 build.dependsOn(copyJars)

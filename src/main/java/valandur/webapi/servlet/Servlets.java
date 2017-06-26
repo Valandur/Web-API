@@ -6,6 +6,7 @@ import valandur.webapi.WebAPI;
 import valandur.webapi.api.annotation.WebAPIRoute;
 import valandur.webapi.api.annotation.WebAPIServlet;
 import valandur.webapi.api.servlet.IServlet;
+import valandur.webapi.api.servlet.IServletData;
 import valandur.webapi.misc.Util;
 
 import java.lang.reflect.Method;
@@ -46,6 +47,15 @@ public class Servlets {
                 for (Tuple<WebAPIRoute, Method> tuple : newMethods) {
                     WebAPIRoute route = tuple.getFirst();
                     Method method = tuple.getSecond();
+                    if (method.getParameterTypes().length != 1) {
+                        logger.error("    Method " + method.getName() + " may only have 1 argument");
+                        continue;
+                    }
+                    if (method.getParameterTypes()[0] != IServletData.class &&
+                            method.getParameterTypes()[0] != ServletData.class) {
+                        logger.error("    Method " + method.getName() + " parameter is not of type IServletData");
+                        continue;
+                    }
                     method.setAccessible(true);
                     logger.debug("    [" + route.method() + "] " + route.path() + " -> " +method.getName());
                 }

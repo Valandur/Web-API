@@ -54,7 +54,9 @@ shadowJar {
     relocate "edu", "valandur.webapi.shadow.edu"
     relocate "javassist", "valandur.webapi.shadow.javassist"
     relocate "javax", "valandur.webapi.shadow.javax"
-    relocate "org", "valandur.webapi.shadow.org"
+    relocate "org.mindrot", "valandur.webapi.shadow.org.mindrot"
+    relocate "org.eclipse", "valandur.webapi.shadow.org.eclipse"
+    relocate "org.reflections", "valandur.webapi.shadow.org.reflections"
     relocate "net", "valandur.webapi.shadow.net"
 
     exclude "/about.html"

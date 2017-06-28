@@ -47,13 +47,13 @@ public class Servlets {
                 for (Tuple<WebAPIRoute, Method> tuple : newMethods) {
                     WebAPIRoute route = tuple.getFirst();
                     Method method = tuple.getSecond();
-                    if (method.getParameterTypes().length != 1) {
+                    /*if (method.getParameterTypes().length != 1) {
                         logger.error("    Method " + method.getName() + " may only have 1 argument");
                         continue;
-                    }
+                    }*/
                     if (method.getParameterTypes()[0] != IServletData.class &&
                             method.getParameterTypes()[0] != ServletData.class) {
-                        logger.error("    Method " + method.getName() + " parameter is not of type IServletData");
+                        logger.error("    Method " + method.getName() + " first parameter is not of type IServletData");
                         continue;
                     }
                     method.setAccessible(true);
@@ -79,7 +79,7 @@ public class Servlets {
         List<Tuple<WebAPIRoute, Method>> methods = servletMethods.get(servlet);
 
         // Find the most suitable method according to the path
-        Map<String, String> bestMatches = null;
+        LinkedHashMap<String, String> bestMatches = null;
         Tuple<WebAPIRoute, Method> bestTuple = null;
 
         pathParts = pathParts.subList(1, pathParts.size());
@@ -92,7 +92,7 @@ public class Servlets {
                 continue;
 
             boolean doesMatch = true;
-            Map<String, String> matches = new HashMap<>();
+            LinkedHashMap<String, String> matches = new LinkedHashMap<>();
             for (int i = 0; i < specPathParts.size(); i++) {
                 if (!specPathParts.get(i).startsWith(":")) {
                     if (!specPathParts.get(i).equalsIgnoreCase(pathParts.get(i))) {

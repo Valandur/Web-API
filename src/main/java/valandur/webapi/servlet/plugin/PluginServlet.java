@@ -20,11 +20,10 @@ public class PluginServlet implements IServlet {
     }
 
     @WebAPIRoute(method = "GET", path = "/:plugin", perm = "one")
-    public void getPlugin(ServletData data) {
-        String pName = data.getPathParam("plugin");
-        Optional<CachedPluginContainer> plugin = DataCache.getPlugin(pName);
+    public void getPlugin(ServletData data, String pluginName) {
+        Optional<CachedPluginContainer> plugin = DataCache.getPlugin(pluginName);
         if (!plugin.isPresent()) {
-            data.sendError(HttpServletResponse.SC_NOT_FOUND, "Plugin with id '" + pName + "' could not be found");
+            data.sendError(HttpServletResponse.SC_NOT_FOUND, "Plugin with id '" + pluginName + "' could not be found");
             return;
         }
 

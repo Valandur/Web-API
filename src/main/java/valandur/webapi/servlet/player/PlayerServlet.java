@@ -24,31 +24,24 @@ public class PlayerServlet implements IServlet {
     }
 
     @WebAPIRoute(method = "GET", path = "/:player", perm = "one")
-    public void getPlayer(ServletData data) {
-        String uuid = data.getPathParam("player");
-        if (!Util.isValidUUID(uuid)) {
-            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid player UUID");
-            return;
-        }
-
-        Optional<CachedPlayer> player = DataCache.getPlayer(UUID.fromString(uuid));
-        if (!player.isPresent()) {
-            data.sendError(HttpServletResponse.SC_NOT_FOUND, "Player with UUID '" + uuid + "' could not be found");
-            return;
-        }
-
+    public void getPlayer(ServletData data, CachedPlayer player) {
         Optional<String> strFields = data.getQueryParam("fields");
         Optional<String> strMethods = data.getQueryParam("methods");
         if (strFields.isPresent() || strMethods.isPresent()) {
             String[] fields = strFields.map(s -> s.split(",")).orElse(new String[]{});
             String[] methods = strMethods.map(s -> s.split(",")).orElse(new String[]{});
-            Tuple extra = DataCache.getExtraData(player.get(), fields, methods);
+            Tuple extra = DataCache.getExtraData(player, fields, methods);
             data.addJson("fields", extra.getFirst(), true);
             data.addJson("methods", extra.getSecond(), true);
         }
 
         data.addJson("ok", true, false);
-        data.addJson("player", player.get(), true);
+        data.addJson("player", player, true);
+    }
+
+    @WebAPIRoute(method = "PUT", path = "/:player", perm = "change")
+    public void updatePlayer(ServletData data, CachedPlayer player) {
+        data.addJson("player", player, true);
     }
 
     @WebAPIRoute(method = "POST", path = "/:player/method", perm = "method")

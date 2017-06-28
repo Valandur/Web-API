@@ -14,7 +14,6 @@ import valandur.webapi.servlet.ServletData;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Collection;
 import java.util.Optional;
-import java.util.UUID;
 
 @WebAPIServlet(basePath = "tile-entity")
 public class TileEntityServlet implements IServlet {
@@ -32,27 +31,11 @@ public class TileEntityServlet implements IServlet {
     }
 
     @WebAPIRoute(method = "GET", path = "/:world/:x/:y/:z", perm = "one")
-    public void getTileEntity(ServletData data) {
-        String uuid = data.getPathParam("world");
-        if (!Util.isValidUUID(uuid)) {
-            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid tile entity UUID");
-            return;
-        }
-
-        Optional<CachedWorld> world = DataCache.getWorld(UUID.fromString(uuid));
-        if (!world.isPresent()) {
-            data.sendError(HttpServletResponse.SC_NOT_FOUND, "World with UUID '" + uuid + "' could not be found");
-            return;
-        }
-
-        int x = Integer.parseInt(data.getPathParam("x"));
-        int y = Integer.parseInt(data.getPathParam("y"));
-        int z = Integer.parseInt(data.getPathParam("z"));
-
-        Optional<CachedTileEntity> te = DataCache.getTileEntity(world.get(), x, y, z);
+    public void getTileEntity(ServletData data, CachedWorld world, int x, int y, int z) {
+        Optional<CachedTileEntity> te = DataCache.getTileEntity(world, x, y, z);
 
         if (!te.isPresent()) {
-            data.sendError(HttpServletResponse.SC_NOT_FOUND, "Tile entity in world '" + uuid + "' at [" + x + "," + y + "," + z + "] could not be found");
+            data.sendError(HttpServletResponse.SC_NOT_FOUND, "Tile entity in world '" + world.getName() + "' at [" + x + "," + y + "," + z + "] could not be found");
             return;
         }
 
@@ -71,26 +54,10 @@ public class TileEntityServlet implements IServlet {
     }
 
     @WebAPIRoute(method = "POST", path = "/:world/:x/:y/:z/method", perm = "method")
-    public void executeMethod(ServletData data) {
-        String uuid = data.getPathParam("world");
-        if (uuid.split("-").length != 5) {
-            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid world UUID");
-            return;
-        }
-
-        Optional<CachedWorld> world = DataCache.getWorld(UUID.fromString(uuid));
-        if (!world.isPresent()) {
-            data.sendError(HttpServletResponse.SC_NOT_FOUND, "World with UUID '" + uuid + "' could not be found");
-            return;
-        }
-
-        int x = Integer.parseInt(data.getPathParam("x"));
-        int y = Integer.parseInt(data.getPathParam("y"));
-        int z = Integer.parseInt(data.getPathParam("z"));
-
-        Optional<CachedTileEntity> te = DataCache.getTileEntity(world.get(), x, y, z);
+    public void executeMethod(ServletData data, CachedWorld world, int x, int y, int z) {
+        Optional<CachedTileEntity> te = DataCache.getTileEntity(world, x, y, z);
         if (!te.isPresent()) {
-            data.sendError(HttpServletResponse.SC_NOT_FOUND, "Tile entity in world '" + uuid + "' at [" + x + "," + y + "," + z + "] could not be found");
+            data.sendError(HttpServletResponse.SC_NOT_FOUND, "Tile entity in world '" + world.getName() + "' at [" + x + "," + y + "," + z + "] could not be found");
             return;
         }
 

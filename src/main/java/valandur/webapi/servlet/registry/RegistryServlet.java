@@ -14,9 +14,7 @@ import java.util.Collection;
 public class RegistryServlet implements IServlet {
 
     @WebAPIRoute(method = "GET", path = "/:class", perm = "one")
-    public void getRegistry(ServletData data) {
-        String className = data.getPathParam("class");
-
+    public void getRegistry(ServletData data, String className) {
         try {
             Class type = Class.forName(className);
             if (!CatalogType.class.isAssignableFrom(type)) {

@@ -13,6 +13,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
+import java.util.List;
 import java.util.Optional;
 
 public class ApiServlet extends HttpServlet {
@@ -70,14 +71,22 @@ public class ApiServlet extends HttpServlet {
                     JsonNode node = mapper.readTree(req.getReader());
                     req.setAttribute("body", node);
                 } catch (Exception e) {
-                    resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                    resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid JSON request body");
                     return;
                 }
             }
 
+            if (match.getArgumentError() != HttpServletResponse.SC_OK) {
+                resp.sendError(match.getArgumentError(), match.getArgumentErrorMessage());
+                return;
+            }
+
             ServletData data = new ServletData(req, resp, match.getMatchedParts());
 
-            match.getMethod().invoke(match.getServlet(), data);
+            List<Object> params = match.getMatchedParams();
+            params.add(0, data);
+
+            match.getMethod().invoke(match.getServlet(), params.toArray());
             PrintWriter out = data.getWriter();
 
             ObjectMapper om = new ObjectMapper();

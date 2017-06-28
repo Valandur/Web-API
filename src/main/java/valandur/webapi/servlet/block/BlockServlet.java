@@ -26,28 +26,10 @@ import java.util.stream.Collectors;
 public class BlockServlet implements IServlet {
 
     @WebAPIRoute(method = "GET", path = "/:world/:x/:y/:z", perm = "one")
-    public void getBlock(ServletData data) {
-        // Check uuid
-        String uuid = data.getPathParam("world");
-        if (!Util.isValidUUID(uuid)) {
-            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid world UUID");
-            return;
-        }
-
-        // Check world
-        Optional<CachedWorld> world = DataCache.getWorld(UUID.fromString(uuid));
-        if (!world.isPresent()) {
-            data.sendError(HttpServletResponse.SC_NOT_FOUND, "World with UUID '" + uuid + "' could not be found");
-            return;
-        }
-
-        int x = Integer.parseInt(data.getPathParam("x"));
-        int y = Integer.parseInt(data.getPathParam("y"));
-        int z = Integer.parseInt(data.getPathParam("z"));
-
-        Optional<BlockState> state = Blocks.getBlockAt(world.get(), new Vector3i(x, y, z));
+    public void getBlock(ServletData data, CachedWorld world, int x, int y, int z) {
+        Optional<BlockState> state = Blocks.getBlockAt(world, new Vector3i(x, y, z));
         if (!state.isPresent()) {
-            data.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not get world");
+            data.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not get world " + world.getName());
             return;
         }
 
@@ -56,28 +38,8 @@ public class BlockServlet implements IServlet {
     }
 
     @WebAPIRoute(method = "GET", path = "/:world/:minX/:minY/:minZ/:maxX/:maxY/:maxZ", perm = "volume")
-    public void getBlockVolume(ServletData data) {
-        // Check uuid
-        String uuid = data.getPathParam("world");
-        if (!Util.isValidUUID(uuid)) {
-            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid world UUID");
-            return;
-        }
-
-        // Check world
-        Optional<CachedWorld> world = DataCache.getWorld(UUID.fromString(uuid));
-        if (!world.isPresent()) {
-            data.sendError(HttpServletResponse.SC_NOT_FOUND, "World with UUID '" + uuid + "' could not be found");
-            return;
-        }
-
-        int minX = Integer.parseInt(data.getPathParam("x"));
-        int minY = Integer.parseInt(data.getPathParam("y"));
-        int minZ = Integer.parseInt(data.getPathParam("z"));
-        int maxX = Integer.parseInt(data.getPathParam("maxX"));
-        int maxY = Integer.parseInt(data.getPathParam("maxY"));
-        int maxZ = Integer.parseInt(data.getPathParam("maxZ"));
-
+    public void getBlockVolume(ServletData data, CachedWorld world, int minX, int minY, int minZ,
+                               int maxX, int maxY, int maxZ) {
         // Swap around min & max if needed
         int tmpX = Math.max(minX, maxX);
         minX = Math.min(minX, maxX);
@@ -101,7 +63,7 @@ public class BlockServlet implements IServlet {
             return;
         }
 
-        Optional<BlockVolume> vol = Blocks.getBlockVolume(world.get(), new Vector3i(minX, minY, minZ), new Vector3i(maxX, maxY, maxZ));
+        Optional<BlockVolume> vol = Blocks.getBlockVolume(world, new Vector3i(minX, minY, minZ), new Vector3i(maxX, maxY, maxZ));
         if (!vol.isPresent()) {
             data.sendError(HttpServletResponse.SC_NOT_FOUND, "Could not get world");
             return;
@@ -244,18 +206,11 @@ public class BlockServlet implements IServlet {
     }
 
     @WebAPIRoute(method = "PUT", path = "/update/:uuid", perm = "update.change")
-    public void modifyBlockUpdate(ServletData data) {
+    public void modifyBlockUpdate(ServletData data, UUID uuid) {
         JsonNode reqJson = data.getRequestBody();
 
-        // Check uuid
-        String uuid = data.getPathParam("uuid");
-        if (!Util.isValidUUID(uuid)) {
-            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid block update UUID");
-            return;
-        }
-
         // Check block update
-        Optional<BlockUpdate> update = Blocks.getBlockUpdate(UUID.fromString(uuid));
+        Optional<BlockUpdate> update = Blocks.getBlockUpdate(uuid);
         if (!update.isPresent()) {
             data.sendError(HttpServletResponse.SC_NOT_FOUND, "Block update with UUID '" + uuid + "' could not be found");
             return;
@@ -272,16 +227,9 @@ public class BlockServlet implements IServlet {
     }
 
     @WebAPIRoute(method = "DELETE", path = "/update/:uuid", perm = "update.delete")
-    public void deleteBlockUpdate(ServletData data) {
-        // Check uuid
-        String uuid = data.getPathParam("uuid");
-        if (!Util.isValidUUID(uuid)) {
-            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid block update UUID");
-            return;
-        }
-
+    public void deleteBlockUpdate(ServletData data, UUID uuid) {
         // Check block update
-        Optional<BlockUpdate> update = Blocks.getBlockUpdate(UUID.fromString(uuid));
+        Optional<BlockUpdate> update = Blocks.getBlockUpdate(uuid);
         if (!update.isPresent()) {
             data.sendError(HttpServletResponse.SC_NOT_FOUND, "Block update with UUID '" + uuid + "' could not be found");
             return;

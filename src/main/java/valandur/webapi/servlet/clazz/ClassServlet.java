@@ -20,9 +20,7 @@ public class ClassServlet implements IServlet {
     }
 
     @WebAPIRoute(method = "GET", path = "/:class", perm = "one")
-    public void getClass(ServletData data) {
-        String className = data.getPathParam("class");
-
+    public void getClass(ServletData data, String className) {
         try {
             Class c = Class.forName(className);
             data.addJson("class", DataCache.getClass(c), true);
@@ -32,9 +30,7 @@ public class ClassServlet implements IServlet {
     }
 
     @WebAPIRoute(method = "GET", path = "/:class/subclasses", perm = "subclasses")
-    public void getSubclasses(ServletData data) {
-        String className = data.getPathParam("class");
-
+    public void getSubclasses(ServletData data, String className) {
         try {
             Class c = Class.forName(className);
             WebAPI.getInstance().getLogger().info("Discovering all subclasses of '" + c.getName() + "'...");

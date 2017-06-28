@@ -28,11 +28,10 @@ public class CmdServlet implements IServlet {
     }
 
     @WebAPIRoute(method = "GET", path = "/:cmd", perm = "one")
-    public void getCommand(ServletData data) {
-        String cName = data.getPathParam("cmd");
-        Optional<CachedCommand> cmd = DataCache.getCommand(cName);
+    public void getCommand(ServletData data, String cmdName) {
+        Optional<CachedCommand> cmd = DataCache.getCommand(cmdName);
         if (!cmd.isPresent()) {
-            data.sendError(HttpServletResponse.SC_NOT_FOUND, "The command '" + cName + "' could not be found");
+            data.sendError(HttpServletResponse.SC_NOT_FOUND, "The command '" + cmdName + "' could not be found");
             return;
         }
 

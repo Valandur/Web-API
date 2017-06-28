@@ -17,7 +17,6 @@ import valandur.webapi.servlet.ServletData;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.Optional;
-import java.util.UUID;
 
 @WebAPIServlet(basePath = "entity")
 public class EntityServlet implements IServlet {
@@ -29,47 +28,23 @@ public class EntityServlet implements IServlet {
     }
 
     @WebAPIRoute(method = "GET", path = "/:entity", perm = "one")
-    public void getEntity(ServletData data) {
-        String uuid = data.getPathParam("entity");
-        if (!Util.isValidUUID(uuid)) {
-            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid entity UUID");
-            return;
-        }
-
-        Optional<CachedEntity> entity = DataCache.getEntity(UUID.fromString(uuid));
-        if (!entity.isPresent()) {
-            data.sendError(HttpServletResponse.SC_NOT_FOUND, "Entity with UUID '" + uuid + "' could not be found");
-            return;
-        }
-
+    public void getEntity(ServletData data, CachedEntity entity) {
         Optional<String> strFields = data.getQueryParam("fields");
         Optional<String> strMethods = data.getQueryParam("methods");
         if (strFields.isPresent() || strMethods.isPresent()) {
             String[] fields = strFields.map(s -> s.split(",")).orElse(new String[]{});
             String[] methods = strMethods.map(s -> s.split(",")).orElse(new String[]{});
-            Tuple extra = DataCache.getExtraData(entity.get(), fields, methods);
+            Tuple extra = DataCache.getExtraData(entity, fields, methods);
             data.addJson("fields", extra.getFirst(), true);
             data.addJson("methods", extra.getSecond(), true);
         }
 
         data.addJson("ok", true, false);
-        data.addJson("entity", entity.get(), true);
+        data.addJson("entity", entity, true);
     }
 
     @WebAPIRoute(method = "PUT", path = "/:entity", perm = "change")
-    public void updateEntity(ServletData data) {
-        String uuid = data.getPathParam("entity");
-        if (!Util.isValidUUID(uuid)) {
-            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid entity UUID");
-            return;
-        }
-
-        Optional<CachedEntity> entity = DataCache.getEntity(UUID.fromString(uuid));
-        if (!entity.isPresent()) {
-            data.sendError(HttpServletResponse.SC_NOT_FOUND, "Entity with UUID '" + uuid + "' could not be found");
-            return;
-        }
-
+    public void updateEntity(ServletData data, CachedEntity entity) {
         Optional<UpdateEntityRequest> optReq = data.getRequestBody(UpdateEntityRequest.class);
         if (!optReq.isPresent()) {
             data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid entity data: " + data.getLastParseError().getMessage());
@@ -79,7 +54,7 @@ public class EntityServlet implements IServlet {
         final UpdateEntityRequest req = optReq.get();
 
         Optional<CachedEntity> resEntity = WebAPI.runOnMain(() -> {
-            Optional<?> optLive = entity.get().getLive();
+            Optional<?> optLive = entity.getLive();
             if (!optLive.isPresent())
                 return null;
 
@@ -168,19 +143,7 @@ public class EntityServlet implements IServlet {
     }
 
     @WebAPIRoute(method = "POST", path = "/:entity/method", perm = "method")
-    public void executeMethod(ServletData data) {
-        String uuid = data.getPathParam("entity");
-        if (uuid.split("-").length != 5) {
-            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid entity UUID");
-            return;
-        }
-
-        Optional<CachedEntity> entity = DataCache.getEntity(UUID.fromString(uuid));
-        if (!entity.isPresent()) {
-            data.sendError(HttpServletResponse.SC_NOT_FOUND, "Entity with UUID '" + uuid + "' could not be found");
-            return;
-        }
-
+    public void executeMethod(ServletData data, CachedEntity entity) {
         final JsonNode reqJson = data.getRequestBody();
         if (!reqJson.has("method")) {
             data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Request must define the 'method' property");
@@ -195,33 +158,19 @@ public class EntityServlet implements IServlet {
             return;
         }
 
-        Optional<Object> res = DataCache.executeMethod(entity.get(), mName, params.get().getFirst(), params.get().getSecond());
+        Optional<Object> res = DataCache.executeMethod(entity, mName, params.get().getFirst(), params.get().getSecond());
         if (!res.isPresent()) {
             data.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not get entity");
             return;
         }
 
         data.addJson("ok", true, false);
-        data.addJson("entity", entity.get(), true);
+        data.addJson("entity", entity, true);
         data.addJson("result", res.get(), true);
     }
 
     @WebAPIRoute(method = "DELETE", path = "/:entity", perm = "delete")
-    public void removeEntity(ServletData data) {
-        String uuid = data.getPathParam("entity");
-        if (uuid.split("-").length != 5) {
-            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid entity UUID");
-            return;
-        }
-
-        Optional<CachedEntity> optEntity = DataCache.getEntity(UUID.fromString(uuid));
-        if (!optEntity.isPresent()) {
-            data.sendError(HttpServletResponse.SC_NOT_FOUND, "Entity with UUID '" + uuid + "' could not be found");
-            return;
-        }
-
-        CachedEntity entity = optEntity.get();
-
+    public void removeEntity(ServletData data, CachedEntity entity) {
         Optional<Boolean> deleted = WebAPI.runOnMain(() -> {
             Optional<?> live = entity.getLive();
             if (!live.isPresent())
@@ -233,7 +182,7 @@ public class EntityServlet implements IServlet {
         });
 
         if (!deleted.isPresent() || !deleted.get()) {
-            data.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not delete entity " + uuid);
+            data.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not delete entity " + entity.getUUID());
             return;
         }
 

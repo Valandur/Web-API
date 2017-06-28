@@ -32,31 +32,19 @@ public class WorldServlet implements IServlet {
     }
 
     @WebAPIRoute(method = "GET", path = "/:world", perm = "one")
-    public void getWorld(ServletData data) {
-        String uuid = data.getPathParam("world");
-        if (!Util.isValidUUID(uuid)) {
-            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid world UUID");
-            return;
-        }
-
-        Optional<CachedWorld> world = DataCache.getWorld(UUID.fromString(uuid));
-        if (!world.isPresent()) {
-            data.sendError(HttpServletResponse.SC_NOT_FOUND, "World with UUID '" + uuid + "' could not be found");
-            return;
-        }
-
+    public void getWorld(ServletData data, CachedWorld world) {
         Optional<String> strFields = data.getQueryParam("fields");
         Optional<String> strMethods = data.getQueryParam("methods");
         if (strFields.isPresent() || strMethods.isPresent()) {
             String[] fields = strFields.map(s -> s.split(",")).orElse(new String[]{});
             String[] methods = strMethods.map(s -> s.split(",")).orElse(new String[]{});
-            Tuple extra = DataCache.getExtraData(world.get(), fields, methods);
+            Tuple extra = DataCache.getExtraData(world, fields, methods);
             data.addJson("fields", extra.getFirst(), true);
             data.addJson("methods", extra.getSecond(), true);
         }
 
         data.addJson("ok", true, false);
-        data.addJson("world", world.get(), true);
+        data.addJson("world", world, true);
     }
 
     @WebAPIRoute(method = "POST", path = "/", perm = "create")
@@ -125,19 +113,7 @@ public class WorldServlet implements IServlet {
     }
 
     @WebAPIRoute(method = "POST", path = "/:world/method", perm = "method")
-    public void executeMethod(ServletData data) {
-        String uuid = data.getPathParam("world");
-        if (uuid.split("-").length != 5) {
-            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid world UUID");
-            return;
-        }
-
-        Optional<CachedWorld> world = DataCache.getWorld(UUID.fromString(uuid));
-        if (!world.isPresent()) {
-            data.sendError(HttpServletResponse.SC_NOT_FOUND, "World with UUID '" + uuid + "' could not be found");
-            return;
-        }
-
+    public void executeMethod(ServletData data, CachedWorld world) {
         JsonNode reqJson = data.getRequestBody();
         if (!reqJson.has("method")) {
             data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Request must define the 'method' property");
@@ -152,31 +128,19 @@ public class WorldServlet implements IServlet {
             return;
         }
 
-        Optional<Object> res = DataCache.executeMethod(world.get(), mName, params.get().getFirst(), params.get().getSecond());
+        Optional<Object> res = DataCache.executeMethod(world, mName, params.get().getFirst(), params.get().getSecond());
         if (!res.isPresent()) {
             data.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not get world");
             return;
         }
 
         data.addJson("ok", true, false);
-        data.addJson("world", world.get(), true);
+        data.addJson("world", world, true);
         data.addJson("result", res.get(), true);
     }
 
     @WebAPIRoute(method = "PUT", path = "/:world", perm = "change")
-    public void updateWorld(ServletData data) {
-        String uuid = data.getPathParam("world");
-        if (!Util.isValidUUID(uuid)) {
-            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid world UUID");
-            return;
-        }
-
-        Optional<CachedWorld> world = DataCache.getWorld(UUID.fromString(uuid));
-        if (!world.isPresent()) {
-            data.sendError(HttpServletResponse.SC_NOT_FOUND, "World with UUID '" + uuid + "' could not be found");
-            return;
-        }
-
+    public void updateWorld(ServletData data, CachedWorld world) {
         Optional<UpdateWorldRequest> optReq = data.getRequestBody(UpdateWorldRequest.class);
         if (!optReq.isPresent()) {
             data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid world data: " + data.getLastParseError().getMessage());
@@ -186,14 +150,14 @@ public class WorldServlet implements IServlet {
         final UpdateWorldRequest req = optReq.get();
 
         Optional<CachedWorld> resWorld = WebAPI.runOnMain(() -> {
-            Optional<?> optLive = world.get().getLive();
+            Optional<?> optLive = world.getLive();
             if (!optLive.isPresent())
                 return null;
 
             Object live = optLive.get();
             WorldProperties props = live instanceof World ? ((World) live).getProperties() : (WorldProperties) live;
 
-            if (req.isLoaded() != null && req.isLoaded() != world.get().isLoaded()) {
+            if (req.isLoaded() != null && req.isLoaded() != world.isLoaded()) {
                 if (req.isLoaded()) {
                     Optional<World> newWorld = Sponge.getServer().loadWorld(props);
                     if (newWorld.isPresent()) {
@@ -203,7 +167,7 @@ public class WorldServlet implements IServlet {
                 } else {
                     Sponge.getServer().unloadWorld((World)live);
                     Optional<WorldProperties> optProps = Sponge.getServer().getUnloadedWorlds()
-                            .stream().filter(w -> w.getUniqueId().equals(world.get().getUUID())).findAny();
+                            .stream().filter(w -> w.getUniqueId().equals(world.getUUID())).findAny();
                     if (optProps.isPresent()) {
                         live = optProps.get();
                         props = optProps.get();
@@ -248,21 +212,7 @@ public class WorldServlet implements IServlet {
     }
 
     @WebAPIRoute(method = "DELETE", path = "/:world", perm = "delete")
-    public void deleteWorld(ServletData data) {
-        String uuid = data.getPathParam("world");
-        if (uuid.split("-").length != 5) {
-            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid world UUID");
-            return;
-        }
-
-        Optional<CachedWorld> optWorld = DataCache.getWorld(UUID.fromString(uuid));
-        if (!optWorld.isPresent()) {
-            data.sendError(HttpServletResponse.SC_NOT_FOUND, "World with UUID '" + uuid + "' could not be found");
-            return;
-        }
-
-        CachedWorld world = optWorld.get();
-
+    public void deleteWorld(ServletData data, CachedWorld world) {
         Optional<Boolean> deleted = WebAPI.runOnMain(() -> {
             Optional<?> live = world.getLive();
             if (!live.isPresent())
@@ -278,7 +228,7 @@ public class WorldServlet implements IServlet {
         });
 
         if (!deleted.isPresent() || !deleted.get()) {
-            data.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not delete world " + uuid);
+            data.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not delete world " + world.getName());
             return;
         }
 

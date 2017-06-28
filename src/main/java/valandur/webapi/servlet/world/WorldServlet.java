@@ -9,11 +9,10 @@ import org.spongepowered.api.world.storage.WorldProperties;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.annotation.WebAPIRoute;
 import valandur.webapi.api.annotation.WebAPIServlet;
-import valandur.webapi.api.servlet.IServlet;
-import valandur.webapi.cache.DataCache;
-import valandur.webapi.cache.world.CachedWorld;
-import valandur.webapi.misc.Util;
+import valandur.webapi.api.cache.world.CachedWorld;
+import valandur.webapi.api.servlet.WebAPIBaseServlet;
 import valandur.webapi.servlet.ServletData;
+import valandur.webapi.util.Util;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -23,12 +22,12 @@ import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
 @WebAPIServlet(basePath = "world")
-public class WorldServlet implements IServlet {
+public class WorldServlet extends WebAPIBaseServlet {
 
     @WebAPIRoute(method = "GET", path = "/", perm = "list")
     public void getWorlds(ServletData data) {
         data.addJson("ok", true, false);
-        data.addJson("worlds", DataCache.getWorlds(), data.getQueryParam("details").isPresent());
+        data.addJson("worlds", cacheService.getWorlds(), data.getQueryParam("details").isPresent());
     }
 
     @WebAPIRoute(method = "GET", path = "/:world", perm = "one")
@@ -38,7 +37,7 @@ public class WorldServlet implements IServlet {
         if (strFields.isPresent() || strMethods.isPresent()) {
             String[] fields = strFields.map(s -> s.split(",")).orElse(new String[]{});
             String[] methods = strMethods.map(s -> s.split(",")).orElse(new String[]{});
-            Tuple extra = DataCache.getExtraData(world, fields, methods);
+            Tuple extra = cacheService.getExtraData(world, fields, methods);
             data.addJson("fields", extra.getFirst(), true);
             data.addJson("methods", extra.getSecond(), true);
         }
@@ -104,7 +103,7 @@ public class WorldServlet implements IServlet {
         if (!resProps.isPresent())
             return;
 
-        CachedWorld world = DataCache.updateWorld(resProps.get());
+        CachedWorld world = cacheService.updateWorld(resProps.get());
 
         data.setStatus(HttpServletResponse.SC_CREATED);
         data.addJson("ok", true, false);
@@ -128,7 +127,7 @@ public class WorldServlet implements IServlet {
             return;
         }
 
-        Optional<Object> res = DataCache.executeMethod(world, mName, params.get().getFirst(), params.get().getSecond());
+        Optional<Object> res = cacheService.executeMethod(world, mName, params.get().getFirst(), params.get().getSecond());
         if (!res.isPresent()) {
             data.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not get world");
             return;
@@ -202,9 +201,9 @@ public class WorldServlet implements IServlet {
             }
 
             if (live instanceof World)
-                return DataCache.updateWorld((World) live);
+                return cacheService.updateWorld((World) live);
             else
-                return DataCache.updateWorld((WorldProperties) live);
+                return cacheService.updateWorld((WorldProperties) live);
         });
 
         data.addJson("ok", resWorld.isPresent(), false);
@@ -232,7 +231,7 @@ public class WorldServlet implements IServlet {
             return;
         }
 
-        DataCache.removeWorld(world.getUUID());
+        cacheService.removeWorld(world.getUUID());
 
         data.addJson("ok", true, false);
         data.addJson("world", world, true);

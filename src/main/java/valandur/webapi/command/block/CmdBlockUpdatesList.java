@@ -7,8 +7,8 @@ import org.spongepowered.api.command.args.CommandContext;
 import org.spongepowered.api.command.spec.CommandExecutor;
 import org.spongepowered.api.service.pagination.PaginationList;
 import org.spongepowered.api.text.Text;
-import valandur.webapi.block.BlockUpdate;
-import valandur.webapi.block.Blocks;
+import valandur.webapi.WebAPI;
+import valandur.webapi.api.block.IBlockUpdate;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -19,8 +19,8 @@ public class CmdBlockUpdatesList implements CommandExecutor {
     public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
 
         List<Text> contents = new ArrayList<>();
-        Collection<BlockUpdate> blocks = Blocks.getBlockUpdates();
-        for (BlockUpdate update : blocks) {
+        Collection<IBlockUpdate> blocks = WebAPI.getBlockService().getBlockUpdates();
+        for (IBlockUpdate update : blocks) {
             contents.add(Text.of(update.getUUID()));
         }
 

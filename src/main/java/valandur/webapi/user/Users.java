@@ -8,7 +8,8 @@ import org.mindrot.jbcrypt.BCrypt;
 import org.slf4j.Logger;
 import org.spongepowered.api.util.Tuple;
 import valandur.webapi.WebAPI;
-import valandur.webapi.permission.Permissions;
+import valandur.webapi.api.permission.Permissions;
+import valandur.webapi.util.Util;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -27,11 +28,11 @@ public class Users {
     }
 
     public static void init() {
-        Logger logger = WebAPI.getInstance().getLogger();
+        Logger logger = WebAPI.getLogger();
 
         logger.info("Loading users...");
-        Tuple<ConfigurationLoader, ConfigurationNode> tup = WebAPI.getInstance()
-                .loadWithDefaults(configFileName, "defaults/" + configFileName);
+        Tuple<ConfigurationLoader, ConfigurationNode> tup =
+                Util.loadWithDefaults(configFileName, "defaults/" + configFileName);
         loader = tup.getFirst();
         config = tup.getSecond();
 

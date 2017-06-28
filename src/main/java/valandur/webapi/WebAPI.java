@@ -3,8 +3,6 @@ package valandur.webapi;
 import com.google.common.reflect.TypeToken;
 import com.google.inject.Inject;
 import ninja.leaping.configurate.ConfigurationNode;
-import ninja.leaping.configurate.commented.CommentedConfigurationNode;
-import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
 import ninja.leaping.configurate.objectmapping.serialize.TypeSerializers;
 import org.eclipse.jetty.http.HttpVersion;
@@ -18,7 +16,6 @@ import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.spongepowered.api.Sponge;
-import org.spongepowered.api.asset.Asset;
 import org.spongepowered.api.command.CommandManager;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.config.ConfigDir;
@@ -49,15 +46,13 @@ import org.spongepowered.api.scheduler.SpongeExecutorService;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
 import org.spongepowered.api.util.Tuple;
-import valandur.webapi.api.service.IServletService;
-import valandur.webapi.api.servlet.IServlet;
+import valandur.webapi.api.cache.chat.CachedChatMessage;
+import valandur.webapi.api.cache.command.CachedCommandCall;
+import valandur.webapi.api.service.*;
 import valandur.webapi.block.BlockUpdate;
 import valandur.webapi.block.BlockUpdateStatusChangeEvent;
-import valandur.webapi.block.Blocks;
-import valandur.webapi.cache.CacheConfig;
-import valandur.webapi.cache.DataCache;
-import valandur.webapi.cache.chat.CachedChatMessage;
-import valandur.webapi.cache.command.CachedCommandCall;
+import valandur.webapi.services.BlockService;
+import valandur.webapi.services.CacheService;
 import valandur.webapi.command.CommandRegistry;
 import valandur.webapi.command.CommandSource;
 import valandur.webapi.handler.AssetHandler;
@@ -66,13 +61,12 @@ import valandur.webapi.handler.ErrorHandler;
 import valandur.webapi.handler.RateLimitHandler;
 import valandur.webapi.hook.WebHook;
 import valandur.webapi.hook.WebHookSerializer;
-import valandur.webapi.hook.WebHooks;
-import valandur.webapi.json.JsonConverter;
-import valandur.webapi.misc.Extensions;
-import valandur.webapi.misc.JettyLogger;
-import valandur.webapi.misc.Util;
+import valandur.webapi.services.WebHookService;
+import valandur.webapi.services.JsonService;
+import valandur.webapi.services.ServerService;
+import valandur.webapi.services.MessageService;
 import valandur.webapi.servlet.ApiServlet;
-import valandur.webapi.servlet.Servlets;
+import valandur.webapi.services.ServletService;
 import valandur.webapi.servlet.block.BlockServlet;
 import valandur.webapi.servlet.clazz.ClassServlet;
 import valandur.webapi.servlet.cmd.CmdServlet;
@@ -87,17 +81,18 @@ import valandur.webapi.servlet.registry.RegistryServlet;
 import valandur.webapi.servlet.tileentity.TileEntityServlet;
 import valandur.webapi.servlet.user.UserServlet;
 import valandur.webapi.servlet.world.WorldServlet;
-import valandur.webapi.server.ServerProperties;
 import valandur.webapi.user.UserPermission;
 import valandur.webapi.user.UserPermissionConfigSerializer;
 import valandur.webapi.user.Users;
+import valandur.webapi.services.ExtensionService;
+import valandur.webapi.util.JettyLogger;
+import valandur.webapi.util.Util;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -113,7 +108,7 @@ import java.util.function.Supplier;
                 "Valandur"
         }
 )
-public class WebAPI implements IServletService {
+public class WebAPI {
 
     public static final String ID = "webapi";
     public static final String NAME = "Web-API";
@@ -129,31 +124,38 @@ public class WebAPI implements IServletService {
     private static SpongeExecutorService syncExecutor;
 
     private Reflections reflections;
-    public Reflections getReflections() { return this.reflections; }
+    public static Reflections getReflections() {
+        return WebAPI.getInstance().reflections;
+    }
 
     private boolean devMode = false;
-    public boolean isDevMode() {
-        return devMode;
+    public static boolean isDevMode() {
+        return WebAPI.getInstance().devMode;
     }
 
     private boolean adminPanelEnabled = true;
-    public boolean isAdminPanelEnabled() {
-        return adminPanelEnabled;
+    public static boolean isAdminPanelEnabled() {
+        return WebAPI.getInstance().adminPanelEnabled;
     }
 
     @Inject
     private Logger logger;
-    public Logger getLogger() {
-        return this.logger;
+    public static Logger getLogger() {
+        return WebAPI.getInstance().logger;
     }
 
     @Inject
     @ConfigDir(sharedRoot = false)
     private Path configPath;
+    public static Path getConfigPath() {
+        return WebAPI.getInstance().configPath;
+    }
 
     @Inject
     private PluginContainer container;
-    public PluginContainer getContainer() { return this.container; }
+    public static PluginContainer getContainer() {
+        return WebAPI.getInstance().container;
+    }
 
     private String serverHost;
     private int serverPortHttp;
@@ -162,8 +164,49 @@ public class WebAPI implements IServletService {
     private Server server;
 
     private AuthHandler authHandler;
-    public AuthHandler getAuthHandler() {
-        return authHandler;
+    public static AuthHandler getAuthHandler() {
+        return WebAPI.getInstance().authHandler;
+    }
+
+    // Services
+    private BlockService blockService;
+    public static BlockService getBlockService() {
+        return WebAPI.getInstance().blockService;
+    }
+
+    private CacheService cacheService;
+    public static CacheService getCacheService() {
+        return WebAPI.getInstance().cacheService;
+    }
+
+    private ExtensionService extensionService;
+    public static ExtensionService getExtensionService() {
+        return WebAPI.getInstance().extensionService;
+    }
+
+    private JsonService jsonService;
+    public static JsonService getJsonService() {
+        return WebAPI.getInstance().jsonService;
+    }
+
+    private MessageService messageService;
+    public static MessageService getMessageService() {
+        return WebAPI.getInstance().messageService;
+    }
+
+    private ServerService serverService;
+    public static ServerService getServerService() {
+        return WebAPI.getInstance().serverService;
+    }
+
+    private ServletService servletService;
+    public static ServletService getServletService() {
+        return WebAPI.getInstance().servletService;
+    }
+
+    private WebHookService webHookService;
+    public static WebHookService getWebHookService() {
+        return WebAPI.getInstance().webHookService;
     }
 
 
@@ -188,8 +231,26 @@ public class WebAPI implements IServletService {
         TypeSerializers.getDefaultSerializers().registerType(TypeToken.of(WebHook.class), new WebHookSerializer());
         TypeSerializers.getDefaultSerializers().registerType(TypeToken.of(UserPermission.class), new UserPermissionConfigSerializer());
 
-        // Register API services
-        Sponge.getServiceManager().setProvider(this, IServletService.class, this);
+        // Setup services
+        this.blockService = new BlockService();
+        this.cacheService = new CacheService();
+        this.extensionService = new ExtensionService();
+        this.jsonService = new JsonService();
+        this.messageService = new MessageService();
+        this.serverService = new ServerService();
+        this.servletService = new ServletService();
+        this.webHookService = new WebHookService();
+
+
+        // Register services
+        Sponge.getServiceManager().setProvider(this, IBlockService.class, blockService);
+        Sponge.getServiceManager().setProvider(this, ICacheService.class, cacheService);
+        Sponge.getServiceManager().setProvider(this, IExtensionService.class, extensionService);
+        Sponge.getServiceManager().setProvider(this, IJsonService.class, jsonService);
+        Sponge.getServiceManager().setProvider(this, IMessageService.class, messageService);
+        Sponge.getServiceManager().setProvider(this, IServerService.class, serverService);
+        Sponge.getServiceManager().setProvider(this, IServletService.class, servletService);
+        Sponge.getServiceManager().setProvider(this, IWebHookService.class, webHookService);
     }
     @Listener
     public void onInitialization(GameInitializationEvent event) {
@@ -208,25 +269,25 @@ public class WebAPI implements IServletService {
         this.reflections = new Reflections();
 
         logger.info("Loading base data...");
-        DataCache.updateWorlds();
-        DataCache.updatePlugins();
-        DataCache.updateCommands();
+        cacheService.updateWorlds();
+        cacheService.updatePlugins();
+        cacheService.updateCommands();
 
         logger.info("Registering servlets...");
-        Servlets.registerServlet(BlockServlet.class);
-        Servlets.registerServlet(ClassServlet.class);
-        Servlets.registerServlet(CmdServlet.class);
-        Servlets.registerServlet(EntityServlet.class);
-        Servlets.registerServlet(HistoryServlet.class);
-        Servlets.registerServlet(InfoServlet.class);
-        Servlets.registerServlet(MessageServlet.class);
-        Servlets.registerServlet(PlayerServlet.class);
-        Servlets.registerServlet(PluginServlet.class);
-        Servlets.registerServlet(RecipeServlet.class);
-        Servlets.registerServlet(RegistryServlet.class);
-        Servlets.registerServlet(TileEntityServlet.class);
-        Servlets.registerServlet(UserServlet.class);
-        Servlets.registerServlet(WorldServlet.class);
+        servletService.registerServlet(BlockServlet.class);
+        servletService.registerServlet(ClassServlet.class);
+        servletService.registerServlet(CmdServlet.class);
+        servletService.registerServlet(EntityServlet.class);
+        servletService.registerServlet(HistoryServlet.class);
+        servletService.registerServlet(InfoServlet.class);
+        servletService.registerServlet(MessageServlet.class);
+        servletService.registerServlet(PlayerServlet.class);
+        servletService.registerServlet(PluginServlet.class);
+        servletService.registerServlet(RecipeServlet.class);
+        servletService.registerServlet(RegistryServlet.class);
+        servletService.registerServlet(TileEntityServlet.class);
+        servletService.registerServlet(UserServlet.class);
+        servletService.registerServlet(WorldServlet.class);
 
         logger.info(WebAPI.NAME + " ready");
     }
@@ -234,7 +295,7 @@ public class WebAPI implements IServletService {
     private void init(Player triggeringPlayer) {
         logger.info("Loading configuration...");
 
-        Tuple<ConfigurationLoader, ConfigurationNode> tup = loadWithDefaults("config.conf", "defaults/config.conf");
+        Tuple<ConfigurationLoader, ConfigurationNode> tup = Util.loadWithDefaults("config.conf", "defaults/config.conf");
         ConfigurationNode config = tup.getSecond();
 
         devMode = config.getNode("devMode").getBoolean();
@@ -244,8 +305,8 @@ public class WebAPI implements IServletService {
         adminPanelEnabled = config.getNode("adminPanel").getBoolean();
         keyStoreLocation = config.getNode("customKeyStore").getString();
         CmdServlet.CMD_WAIT_TIME = config.getNode("cmdWaitTime").getInt();
-        Blocks.MAX_BLOCK_GET_SIZE = config.getNode("maxBlockGetSize").getInt();
-        Blocks.MAX_BLOCK_UPDATE_SIZE = config.getNode("maxBlockUpdateSize").getInt();
+        BlockService.MAX_BLOCK_GET_SIZE = config.getNode("maxBlockGetSize").getInt();
+        BlockService.MAX_BLOCK_UPDATE_SIZE = config.getNode("maxBlockUpdateSize").getInt();
         BlockUpdate.MAX_BLOCKS_PER_SECOND = config.getNode("maxBlocksPerSecond").getInt();
 
         if (devMode)
@@ -253,26 +314,25 @@ public class WebAPI implements IServletService {
 
         authHandler.init();
 
-        Extensions.init();
+        extensionService.init();
 
-        WebHooks.init();
+        cacheService.init();
 
-        JsonConverter.init();
+        webHookService.init();
 
-        CacheConfig.init();
+        jsonService.init();
+
+        serverService.init();
 
         CommandRegistry.init();
 
         Users.init();
-
-        ServerProperties.init();
 
         if (triggeringPlayer != null) {
             triggeringPlayer.sendMessage(Text.builder().color(TextColors.AQUA)
                     .append(Text.of("[" + WebAPI.NAME + "] " + WebAPI.NAME + " has been reloaded!")).build());
         }
     }
-
     private void startWebServer(Player player) {
         // Start web server
         logger.info("Starting Web Server...");
@@ -364,7 +424,7 @@ public class WebAPI implements IServletService {
                 handlers.add(newContext("/admin", new AssetHandler("admin")));
 
             // Setup all servlets
-            Servlets.init();
+            servletService.init();
 
             // Main servlet context
             ServletContextHandler servletsContext = new ServletContextHandler();
@@ -411,41 +471,6 @@ public class WebAPI implements IServletService {
         return context;
     }
 
-    public Tuple<ConfigurationLoader, ConfigurationNode> loadWithDefaults(String path, String defaultPath) {
-        try {
-            Path filePath = configPath.resolve(path);
-            Asset asset = Sponge.getAssetManager().getAsset(this, defaultPath).get();
-
-            if (!Files.exists(filePath))
-                asset.copyToDirectory(configPath);
-
-            ConfigurationLoader<CommentedConfigurationNode> loader = HoconConfigurationLoader.builder().setPath(filePath).build();
-            CommentedConfigurationNode config = loader.load();
-
-            ConfigurationLoader<CommentedConfigurationNode> defLoader = HoconConfigurationLoader.builder().setURL(asset.getUrl()).build();
-            CommentedConfigurationNode defConfig = defLoader.load();
-
-            int version = config.getNode("version").getInt(0);
-            int defVersion = defConfig.getNode("version").getInt(0);
-            boolean newVersion = defVersion != version;
-
-            Util.mergeConfigs(config, defConfig, newVersion);
-            loader.save(config);
-
-            if (newVersion) {
-                logger.info("New configuration version '" + defVersion + "' for " + path);
-                config.getNode("version").setValue(defVersion);
-                loader.save(config);
-            }
-
-            return new Tuple<>(loader, config);
-
-        } catch (IOException | NoSuchElementException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
     public static CommandResult executeCommand(String command, CommandSource source) {
         CommandManager cmdManager = Sponge.getGame().getCommandManager();
         return cmdManager.process(source, command);
@@ -455,11 +480,11 @@ public class WebAPI implements IServletService {
     public void onServerStart(GameStartedServerEvent event) {
         startWebServer(null);
 
-        WebHooks.notifyHooks(WebHooks.WebHookType.SERVER_START, event);
+        webHookService.notifyHooks(WebHookService.WebHookType.SERVER_START, event);
     }
     @Listener
     public void onServerStop(GameStoppedServerEvent event) {
-        WebHooks.notifyHooks(WebHooks.WebHookType.SERVER_STOP, event);
+        webHookService.notifyHooks(WebHookService.WebHookType.SERVER_STOP, event);
 
         stopWebServer();
     }
@@ -469,8 +494,8 @@ public class WebAPI implements IServletService {
 
         logger.info("Reloading " + WebAPI.NAME + " v" + WebAPI.VERSION + "...");
 
-        DataCache.updatePlugins();
-        DataCache.updateCommands();
+        cacheService.updatePlugins();
+        cacheService.updateCommands();
 
         stopWebServer();
 
@@ -483,77 +508,77 @@ public class WebAPI implements IServletService {
 
     @Listener(order = Order.POST)
     public void onWorldLoad(LoadWorldEvent event) {
-        DataCache.updateWorld(event.getTargetWorld());
+        cacheService.updateWorld(event.getTargetWorld());
 
-        WebHooks.notifyHooks(WebHooks.WebHookType.WORLD_LOAD, event);
+        webHookService.notifyHooks(WebHookService.WebHookType.WORLD_LOAD, event);
     }
     @Listener(order = Order.POST)
     public void onWorldUnload(UnloadWorldEvent event) {
-        DataCache.updateWorld(event.getTargetWorld().getProperties());
+        cacheService.updateWorld(event.getTargetWorld().getProperties());
 
-        WebHooks.notifyHooks(WebHooks.WebHookType.WORLD_UNLOAD, event);
+        webHookService.notifyHooks(WebHookService.WebHookType.WORLD_UNLOAD, event);
     }
     @Listener(order = Order.POST)
     public void onWorldSave(SaveWorldEvent event) {
-        WebHooks.notifyHooks(WebHooks.WebHookType.WORLD_SAVE, event);
+        webHookService.notifyHooks(WebHookService.WebHookType.WORLD_SAVE, event);
     }
 
     @Listener(order = Order.POST)
     public void onPlayerJoin(ClientConnectionEvent.Join event) {
-        DataCache.updatePlayer(event.getTargetEntity());
+        cacheService.updatePlayer(event.getTargetEntity());
 
-        WebHooks.notifyHooks(WebHooks.WebHookType.PLAYER_JOIN, event);
+        webHookService.notifyHooks(WebHookService.WebHookType.PLAYER_JOIN, event);
     }
     @Listener(order = Order.POST)
     public void onPlayerLeave(ClientConnectionEvent.Disconnect event) {
         // Send the message first because the player is removed from cache afterwards
-        WebHooks.notifyHooks(WebHooks.WebHookType.PLAYER_LEAVE, event);
+        webHookService.notifyHooks(WebHookService.WebHookType.PLAYER_LEAVE, event);
 
-        DataCache.removePlayer(event.getTargetEntity().getUniqueId());
+        cacheService.removePlayer(event.getTargetEntity().getUniqueId());
     }
 
     @Listener(order = Order.POST)
     public void onUserKick(KickPlayerEvent event) {
-        WebHooks.notifyHooks(WebHooks.WebHookType.PLAYER_KICK, event);
+        webHookService.notifyHooks(WebHookService.WebHookType.PLAYER_KICK, event);
     }
     @Listener(order = Order.POST)
     public void onUserBan(BanUserEvent event) {
-        WebHooks.notifyHooks(WebHooks.WebHookType.PLAYER_BAN, event);
+        webHookService.notifyHooks(WebHookService.WebHookType.PLAYER_BAN, event);
     }
 
     @Listener(order = Order.POST)
     public void onEntitySpawn(SpawnEntityEvent event) {
         for (Entity entity : event.getEntities()) {
-            DataCache.updateEntity(entity);
+            cacheService.updateEntity(entity);
         }
     }
     @Listener(order = Order.POST)
     public void onEntityDespawn(DestructEntityEvent event) {
-        DataCache.removeEntity(event.getTargetEntity().getUniqueId());
+        cacheService.removeEntity(event.getTargetEntity().getUniqueId());
 
         Entity ent = event.getTargetEntity();
         if (ent instanceof Player) {
-            WebHooks.notifyHooks(WebHooks.WebHookType.PLAYER_DEATH, event);
+            webHookService.notifyHooks(WebHookService.WebHookType.PLAYER_DEATH, event);
         }
     }
 
     @Listener(order = Order.POST)
     public void onPlayerChat(MessageChannelEvent.Chat event, @First Player player) {
-        CachedChatMessage msg = DataCache.addChatMessage(player, event);
-        WebHooks.notifyHooks(WebHooks.WebHookType.CHAT, msg);
+        CachedChatMessage msg = cacheService.addChatMessage(player, event);
+        webHookService.notifyHooks(WebHookService.WebHookType.CHAT, msg);
     }
 
     @Listener(order = Order.POST)
     public void onInteractBlock(InteractBlockEvent event) {
-        WebHooks.notifyHooks(WebHooks.WebHookType.INTERACT_BLOCK, event);
+        webHookService.notifyHooks(WebHookService.WebHookType.INTERACT_BLOCK, event);
     }
     @Listener(order = Order.POST)
     public void onInteractInventory(InteractInventoryEvent.Open event) {
-        WebHooks.notifyHooks(WebHooks.WebHookType.INVENTORY_OPEN, event);
+        webHookService.notifyHooks(WebHookService.WebHookType.INVENTORY_OPEN, event);
     }
     @Listener(order = Order.POST)
     public void onInteractInventory(InteractInventoryEvent.Close event) {
-        WebHooks.notifyHooks(WebHooks.WebHookType.INVENTORY_CLOSE, event);
+        webHookService.notifyHooks(WebHookService.WebHookType.INVENTORY_CLOSE, event);
     }
 
     @Listener(order = Order.POST)
@@ -564,24 +589,24 @@ public class WebAPI implements IServletService {
         if (player.getAchievementData().achievements().get().stream().anyMatch(a -> a.getId().equals(event.getAchievement().getId())))
             return;
 
-        WebHooks.notifyHooks(WebHooks.WebHookType.ACHIEVEMENT, event);
+        webHookService.notifyHooks(WebHookService.WebHookType.ACHIEVEMENT, event);
     }
 
     @Listener(order = Order.POST)
     public void onGenerateChunk(GenerateChunkEvent event) {
-        WebHooks.notifyHooks(WebHooks.WebHookType.GENERATE_CHUNK, event);
+        webHookService.notifyHooks(WebHookService.WebHookType.GENERATE_CHUNK, event);
     }
 
     @Listener(order = Order.POST)
     public void onExplosion(ExplosionEvent event) {
-        WebHooks.notifyHooks(WebHooks.WebHookType.EXPLOSION, event);
+        webHookService.notifyHooks(WebHookService.WebHookType.EXPLOSION, event);
     }
 
     @Listener(order = Order.POST)
     public void onCommand(SendCommandEvent event) {
-        CachedCommandCall call = DataCache.addCommandCall(event);
+        CachedCommandCall call = cacheService.addCommandCall(event);
 
-        WebHooks.notifyHooks(WebHooks.WebHookType.COMMAND, call);
+        webHookService.notifyHooks(WebHookService.WebHookType.COMMAND, call);
     }
 
     @Listener(order = Order.POST)
@@ -605,7 +630,7 @@ public class WebAPI implements IServletService {
                 break;
         }
 
-        WebHooks.notifyHooks(WebHooks.WebHookType.BLOCK_UPDATE_STATUS, event);
+        webHookService.notifyHooks(WebHookService.WebHookType.BLOCK_UPDATE_STATUS, event);
     }
 
     public static void runOnMain(Runnable runnable) {
@@ -636,10 +661,5 @@ public class WebAPI implements IServletService {
                 return Optional.empty();
             }
         }
-    }
-
-    @Override
-    public void registerServlet(Class<? extends IServlet> servlet) {
-        Servlets.registerServlet(servlet);
     }
 }

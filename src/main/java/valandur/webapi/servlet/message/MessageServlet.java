@@ -2,16 +2,15 @@ package valandur.webapi.servlet.message;
 
 import valandur.webapi.api.annotation.WebAPIRoute;
 import valandur.webapi.api.annotation.WebAPIServlet;
-import valandur.webapi.api.servlet.IServlet;
-import valandur.webapi.message.Message;
-import valandur.webapi.message.Messages;
+import valandur.webapi.api.message.Message;
+import valandur.webapi.api.servlet.WebAPIBaseServlet;
 import valandur.webapi.servlet.ServletData;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.Optional;
 
 @WebAPIServlet(basePath = "message")
-public class MessageServlet implements IServlet {
+public class MessageServlet extends WebAPIBaseServlet {
 
     @WebAPIRoute(method = "POST", path = "/", perm = "create")
     public void sendMessage(ServletData data) {
@@ -21,6 +20,6 @@ public class MessageServlet implements IServlet {
             return;
         }
 
-        data.addJson("ok", Messages.sendMessage(msg.get()), false);
+        data.addJson("ok", messageService.sendMessage(msg.get()), false);
     }
 }

@@ -4,8 +4,8 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import org.spongepowered.api.event.cause.Cause;
 import org.spongepowered.api.util.Tristate;
-import valandur.webapi.json.serializer.WebAPISerializer;
-import valandur.webapi.misc.Util;
+import valandur.webapi.api.json.WebAPISerializer;
+import valandur.webapi.util.Util;
 
 import java.io.IOException;
 import java.util.ArrayList;

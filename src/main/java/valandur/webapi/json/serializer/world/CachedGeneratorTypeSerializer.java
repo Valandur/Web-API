@@ -2,8 +2,8 @@ package valandur.webapi.json.serializer.world;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
-import valandur.webapi.cache.world.CachedGeneratorType;
-import valandur.webapi.json.serializer.WebAPISerializer;
+import valandur.webapi.api.cache.world.CachedGeneratorType;
+import valandur.webapi.api.json.WebAPISerializer;
 
 import java.io.IOException;
 import java.util.HashMap;

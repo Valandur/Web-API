@@ -6,15 +6,14 @@ import org.spongepowered.api.Server;
 import org.spongepowered.api.Sponge;
 import valandur.webapi.api.annotation.WebAPIRoute;
 import valandur.webapi.api.annotation.WebAPIServlet;
-import valandur.webapi.api.servlet.IServlet;
-import valandur.webapi.server.ServerProperties;
+import valandur.webapi.api.servlet.WebAPIBaseServlet;
 import valandur.webapi.servlet.ServletData;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.Iterator;
 
 @WebAPIServlet(basePath = "info")
-public class InfoServlet implements IServlet {
+public class InfoServlet extends WebAPIBaseServlet {
 
     @WebAPIRoute(method = "GET", path = "/", perm = "get")
     public void getInfo(ServletData data) {
@@ -43,7 +42,7 @@ public class InfoServlet implements IServlet {
     @WebAPIRoute(method = "GET", path = "/properties", perm = "properties")
     public void getProperties(ServletData data) {
         data.addJson("ok", true, false);
-        data.addJson("properties", ServerProperties.getProperties(), true);
+        data.addJson("properties", serverService.getProperties(), true);
     }
 
     @WebAPIRoute(method = "POST", path = "/properties", perm = "properties")
@@ -58,10 +57,10 @@ public class InfoServlet implements IServlet {
 
         for (Iterator<String> it = props.fieldNames(); it.hasNext(); ) {
             String key = it.next();
-            ServerProperties.setProperty(key, props.get(key).asText());
+            serverService.setProperty(key, props.get(key).asText());
         }
 
         data.addJson("ok", true, false);
-        data.addJson("properties", ServerProperties.getProperties(), true);
+        data.addJson("properties", serverService.getProperties(), true);
     }
 }

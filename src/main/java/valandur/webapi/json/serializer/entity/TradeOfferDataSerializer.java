@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import org.spongepowered.api.data.manipulator.mutable.entity.TradeOfferData;
 import org.spongepowered.api.item.merchant.TradeOffer;
-import valandur.webapi.json.serializer.WebAPISerializer;
+import valandur.webapi.api.json.WebAPISerializer;
 
 import java.io.IOException;
 

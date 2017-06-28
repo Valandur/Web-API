@@ -20,10 +20,10 @@ public class CmdAuthListRemove implements CommandExecutor {
         String ip = args.getOne("ip").get().toString();
 
         if (whitelist) {
-            WebAPI.getInstance().getAuthHandler().removeFromWhitelist(ip);
+            WebAPI.getAuthHandler().removeFromWhitelist(ip);
             src.sendMessage(Text.of("Removed " + ip + " from whitelist"));
         } else {
-            WebAPI.getInstance().getAuthHandler().removeFromBlacklist(ip);
+            WebAPI.getAuthHandler().removeFromBlacklist(ip);
             src.sendMessage(Text.of("Removed " + ip + " from blacklist"));
         }
 

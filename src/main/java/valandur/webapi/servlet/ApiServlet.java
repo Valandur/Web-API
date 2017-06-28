@@ -3,8 +3,9 @@ package valandur.webapi.servlet;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import valandur.webapi.WebAPI;
-import valandur.webapi.misc.TreeNode;
-import valandur.webapi.permission.Permissions;
+import valandur.webapi.api.util.TreeNode;
+import valandur.webapi.api.permission.Permissions;
+import valandur.webapi.services.ServletService;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -17,6 +18,13 @@ import java.util.List;
 import java.util.Optional;
 
 public class ApiServlet extends HttpServlet {
+
+    private ServletService servlets;
+
+
+    public ApiServlet() {
+        this.servlets = WebAPI.getServletService();
+    }
 
     private void handleVerb(String verb, HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         resp.setStatus(HttpServletResponse.SC_OK);
@@ -32,7 +40,7 @@ public class ApiServlet extends HttpServlet {
         resp.setContentType("application/json; charset=utf-8");
 
         try {
-            Optional<MatchedRoute> optMatch = Servlets.getMethod(verb, req.getPathInfo());
+            Optional<MatchedRoute> optMatch = servlets.getMethod(verb, req.getPathInfo());
             if (!optMatch.isPresent()) {
                 // We couldn't find a method
                 resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Unknown/Invalid request path");
@@ -48,14 +56,14 @@ public class ApiServlet extends HttpServlet {
                 TreeNode<String, Boolean> permissions = (TreeNode<String, Boolean>) req.getAttribute("perms");
 
                 if (permissions == null) {
-                    WebAPI.getInstance().getLogger().warn(req.getRemoteAddr() + " does not have permisson to access " + req.getRequestURI());
+                    WebAPI.getLogger().warn(req.getRemoteAddr() + " does not have permisson to access " + req.getRequestURI());
                     resp.sendError(HttpServletResponse.SC_FORBIDDEN, "Not authorized");
                     return;
                 }
 
                 TreeNode<String, Boolean> methodPerms = Permissions.subPermissions(permissions, reqPerms);
                 if (!methodPerms.getValue()) {
-                    WebAPI.getInstance().getLogger().warn(req.getRemoteAddr() + " does not have permission to access " + req.getRequestURI());
+                    WebAPI.getLogger().warn(req.getRemoteAddr() + " does not have permission to access " + req.getRequestURI());
                     resp.sendError(HttpServletResponse.SC_FORBIDDEN, "Not authorized");
                     return;
                 }

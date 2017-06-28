@@ -5,11 +5,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import valandur.webapi.WebAPI;
 import valandur.webapi.api.servlet.IServletData;
-import valandur.webapi.json.JsonConverter;
-import valandur.webapi.misc.TreeNode;
-import valandur.webapi.misc.Util;
+import valandur.webapi.api.util.TreeNode;
 import valandur.webapi.user.UserPermission;
+import valandur.webapi.util.Util;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -85,7 +85,7 @@ public class ServletData implements IServletData {
         resp.setStatus(status);
     }
     public void addJson(String key, Object value, boolean details) {
-        node.replace(key, JsonConverter.toJson(value, details, permissions));
+        node.replace(key, WebAPI.getJsonService().toJson(value, details, permissions));
     }
 
     public String getPathParam(String key) {

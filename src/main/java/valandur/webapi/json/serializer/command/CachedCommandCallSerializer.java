@@ -2,8 +2,8 @@ package valandur.webapi.json.serializer.command;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
-import valandur.webapi.cache.command.CachedCommandCall;
-import valandur.webapi.json.serializer.WebAPISerializer;
+import valandur.webapi.api.cache.command.CachedCommandCall;
+import valandur.webapi.api.json.WebAPISerializer;
 
 import java.io.IOException;
 

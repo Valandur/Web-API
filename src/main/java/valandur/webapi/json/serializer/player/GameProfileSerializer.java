@@ -3,7 +3,7 @@ package valandur.webapi.json.serializer.player;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import org.spongepowered.api.profile.GameProfile;
-import valandur.webapi.json.serializer.WebAPISerializer;
+import valandur.webapi.api.json.WebAPISerializer;
 
 import java.io.IOException;
 

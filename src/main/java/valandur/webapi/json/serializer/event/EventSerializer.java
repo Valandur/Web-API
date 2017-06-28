@@ -16,7 +16,7 @@ import org.spongepowered.api.event.world.ExplosionEvent;
 import org.spongepowered.api.event.world.GenerateChunkEvent;
 import org.spongepowered.api.event.world.TargetWorldEvent;
 import valandur.webapi.block.BlockUpdateEvent;
-import valandur.webapi.json.serializer.WebAPISerializer;
+import valandur.webapi.api.json.WebAPISerializer;
 
 import java.io.IOException;
 

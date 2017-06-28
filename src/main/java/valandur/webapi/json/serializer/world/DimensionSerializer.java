@@ -3,8 +3,8 @@ package valandur.webapi.json.serializer.world;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import org.spongepowered.api.world.Dimension;
-import valandur.webapi.cache.misc.CachedCatalogType;
-import valandur.webapi.json.serializer.WebAPISerializer;
+import valandur.webapi.api.cache.misc.CachedCatalogType;
+import valandur.webapi.api.json.WebAPISerializer;
 
 import java.io.IOException;
 

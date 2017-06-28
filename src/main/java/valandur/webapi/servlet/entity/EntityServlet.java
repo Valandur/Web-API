@@ -9,22 +9,22 @@ import org.spongepowered.api.world.World;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.annotation.WebAPIRoute;
 import valandur.webapi.api.annotation.WebAPIServlet;
-import valandur.webapi.api.servlet.IServlet;
-import valandur.webapi.cache.DataCache;
-import valandur.webapi.cache.entity.CachedEntity;
-import valandur.webapi.misc.Util;
+import valandur.webapi.api.servlet.WebAPIBaseServlet;
+import valandur.webapi.services.CacheService;
+import valandur.webapi.api.cache.entity.CachedEntity;
+import valandur.webapi.util.Util;
 import valandur.webapi.servlet.ServletData;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.Optional;
 
 @WebAPIServlet(basePath = "entity")
-public class EntityServlet implements IServlet {
+public class EntityServlet extends WebAPIBaseServlet {
 
     @WebAPIRoute(method = "GET", path = "/", perm = "list")
     public void getEntities(ServletData data) {
         data.addJson("ok", true, false);
-        data.addJson("entities", DataCache.getEntities(), data.getQueryParam("details").isPresent());
+        data.addJson("entities", cacheService.getEntities(), data.getQueryParam("details").isPresent());
     }
 
     @WebAPIRoute(method = "GET", path = "/:entity", perm = "one")
@@ -34,7 +34,7 @@ public class EntityServlet implements IServlet {
         if (strFields.isPresent() || strMethods.isPresent()) {
             String[] fields = strFields.map(s -> s.split(",")).orElse(new String[]{});
             String[] methods = strMethods.map(s -> s.split(",")).orElse(new String[]{});
-            Tuple extra = DataCache.getExtraData(entity, fields, methods);
+            Tuple extra = cacheService.getExtraData(entity, fields, methods);
             data.addJson("fields", extra.getFirst(), true);
             data.addJson("methods", extra.getSecond(), true);
         }
@@ -81,7 +81,7 @@ public class EntityServlet implements IServlet {
                 live.damage(req.getDamage().getAmount(), builder.build());
             }
 
-            return DataCache.updateEntity(live);
+            return cacheService.updateEntity(live);
         });
 
         data.addJson("ok", resEntity.isPresent(), false);
@@ -134,7 +134,7 @@ public class EntityServlet implements IServlet {
             return;
         }
 
-        CachedEntity entity = DataCache.updateEntity(resEntity.get());
+        CachedEntity entity = cacheService.updateEntity(resEntity.get());
 
         data.setStatus(HttpServletResponse.SC_CREATED);
         data.addJson("ok", true, false);
@@ -158,7 +158,7 @@ public class EntityServlet implements IServlet {
             return;
         }
 
-        Optional<Object> res = DataCache.executeMethod(entity, mName, params.get().getFirst(), params.get().getSecond());
+        Optional<Object> res = cacheService.executeMethod(entity, mName, params.get().getFirst(), params.get().getSecond());
         if (!res.isPresent()) {
             data.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not get entity");
             return;
@@ -186,7 +186,7 @@ public class EntityServlet implements IServlet {
             return;
         }
 
-        DataCache.removeEntity(entity.getUUID());
+        cacheService.removeEntity(entity.getUUID());
 
         data.addJson("ok", true, false);
         data.addJson("entity", entity, true);

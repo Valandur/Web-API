@@ -9,18 +9,15 @@ import org.spongepowered.api.util.Tuple;
 import org.spongepowered.api.world.Chunk;
 import org.spongepowered.api.world.World;
 import valandur.webapi.WebAPI;
+import valandur.webapi.api.block.IBlockUpdate;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-public class BlockUpdate {
+public class BlockUpdate implements IBlockUpdate {
     public static int MAX_BLOCKS_PER_SECOND = 10000;
-
-    public enum BlockUpdateStatus {
-        INIT, RUNNING, PAUSED, DONE, ERRORED,
-    }
 
     //private int currentChunk = 0;
     private int currentBlock = 0;
@@ -57,15 +54,15 @@ public class BlockUpdate {
     private List<Tuple<Vector3i, BlockState>> blocks;
 
 
-    public float getProgress() {
-        return (float)currentBlock / blocks.size();
-    }
-
     public BlockUpdate(UUID worldId, List<Tuple<Vector3i, BlockState>> blocks) {
         this.uuid = UUID.randomUUID();
         this.worldId = worldId;
         this.blocks = blocks;
-        this.cause = Cause.source(WebAPI.getInstance().getContainer()).build();
+        this.cause = Cause.source(WebAPI.getContainer()).build();
+    }
+
+    public float getProgress() {
+        return (float)currentBlock / blocks.size();
     }
 
     public void start() {

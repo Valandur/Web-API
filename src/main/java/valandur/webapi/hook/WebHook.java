@@ -1,7 +1,7 @@
 package valandur.webapi.hook;
 
-import valandur.webapi.misc.TreeNode;
-import valandur.webapi.permission.Permissions;
+import valandur.webapi.api.util.TreeNode;
+import valandur.webapi.api.permission.Permissions;
 
 import java.util.List;
 

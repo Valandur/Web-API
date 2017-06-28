@@ -2,6 +2,7 @@ package valandur.webapi.hook;
 
 import org.spongepowered.api.event.Event;
 import org.spongepowered.api.event.EventListener;
+import valandur.webapi.WebAPI;
 
 public class WebHookEventListener implements EventListener<Event> {
 
@@ -13,6 +14,6 @@ public class WebHookEventListener implements EventListener<Event> {
 
     @Override
     public void handle(Event event) throws Exception {
-        WebHooks.notifyHooks(clazz, event);
+        WebAPI.getWebHookService().notifyHooks(clazz, event);
     }
 }

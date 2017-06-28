@@ -2,14 +2,10 @@ package valandur.webapi.servlet.entity;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.flowpowered.math.vector.Vector3d;
-import com.flowpowered.math.vector.Vector3i;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.EntityType;
-import org.spongepowered.api.world.GeneratorType;
-import org.spongepowered.api.world.Location;
-import org.spongepowered.api.world.World;
-import valandur.webapi.cache.DataCache;
-import valandur.webapi.cache.world.CachedWorld;
+import valandur.webapi.WebAPI;
+import valandur.webapi.api.cache.world.CachedWorld;
 
 import java.util.Collection;
 import java.util.Optional;
@@ -20,7 +16,7 @@ public class CreateEntityRequest {
     @JsonDeserialize
     private String world;
     public Optional<CachedWorld> getWorld() {
-        return DataCache.getWorld(world);
+        return WebAPI.getCacheService().getWorld(world);
     }
 
     @JsonDeserialize

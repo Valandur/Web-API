@@ -3,7 +3,7 @@ package valandur.webapi.json.serializer.block;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import org.spongepowered.api.block.BlockSnapshot;
-import valandur.webapi.json.serializer.WebAPISerializer;
+import valandur.webapi.api.json.WebAPISerializer;
 
 import java.io.IOException;
 

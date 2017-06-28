@@ -6,8 +6,8 @@ import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 import ninja.leaping.configurate.objectmapping.serialize.TypeSerializer;
 import org.slf4j.Logger;
 import valandur.webapi.WebAPI;
-import valandur.webapi.misc.TreeNode;
-import valandur.webapi.permission.Permissions;
+import valandur.webapi.api.util.TreeNode;
+import valandur.webapi.api.permission.Permissions;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -18,7 +18,7 @@ import java.util.Optional;
 public class WebHookSerializer implements TypeSerializer<WebHook> {
     @Override
     public WebHook deserialize(TypeToken<?> type, ConfigurationNode value) throws ObjectMappingException {
-        Logger logger = WebAPI.getInstance().getLogger();
+        Logger logger = WebAPI.getLogger();
 
         String address = value.getNode("address").getString();
 
@@ -64,7 +64,7 @@ public class WebHookSerializer implements TypeSerializer<WebHook> {
 
         if (enabled) {
             if (filterName != null) {
-                Optional<Class<? extends WebHookFilter>> opt = WebHooks.getFilter(filterName);
+                Optional<Class<? extends WebHookFilter>> opt = WebAPI.getWebHookService().getFilter(filterName);
                 if (!opt.isPresent()) {
                     logger.warn("    Could not find filter with name '" + filterName + "'");
                 } else {

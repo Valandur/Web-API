@@ -44,8 +44,13 @@ public class BlockService implements IBlockService {
             if (!obj.isPresent() || !(obj.get() instanceof World))
                 return null;
 
-            World w = (World)obj.get();
-            return w.getBlockView(min, max).getBlockCopy(StorageType.STANDARD);
+            try {
+                World w = (World) obj.get();
+                return w.getBlockView(min, max).getBlockCopy(StorageType.STANDARD);
+            } catch (OutOfMemoryError ignored) {
+                WebAPI.getLogger().warn("Not enough memory to process block volume!");
+                return null;
+            }
         });
     }
     public Optional<BlockState> getBlockAt(CachedWorld world, Vector3i pos) {

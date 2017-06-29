@@ -27,13 +27,15 @@ public class BlockServlet extends WebAPIBaseServlet {
 
     @WebAPIRoute(method = "GET", path = "/:world/:x/:y/:z", perm = "one")
     public void getBlock(ServletData data, CachedWorld world, int x, int y, int z) {
-        Optional<BlockState> state = blockService.getBlockAt(world, new Vector3i(x, y, z));
+        Vector3i pos = new Vector3i(x, y, z);
+        Optional<BlockState> state = blockService.getBlockAt(world, pos);
         if (!state.isPresent()) {
             data.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not get world " + world.getName());
             return;
         }
 
         data.addJson("ok", true, false);
+        data.addJson("position", pos, false);
         data.addJson("block", state.get(), true);
     }
 
@@ -63,7 +65,9 @@ public class BlockServlet extends WebAPIBaseServlet {
             return;
         }
 
-        Optional<BlockVolume> vol = blockService.getBlockVolume(world, new Vector3i(minX, minY, minZ), new Vector3i(maxX, maxY, maxZ));
+        Vector3i min = new Vector3i(minX, minY, minZ);
+        Vector3i max = new Vector3i(maxX, maxY, maxZ);
+        Optional<BlockVolume> vol = blockService.getBlockVolume(world, min, max);
         if (!vol.isPresent()) {
             data.sendError(HttpServletResponse.SC_NOT_FOUND, "Could not get world");
             return;

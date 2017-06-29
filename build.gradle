@@ -49,14 +49,15 @@ dependencies {
 shadowJar {
     configurations  = [project.configurations.compile]
 
-    relocate "com", "valandur.webapi.shadow.com"
-    relocate "edu", "valandur.webapi.shadow.edu"
+    relocate "com.fasterxml", "valandur.webapi.shadow.com.fasterxml"
+    relocate "edu.umd", "valandur.webapi.shadow.edu.umd"
     relocate "javassist", "valandur.webapi.shadow.javassist"
-    relocate "javax", "valandur.webapi.shadow.javax"
+    relocate "javax.servlet", "valandur.webapi.shadow.javax.servlet"
     relocate "org.mindrot", "valandur.webapi.shadow.org.mindrot"
     relocate "org.eclipse", "valandur.webapi.shadow.org.eclipse"
     relocate "org.reflections", "valandur.webapi.shadow.org.reflections"
-    relocate "net", "valandur.webapi.shadow.net"
+    relocate "net.jodah", "valandur.webapi.shadow.net.jodah"
+    relocate "net.jcip", "valandur.webapi.shadow.net.jcip"
 
     exclude "/about.html"
     exclude "/jetty-dir.css"

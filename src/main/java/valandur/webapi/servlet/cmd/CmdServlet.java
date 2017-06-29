@@ -4,11 +4,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.annotation.WebAPIRoute;
 import valandur.webapi.api.annotation.WebAPIServlet;
-import valandur.webapi.api.servlet.IServlet;
-import valandur.webapi.cache.DataCache;
-import valandur.webapi.cache.command.CachedCommand;
+import valandur.webapi.api.cache.command.CachedCommand;
+import valandur.webapi.api.permission.Permissions;
+import valandur.webapi.api.servlet.WebAPIBaseServlet;
 import valandur.webapi.command.CommandSource;
-import valandur.webapi.permission.Permissions;
 import valandur.webapi.servlet.ServletData;
 
 import javax.servlet.http.HttpServletResponse;
@@ -17,22 +16,21 @@ import java.util.List;
 import java.util.Optional;
 
 @WebAPIServlet(basePath = "cmd")
-public class CmdServlet implements IServlet {
+public class CmdServlet extends WebAPIBaseServlet {
 
     public static int CMD_WAIT_TIME = 1000;
 
     @WebAPIRoute(method = "GET", path = "/", perm = "list")
     public void getCommands(ServletData data) {
         data.addJson("ok", true, false);
-        data.addJson("commands", DataCache.getCommands(), data.getQueryParam("details").isPresent());
+        data.addJson("commands", cacheService.getCommands(), data.getQueryParam("details").isPresent());
     }
 
     @WebAPIRoute(method = "GET", path = "/:cmd", perm = "one")
-    public void getCommand(ServletData data) {
-        String cName = data.getPathParam("cmd");
-        Optional<CachedCommand> cmd = DataCache.getCommand(cName);
+    public void getCommand(ServletData data, String cmdName) {
+        Optional<CachedCommand> cmd = cacheService.getCommand(cmdName);
         if (!cmd.isPresent()) {
-            data.sendError(HttpServletResponse.SC_NOT_FOUND, "The command '" + cName + "' could not be found");
+            data.sendError(HttpServletResponse.SC_NOT_FOUND, "The command '" + cmdName + "' could not be found");
             return;
         }
 
@@ -76,8 +74,9 @@ public class CmdServlet implements IServlet {
         final String name = node.has("name") ? node.get("name").asText() : WebAPI.NAME;
         final int waitTime = node.has("waitTime") ? node.get("waitTime").asInt() : 0;
         final int waitLines = node.has("waitLines") ? node.get("waitLines").asInt() : 0;
+        final boolean hideInConsole = node.has("hideInConsole") && node.get("hideInConsole").asBoolean();
 
-        final CommandSource src = new CommandSource(name, waitLines);
+        final CommandSource src = new CommandSource(name, waitLines, hideInConsole);
 
         try {
             WebAPI.runOnMain(() -> WebAPI.executeCommand(cmd, src));

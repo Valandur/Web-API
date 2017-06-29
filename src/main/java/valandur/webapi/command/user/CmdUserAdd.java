@@ -7,7 +7,7 @@ import org.spongepowered.api.command.args.CommandContext;
 import org.spongepowered.api.command.spec.CommandExecutor;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
-import valandur.webapi.misc.Util;
+import valandur.webapi.util.Util;
 import valandur.webapi.user.Users;
 
 import java.util.Optional;

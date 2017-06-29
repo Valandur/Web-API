@@ -4,8 +4,8 @@ import com.google.common.reflect.TypeToken;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 import ninja.leaping.configurate.objectmapping.serialize.TypeSerializer;
-import valandur.webapi.misc.TreeNode;
-import valandur.webapi.permission.Permissions;
+import valandur.webapi.api.util.TreeNode;
+import valandur.webapi.api.permission.Permissions;
 
 public class UserPermissionConfigSerializer implements TypeSerializer<UserPermission> {
     @Override

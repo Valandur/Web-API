@@ -6,10 +6,10 @@ import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.AbstractHandler;
 import org.spongepowered.api.util.Tuple;
 import valandur.webapi.WebAPI;
-import valandur.webapi.misc.TreeNode;
-import valandur.webapi.misc.Util;
-import valandur.webapi.permission.PermissionStruct;
-import valandur.webapi.permission.Permissions;
+import valandur.webapi.api.util.TreeNode;
+import valandur.webapi.util.Util;
+import valandur.webapi.api.permission.PermissionStruct;
+import valandur.webapi.api.permission.Permissions;
 import valandur.webapi.user.UserPermission;
 
 import javax.servlet.ServletException;
@@ -51,7 +51,8 @@ public class AuthHandler extends AbstractHandler {
     }
 
     public void init() {
-        Tuple<ConfigurationLoader, ConfigurationNode> tup = api.loadWithDefaults(configFileName, "defaults/" + configFileName);
+        Tuple<ConfigurationLoader, ConfigurationNode> tup =
+                Util.loadWithDefaults(configFileName, "defaults/" + configFileName);
         loader = tup.getFirst();
         config = tup.getSecond();
 

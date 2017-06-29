@@ -3,7 +3,7 @@ package valandur.webapi.json.serializer.misc;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.flowpowered.math.vector.Vector3d;
-import valandur.webapi.json.serializer.WebAPISerializer;
+import valandur.webapi.api.json.WebAPISerializer;
 
 import java.io.IOException;
 

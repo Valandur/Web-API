@@ -16,13 +16,15 @@ public class CommandSource implements org.spongepowered.api.command.CommandSourc
     private String name = WebAPI.NAME;
     private int waitLines = 0;
     private Queue<String> lines = new ConcurrentLinkedQueue<>();
+    private boolean hideInConsole = false;
 
     public static CommandSource instance = new CommandSource();
 
     public CommandSource() { }
-    public CommandSource(String name, int waitLines) {
+    public CommandSource(String name, int waitLines, boolean hideInConsole) {
         this.name = name;
         this.waitLines = waitLines;
+        this.hideInConsole = hideInConsole;
     }
 
     public List<String> getLines() {
@@ -102,6 +104,8 @@ public class CommandSource implements org.spongepowered.api.command.CommandSourc
 
     @Override
     public MessageChannel getMessageChannel() {
+        if (hideInConsole)
+            return MessageChannel.TO_NONE;
         return MessageChannel.TO_CONSOLE;
     }
 

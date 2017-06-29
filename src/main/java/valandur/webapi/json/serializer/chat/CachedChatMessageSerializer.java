@@ -2,8 +2,8 @@ package valandur.webapi.json.serializer.chat;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
-import valandur.webapi.cache.chat.CachedChatMessage;
-import valandur.webapi.json.serializer.WebAPISerializer;
+import valandur.webapi.api.cache.chat.CachedChatMessage;
+import valandur.webapi.api.json.WebAPISerializer;
 
 import java.io.IOException;
 

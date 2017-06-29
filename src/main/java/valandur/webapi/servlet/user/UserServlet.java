@@ -3,17 +3,17 @@ package valandur.webapi.servlet.user;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.annotation.WebAPIRoute;
 import valandur.webapi.api.annotation.WebAPIServlet;
-import valandur.webapi.api.servlet.IServlet;
-import valandur.webapi.misc.Util;
+import valandur.webapi.api.servlet.WebAPIBaseServlet;
 import valandur.webapi.servlet.ServletData;
 import valandur.webapi.user.UserPermission;
 import valandur.webapi.user.Users;
+import valandur.webapi.util.Util;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.Optional;
 
 @WebAPIServlet(basePath = "user")
-public class UserServlet implements IServlet {
+public class UserServlet extends WebAPIBaseServlet {
 
     @WebAPIRoute(method = "GET", path = "/")
     public void getUserDetails(ServletData data) {
@@ -45,7 +45,7 @@ public class UserServlet implements IServlet {
         UserPermission perm = optPerm.get();
 
         String key = Util.generateUniqueId();
-        WebAPI.getInstance().getAuthHandler().addTempPerm(key, perm);
+        WebAPI.getAuthHandler().addTempPerm(key, perm);
 
         data.addJson("ok", true, false);
         data.addJson("key", key, false);

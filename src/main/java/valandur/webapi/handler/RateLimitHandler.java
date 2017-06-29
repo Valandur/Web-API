@@ -31,7 +31,7 @@ public class RateLimitHandler extends AbstractHandler {
             double time = System.nanoTime() / 1000000000d;
 
             if (lastCall.containsKey(key) && time - lastCall.get(key) < 1d / limit) {
-                WebAPI.getInstance().getLogger().warn(request.getRemoteAddr() + " has exceeded the rate limit when requesting " + request.getRequestURI());
+                WebAPI.getLogger().warn(request.getRemoteAddr() + " has exceeded the rate limit when requesting " + request.getRequestURI());
                 response.sendError(429, "Rate limit exceeded");
                 baseRequest.setHandled(true);
                 return;

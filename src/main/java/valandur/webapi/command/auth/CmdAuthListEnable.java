@@ -18,10 +18,10 @@ public class CmdAuthListEnable implements CommandExecutor {
     @Override
     public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
         if (whitelist) {
-            WebAPI.getInstance().getAuthHandler().toggleWhitelist(true);
+            WebAPI.getAuthHandler().toggleWhitelist(true);
             src.sendMessage(Text.of("Enabled whitelist"));
         } else {
-            WebAPI.getInstance().getAuthHandler().toggleBlacklist(true);
+            WebAPI.getAuthHandler().toggleBlacklist(true);
             src.sendMessage(Text.of("Enabled blacklist"));
         }
 

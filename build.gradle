@@ -43,7 +43,6 @@ spongestart {
 dependencies {
     compile project(":webapi-api")
     compile group: "org.reflections", name: "reflections", version: "0.9.10"
-    compile group: "net.jodah", name: "typetools", version: "0.4.9"
     compile group: "org.mindrot", name: "jbcrypt", version: "0.4"
 }
 

@@ -20,10 +20,10 @@ public class CmdAuthListAdd implements CommandExecutor {
         String ip = args.getOne("ip").get().toString();
 
         if (whitelist) {
-            WebAPI.getInstance().getAuthHandler().addToWhitelist(ip);
+            WebAPI.getAuthHandler().addToWhitelist(ip);
             src.sendMessage(Text.of("Added " + ip + " to whitelist"));
         } else {
-            WebAPI.getInstance().getAuthHandler().addToBlacklist(ip);
+            WebAPI.getAuthHandler().addToBlacklist(ip);
             src.sendMessage(Text.of("Added " + ip + " to blacklist"));
         }
 

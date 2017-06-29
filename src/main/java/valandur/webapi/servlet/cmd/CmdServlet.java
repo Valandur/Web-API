@@ -74,8 +74,9 @@ public class CmdServlet extends WebAPIBaseServlet {
         final String name = node.has("name") ? node.get("name").asText() : WebAPI.NAME;
         final int waitTime = node.has("waitTime") ? node.get("waitTime").asInt() : 0;
         final int waitLines = node.has("waitLines") ? node.get("waitLines").asInt() : 0;
+        final boolean hideInConsole = node.has("hideInConsole") && node.get("hideInConsole").asBoolean();
 
-        final CommandSource src = new CommandSource(name, waitLines);
+        final CommandSource src = new CommandSource(name, waitLines, hideInConsole);
 
         try {
             WebAPI.runOnMain(() -> WebAPI.executeCommand(cmd, src));

@@ -41,7 +41,7 @@ public class BlockService implements IBlockService {
         return WebAPI.runOnMain(() -> {
             Optional<?> obj = world.getLive();
 
-            if (!obj.isPresent())
+            if (!obj.isPresent() || !(obj.get() instanceof World))
                 return null;
 
             World w = (World)obj.get();

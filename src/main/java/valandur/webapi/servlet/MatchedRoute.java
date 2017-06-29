@@ -129,14 +129,16 @@ public class MatchedRoute {
                 }
 
                 matchedParams.add(UUID.fromString(uuid));
-            } else if (type.equals(Integer.class)) {
+            } else if (type.equals(Integer.class) || type.equals(int.class)) {
                 matchedParams.add(Integer.parseInt(entry.getValue()));
-            } else if (type.equals(Long.class)) {
+            } else if (type.equals(Long.class) || type.equals(long.class)) {
                 matchedParams.add(Long.parseLong(entry.getValue()));
-            } else if (type.equals(Double.class)) {
+            } else if (type.equals(Double.class) || type.equals(double.class)) {
                 matchedParams.add(Double.parseDouble(entry.getValue()));
             } else if (type.equals(String.class)) {
                 matchedParams.add(entry.getValue());
+            } else if (type.equals(Boolean.class) || type.equals(boolean.class)) {
+                matchedParams.add(Boolean.parseBoolean(entry.getValue()));
             } else {
                 matchedParams.add(null);
             }

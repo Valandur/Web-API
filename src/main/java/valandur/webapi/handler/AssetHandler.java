@@ -54,11 +54,11 @@ public class AssetHandler extends AbstractHandler {
             out.print(assetString);
             baseRequest.setHandled(true);
         } else {
-            if (target.isEmpty() || target.equalsIgnoreCase("/")) {
+            if (target.isEmpty() || target.equalsIgnoreCase("/") || !target.contains(".")) {
                 target = "index.html";
             }
 
-            String path = folderPath + "/" + target;
+            String path = (folderPath + "/" + target).replace("//", "/");
 
             ServletOutputStream stream = response.getOutputStream();
             if (cachedAssets.containsKey(path)) {
@@ -86,10 +86,12 @@ public class AssetHandler extends AbstractHandler {
 
                 response.setStatus(HttpServletResponse.SC_OK);
                 stream.write(data);
-                baseRequest.setHandled(true);
             } else {
-                handle("index.html", baseRequest, request, response);
+                WebAPI.getLogger().warn("Could not load asset: " + path);
+                response.sendError(HttpServletResponse.SC_NOT_FOUND, "File not found");
             }
+
+            baseRequest.setHandled(true);
         }
     }
 
@@ -101,7 +103,7 @@ public class AssetHandler extends AbstractHandler {
         } else if (path.endsWith(".html")) {
             return "text/html; charset=utf-8";
         } else if (path.endsWith(".js")) {
-            return "text/javascript; charset=utf-8";
+            return "application/javascript; charset=utf-8";
         } else if (path.endsWith(".png")){
             return "image/png";
         } else if (path.endsWith(".jpg") || path.endsWith(".jpeg")) {

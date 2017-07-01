@@ -6,7 +6,6 @@ import valandur.webapi.api.cache.tileentity.CachedTileEntity;
 import valandur.webapi.api.json.WebAPISerializer;
 
 import java.io.IOException;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class CachedTileEntitySerializer extends WebAPISerializer<CachedTileEntity> {
     @Override
@@ -17,7 +16,7 @@ public class CachedTileEntitySerializer extends WebAPISerializer<CachedTileEntit
         writeField(provider, "location", value.getLocation());
         writeField(provider, "link", value.getLink());
 
-        if (((AtomicBoolean)provider.getAttribute("details")).get()) {
+        if (shouldWriteDetails(provider)) {
             writeField(provider, "inventory", value.getInventory());
 
             writeData(provider, value.getData());

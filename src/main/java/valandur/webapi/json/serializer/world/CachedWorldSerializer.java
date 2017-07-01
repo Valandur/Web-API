@@ -6,7 +6,6 @@ import valandur.webapi.api.cache.world.CachedWorld;
 import valandur.webapi.api.json.WebAPISerializer;
 
 import java.io.IOException;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class CachedWorldSerializer extends WebAPISerializer<CachedWorld> {
     @Override
@@ -17,7 +16,7 @@ public class CachedWorldSerializer extends WebAPISerializer<CachedWorld> {
         writeField(provider, "name", value.getName());
         writeField(provider, "link", value.getLink());
 
-        if (((AtomicBoolean)provider.getAttribute("details")).get()) {
+        if (shouldWriteDetails(provider)) {
             writeField(provider, "class", value.getClass().getName());
             writeField(provider, "isLoaded", value.isLoaded());
             writeField(provider, "loadOnStartup", value.doesLoadOnStartup());

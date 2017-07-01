@@ -7,7 +7,6 @@ import valandur.webapi.api.cache.entity.CachedEntity;
 import valandur.webapi.api.json.WebAPISerializer;
 
 import java.io.IOException;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class CachedEntitySerializer extends WebAPISerializer<CachedEntity> {
     @Override
@@ -18,7 +17,7 @@ public class CachedEntitySerializer extends WebAPISerializer<CachedEntity> {
         writeField(provider, "type", value.getType());
         writeField(provider, "link", value.getLink());
 
-        if (((AtomicBoolean)provider.getAttribute("details")).get()) {
+        if (shouldWriteDetails(provider)) {
             writeField(provider, "class", value.getClass().getName());
             writeField(provider, "location", value.getLocation(), Tristate.FALSE);
             writeField(provider, "rotation", value.getRotation());

@@ -6,7 +6,6 @@ import valandur.webapi.api.cache.plugin.CachedPluginContainer;
 import valandur.webapi.api.json.WebAPISerializer;
 
 import java.io.IOException;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class CachedPluginContainerSerializer extends WebAPISerializer<CachedPluginContainer> {
     @Override
@@ -17,7 +16,7 @@ public class CachedPluginContainerSerializer extends WebAPISerializer<CachedPlug
         writeField(provider, "name", value.getName());
         writeField(provider, "version", value.getVersion());
 
-        if (((AtomicBoolean)provider.getAttribute("details")).get()) {
+        if (shouldWriteDetails(provider)) {
             writeField(provider, "class", value.getClass());
             writeField(provider, "description", value.getDescription());
             writeField(provider, "url", value.getUrl());

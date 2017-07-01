@@ -6,7 +6,6 @@ import valandur.webapi.api.cache.player.CachedPlayer;
 import valandur.webapi.api.json.WebAPISerializer;
 
 import java.io.IOException;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class CachedPlayerSerializer extends WebAPISerializer<CachedPlayer> {
     @Override
@@ -19,7 +18,7 @@ public class CachedPlayerSerializer extends WebAPISerializer<CachedPlayer> {
         writeField(provider, "link", value.getLink());
         writeField(provider, "location", value.getLocation());
 
-        if (((AtomicBoolean)provider.getAttribute("details")).get()) {
+        if (shouldWriteDetails(provider)) {
             writeField(provider, "class", value.getClass().getName());
             writeField(provider, "rotation", value.getRotation());
             writeField(provider, "velocity", value.getVelocity());

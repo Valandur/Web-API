@@ -42,6 +42,7 @@ import org.spongepowered.api.world.explosion.Explosion;
 import org.spongepowered.api.world.extent.BlockVolume;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.cache.chat.CachedChatMessage;
+import valandur.webapi.api.cache.command.CachedCommand;
 import valandur.webapi.api.cache.command.CachedCommandCall;
 import valandur.webapi.api.cache.command.CachedCommandResult;
 import valandur.webapi.api.cache.entity.CachedEntity;
@@ -68,6 +69,7 @@ import valandur.webapi.json.serializer.block.BlockVolumeSerializer;
 import valandur.webapi.json.serializer.chat.CachedChatMessageSerializer;
 import valandur.webapi.json.serializer.command.CachedCommandCallSerializer;
 import valandur.webapi.json.serializer.command.CachedCommandResultSerializer;
+import valandur.webapi.json.serializer.command.CachedCommandSerializer;
 import valandur.webapi.json.serializer.entity.*;
 import valandur.webapi.json.serializer.event.CauseSerializer;
 import valandur.webapi.json.serializer.event.EventSerializer;
@@ -117,6 +119,7 @@ public class JsonService implements IJsonService {
         serializers.put(CachedChatMessage.class, new CachedChatMessageSerializer());
 
         // Command
+        serializers.put(CachedCommand.class, new CachedCommandSerializer());
         serializers.put(CachedCommandCall.class, new CachedCommandCallSerializer());
         serializers.put(CachedCommandResult.class, new CachedCommandResultSerializer());
 

@@ -8918,3 +8918,17 @@ hr.transparent {
     border-right-color: #f86c6b; }
   *[dir="rtl"] .callout-success {
     border-right-color: #4dbd74; }
+
+.autosuggest-list {
+  background-color: white;
+  max-height: 60vh;
+  overflow-y: scroll;
+  position: absolute;
+  width: 100%;
+  z-index: 100000;
+  cursor: pointer;
+  border-left: 1px solid LightSkyBlue;
+  border-right: 1px solid LightSkyBlue;
+  border-bottom: 1px solid LightSkyBlue; }
+  .autosuggest-list > div:hover {
+    background-color: LightSkyBlue; }

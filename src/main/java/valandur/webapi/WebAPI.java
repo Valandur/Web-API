@@ -31,10 +31,7 @@ import org.spongepowered.api.event.entity.SpawnEntityEvent;
 import org.spongepowered.api.event.entity.living.humanoid.player.KickPlayerEvent;
 import org.spongepowered.api.event.filter.cause.First;
 import org.spongepowered.api.event.game.GameReloadEvent;
-import org.spongepowered.api.event.game.state.GameInitializationEvent;
-import org.spongepowered.api.event.game.state.GamePreInitializationEvent;
-import org.spongepowered.api.event.game.state.GameStartedServerEvent;
-import org.spongepowered.api.event.game.state.GameStoppedServerEvent;
+import org.spongepowered.api.event.game.state.*;
 import org.spongepowered.api.event.item.inventory.InteractInventoryEvent;
 import org.spongepowered.api.event.message.MessageChannelEvent;
 import org.spongepowered.api.event.network.ClientConnectionEvent;
@@ -51,8 +48,6 @@ import valandur.webapi.api.cache.command.CachedCommandCall;
 import valandur.webapi.api.service.*;
 import valandur.webapi.block.BlockUpdate;
 import valandur.webapi.block.BlockUpdateStatusChangeEvent;
-import valandur.webapi.services.BlockService;
-import valandur.webapi.services.CacheService;
 import valandur.webapi.command.CommandRegistry;
 import valandur.webapi.command.CommandSource;
 import valandur.webapi.handler.AssetHandler;
@@ -61,12 +56,8 @@ import valandur.webapi.handler.ErrorHandler;
 import valandur.webapi.handler.RateLimitHandler;
 import valandur.webapi.hook.WebHook;
 import valandur.webapi.hook.WebHookSerializer;
-import valandur.webapi.services.WebHookService;
-import valandur.webapi.services.JsonService;
-import valandur.webapi.services.ServerService;
-import valandur.webapi.services.MessageService;
+import valandur.webapi.services.*;
 import valandur.webapi.servlet.ApiServlet;
-import valandur.webapi.services.ServletService;
 import valandur.webapi.servlet.block.BlockServlet;
 import valandur.webapi.servlet.clazz.ClassServlet;
 import valandur.webapi.servlet.cmd.CmdServlet;
@@ -84,7 +75,6 @@ import valandur.webapi.servlet.world.WorldServlet;
 import valandur.webapi.user.UserPermission;
 import valandur.webapi.user.UserPermissionConfigSerializer;
 import valandur.webapi.user.Users;
-import valandur.webapi.services.ExtensionService;
 import valandur.webapi.util.JettyLogger;
 import valandur.webapi.util.Util;
 
@@ -268,11 +258,6 @@ public class WebAPI {
         Reflections.log = null;
         this.reflections = new Reflections();
 
-        logger.info("Loading base data...");
-        cacheService.updateWorlds();
-        cacheService.updatePlugins();
-        cacheService.updateCommands();
-
         logger.info("Registering servlets...");
         servletService.registerServlet(BlockServlet.class);
         servletService.registerServlet(ClassServlet.class);
@@ -290,6 +275,13 @@ public class WebAPI {
         servletService.registerServlet(WorldServlet.class);
 
         logger.info(WebAPI.NAME + " ready");
+    }
+    @Listener(order = Order.POST)
+    public void onPostInitialization(GamePostInitializationEvent event) {
+        // Load base data
+        cacheService.updateWorlds();
+        cacheService.updatePlugins();
+        cacheService.updateCommands();
     }
 
     private void init(Player triggeringPlayer) {

@@ -35,6 +35,10 @@ public abstract class WebAPISerializer<T> extends StdSerializer<T> {
     }
 
 
+    protected boolean shouldWriteDetails(SerializerProvider provider) {
+        return ((AtomicBoolean)provider.getAttribute("details")).get();
+    }
+
     protected void writeData(SerializerProvider provider, DataHolder holder) throws IOException {
         for (Map.Entry<String, Class> entry : json.getSupportedData().entrySet()) {
             Optional<?> m = holder.get(entry.getValue());

@@ -8,7 +8,6 @@ import valandur.webapi.api.json.WebAPISerializer;
 
 import java.io.IOException;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class BlockStateSerializer extends WebAPISerializer<BlockState> {
     @Override
@@ -16,7 +15,7 @@ public class BlockStateSerializer extends WebAPISerializer<BlockState> {
         gen.writeStartObject();
         writeField(provider, "type", value.getType().getName());
 
-        if (((AtomicBoolean)provider.getAttribute("details")).get()) {
+        if (shouldWriteDetails(provider)) {
             gen.writeObjectFieldStart("data");
             for (Map.Entry<BlockTrait<?>, ?> entry : value.getTraitMap().entrySet()) {
                 writeField(provider, entry.getKey().getName(), entry.getValue());

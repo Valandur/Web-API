@@ -69,7 +69,8 @@ public class BlockServlet extends WebAPIBaseServlet {
         Vector3i max = new Vector3i(maxX, maxY, maxZ);
         Optional<BlockVolume> vol = blockService.getBlockVolume(world, min, max);
         if (!vol.isPresent()) {
-            data.sendError(HttpServletResponse.SC_NOT_FOUND, "Could not get world. Is it loaded?");
+            data.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+                    "Could not get blocks. Is the world loaded? Does the server have enough memory?");
             return;
         }
 

@@ -350,12 +350,12 @@ public class CacheService implements ICacheService {
     }
 
     public void updatePlugins() {
-        Collection<PluginContainer> plugins = Sponge.getPluginManager().getPlugins();
-        Collection<CachedPluginContainer> cachedPlugins = new LinkedHashSet<>();
-        for (PluginContainer plugin : plugins) {
-            cachedPlugins.add(new CachedPluginContainer(plugin));
+        plugins.clear();
+
+        Collection<PluginContainer> newPlugins = Sponge.getPluginManager().getPlugins();
+        for (PluginContainer plugin : newPlugins) {
+            plugins.add(new CachedPluginContainer(plugin));
         }
-        this.plugins = cachedPlugins;
     }
     public Collection<CachedPluginContainer> getPlugins() {
         return plugins;
@@ -373,14 +373,14 @@ public class CacheService implements ICacheService {
     }
 
     public void updateCommands() {
-        Collection<CommandMapping> commands = Sponge.getCommandManager().getAll().values();
-        Collection<CachedCommand> cachedCommands = new LinkedHashSet<>();
-        for (CommandMapping cmd : commands) {
-            if (cachedCommands.stream().anyMatch(c -> c.getName().equalsIgnoreCase(cmd.getPrimaryAlias())))
+        commands.clear();
+
+        Collection<CommandMapping> newCommands = Sponge.getCommandManager().getAll().values();
+        for (CommandMapping cmd : newCommands) {
+            if (commands.stream().anyMatch(c -> c.getName().equalsIgnoreCase(cmd.getPrimaryAlias())))
                 continue;
-            cachedCommands.add(new CachedCommand(cmd, CommandSource.instance));
+            commands.add(new CachedCommand(cmd, CommandSource.instance));
         }
-        this.commands = cachedCommands;
     }
     public Collection<CachedCommand> getCommands() {
         return commands;

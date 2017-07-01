@@ -31,10 +31,7 @@ import org.spongepowered.api.event.entity.SpawnEntityEvent;
 import org.spongepowered.api.event.entity.living.humanoid.player.KickPlayerEvent;
 import org.spongepowered.api.event.filter.cause.First;
 import org.spongepowered.api.event.game.GameReloadEvent;
-import org.spongepowered.api.event.game.state.GameInitializationEvent;
-import org.spongepowered.api.event.game.state.GamePreInitializationEvent;
-import org.spongepowered.api.event.game.state.GameStartedServerEvent;
-import org.spongepowered.api.event.game.state.GameStoppedServerEvent;
+import org.spongepowered.api.event.game.state.*;
 import org.spongepowered.api.event.item.inventory.InteractInventoryEvent;
 import org.spongepowered.api.event.message.MessageChannelEvent;
 import org.spongepowered.api.event.network.ClientConnectionEvent;
@@ -261,11 +258,6 @@ public class WebAPI {
         Reflections.log = null;
         this.reflections = new Reflections();
 
-        logger.info("Loading base data...");
-        cacheService.updateWorlds();
-        cacheService.updatePlugins();
-        cacheService.updateCommands();
-
         logger.info("Registering servlets...");
         servletService.registerServlet(BlockServlet.class);
         servletService.registerServlet(ClassServlet.class);
@@ -283,6 +275,13 @@ public class WebAPI {
         servletService.registerServlet(WorldServlet.class);
 
         logger.info(WebAPI.NAME + " ready");
+    }
+    @Listener(order = Order.POST)
+    public void onPostInitialization(GamePostInitializationEvent event) {
+        // Load base data
+        cacheService.updateWorlds();
+        cacheService.updatePlugins();
+        cacheService.updateCommands();
     }
 
     private void init(Player triggeringPlayer) {

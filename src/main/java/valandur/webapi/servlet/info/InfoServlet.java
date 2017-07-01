@@ -37,6 +37,9 @@ public class InfoServlet extends WebAPIBaseServlet {
         data.addJson("game", platform.getContainer(Platform.Component.GAME), true);
         data.addJson("api", platform.getContainer(Platform.Component.API), true);
         data.addJson("implementation", platform.getContainer(Platform.Component.IMPLEMENTATION), true);
+
+        data.addJson("averageTps", serverService.getAverageTps(), false);
+        data.addJson("onlinePlayers", serverService.getOnlinePlayers(), false);
     }
 
     @WebAPIRoute(method = "GET", path = "/properties", perm = "properties")

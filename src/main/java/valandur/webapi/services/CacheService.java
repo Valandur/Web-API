@@ -376,6 +376,8 @@ public class CacheService implements ICacheService {
         Collection<CommandMapping> commands = Sponge.getCommandManager().getAll().values();
         Collection<CachedCommand> cachedCommands = new LinkedHashSet<>();
         for (CommandMapping cmd : commands) {
+            if (cachedCommands.stream().anyMatch(c -> c.getName().equalsIgnoreCase(cmd.getPrimaryAlias())))
+                continue;
             cachedCommands.add(new CachedCommand(cmd, CommandSource.instance));
         }
         this.commands = cachedCommands;

@@ -2,12 +2,12 @@ package valandur.webapi.json.serializer.message;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
-import valandur.webapi.api.json.WebAPISerializer;
-import valandur.webapi.api.message.MessageResponse;
+import valandur.webapi.api.json.WebAPIBaseSerializer;
+import valandur.webapi.message.MessageResponse;
 
 import java.io.IOException;
 
-public class MessageResponseSerializer extends WebAPISerializer<MessageResponse> {
+public class MessageResponseSerializer extends WebAPIBaseSerializer<MessageResponse> {
     @Override
     public void serialize(MessageResponse value, JsonGenerator gen, SerializerProvider provider) throws IOException {
         gen.writeStartObject();

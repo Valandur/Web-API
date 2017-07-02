@@ -7,7 +7,7 @@ import ninja.leaping.configurate.objectmapping.serialize.TypeSerializer;
 import org.slf4j.Logger;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.util.TreeNode;
-import valandur.webapi.api.permission.Permissions;
+import valandur.webapi.permission.PermissionService;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Optional;
 
 public class WebHookSerializer implements TypeSerializer<WebHook> {
+
     @Override
     public WebHook deserialize(TypeToken<?> type, ConfigurationNode value) throws ObjectMappingException {
         Logger logger = WebAPI.getLogger();
@@ -34,7 +35,7 @@ public class WebHookSerializer implements TypeSerializer<WebHook> {
         String filterName = filterBase.getNode("name").getString();
         ConfigurationNode filterConfig = filterBase.getNode("config");
 
-        TreeNode<String, Boolean> permissions = Permissions.permitAllNode();
+        TreeNode<String, Boolean> permissions = PermissionService.permitAllNode();
 
         if (!enabled) {
             logger.info("    -> Disabled");
@@ -56,7 +57,7 @@ public class WebHookSerializer implements TypeSerializer<WebHook> {
             if (value.getNode("permissions").isVirtual()) {
                 logger.warn("    Does not specify 'permissions', defaulting to '*'");
             } else {
-                permissions = Permissions.permissionTreeFromConfig(value.getNode("permissions"));
+                permissions = WebAPI.getPermissionService().permissionTreeFromConfig(value.getNode("permissions"));
             }
         }
 
@@ -91,6 +92,6 @@ public class WebHookSerializer implements TypeSerializer<WebHook> {
         value.getNode("method").setValue(obj.getMethod());
         value.getNode("dataType").setValue(obj.getDataType());
         value.getNode("details").setValue(obj.includeDetails());
-        Permissions.permissionTreeToConfig(value.getNode("permissions"), obj.getPermissions());
+        WebAPI.getPermissionService().permissionTreeToConfig(value.getNode("permissions"), obj.getPermissions());
     }
 }

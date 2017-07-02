@@ -2,12 +2,12 @@ package valandur.webapi.json.serializer.tileentity;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
-import valandur.webapi.api.cache.tileentity.CachedTileEntity;
-import valandur.webapi.api.json.WebAPISerializer;
+import valandur.webapi.cache.tileentity.CachedTileEntity;
+import valandur.webapi.api.json.WebAPIBaseSerializer;
 
 import java.io.IOException;
 
-public class CachedTileEntitySerializer extends WebAPISerializer<CachedTileEntity> {
+public class CachedTileEntitySerializer extends WebAPIBaseSerializer<CachedTileEntity> {
     @Override
     public void serialize(CachedTileEntity value, JsonGenerator gen, SerializerProvider provider) throws IOException {
         gen.writeStartObject();

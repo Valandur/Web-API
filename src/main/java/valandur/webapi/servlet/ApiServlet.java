@@ -4,8 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.util.TreeNode;
-import valandur.webapi.api.permission.Permissions;
-import valandur.webapi.services.ServletService;
+import valandur.webapi.permission.PermissionService;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -19,11 +18,13 @@ import java.util.Optional;
 
 public class ApiServlet extends HttpServlet {
 
-    private ServletService servlets;
+    private ServletService servletService;
+    private PermissionService permissionService;
 
 
     public ApiServlet() {
-        this.servlets = WebAPI.getServletService();
+        this.servletService = WebAPI.getServletService();
+        this.permissionService = WebAPI.getPermissionService();
     }
 
     private void handleVerb(String verb, HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -40,7 +41,7 @@ public class ApiServlet extends HttpServlet {
         resp.setContentType("application/json; charset=utf-8");
 
         try {
-            Optional<MatchedRoute> optMatch = servlets.getMethod(verb, req.getPathInfo());
+            Optional<MatchedRoute> optMatch = servletService.getMethod(verb, req.getPathInfo());
             if (!optMatch.isPresent()) {
                 // We couldn't find a method
                 resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Unknown/Invalid request path");
@@ -61,7 +62,7 @@ public class ApiServlet extends HttpServlet {
                     return;
                 }
 
-                TreeNode<String, Boolean> methodPerms = Permissions.subPermissions(permissions, reqPerms);
+                TreeNode<String, Boolean> methodPerms = permissionService.subPermissions(permissions, reqPerms);
                 if (!methodPerms.getValue()) {
                     WebAPI.getLogger().warn(req.getRemoteAddr() + " does not have permission to access " + req.getRequestURI());
                     resp.sendError(HttpServletResponse.SC_FORBIDDEN, "Not authorized");
@@ -70,7 +71,7 @@ public class ApiServlet extends HttpServlet {
 
                 req.setAttribute("dataPerms", methodPerms);
             } else {
-                req.setAttribute("dataPerms", Permissions.permitAllNode());
+                req.setAttribute("dataPerms", PermissionService.permitAllNode());
             }
 
             if (verb.equalsIgnoreCase("Post") || verb.equalsIgnoreCase("Put")) {

@@ -9,8 +9,9 @@ import org.spongepowered.api.world.storage.WorldProperties;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.annotation.WebAPIRoute;
 import valandur.webapi.api.annotation.WebAPIServlet;
-import valandur.webapi.api.cache.world.CachedWorld;
+import valandur.webapi.api.cache.world.ICachedWorld;
 import valandur.webapi.api.servlet.WebAPIBaseServlet;
+import valandur.webapi.cache.world.CachedWorld;
 import valandur.webapi.servlet.ServletData;
 import valandur.webapi.util.Util;
 
@@ -103,7 +104,7 @@ public class WorldServlet extends WebAPIBaseServlet {
         if (!resProps.isPresent())
             return;
 
-        CachedWorld world = cacheService.updateWorld(resProps.get());
+        ICachedWorld world = cacheService.updateWorld(resProps.get());
 
         data.setStatus(HttpServletResponse.SC_CREATED);
         data.addJson("ok", true, false);
@@ -148,7 +149,7 @@ public class WorldServlet extends WebAPIBaseServlet {
 
         final UpdateWorldRequest req = optReq.get();
 
-        Optional<CachedWorld> resWorld = WebAPI.runOnMain(() -> {
+        Optional<ICachedWorld> resWorld = WebAPI.runOnMain(() -> {
             Optional<?> optLive = world.getLive();
             if (!optLive.isPresent())
                 return null;

@@ -37,9 +37,6 @@ public class InfoServlet extends WebAPIBaseServlet {
         data.addJson("game", platform.getContainer(Platform.Component.GAME), true);
         data.addJson("api", platform.getContainer(Platform.Component.API), true);
         data.addJson("implementation", platform.getContainer(Platform.Component.IMPLEMENTATION), true);
-
-        data.addJson("averageTps", serverService.getAverageTps(), false);
-        data.addJson("onlinePlayers", serverService.getOnlinePlayers(), false);
     }
 
     @WebAPIRoute(method = "GET", path = "/properties", perm = "properties")
@@ -65,5 +62,17 @@ public class InfoServlet extends WebAPIBaseServlet {
 
         data.addJson("ok", true, false);
         data.addJson("properties", serverService.getProperties(), true);
+    }
+
+    @WebAPIRoute(method = "GET", path="/tps", perm = "tps")
+    public void getTps(ServletData data) {
+        data.addJson("ok", true, false);
+        data.addJson("averageTps", serverService.getAverageTps(), false);
+    }
+
+    @WebAPIRoute(method = "GET", path="/players", perm = "players")
+    public void getPlayers(ServletData data) {
+        data.addJson("ok", true, false);
+        data.addJson("onlinePlayers", serverService.getOnlinePlayers(), false);
     }
 }

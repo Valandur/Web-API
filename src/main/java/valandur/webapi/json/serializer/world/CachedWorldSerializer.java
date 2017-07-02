@@ -2,12 +2,12 @@ package valandur.webapi.json.serializer.world;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
-import valandur.webapi.api.cache.world.CachedWorld;
-import valandur.webapi.api.json.WebAPISerializer;
+import valandur.webapi.cache.world.CachedWorld;
+import valandur.webapi.api.json.WebAPIBaseSerializer;
 
 import java.io.IOException;
 
-public class CachedWorldSerializer extends WebAPISerializer<CachedWorld> {
+public class CachedWorldSerializer extends WebAPIBaseSerializer<CachedWorld> {
     @Override
     public void serialize(CachedWorld value, JsonGenerator gen, SerializerProvider provider) throws IOException {
         gen.writeStartObject();

@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import org.spongepowered.api.event.cause.Cause;
 import org.spongepowered.api.util.Tristate;
-import valandur.webapi.api.json.WebAPISerializer;
+import valandur.webapi.api.json.WebAPIBaseSerializer;
 import valandur.webapi.util.Util;
 
 import java.io.IOException;
@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class CauseSerializer extends WebAPISerializer<Cause> {
+public class CauseSerializer extends WebAPIBaseSerializer<Cause> {
 
     private List<String> blockedCauseClasses;
 

@@ -4,9 +4,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import org.spongepowered.api.util.Tuple;
 import valandur.webapi.api.annotation.WebAPIRoute;
 import valandur.webapi.api.annotation.WebAPIServlet;
-import valandur.webapi.api.cache.tileentity.CachedTileEntity;
-import valandur.webapi.api.cache.world.CachedWorld;
+import valandur.webapi.api.cache.tileentity.ICachedTileEntity;
 import valandur.webapi.api.servlet.WebAPIBaseServlet;
+import valandur.webapi.cache.world.CachedWorld;
 import valandur.webapi.servlet.ServletData;
 import valandur.webapi.util.Util;
 
@@ -19,7 +19,7 @@ public class TileEntityServlet extends WebAPIBaseServlet {
 
     @WebAPIRoute(method = "GET", path = "/", perm = "list")
     public void getTileEntities(ServletData data) {
-        Optional<Collection<CachedTileEntity>> coll = cacheService.getTileEntities();
+        Optional<Collection<ICachedTileEntity>> coll = cacheService.getTileEntities();
         if (!coll.isPresent()) {
             data.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not get tile entities");
             return;
@@ -31,7 +31,7 @@ public class TileEntityServlet extends WebAPIBaseServlet {
 
     @WebAPIRoute(method = "GET", path = "/:world/:x/:y/:z", perm = "one")
     public void getTileEntity(ServletData data, CachedWorld world, int x, int y, int z) {
-        Optional<CachedTileEntity> te = cacheService.getTileEntity(world, x, y, z);
+        Optional<ICachedTileEntity> te = cacheService.getTileEntity(world, x, y, z);
 
         if (!te.isPresent()) {
             data.sendError(HttpServletResponse.SC_NOT_FOUND, "Tile entity in world '" + world.getName() + "' at [" + x + "," + y + "," + z + "] could not be found");
@@ -54,7 +54,7 @@ public class TileEntityServlet extends WebAPIBaseServlet {
 
     @WebAPIRoute(method = "POST", path = "/:world/:x/:y/:z/method", perm = "method")
     public void executeMethod(ServletData data, CachedWorld world, int x, int y, int z) {
-        Optional<CachedTileEntity> te = cacheService.getTileEntity(world, x, y, z);
+        Optional<ICachedTileEntity> te = cacheService.getTileEntity(world, x, y, z);
         if (!te.isPresent()) {
             data.sendError(HttpServletResponse.SC_NOT_FOUND, "Tile entity in world '" + world.getName() + "' at [" + x + "," + y + "," + z + "] could not be found");
             return;

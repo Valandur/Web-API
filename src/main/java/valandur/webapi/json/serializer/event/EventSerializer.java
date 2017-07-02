@@ -16,11 +16,11 @@ import org.spongepowered.api.event.world.ExplosionEvent;
 import org.spongepowered.api.event.world.GenerateChunkEvent;
 import org.spongepowered.api.event.world.TargetWorldEvent;
 import valandur.webapi.block.BlockUpdateEvent;
-import valandur.webapi.api.json.WebAPISerializer;
+import valandur.webapi.api.json.WebAPIBaseSerializer;
 
 import java.io.IOException;
 
-public class EventSerializer extends WebAPISerializer<Event> {
+public class EventSerializer extends WebAPIBaseSerializer<Event> {
     @Override
     public void serialize(Event value, JsonGenerator gen, SerializerProvider provider) throws IOException {
         gen.writeStartObject();

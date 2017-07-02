@@ -4,12 +4,12 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.block.trait.BlockTrait;
-import valandur.webapi.api.json.WebAPISerializer;
+import valandur.webapi.api.json.WebAPIBaseSerializer;
 
 import java.io.IOException;
 import java.util.Map;
 
-public class BlockStateSerializer extends WebAPISerializer<BlockState> {
+public class BlockStateSerializer extends WebAPIBaseSerializer<BlockState> {
     @Override
     public void serialize(BlockState value, JsonGenerator gen, SerializerProvider provider) throws IOException {
         gen.writeStartObject();

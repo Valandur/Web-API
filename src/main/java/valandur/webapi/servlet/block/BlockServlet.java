@@ -12,9 +12,10 @@ import valandur.webapi.WebAPI;
 import valandur.webapi.api.annotation.WebAPIRoute;
 import valandur.webapi.api.annotation.WebAPIServlet;
 import valandur.webapi.api.block.IBlockUpdate;
-import valandur.webapi.api.cache.world.CachedWorld;
+import valandur.webapi.api.cache.world.ICachedWorld;
 import valandur.webapi.api.servlet.WebAPIBaseServlet;
-import valandur.webapi.services.BlockService;
+import valandur.webapi.block.BlockService;
+import valandur.webapi.cache.world.CachedWorld;
 import valandur.webapi.servlet.ServletData;
 import valandur.webapi.util.Util;
 
@@ -106,7 +107,7 @@ public class BlockServlet extends WebAPIBaseServlet {
             }
 
             // Check world
-            Optional<CachedWorld> world = WebAPI.getCacheService().getWorld(UUID.fromString(uuid));
+            Optional<ICachedWorld> world = WebAPI.getCacheService().getWorld(UUID.fromString(uuid));
             if (!world.isPresent()) {
                 data.sendError(HttpServletResponse.SC_NOT_FOUND, "World with UUID '" + uuid + "' could not be found");
                 return;

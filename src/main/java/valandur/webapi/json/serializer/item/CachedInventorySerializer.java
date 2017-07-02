@@ -3,12 +3,12 @@ package valandur.webapi.json.serializer.item;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import org.spongepowered.api.item.inventory.ItemStack;
-import valandur.webapi.api.cache.misc.CachedInventory;
-import valandur.webapi.api.json.WebAPISerializer;
+import valandur.webapi.cache.misc.CachedInventory;
+import valandur.webapi.api.json.WebAPIBaseSerializer;
 
 import java.io.IOException;
 
-public class CachedInventorySerializer extends WebAPISerializer<CachedInventory> {
+public class CachedInventorySerializer extends WebAPIBaseSerializer<CachedInventory> {
     @Override
     public void serialize(CachedInventory value, JsonGenerator gen, SerializerProvider provider) throws IOException {
         gen.writeStartObject();

@@ -3,11 +3,11 @@ package valandur.webapi.json.serializer.misc;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.flowpowered.math.vector.Vector3i;
-import valandur.webapi.api.json.WebAPISerializer;
+import valandur.webapi.api.json.WebAPIBaseSerializer;
 
 import java.io.IOException;
 
-public class Vector3iSerializer extends WebAPISerializer<Vector3i> {
+public class Vector3iSerializer extends WebAPIBaseSerializer<Vector3i> {
     @Override
     public void serialize(Vector3i value, JsonGenerator gen, SerializerProvider provider) throws IOException {
         gen.writeStartObject();

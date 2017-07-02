@@ -2,7 +2,7 @@ package valandur.webapi.servlet.message;
 
 import valandur.webapi.api.annotation.WebAPIRoute;
 import valandur.webapi.api.annotation.WebAPIServlet;
-import valandur.webapi.api.message.Message;
+import valandur.webapi.message.Message;
 import valandur.webapi.api.servlet.WebAPIBaseServlet;
 import valandur.webapi.servlet.ServletData;
 

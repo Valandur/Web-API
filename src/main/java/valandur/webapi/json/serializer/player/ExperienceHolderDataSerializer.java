@@ -3,11 +3,11 @@ package valandur.webapi.json.serializer.player;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import org.spongepowered.api.data.manipulator.mutable.entity.ExperienceHolderData;
-import valandur.webapi.api.json.WebAPISerializer;
+import valandur.webapi.api.json.WebAPIBaseSerializer;
 
 import java.io.IOException;
 
-public class ExperienceHolderDataSerializer extends WebAPISerializer<ExperienceHolderData> {
+public class ExperienceHolderDataSerializer extends WebAPIBaseSerializer<ExperienceHolderData> {
     @Override
     public void serialize(ExperienceHolderData value, JsonGenerator gen, SerializerProvider provider) throws IOException {
         gen.writeStartObject();

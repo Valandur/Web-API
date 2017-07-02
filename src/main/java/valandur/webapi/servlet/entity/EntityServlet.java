@@ -9,11 +9,11 @@ import org.spongepowered.api.world.World;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.annotation.WebAPIRoute;
 import valandur.webapi.api.annotation.WebAPIServlet;
+import valandur.webapi.api.cache.entity.ICachedEntity;
 import valandur.webapi.api.servlet.WebAPIBaseServlet;
-import valandur.webapi.services.CacheService;
-import valandur.webapi.api.cache.entity.CachedEntity;
-import valandur.webapi.util.Util;
+import valandur.webapi.cache.entity.CachedEntity;
 import valandur.webapi.servlet.ServletData;
+import valandur.webapi.util.Util;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.Optional;
@@ -53,7 +53,7 @@ public class EntityServlet extends WebAPIBaseServlet {
 
         final UpdateEntityRequest req = optReq.get();
 
-        Optional<CachedEntity> resEntity = WebAPI.runOnMain(() -> {
+        Optional<ICachedEntity> resEntity = WebAPI.runOnMain(() -> {
             Optional<?> optLive = entity.getLive();
             if (!optLive.isPresent())
                 return null;
@@ -134,7 +134,7 @@ public class EntityServlet extends WebAPIBaseServlet {
             return;
         }
 
-        CachedEntity entity = cacheService.updateEntity(resEntity.get());
+        ICachedEntity entity = cacheService.updateEntity(resEntity.get());
 
         data.setStatus(HttpServletResponse.SC_CREATED);
         data.addJson("ok", true, false);

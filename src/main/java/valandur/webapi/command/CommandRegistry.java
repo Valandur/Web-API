@@ -9,7 +9,7 @@ import org.spongepowered.api.command.args.GenericArguments;
 import org.spongepowered.api.command.spec.CommandSpec;
 import org.spongepowered.api.text.Text;
 import valandur.webapi.WebAPI;
-import valandur.webapi.services.BlockService;
+import valandur.webapi.block.BlockService;
 import valandur.webapi.command.auth.CmdAuthListAdd;
 import valandur.webapi.command.auth.CmdAuthListDisable;
 import valandur.webapi.command.auth.CmdAuthListEnable;

@@ -8,7 +8,7 @@ import org.mindrot.jbcrypt.BCrypt;
 import org.slf4j.Logger;
 import org.spongepowered.api.util.Tuple;
 import valandur.webapi.WebAPI;
-import valandur.webapi.api.permission.Permissions;
+import valandur.webapi.permission.PermissionService;
 import valandur.webapi.util.Util;
 
 import java.io.IOException;
@@ -90,7 +90,7 @@ public class Users {
     public static boolean addUser(String username, String password) {
         if (users.containsKey(username))
             return false;
-        users.put(username, new UserPermission(username, hashPassword(password), Permissions.permitAllNode()));
+        users.put(username, new UserPermission(username, hashPassword(password), PermissionService.permitAllNode()));
         save();
         return true;
     }

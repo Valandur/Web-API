@@ -10,8 +10,8 @@ import org.spongepowered.api.text.Text;
 import org.spongepowered.api.util.Tuple;
 import org.spongepowered.api.world.storage.WorldProperties;
 import valandur.webapi.WebAPI;
-import valandur.webapi.api.cache.player.CachedPlayer;
-import valandur.webapi.api.cache.world.CachedWorld;
+import valandur.webapi.api.cache.player.ICachedPlayer;
+import valandur.webapi.api.cache.world.ICachedWorld;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -105,12 +105,12 @@ public class WebHookParam {
 
             case PLAYER:
                 UUID pUuid = ((Player)obj).getUniqueId();
-                CachedPlayer p = WebAPI.getCacheService().getPlayer(pUuid).orElse(null);
+                ICachedPlayer p = WebAPI.getCacheService().getPlayer(pUuid).orElse(null);
                 return Optional.of(new Tuple<>(p.getUUID().toString(), p));
 
             case WORLD:
                 UUID wUuid = ((WorldProperties)obj).getUniqueId();
-                CachedWorld w = WebAPI.getCacheService().getWorld(wUuid).orElse(null);
+                ICachedWorld w = WebAPI.getCacheService().getWorld(wUuid).orElse(null);
                 return Optional.of(new Tuple<>(w.getUUID().toString(), w));
         }
 

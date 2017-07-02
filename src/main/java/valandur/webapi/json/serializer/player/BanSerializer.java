@@ -3,11 +3,11 @@ package valandur.webapi.json.serializer.player;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import org.spongepowered.api.util.ban.Ban;
-import valandur.webapi.api.json.WebAPISerializer;
+import valandur.webapi.api.json.WebAPIBaseSerializer;
 
 import java.io.IOException;
 
-public class BanSerializer extends WebAPISerializer<Ban> {
+public class BanSerializer extends WebAPIBaseSerializer<Ban> {
     @Override
     public void serialize(Ban value, JsonGenerator gen, SerializerProvider provider) throws IOException {
         gen.writeStartObject();

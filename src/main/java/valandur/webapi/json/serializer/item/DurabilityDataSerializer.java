@@ -3,11 +3,11 @@ package valandur.webapi.json.serializer.item;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import org.spongepowered.api.data.manipulator.mutable.item.DurabilityData;
-import valandur.webapi.api.json.WebAPISerializer;
+import valandur.webapi.api.json.WebAPIBaseSerializer;
 
 import java.io.IOException;
 
-public class DurabilityDataSerializer extends WebAPISerializer<DurabilityData> {
+public class DurabilityDataSerializer extends WebAPIBaseSerializer<DurabilityData> {
     @Override
     public void serialize(DurabilityData value, JsonGenerator gen, SerializerProvider provider) throws IOException {
         gen.writeStartObject();

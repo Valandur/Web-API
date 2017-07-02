@@ -2,13 +2,13 @@ package valandur.webapi.json.serializer.misc;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
-import valandur.webapi.api.json.WebAPISerializer;
+import valandur.webapi.api.json.WebAPIBaseSerializer;
 import valandur.webapi.api.util.TreeNode;
 
 import java.io.IOException;
 import java.util.Collection;
 
-public class TreeNodeSerializer extends WebAPISerializer<TreeNode<?, ?>> {
+public class TreeNodeSerializer extends WebAPIBaseSerializer<TreeNode<?, ?>> {
     @Override
     public void serialize(TreeNode<?, ?> value, JsonGenerator gen, SerializerProvider provider) throws IOException {
         if (value == null) {

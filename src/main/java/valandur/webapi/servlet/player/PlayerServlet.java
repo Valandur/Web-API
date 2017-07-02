@@ -4,11 +4,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 import org.spongepowered.api.util.Tuple;
 import valandur.webapi.api.annotation.WebAPIRoute;
 import valandur.webapi.api.annotation.WebAPIServlet;
+import valandur.webapi.api.cache.player.ICachedPlayer;
 import valandur.webapi.api.servlet.WebAPIBaseServlet;
-import valandur.webapi.services.CacheService;
-import valandur.webapi.api.cache.player.CachedPlayer;
-import valandur.webapi.util.Util;
+import valandur.webapi.cache.player.CachedPlayer;
 import valandur.webapi.servlet.ServletData;
+import valandur.webapi.util.Util;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.Optional;
@@ -52,7 +52,7 @@ public class PlayerServlet extends WebAPIBaseServlet {
             return;
         }
 
-        Optional<CachedPlayer> player = cacheService.getPlayer(UUID.fromString(uuid));
+        Optional<ICachedPlayer> player = cacheService.getPlayer(UUID.fromString(uuid));
         if (!player.isPresent()) {
             data.sendError(HttpServletResponse.SC_NOT_FOUND, "Player with UUID '" + uuid + "' could not be found");
             return;

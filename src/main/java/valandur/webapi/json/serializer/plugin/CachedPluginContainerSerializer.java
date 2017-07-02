@@ -2,12 +2,12 @@ package valandur.webapi.json.serializer.plugin;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
-import valandur.webapi.api.cache.plugin.CachedPluginContainer;
-import valandur.webapi.api.json.WebAPISerializer;
+import valandur.webapi.cache.plugin.CachedPluginContainer;
+import valandur.webapi.api.json.WebAPIBaseSerializer;
 
 import java.io.IOException;
 
-public class CachedPluginContainerSerializer extends WebAPISerializer<CachedPluginContainer> {
+public class CachedPluginContainerSerializer extends WebAPIBaseSerializer<CachedPluginContainer> {
     @Override
     public void serialize(CachedPluginContainer value, JsonGenerator gen, SerializerProvider provider) throws IOException {
         gen.writeStartObject();

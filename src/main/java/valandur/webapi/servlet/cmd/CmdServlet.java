@@ -4,8 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.annotation.WebAPIRoute;
 import valandur.webapi.api.annotation.WebAPIServlet;
-import valandur.webapi.api.cache.command.CachedCommand;
-import valandur.webapi.api.permission.Permissions;
+import valandur.webapi.api.cache.command.ICachedCommand;
 import valandur.webapi.api.servlet.WebAPIBaseServlet;
 import valandur.webapi.command.CommandSource;
 import valandur.webapi.servlet.ServletData;
@@ -28,7 +27,7 @@ public class CmdServlet extends WebAPIBaseServlet {
 
     @WebAPIRoute(method = "GET", path = "/:cmd", perm = "one")
     public void getCommand(ServletData data, String cmdName) {
-        Optional<CachedCommand> cmd = cacheService.getCommand(cmdName);
+        Optional<ICachedCommand> cmd = cacheService.getCommand(cmdName);
         if (!cmd.isPresent()) {
             data.sendError(HttpServletResponse.SC_NOT_FOUND, "The command '" + cmdName + "' could not be found");
             return;
@@ -44,7 +43,7 @@ public class CmdServlet extends WebAPIBaseServlet {
 
         if (!reqJson.isArray()) {
             String cmd = reqJson.get("command").asText().split(" ")[0];
-            if (!Permissions.permits(data.getPermissions(), new String[]{ cmd })) {
+            if (!permissionService.permits(data.getPermissions(), new String[]{ cmd })) {
                 data.sendError(HttpServletResponse.SC_FORBIDDEN, "Access denied");
                 return;
             }
@@ -57,7 +56,7 @@ public class CmdServlet extends WebAPIBaseServlet {
         List<Object> res = new ArrayList<>();
         for (JsonNode node : reqJson) {
             String cmd = node.get("command").asText().split(" ")[0];
-            if (!Permissions.permits(data.getPermissions(), new String[]{ cmd })) {
+            if (!permissionService.permits(data.getPermissions(), new String[]{ cmd })) {
                 res.add(new Exception("Not allowed"));
                 continue;
             }

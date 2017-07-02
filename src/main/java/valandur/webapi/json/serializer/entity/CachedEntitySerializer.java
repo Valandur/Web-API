@@ -3,12 +3,12 @@ package valandur.webapi.json.serializer.entity;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import org.spongepowered.api.util.Tristate;
-import valandur.webapi.api.cache.entity.CachedEntity;
-import valandur.webapi.api.json.WebAPISerializer;
+import valandur.webapi.cache.entity.CachedEntity;
+import valandur.webapi.api.json.WebAPIBaseSerializer;
 
 import java.io.IOException;
 
-public class CachedEntitySerializer extends WebAPISerializer<CachedEntity> {
+public class CachedEntitySerializer extends WebAPIBaseSerializer<CachedEntity> {
     @Override
     public void serialize(CachedEntity value, JsonGenerator gen, SerializerProvider provider) throws IOException {
         gen.writeStartObject();

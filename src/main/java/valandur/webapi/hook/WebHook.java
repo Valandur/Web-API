@@ -1,7 +1,7 @@
 package valandur.webapi.hook;
 
 import valandur.webapi.api.util.TreeNode;
-import valandur.webapi.api.permission.Permissions;
+import valandur.webapi.permission.PermissionService;
 
 import java.util.List;
 
@@ -45,7 +45,7 @@ public class WebHook {
         return details;
     }
 
-    private TreeNode<String, Boolean> permissions = Permissions.emptyNode();
+    private TreeNode<String, Boolean> permissions = PermissionService.emptyNode();
     public TreeNode<String, Boolean> getPermissions() {
         return permissions;
     }

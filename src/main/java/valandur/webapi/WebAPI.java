@@ -43,21 +43,37 @@ import org.spongepowered.api.scheduler.SpongeExecutorService;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
 import org.spongepowered.api.util.Tuple;
-import valandur.webapi.api.cache.chat.CachedChatMessage;
-import valandur.webapi.api.cache.command.CachedCommandCall;
-import valandur.webapi.api.service.*;
+import valandur.webapi.api.block.IBlockService;
+import valandur.webapi.api.cache.ICacheService;
+import valandur.webapi.api.extension.IExtensionService;
+import valandur.webapi.api.server.IServerService;
+import valandur.webapi.cache.chat.CachedChatMessage;
+import valandur.webapi.cache.command.CachedCommandCall;
+import valandur.webapi.api.hook.IWebHookService;
+import valandur.webapi.api.json.IJsonService;
+import valandur.webapi.api.message.IMessageService;
+import valandur.webapi.api.permission.IPermissionService;
+import valandur.webapi.api.servlet.IServletService;
+import valandur.webapi.block.BlockService;
 import valandur.webapi.block.BlockUpdate;
 import valandur.webapi.block.BlockUpdateStatusChangeEvent;
+import valandur.webapi.cache.CacheService;
 import valandur.webapi.command.CommandRegistry;
 import valandur.webapi.command.CommandSource;
+import valandur.webapi.extension.ExtensionService;
 import valandur.webapi.handler.AssetHandler;
 import valandur.webapi.handler.AuthHandler;
 import valandur.webapi.handler.ErrorHandler;
 import valandur.webapi.handler.RateLimitHandler;
 import valandur.webapi.hook.WebHook;
 import valandur.webapi.hook.WebHookSerializer;
-import valandur.webapi.services.*;
+import valandur.webapi.hook.WebHookService;
+import valandur.webapi.json.JsonService;
+import valandur.webapi.message.MessageService;
+import valandur.webapi.permission.PermissionService;
+import valandur.webapi.server.ServerService;
 import valandur.webapi.servlet.ApiServlet;
+import valandur.webapi.servlet.ServletService;
 import valandur.webapi.servlet.block.BlockServlet;
 import valandur.webapi.servlet.clazz.ClassServlet;
 import valandur.webapi.servlet.cmd.CmdServlet;
@@ -184,6 +200,11 @@ public class WebAPI {
         return WebAPI.getInstance().messageService;
     }
 
+    private PermissionService permissionService;
+    public static PermissionService getPermissionService() {
+        return WebAPI.getInstance().permissionService;
+    }
+
     private ServerService serverService;
     public static ServerService getServerService() {
         return WebAPI.getInstance().serverService;
@@ -227,6 +248,7 @@ public class WebAPI {
         this.extensionService = new ExtensionService();
         this.jsonService = new JsonService();
         this.messageService = new MessageService();
+        this.permissionService = new PermissionService();
         this.serverService = new ServerService();
         this.servletService = new ServletService();
         this.webHookService = new WebHookService();
@@ -238,6 +260,7 @@ public class WebAPI {
         Sponge.getServiceManager().setProvider(this, IExtensionService.class, extensionService);
         Sponge.getServiceManager().setProvider(this, IJsonService.class, jsonService);
         Sponge.getServiceManager().setProvider(this, IMessageService.class, messageService);
+        Sponge.getServiceManager().setProvider(this, IPermissionService.class, permissionService);
         Sponge.getServiceManager().setProvider(this, IServerService.class, serverService);
         Sponge.getServiceManager().setProvider(this, IServletService.class, servletService);
         Sponge.getServiceManager().setProvider(this, IWebHookService.class, webHookService);

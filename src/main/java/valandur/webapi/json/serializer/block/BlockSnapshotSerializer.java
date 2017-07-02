@@ -3,11 +3,11 @@ package valandur.webapi.json.serializer.block;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import org.spongepowered.api.block.BlockSnapshot;
-import valandur.webapi.api.json.WebAPISerializer;
+import valandur.webapi.api.json.WebAPIBaseSerializer;
 
 import java.io.IOException;
 
-public class BlockSnapshotSerializer extends WebAPISerializer<BlockSnapshot> {
+public class BlockSnapshotSerializer extends WebAPIBaseSerializer<BlockSnapshot> {
     @Override
     public void serialize(BlockSnapshot value, JsonGenerator gen, SerializerProvider provider) throws IOException {
         gen.writeStartObject();

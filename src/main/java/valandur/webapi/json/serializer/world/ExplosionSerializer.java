@@ -3,11 +3,11 @@ package valandur.webapi.json.serializer.world;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import org.spongepowered.api.world.explosion.Explosion;
-import valandur.webapi.api.json.WebAPISerializer;
+import valandur.webapi.api.json.WebAPIBaseSerializer;
 
 import java.io.IOException;
 
-public class ExplosionSerializer extends WebAPISerializer<Explosion> {
+public class ExplosionSerializer extends WebAPIBaseSerializer<Explosion> {
     @Override
     public void serialize(Explosion value, JsonGenerator gen, SerializerProvider provider) throws IOException {
         gen.writeStartObject();

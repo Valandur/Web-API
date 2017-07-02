@@ -4,11 +4,11 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.flowpowered.math.vector.Vector3i;
 import org.spongepowered.api.world.extent.BlockVolume;
-import valandur.webapi.api.json.WebAPISerializer;
+import valandur.webapi.api.json.WebAPIBaseSerializer;
 
 import java.io.IOException;
 
-public class BlockVolumeSerializer extends WebAPISerializer<BlockVolume> {
+public class BlockVolumeSerializer extends WebAPIBaseSerializer<BlockVolume> {
     @Override
     public void serialize(BlockVolume value, JsonGenerator gen, SerializerProvider provider) throws IOException {
         gen.writeStartObject();

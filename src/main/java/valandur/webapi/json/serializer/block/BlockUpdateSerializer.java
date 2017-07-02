@@ -3,11 +3,11 @@ package valandur.webapi.json.serializer.block;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import valandur.webapi.block.BlockUpdate;
-import valandur.webapi.api.json.WebAPISerializer;
+import valandur.webapi.api.json.WebAPIBaseSerializer;
 
 import java.io.IOException;
 
-public class BlockUpdateSerializer  extends WebAPISerializer<BlockUpdate>{
+public class BlockUpdateSerializer  extends WebAPIBaseSerializer<BlockUpdate> {
     @Override
     public void serialize(BlockUpdate value, JsonGenerator gen, SerializerProvider provider) throws IOException {
         gen.writeStartObject();

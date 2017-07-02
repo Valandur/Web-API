@@ -3,11 +3,11 @@ package valandur.webapi.json.serializer.item;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import org.spongepowered.api.effect.potion.PotionEffect;
-import valandur.webapi.api.json.WebAPISerializer;
+import valandur.webapi.api.json.WebAPIBaseSerializer;
 
 import java.io.IOException;
 
-public class PotionEffectSerializer extends WebAPISerializer<PotionEffect> {
+public class PotionEffectSerializer extends WebAPIBaseSerializer<PotionEffect> {
     @Override
     public void serialize(PotionEffect value, JsonGenerator gen, SerializerProvider provider) throws IOException {
         gen.writeStartObject();

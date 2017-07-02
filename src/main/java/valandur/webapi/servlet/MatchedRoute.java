@@ -3,10 +3,13 @@ package valandur.webapi.servlet;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.annotation.WebAPIRoute;
 import valandur.webapi.api.annotation.WebAPIServlet;
-import valandur.webapi.api.cache.entity.CachedEntity;
-import valandur.webapi.api.cache.player.CachedPlayer;
-import valandur.webapi.api.cache.world.CachedWorld;
+import valandur.webapi.api.cache.entity.ICachedEntity;
+import valandur.webapi.api.cache.player.ICachedPlayer;
+import valandur.webapi.api.cache.world.ICachedWorld;
 import valandur.webapi.api.servlet.WebAPIBaseServlet;
+import valandur.webapi.cache.entity.CachedEntity;
+import valandur.webapi.cache.player.CachedPlayer;
+import valandur.webapi.cache.world.CachedWorld;
 import valandur.webapi.util.Util;
 
 import javax.servlet.http.HttpServletResponse;
@@ -14,6 +17,7 @@ import java.lang.reflect.Method;
 import java.util.*;
 
 public class MatchedRoute {
+
     private WebAPIServlet servletSpec;
     public WebAPIServlet getServletSpec() {
         return servletSpec;
@@ -72,7 +76,7 @@ public class MatchedRoute {
                 break;
 
             Class type = types[i];
-            if (type.equals(CachedPlayer.class)) {
+            if (type.equals(CachedPlayer.class) || type.equals(ICachedPlayer.class)) {
                 String uuid = entry.getValue();
                 if (!Util.isValidUUID(uuid)) {
                     argumentError = HttpServletResponse.SC_BAD_REQUEST;
@@ -80,7 +84,7 @@ public class MatchedRoute {
                     break;
                 }
 
-                Optional<CachedPlayer> optPlayer = WebAPI.getCacheService().getPlayer(UUID.fromString(uuid));
+                Optional<ICachedPlayer> optPlayer = WebAPI.getCacheService().getPlayer(UUID.fromString(uuid));
                 if (!optPlayer.isPresent()) {
                     argumentError = HttpServletResponse.SC_NOT_FOUND;
                     argumentErrorMessage = "Player with UUID '" + uuid + "' could not be found";
@@ -88,7 +92,7 @@ public class MatchedRoute {
                 }
 
                 matchedParams.add(optPlayer.get());
-            } else if (type.equals(CachedWorld.class)) {
+            } else if (type.equals(CachedWorld.class) || type.equals(ICachedWorld.class)) {
                 String uuid = entry.getValue();
                 if (!Util.isValidUUID(uuid)) {
                     argumentError = HttpServletResponse.SC_BAD_REQUEST;
@@ -96,7 +100,7 @@ public class MatchedRoute {
                     break;
                 }
 
-                Optional<CachedWorld> optWorld = WebAPI.getCacheService().getWorld(UUID.fromString(uuid));
+                Optional<ICachedWorld> optWorld = WebAPI.getCacheService().getWorld(UUID.fromString(uuid));
                 if (!optWorld.isPresent()) {
                     argumentError = HttpServletResponse.SC_NOT_FOUND;
                     argumentErrorMessage = "World with UUID '" + uuid + "' could not be found";
@@ -104,7 +108,7 @@ public class MatchedRoute {
                 }
 
                 matchedParams.add(optWorld.get());
-            } else if (type.equals(CachedEntity.class)) {
+            } else if (type.equals(CachedEntity.class) || type.equals(ICachedEntity.class)) {
                 String uuid = entry.getValue();
                 if (!Util.isValidUUID(uuid)) {
                     argumentError = HttpServletResponse.SC_BAD_REQUEST;
@@ -112,7 +116,7 @@ public class MatchedRoute {
                     break;
                 }
 
-                Optional<CachedEntity> optEntity = WebAPI.getCacheService().getEntity(UUID.fromString(uuid));
+                Optional<ICachedEntity> optEntity = WebAPI.getCacheService().getEntity(UUID.fromString(uuid));
                 if (!optEntity.isPresent()) {
                     argumentError = HttpServletResponse.SC_NOT_FOUND;
                     argumentErrorMessage = "Entity with UUID '" + uuid + "' could not be found";

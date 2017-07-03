@@ -1,6 +1,6 @@
 package valandur.webapi.servlet.message;
 
-import valandur.webapi.api.annotation.WebAPIRoute;
+import valandur.webapi.api.annotation.WebAPIEndpoint;
 import valandur.webapi.api.annotation.WebAPIServlet;
 import valandur.webapi.message.Message;
 import valandur.webapi.api.servlet.WebAPIBaseServlet;
@@ -12,7 +12,7 @@ import java.util.Optional;
 @WebAPIServlet(basePath = "message")
 public class MessageServlet extends WebAPIBaseServlet {
 
-    @WebAPIRoute(method = "POST", path = "/", perm = "create")
+    @WebAPIEndpoint(method = "POST", path = "/", perm = "create")
     public void sendMessage(ServletData data) {
         Optional<Message> msg = data.getRequestBody(Message.class);
         if (!msg.isPresent()) {

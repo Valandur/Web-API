@@ -1,6 +1,6 @@
 package valandur.webapi.servlet.plugin;
 
-import valandur.webapi.api.annotation.WebAPIRoute;
+import valandur.webapi.api.annotation.WebAPIEndpoint;
 import valandur.webapi.api.annotation.WebAPIServlet;
 import valandur.webapi.api.cache.plugin.ICachedPluginContainer;
 import valandur.webapi.api.servlet.WebAPIBaseServlet;
@@ -12,13 +12,13 @@ import java.util.Optional;
 @WebAPIServlet(basePath = "plugin")
 public class PluginServlet extends WebAPIBaseServlet {
 
-    @WebAPIRoute(method = "GET", path = "/", perm = "list")
+    @WebAPIEndpoint(method = "GET", path = "/", perm = "list")
     public void getPlugins(ServletData data) {
         data.addJson("ok", true, false);
         data.addJson("plugins", cacheService.getPlugins(), data.getQueryParam("details").isPresent());
     }
 
-    @WebAPIRoute(method = "GET", path = "/:plugin", perm = "one")
+    @WebAPIEndpoint(method = "GET", path = "/:plugin", perm = "one")
     public void getPlugin(ServletData data, String pluginName) {
         Optional<ICachedPluginContainer> plugin = cacheService.getPlugin(pluginName);
         if (!plugin.isPresent()) {

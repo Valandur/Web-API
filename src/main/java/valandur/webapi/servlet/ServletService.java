@@ -3,7 +3,7 @@ package valandur.webapi.servlet;
 import org.slf4j.Logger;
 import org.spongepowered.api.util.Tuple;
 import valandur.webapi.WebAPI;
-import valandur.webapi.api.annotation.WebAPIRoute;
+import valandur.webapi.api.annotation.WebAPIEndpoint;
 import valandur.webapi.api.annotation.WebAPIServlet;
 import valandur.webapi.api.servlet.IServletService;
 import valandur.webapi.api.servlet.IServletData;
@@ -18,7 +18,7 @@ public class ServletService implements IServletService {
 
     private Map<String, Class<? extends WebAPIBaseServlet>> servletClasses = new HashMap<>();
     private Map<String, WebAPIBaseServlet> servlets = new HashMap<>();
-    private Map<WebAPIBaseServlet, List<Tuple<WebAPIRoute, Method>>> servletMethods = new HashMap<>();
+    private Map<WebAPIBaseServlet, List<Tuple<WebAPIEndpoint, Method>>> servletMethods = new HashMap<>();
 
 
     public void init() {
@@ -42,13 +42,13 @@ public class ServletService implements IServletService {
                 servlets.put(basePath, serv);
 
                 // Get all methods that are correctly annotated
-                List<Tuple<WebAPIRoute, Method>> newMethods = Arrays.stream(servletClass.getMethods())
-                        .filter(m -> m.isAnnotationPresent(WebAPIRoute.class))
-                        .map(m -> new Tuple<>(m.getAnnotation(WebAPIRoute.class), m))
+                List<Tuple<WebAPIEndpoint, Method>> newMethods = Arrays.stream(servletClass.getMethods())
+                        .filter(m -> m.isAnnotationPresent(WebAPIEndpoint.class))
+                        .map(m -> new Tuple<>(m.getAnnotation(WebAPIEndpoint.class), m))
                         .collect(Collectors.toList());
 
-                for (Tuple<WebAPIRoute, Method> tuple : newMethods) {
-                    WebAPIRoute route = tuple.getFirst();
+                for (Tuple<WebAPIEndpoint, Method> tuple : newMethods) {
+                    WebAPIEndpoint route = tuple.getFirst();
                     Method method = tuple.getSecond();
                     /*if (method.getParameterTypes().length != 1) {
                         logger.error("    Method " + method.getName() + " may only have 1 argument");
@@ -79,15 +79,15 @@ public class ServletService implements IServletService {
         }
 
         // Then get the methods for that servlet
-        List<Tuple<WebAPIRoute, Method>> methods = servletMethods.get(servlet);
+        List<Tuple<WebAPIEndpoint, Method>> methods = servletMethods.get(servlet);
 
         // Find the most suitable method according to the path
         LinkedHashMap<String, String> bestMatches = null;
-        Tuple<WebAPIRoute, Method> bestTuple = null;
+        Tuple<WebAPIEndpoint, Method> bestTuple = null;
 
         pathParts = pathParts.subList(1, pathParts.size());
-        for (Tuple<WebAPIRoute, Method> tuple : methods) {
-            WebAPIRoute spec = tuple.getFirst();
+        for (Tuple<WebAPIEndpoint, Method> tuple : methods) {
+            WebAPIEndpoint spec = tuple.getFirst();
             List<String> specPathParts = Util.getPathParts(spec.path());
 
             // Skip methods that don't match the verb or route

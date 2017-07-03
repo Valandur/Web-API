@@ -2,7 +2,7 @@ package valandur.webapi.servlet.player;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import org.spongepowered.api.util.Tuple;
-import valandur.webapi.api.annotation.WebAPIRoute;
+import valandur.webapi.api.annotation.WebAPIEndpoint;
 import valandur.webapi.api.annotation.WebAPIServlet;
 import valandur.webapi.api.cache.player.ICachedPlayer;
 import valandur.webapi.api.servlet.WebAPIBaseServlet;
@@ -17,13 +17,13 @@ import java.util.UUID;
 @WebAPIServlet(basePath = "player")
 public class PlayerServlet extends WebAPIBaseServlet {
 
-    @WebAPIRoute(method = "GET", path = "/", perm = "list")
+    @WebAPIEndpoint(method = "GET", path = "/", perm = "list")
     public void getPlayers(ServletData data) {
         data.addJson("ok", true, false);
         data.addJson("players", cacheService.getPlayers(), data.getQueryParam("details").isPresent());
     }
 
-    @WebAPIRoute(method = "GET", path = "/:player", perm = "one")
+    @WebAPIEndpoint(method = "GET", path = "/:player", perm = "one")
     public void getPlayer(ServletData data, CachedPlayer player) {
         Optional<String> strFields = data.getQueryParam("fields");
         Optional<String> strMethods = data.getQueryParam("methods");
@@ -39,12 +39,12 @@ public class PlayerServlet extends WebAPIBaseServlet {
         data.addJson("player", player, true);
     }
 
-    @WebAPIRoute(method = "PUT", path = "/:player", perm = "change")
+    @WebAPIEndpoint(method = "PUT", path = "/:player", perm = "change")
     public void updatePlayer(ServletData data, CachedPlayer player) {
         data.addJson("player", player, true);
     }
 
-    @WebAPIRoute(method = "POST", path = "/:player/method", perm = "method")
+    @WebAPIEndpoint(method = "POST", path = "/:player/method", perm = "method")
     public void executeMethod(ServletData data) {
         String uuid = data.getPathParam("player");
         if (uuid.split("-").length != 5) {

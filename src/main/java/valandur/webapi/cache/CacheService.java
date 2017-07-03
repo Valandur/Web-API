@@ -130,107 +130,6 @@ public class CacheService implements ICacheService {
         return cache;
     }
 
-    public Optional<Object> executeMethod(ICachedObject cache, String methodName, Class[] paramTypes, Object[] paramValues) {
-        return WebAPI.runOnMain(() -> {
-            Optional<?> obj = cache.getLive();
-
-            if (!obj.isPresent())
-                return null;
-
-            Object o = obj.get();
-            Method[] ms = Arrays.stream(Util.getAllMethods(o.getClass())).filter(m -> {
-                if (!m.getName().equalsIgnoreCase(methodName))
-                    return false;
-
-                Class<?>[] reqTypes = m.getParameterTypes();
-                if (reqTypes.length != paramTypes.length)
-                    return false;
-
-                for (int i = 0; i < reqTypes.length; i++) {
-                    if (!reqTypes[i].isAssignableFrom(paramTypes[i])) {
-                        return false;
-                    }
-                }
-
-                return true;
-            }).toArray(Method[]::new);
-
-            if (ms.length == 0) {
-                return new Exception("Method not found");
-            }
-
-            try {
-                Method m = ms[0];
-                m.setAccessible(true);
-                Object res = m.invoke(o, paramValues);
-                if (m.getReturnType() == Void.class || m.getReturnType() == void.class)
-                    return true;
-                return res;
-            } catch (Exception e) {
-                return e;
-            }
-        });
-    }
-    public Tuple<Map<String, JsonNode>, Map<String, JsonNode>> getExtraData(ICachedObject cache, String[] reqFields, String[] reqMethods) {
-        return WebAPI.runOnMain(() -> {
-            Map<String, JsonNode> fields = new HashMap<>();
-            Map<String, JsonNode> methods = new HashMap<>();
-
-            Optional<?> opt = cache.getLive();
-            if (!opt.isPresent()) return null;
-
-            Object obj = opt.get();
-            Class c = obj.getClass();
-
-            List<Field> allFields = Arrays.asList(Util.getAllFields(c));
-            List<Method> allMethods = Arrays.asList(Util.getAllMethods(c));
-            for (String fieldName : reqFields) {
-                Optional<Field> field = allFields.stream().filter(f -> f.getName().equalsIgnoreCase(fieldName)).findAny();
-                if (!field.isPresent()) {
-                    fields.put(fieldName, TextNode.valueOf("ERROR: Field not found"));
-                    continue;
-                }
-
-                field.get().setAccessible(true);
-
-                try {
-                    Object res = field.get().get(obj);
-                    fields.put(fieldName, json.toJson(res, true, PermissionService.permitAllNode()));
-                } catch (IllegalAccessException e) {
-                    fields.put(fieldName, TextNode.valueOf("ERROR: " + e.toString()));
-                }
-            }
-            for (String methodName : reqMethods) {
-                Optional<Method> method = allMethods.stream().filter(f -> f.getName().equalsIgnoreCase(methodName)).findAny();
-                if (!method.isPresent()) {
-                    methods.put(methodName, TextNode.valueOf("ERROR: Method not found"));
-                    continue;
-                }
-
-                if (method.get().getParameterCount() > 0) {
-                    methods.put(methodName, TextNode.valueOf("ERROR: Method must not have parameters"));
-                    continue;
-                }
-
-                if (method.get().getReturnType().equals(Void.TYPE) || method.get().getReturnType().equals(Void.class)) {
-                    methods.put(methodName, TextNode.valueOf("ERROR: Method must not return void"));
-                    continue;
-                }
-
-                method.get().setAccessible(true);
-
-                try {
-                    Object res = method.get().invoke(obj);
-                    methods.put(methodName, json.toJson(res, true, PermissionService.permitAllNode()));
-                } catch (IllegalAccessException | InvocationTargetException e) {
-                    methods.put(methodName, TextNode.valueOf("ERROR: " + e.toString()));
-                }
-            }
-
-            return new Tuple<>(fields, methods);
-        }).orElse(null);
-    }
-
     public void updateWorlds() {
         WebAPI.runOnMain(() -> {
             worlds.clear();
@@ -286,8 +185,8 @@ public class CacheService implements ICacheService {
         worlds.put(world.getUniqueId(), w);
         return w;
     }
-    public void removeWorld(UUID worldUuid) {
-        worlds.remove(worldUuid);
+    public ICachedWorld removeWorld(UUID worldUuid) {
+        return worlds.remove(worldUuid);
     }
 
     public Collection<ICachedPlayer> getPlayers() {
@@ -454,5 +353,106 @@ public class CacheService implements ICacheService {
 
             return new CachedTileEntity(ent.get());
         });
+    }
+
+    public Optional<Object> executeMethod(ICachedObject cache, String methodName, Class[] paramTypes, Object[] paramValues) {
+        return WebAPI.runOnMain(() -> {
+            Optional<?> obj = cache.getLive();
+
+            if (!obj.isPresent())
+                return null;
+
+            Object o = obj.get();
+            Method[] ms = Arrays.stream(Util.getAllMethods(o.getClass())).filter(m -> {
+                if (!m.getName().equalsIgnoreCase(methodName))
+                    return false;
+
+                Class<?>[] reqTypes = m.getParameterTypes();
+                if (reqTypes.length != paramTypes.length)
+                    return false;
+
+                for (int i = 0; i < reqTypes.length; i++) {
+                    if (!reqTypes[i].isAssignableFrom(paramTypes[i])) {
+                        return false;
+                    }
+                }
+
+                return true;
+            }).toArray(Method[]::new);
+
+            if (ms.length == 0) {
+                return new Exception("Method not found");
+            }
+
+            try {
+                Method m = ms[0];
+                m.setAccessible(true);
+                Object res = m.invoke(o, paramValues);
+                if (m.getReturnType() == Void.class || m.getReturnType() == void.class)
+                    return true;
+                return res;
+            } catch (Exception e) {
+                return e;
+            }
+        });
+    }
+    public Tuple<Map<String, JsonNode>, Map<String, JsonNode>> getExtraData(ICachedObject cache, String[] reqFields, String[] reqMethods) {
+        return WebAPI.runOnMain(() -> {
+            Map<String, JsonNode> fields = new HashMap<>();
+            Map<String, JsonNode> methods = new HashMap<>();
+
+            Optional<?> opt = cache.getLive();
+            if (!opt.isPresent()) return null;
+
+            Object obj = opt.get();
+            Class c = obj.getClass();
+
+            List<Field> allFields = Arrays.asList(Util.getAllFields(c));
+            List<Method> allMethods = Arrays.asList(Util.getAllMethods(c));
+            for (String fieldName : reqFields) {
+                Optional<Field> field = allFields.stream().filter(f -> f.getName().equalsIgnoreCase(fieldName)).findAny();
+                if (!field.isPresent()) {
+                    fields.put(fieldName, TextNode.valueOf("ERROR: Field not found"));
+                    continue;
+                }
+
+                field.get().setAccessible(true);
+
+                try {
+                    Object res = field.get().get(obj);
+                    fields.put(fieldName, json.toJson(res, true, PermissionService.permitAllNode()));
+                } catch (IllegalAccessException e) {
+                    fields.put(fieldName, TextNode.valueOf("ERROR: " + e.toString()));
+                }
+            }
+            for (String methodName : reqMethods) {
+                Optional<Method> method = allMethods.stream().filter(f -> f.getName().equalsIgnoreCase(methodName)).findAny();
+                if (!method.isPresent()) {
+                    methods.put(methodName, TextNode.valueOf("ERROR: Method not found"));
+                    continue;
+                }
+
+                if (method.get().getParameterCount() > 0) {
+                    methods.put(methodName, TextNode.valueOf("ERROR: Method must not have parameters"));
+                    continue;
+                }
+
+                if (method.get().getReturnType().equals(Void.TYPE) || method.get().getReturnType().equals(Void.class)) {
+                    methods.put(methodName, TextNode.valueOf("ERROR: Method must not return void"));
+                    continue;
+                }
+
+                method.get().setAccessible(true);
+
+                try {
+                    Object res = method.get().invoke(obj);
+                    methods.put(methodName, json.toJson(res, true, PermissionService.permitAllNode()));
+                } catch (IllegalAccessException | InvocationTargetException e) {
+                    methods.put(methodName, TextNode.valueOf("ERROR: " + e.toString()));
+                }
+            }
+
+            return new Tuple<>(fields, methods);
+        }).orElse(null);
     }
 }

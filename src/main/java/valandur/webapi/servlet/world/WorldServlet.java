@@ -7,7 +7,7 @@ import org.spongepowered.api.world.World;
 import org.spongepowered.api.world.WorldArchetype;
 import org.spongepowered.api.world.storage.WorldProperties;
 import valandur.webapi.WebAPI;
-import valandur.webapi.api.annotation.WebAPIRoute;
+import valandur.webapi.api.annotation.WebAPIEndpoint;
 import valandur.webapi.api.annotation.WebAPIServlet;
 import valandur.webapi.api.cache.world.ICachedWorld;
 import valandur.webapi.api.servlet.WebAPIBaseServlet;
@@ -25,13 +25,13 @@ import java.util.concurrent.ExecutionException;
 @WebAPIServlet(basePath = "world")
 public class WorldServlet extends WebAPIBaseServlet {
 
-    @WebAPIRoute(method = "GET", path = "/", perm = "list")
+    @WebAPIEndpoint(method = "GET", path = "/", perm = "list")
     public void getWorlds(ServletData data) {
         data.addJson("ok", true, false);
         data.addJson("worlds", cacheService.getWorlds(), data.getQueryParam("details").isPresent());
     }
 
-    @WebAPIRoute(method = "GET", path = "/:world", perm = "one")
+    @WebAPIEndpoint(method = "GET", path = "/:world", perm = "one")
     public void getWorld(ServletData data, CachedWorld world) {
         Optional<String> strFields = data.getQueryParam("fields");
         Optional<String> strMethods = data.getQueryParam("methods");
@@ -47,7 +47,7 @@ public class WorldServlet extends WebAPIBaseServlet {
         data.addJson("world", world, true);
     }
 
-    @WebAPIRoute(method = "POST", path = "/", perm = "create")
+    @WebAPIEndpoint(method = "POST", path = "/", perm = "create")
     public void createWorld(ServletData data) {
         WorldArchetype.Builder builder = WorldArchetype.builder();
 
@@ -112,7 +112,7 @@ public class WorldServlet extends WebAPIBaseServlet {
         data.setHeader("Location", world.getLink());
     }
 
-    @WebAPIRoute(method = "POST", path = "/:world/method", perm = "method")
+    @WebAPIEndpoint(method = "POST", path = "/:world/method", perm = "method")
     public void executeMethod(ServletData data, CachedWorld world) {
         JsonNode reqJson = data.getRequestBody();
         if (!reqJson.has("method")) {
@@ -139,7 +139,7 @@ public class WorldServlet extends WebAPIBaseServlet {
         data.addJson("result", res.get(), true);
     }
 
-    @WebAPIRoute(method = "PUT", path = "/:world", perm = "change")
+    @WebAPIEndpoint(method = "PUT", path = "/:world", perm = "change")
     public void updateWorld(ServletData data, CachedWorld world) {
         Optional<UpdateWorldRequest> optReq = data.getRequestBody(UpdateWorldRequest.class);
         if (!optReq.isPresent()) {
@@ -211,7 +211,7 @@ public class WorldServlet extends WebAPIBaseServlet {
         data.addJson("world", resWorld.orElse(null), true);
     }
 
-    @WebAPIRoute(method = "DELETE", path = "/:world", perm = "delete")
+    @WebAPIEndpoint(method = "DELETE", path = "/:world", perm = "delete")
     public void deleteWorld(ServletData data, CachedWorld world) {
         Optional<Boolean> deleted = WebAPI.runOnMain(() -> {
             Optional<?> live = world.getLive();

@@ -1,7 +1,7 @@
 package valandur.webapi.servlet;
 
 import valandur.webapi.WebAPI;
-import valandur.webapi.api.annotation.WebAPIRoute;
+import valandur.webapi.api.annotation.WebAPIEndpoint;
 import valandur.webapi.api.annotation.WebAPIServlet;
 import valandur.webapi.api.cache.entity.ICachedEntity;
 import valandur.webapi.api.cache.player.ICachedPlayer;
@@ -28,8 +28,8 @@ public class MatchedRoute {
         return servlet;
     }
 
-    private WebAPIRoute route;
-    public WebAPIRoute getRoute() {
+    private WebAPIEndpoint route;
+    public WebAPIEndpoint getRoute() {
         return route;
     }
 
@@ -59,7 +59,7 @@ public class MatchedRoute {
     }
 
 
-    public MatchedRoute(WebAPIBaseServlet servlet, WebAPIRoute route,
+    public MatchedRoute(WebAPIBaseServlet servlet, WebAPIEndpoint route,
                         Method method, LinkedHashMap<String, String> matchedParts) {
         this.servletSpec = servlet.getClass().getAnnotation(WebAPIServlet.class);
         this.servlet = servlet;

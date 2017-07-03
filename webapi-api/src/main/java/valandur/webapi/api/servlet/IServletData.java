@@ -2,6 +2,7 @@ package valandur.webapi.api.servlet;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import valandur.webapi.api.annotation.WebAPIEndpoint;
 
 import java.util.Optional;
 
@@ -72,7 +73,7 @@ public interface IServletData {
 
     /**
      * Gets the path parameter with the specified key. The path parameters are parsed according to the
-     * {@link valandur.webapi.api.annotation.WebAPIRoute} annotation.
+     * {@link WebAPIEndpoint} annotation.
      * @param key The key of the parameter.
      * @return The path parameter, or null if the key is invalid.
      */

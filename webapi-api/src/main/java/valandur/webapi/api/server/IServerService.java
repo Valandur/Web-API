@@ -1,8 +1,5 @@
 package valandur.webapi.api.server;
 
-import org.spongepowered.api.util.Tuple;
-
-import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
@@ -28,10 +25,10 @@ public interface IServerService {
      * Gets a history of the average TPS of the minecraft server.
      * @return A list containing measurements of the TPS.
      */
-    List<Tuple<Instant, Double>> getAverageTps();
+    List<IServerStat<Double>> getAverageTps();
     /**
      * Gets a history of the amount of players that were online on the minecraft server.
      * @return A list containing measurements of the amount of players online.
      */
-    List<Tuple<Instant, Integer>> getOnlinePlayers();
+    List<IServerStat<Integer>> getOnlinePlayers();
 }

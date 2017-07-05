@@ -57,6 +57,7 @@ import valandur.webapi.cache.world.CachedGeneratorType;
 import valandur.webapi.cache.world.CachedWorld;
 import valandur.webapi.cache.world.CachedWorldBorder;
 import valandur.webapi.api.json.WebAPIBaseSerializer;
+import valandur.webapi.json.serializer.server.ServerStatSerializer;
 import valandur.webapi.message.MessageResponse;
 import valandur.webapi.api.json.IJsonService;
 import valandur.webapi.api.util.TreeNode;
@@ -82,6 +83,7 @@ import valandur.webapi.json.serializer.plugin.PluginContainerSerializer;
 import valandur.webapi.json.serializer.tileentity.*;
 import valandur.webapi.json.serializer.user.UserPermissionSerializer;
 import valandur.webapi.json.serializer.world.*;
+import valandur.webapi.server.ServerStat;
 import valandur.webapi.user.UserPermission;
 import valandur.webapi.util.Util;
 
@@ -182,6 +184,9 @@ public class JsonService implements IJsonService {
         // Plugin
         serializers.put(CachedPluginContainer.class, new CachedPluginContainerSerializer());
         serializers.put(PluginContainer.class, new PluginContainerSerializer());
+
+        // Server
+        serializers.put(ServerStat.class, new ServerStatSerializer());
 
         // Tile-Entity
         serializers.put(CachedTileEntity.class, new CachedTileEntitySerializer());

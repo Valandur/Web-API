@@ -1,5 +1,6 @@
 package valandur.webapi.servlet.user;
 
+import org.eclipse.jetty.http.HttpMethod;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.annotation.WebAPIEndpoint;
 import valandur.webapi.api.annotation.WebAPIServlet;
@@ -15,7 +16,7 @@ import java.util.Optional;
 @WebAPIServlet(basePath = "user")
 public class UserServlet extends WebAPIBaseServlet {
 
-    @WebAPIEndpoint(method = "GET", path = "/")
+    @WebAPIEndpoint(method = HttpMethod.GET, path = "/")
     public void getUserDetails(ServletData data) {
         UserPermission user = data.getUser();
         if (user != null) {
@@ -26,7 +27,7 @@ public class UserServlet extends WebAPIBaseServlet {
         }
     }
 
-    @WebAPIEndpoint(method = "POST", path = "/")
+    @WebAPIEndpoint(method = HttpMethod.POST, path = "/")
     public void authUser(ServletData data) {
         Optional<AuthRequest> optReq = data.getRequestBody(AuthRequest.class);
         if (!optReq.isPresent()) {

@@ -1,6 +1,7 @@
 package valandur.webapi.servlet.entity;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import org.eclipse.jetty.http.HttpMethod;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.event.cause.Cause;
 import org.spongepowered.api.event.cause.entity.damage.source.DamageSource;
@@ -21,13 +22,13 @@ import java.util.Optional;
 @WebAPIServlet(basePath = "entity")
 public class EntityServlet extends WebAPIBaseServlet {
 
-    @WebAPIEndpoint(method = "GET", path = "/", perm = "list")
+    @WebAPIEndpoint(method = HttpMethod.GET, path = "/", perm = "list")
     public void getEntities(ServletData data) {
         data.addJson("ok", true, false);
         data.addJson("entities", cacheService.getEntities(), data.getQueryParam("details").isPresent());
     }
 
-    @WebAPIEndpoint(method = "GET", path = "/:entity", perm = "one")
+    @WebAPIEndpoint(method = HttpMethod.GET, path = "/:entity", perm = "one")
     public void getEntity(ServletData data, CachedEntity entity) {
         Optional<String> strFields = data.getQueryParam("fields");
         Optional<String> strMethods = data.getQueryParam("methods");
@@ -43,7 +44,7 @@ public class EntityServlet extends WebAPIBaseServlet {
         data.addJson("entity", entity, true);
     }
 
-    @WebAPIEndpoint(method = "PUT", path = "/:entity", perm = "change")
+    @WebAPIEndpoint(method = HttpMethod.PUT, path = "/:entity", perm = "change")
     public void updateEntity(ServletData data, CachedEntity entity) {
         Optional<UpdateEntityRequest> optReq = data.getRequestBody(UpdateEntityRequest.class);
         if (!optReq.isPresent()) {
@@ -88,7 +89,7 @@ public class EntityServlet extends WebAPIBaseServlet {
         data.addJson("entity", resEntity.orElse(null), true);
     }
 
-    @WebAPIEndpoint(method = "POST", path = "/", perm = "create")
+    @WebAPIEndpoint(method = HttpMethod.POST, path = "/", perm = "create")
     public void createEntity(ServletData data) {
         Optional<CreateEntityRequest> optReq = data.getRequestBody(CreateEntityRequest.class);
         if (!optReq.isPresent()) {
@@ -142,7 +143,7 @@ public class EntityServlet extends WebAPIBaseServlet {
         data.setHeader("Location", entity.getLink());
     }
 
-    @WebAPIEndpoint(method = "POST", path = "/:entity/method", perm = "method")
+    @WebAPIEndpoint(method = HttpMethod.POST, path = "/:entity/method", perm = "method")
     public void executeMethod(ServletData data, CachedEntity entity) {
         final JsonNode reqJson = data.getRequestBody();
         if (!reqJson.has("method")) {
@@ -169,7 +170,7 @@ public class EntityServlet extends WebAPIBaseServlet {
         data.addJson("result", res.get(), true);
     }
 
-    @WebAPIEndpoint(method = "DELETE", path = "/:entity", perm = "delete")
+    @WebAPIEndpoint(method = HttpMethod.DELETE, path = "/:entity", perm = "delete")
     public void removeEntity(ServletData data, CachedEntity entity) {
         Optional<Boolean> deleted = WebAPI.runOnMain(() -> {
             Optional<?> live = entity.getLive();

@@ -1,6 +1,7 @@
 package valandur.webapi.servlet.tileentity;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import org.eclipse.jetty.http.HttpMethod;
 import org.spongepowered.api.util.Tuple;
 import valandur.webapi.api.annotation.WebAPIEndpoint;
 import valandur.webapi.api.annotation.WebAPIServlet;
@@ -17,7 +18,7 @@ import java.util.Optional;
 @WebAPIServlet(basePath = "tile-entity")
 public class TileEntityServlet extends WebAPIBaseServlet {
 
-    @WebAPIEndpoint(method = "GET", path = "/", perm = "list")
+    @WebAPIEndpoint(method = HttpMethod.GET, path = "/", perm = "list")
     public void getTileEntities(ServletData data) {
         Optional<Collection<ICachedTileEntity>> coll = cacheService.getTileEntities();
         if (!coll.isPresent()) {
@@ -29,7 +30,7 @@ public class TileEntityServlet extends WebAPIBaseServlet {
         data.addJson("tileEntities", coll.get(), data.getQueryParam("details").isPresent());
     }
 
-    @WebAPIEndpoint(method = "GET", path = "/:world/:x/:y/:z", perm = "one")
+    @WebAPIEndpoint(method = HttpMethod.GET, path = "/:world/:x/:y/:z", perm = "one")
     public void getTileEntity(ServletData data, CachedWorld world, int x, int y, int z) {
         Optional<ICachedTileEntity> te = cacheService.getTileEntity(world, x, y, z);
 
@@ -52,7 +53,7 @@ public class TileEntityServlet extends WebAPIBaseServlet {
         data.addJson("tileEntity", te.get(), true);
     }
 
-    @WebAPIEndpoint(method = "POST", path = "/:world/:x/:y/:z/method", perm = "method")
+    @WebAPIEndpoint(method = HttpMethod.POST, path = "/:world/:x/:y/:z/method", perm = "method")
     public void executeMethod(ServletData data, CachedWorld world, int x, int y, int z) {
         Optional<ICachedTileEntity> te = cacheService.getTileEntity(world, x, y, z);
         if (!te.isPresent()) {

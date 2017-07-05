@@ -91,7 +91,7 @@ public class ServletService implements IServletService {
             List<String> specPathParts = Util.getPathParts(spec.path());
 
             // Skip methods that don't match the verb or route
-            if (!spec.method().equalsIgnoreCase(verb) || specPathParts.size() != pathParts.size())
+            if (!spec.method().asString().equalsIgnoreCase(verb) || specPathParts.size() != pathParts.size())
                 continue;
 
             boolean doesMatch = true;

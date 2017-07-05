@@ -38,8 +38,6 @@ public class ApiServlet extends HttpServlet {
             return;
         }
 
-        resp.setContentType("application/json; charset=utf-8");
-
         try {
             Optional<MatchedRoute> optMatch = servletService.getMethod(verb, req.getPathInfo());
             if (!optMatch.isPresent()) {
@@ -96,11 +94,18 @@ public class ApiServlet extends HttpServlet {
             params.add(0, data);
 
             match.getMethod().invoke(match.getServlet(), params.toArray());
-            PrintWriter out = data.getWriter();
 
-            ObjectMapper om = new ObjectMapper();
-            if (!data.isErrorSent()) {
-                out.write(om.writeValueAsString(data.getNode()));
+            if (!data.isDone() && !data.isErrorSent()) {
+                resp.setContentType("application/json; charset=utf-8");
+
+                try {
+                    PrintWriter out = data.getWriter();
+                    ObjectMapper om = new ObjectMapper();
+                    out.write(om.writeValueAsString(data.getNode()));
+                } catch(IllegalStateException ignored) {
+                    // We already used the output buffer in stream mode, so getting it as a writer now doesn't work
+                    // Just do nothing in this case, because we can assume the output was already handled by the servlet
+                }
             }
         } catch (InvocationTargetException | IllegalAccessException e) {
             // Error executing the method

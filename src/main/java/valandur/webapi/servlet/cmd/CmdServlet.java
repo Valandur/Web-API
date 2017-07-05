@@ -1,6 +1,7 @@
 package valandur.webapi.servlet.cmd;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import org.eclipse.jetty.http.HttpMethod;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.annotation.WebAPIEndpoint;
 import valandur.webapi.api.annotation.WebAPIServlet;
@@ -19,13 +20,13 @@ public class CmdServlet extends WebAPIBaseServlet {
 
     public static int CMD_WAIT_TIME = 1000;
 
-    @WebAPIEndpoint(method = "GET", path = "/", perm = "list")
+    @WebAPIEndpoint(method = HttpMethod.GET, path = "/", perm = "list")
     public void getCommands(ServletData data) {
         data.addJson("ok", true, false);
         data.addJson("commands", cacheService.getCommands(), data.getQueryParam("details").isPresent());
     }
 
-    @WebAPIEndpoint(method = "GET", path = "/:cmd", perm = "one")
+    @WebAPIEndpoint(method = HttpMethod.GET, path = "/:cmd", perm = "one")
     public void getCommand(ServletData data, String cmdName) {
         Optional<ICachedCommand> cmd = cacheService.getCommand(cmdName);
         if (!cmd.isPresent()) {
@@ -37,7 +38,7 @@ public class CmdServlet extends WebAPIBaseServlet {
         data.addJson("command", cmd.get(), true);
     }
 
-    @WebAPIEndpoint(method = "POST", path = "/", perm = "run")
+    @WebAPIEndpoint(method = HttpMethod.POST, path = "/", perm = "run")
     public void runCommands(ServletData data) {
         final JsonNode reqJson = data.getRequestBody();
 

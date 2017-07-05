@@ -2,6 +2,7 @@ package valandur.webapi.servlet.block;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.flowpowered.math.vector.Vector3i;
+import org.eclipse.jetty.http.HttpMethod;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.block.BlockType;
@@ -26,7 +27,7 @@ import java.util.stream.Collectors;
 @WebAPIServlet(basePath = "block")
 public class BlockServlet extends WebAPIBaseServlet {
 
-    @WebAPIEndpoint(method = "GET", path = "/:world/:x/:y/:z", perm = "one")
+    @WebAPIEndpoint(method = HttpMethod.GET, path = "/:world/:x/:y/:z", perm = "one")
     public void getBlock(ServletData data, CachedWorld world, int x, int y, int z) {
         Vector3i pos = new Vector3i(x, y, z);
         Optional<BlockState> state = blockService.getBlockAt(world, pos);
@@ -40,7 +41,7 @@ public class BlockServlet extends WebAPIBaseServlet {
         data.addJson("block", state.get(), true);
     }
 
-    @WebAPIEndpoint(method = "GET", path = "/:world/:minX/:minY/:minZ/:maxX/:maxY/:maxZ", perm = "volume")
+    @WebAPIEndpoint(method = HttpMethod.GET, path = "/:world/:minX/:minY/:minZ/:maxX/:maxY/:maxZ", perm = "volume")
     public void getBlockVolume(ServletData data, CachedWorld world, int minX, int minY, int minZ,
                                int maxX, int maxY, int maxZ) {
         // Swap around min & max if needed
@@ -79,7 +80,7 @@ public class BlockServlet extends WebAPIBaseServlet {
         data.addJson("volume", vol.get(), true);
     }
 
-    @WebAPIEndpoint(method = "POST", path = "/", perm = "set")
+    @WebAPIEndpoint(method = HttpMethod.POST, path = "/", perm = "set")
     public void setBlocks(ServletData data) {
         JsonNode reqJson = data.getRequestBody();
 
@@ -205,13 +206,13 @@ public class BlockServlet extends WebAPIBaseServlet {
         }
     }
 
-    @WebAPIEndpoint(method = "GET", path = "/update", perm = "update.list")
+    @WebAPIEndpoint(method = HttpMethod.GET, path = "/update", perm = "update.list")
     public void getBlockUpdates(ServletData data) {
         data.addJson("ok", true, false);
         data.addJson("updates", blockService.getBlockUpdates(), data.getQueryParam("details").isPresent());
     }
 
-    @WebAPIEndpoint(method = "PUT", path = "/update/:uuid", perm = "update.change")
+    @WebAPIEndpoint(method = HttpMethod.PUT, path = "/update/:uuid", perm = "update.change")
     public void modifyBlockUpdate(ServletData data, UUID uuid) {
         JsonNode reqJson = data.getRequestBody();
 
@@ -232,7 +233,7 @@ public class BlockServlet extends WebAPIBaseServlet {
         data.addJson("update", update, true);
     }
 
-    @WebAPIEndpoint(method = "DELETE", path = "/update/:uuid", perm = "update.delete")
+    @WebAPIEndpoint(method = HttpMethod.DELETE, path = "/update/:uuid", perm = "update.delete")
     public void deleteBlockUpdate(ServletData data, UUID uuid) {
         // Check block update
         Optional<IBlockUpdate> update = blockService.getBlockUpdate(uuid);

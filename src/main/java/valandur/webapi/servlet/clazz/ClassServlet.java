@@ -1,5 +1,6 @@
 package valandur.webapi.servlet.clazz;
 
+import org.eclipse.jetty.http.HttpMethod;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.annotation.WebAPIEndpoint;
 import valandur.webapi.api.annotation.WebAPIServlet;
@@ -12,13 +13,13 @@ import java.util.Set;
 @WebAPIServlet(basePath = "class")
 public class ClassServlet extends WebAPIBaseServlet {
 
-    @WebAPIEndpoint(method = "GET", path = "/", perm = "list")
+    @WebAPIEndpoint(method = HttpMethod.GET, path = "/", perm = "list")
     public void getCachedClasses(ServletData data) {
         data.addJson("ok", true, false);
         data.addJson("classes", cacheService.getClasses().keySet().stream().map(Class::getName).toArray(String[]::new), false);
     }
 
-    @WebAPIEndpoint(method = "GET", path = "/:class", perm = "one")
+    @WebAPIEndpoint(method = HttpMethod.GET, path = "/:class", perm = "one")
     public void getClass(ServletData data, String className) {
         try {
             Class c = Class.forName(className);
@@ -28,7 +29,7 @@ public class ClassServlet extends WebAPIBaseServlet {
         }
     }
 
-    @WebAPIEndpoint(method = "GET", path = "/:class/subclasses", perm = "subclasses")
+    @WebAPIEndpoint(method = HttpMethod.GET, path = "/:class/subclasses", perm = "subclasses")
     public void getSubclasses(ServletData data, String className) {
         try {
             Class c = Class.forName(className);

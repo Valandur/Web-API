@@ -1,6 +1,7 @@
 package valandur.webapi.servlet.info;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import org.eclipse.jetty.http.HttpMethod;
 import org.spongepowered.api.Platform;
 import org.spongepowered.api.Server;
 import org.spongepowered.api.Sponge;
@@ -15,7 +16,7 @@ import java.util.Iterator;
 @WebAPIServlet(basePath = "info")
 public class InfoServlet extends WebAPIBaseServlet {
 
-    @WebAPIEndpoint(method = "GET", path = "/", perm = "get")
+    @WebAPIEndpoint(method = HttpMethod.GET, path = "/", perm = "get")
     public void getInfo(ServletData data) {
         Server server = Sponge.getServer();
         Platform platform = Sponge.getPlatform();
@@ -39,13 +40,13 @@ public class InfoServlet extends WebAPIBaseServlet {
         data.addJson("implementation", platform.getContainer(Platform.Component.IMPLEMENTATION), true);
     }
 
-    @WebAPIEndpoint(method = "GET", path = "/properties", perm = "properties")
+    @WebAPIEndpoint(method = HttpMethod.GET, path = "/properties", perm = "properties")
     public void getProperties(ServletData data) {
         data.addJson("ok", true, false);
         data.addJson("properties", serverService.getProperties(), true);
     }
 
-    @WebAPIEndpoint(method = "POST", path = "/properties", perm = "properties")
+    @WebAPIEndpoint(method = HttpMethod.GET, path = "/properties", perm = "properties")
     public void setProperties(ServletData data) {
         JsonNode body = data.getRequestBody();
         JsonNode props = body.get("properties");
@@ -64,15 +65,15 @@ public class InfoServlet extends WebAPIBaseServlet {
         data.addJson("properties", serverService.getProperties(), true);
     }
 
-    @WebAPIEndpoint(method = "GET", path="/tps", perm = "tps")
+    @WebAPIEndpoint(method = HttpMethod.GET, path="/tps", perm = "tps")
     public void getTps(ServletData data) {
         data.addJson("ok", true, false);
-        data.addJson("averageTps", serverService.getAverageTps(), false);
+        data.addJson("tps", serverService.getAverageTps(), false);
     }
 
-    @WebAPIEndpoint(method = "GET", path="/players", perm = "players")
+    @WebAPIEndpoint(method = HttpMethod.GET, path="/player", perm = "players")
     public void getPlayers(ServletData data) {
         data.addJson("ok", true, false);
-        data.addJson("onlinePlayers", serverService.getOnlinePlayers(), false);
+        data.addJson("players", serverService.getOnlinePlayers(), false);
     }
 }

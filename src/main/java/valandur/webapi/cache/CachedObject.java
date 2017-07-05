@@ -8,7 +8,7 @@ import java.util.Optional;
 
 public abstract class CachedObject implements ICachedObject {
     protected long cachedAt;
-    protected long cacheDuration;
+    protected long cacheDuration = 0;
 
     protected Class clazz;
     public Class getObjectClass() {

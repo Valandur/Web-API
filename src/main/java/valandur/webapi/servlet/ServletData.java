@@ -11,6 +11,7 @@ import valandur.webapi.api.util.TreeNode;
 import valandur.webapi.user.UserPermission;
 import valandur.webapi.util.Util;
 
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -26,11 +27,19 @@ public class ServletData implements IServletData {
     private Map<String, String> pathParams;
     private Map<String, String> queryParams;
 
+    private boolean isDone;
+    public boolean isDone() {
+        return isDone;
+    }
+
     private TreeNode<String, Boolean> permissions;
     public TreeNode<String, Boolean> getPermissions() {
         return permissions;
     }
 
+    public ServletOutputStream getOutputStream() throws IOException {
+        return resp.getOutputStream();
+    }
     public PrintWriter getWriter() throws IOException {
         return resp.getWriter();
     }
@@ -84,6 +93,9 @@ public class ServletData implements IServletData {
     public void setStatus(int status) {
         resp.setStatus(status);
     }
+    public void setContentType(String contentType) {
+        resp.setContentType(contentType);
+    }
     public void addJson(String key, Object value, boolean details) {
         node.replace(key, WebAPI.getJsonService().toJson(value, details, permissions));
     }
@@ -96,6 +108,9 @@ public class ServletData implements IServletData {
         return value != null ? Optional.of(value) : Optional.empty();
     }
 
+    public void setDone() {
+        isDone = true;
+    }
     public void sendError(int error, String message) {
         if (errorSent) return;
 

@@ -4,6 +4,7 @@ import com.flowpowered.math.vector.Vector3i;
 import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.util.Tuple;
 import org.spongepowered.api.world.World;
+import org.spongepowered.api.world.extent.BiomeVolume;
 import org.spongepowered.api.world.extent.BlockVolume;
 import org.spongepowered.api.world.extent.StorageType;
 import valandur.webapi.WebAPI;
@@ -61,6 +62,31 @@ public class BlockService implements IBlockService {
 
             World w = (World)obj.get();
             return w.getBlock(pos).copy();
+        });
+    }
+
+    public Optional<String[][]> getBiomes(ICachedWorld world, Vector3i min, Vector3i max) {
+        return WebAPI.runOnMain(() -> {
+            Optional<?> obj = world.getLive();
+
+            if (!obj.isPresent())
+                return null;
+
+            World w = (World)obj.get();
+            Vector3i interval = new Vector3i(4, 0, 4);
+            BiomeVolume vol = w.getBiomeView(min, max).getRelativeBiomeView();
+            Vector3i size = vol.getBiomeSize();
+
+            int maxX = (int)Math.ceil(size.getX() / (float)interval.getX());
+            int maxZ = (int)Math.ceil(size.getZ() / (float)interval.getZ());
+            String[][] biomes = new String[maxX][maxZ];
+            for (int x = 0; x < maxX; x++) {
+                for (int z = 0; z < maxZ; z++) {
+                    biomes[x][z] = vol.getBiome(x * interval.getX(), 0, z * interval.getZ()).getId();
+                }
+            }
+
+            return biomes;
         });
     }
 }

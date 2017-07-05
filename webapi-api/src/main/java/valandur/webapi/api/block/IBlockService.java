@@ -53,4 +53,6 @@ public interface IBlockService {
      * @return An optional containing the block if it was found.
      */
     Optional<BlockState> getBlockAt(ICachedWorld world, Vector3i pos);
+
+    Optional<String[][]> getBiomes(ICachedWorld world, Vector3i min, Vector3i max);
 }

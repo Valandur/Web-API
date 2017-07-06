@@ -325,7 +325,10 @@ public class WorldServlet extends WebAPIBaseServlet {
         Vector3i max = new Vector3i(bX + HALF_TILE_SIZE, 0, bZ + HALF_TILE_SIZE);
 
         String fileName = "tile-x" + x + "z" + z + ".png";
-        Path filePath = Paths.get("webapi/cache/" + fileName);
+        Path filePath = Paths.get("webapi/cache/" + world.getUUID() + "/" + fileName);
+        if (!filePath.getParent().toFile().exists())
+            filePath.getParent().toFile().mkdirs();
+
         if (Files.exists(filePath)) {
             try {
                 Files.copy(filePath, data.getOutputStream());

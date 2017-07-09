@@ -6,11 +6,11 @@ import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 import org.spongepowered.api.event.entity.item.TargetItemEvent;
 import org.spongepowered.api.item.ItemType;
 import valandur.webapi.hook.WebHook;
-import valandur.webapi.hook.WebHookFilter;
+import valandur.webapi.api.hook.WebAPIBaseFilter;
 
 import java.util.List;
 
-public class ItemTypeFilter extends WebHookFilter {
+public class ItemTypeFilter extends WebAPIBaseFilter {
 
     public static String name = "WebAPI-Item";
 

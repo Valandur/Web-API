@@ -5,11 +5,11 @@ import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 import org.spongepowered.api.event.entity.living.humanoid.player.TargetPlayerEvent;
 import valandur.webapi.hook.WebHook;
-import valandur.webapi.hook.WebHookFilter;
+import valandur.webapi.api.hook.WebAPIBaseFilter;
 
 import java.util.List;
 
-public class PlayerFilter extends WebHookFilter {
+public class PlayerFilter extends WebAPIBaseFilter {
 
     public static String name = "WebAPI-Player";
 

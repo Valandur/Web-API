@@ -34,7 +34,7 @@ public class CachedTileEntity extends CachedObject implements ICachedTileEntity 
     public CachedTileEntity(TileEntity te) {
         super(te);
 
-        this.type = te.getType().getId();
+        this.type = te.getType() != null ? te.getType().getId() : null;
         this.location = new CachedLocation(te.getLocation());
 
         if (te instanceof TileEntityCarrier) {

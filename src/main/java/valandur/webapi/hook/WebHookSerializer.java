@@ -6,6 +6,8 @@ import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 import ninja.leaping.configurate.objectmapping.serialize.TypeSerializer;
 import org.slf4j.Logger;
 import valandur.webapi.WebAPI;
+import valandur.webapi.api.hook.WebAPIBaseFilter;
+import valandur.webapi.api.hook.WebHookHeader;
 import valandur.webapi.api.util.TreeNode;
 import valandur.webapi.permission.PermissionService;
 
@@ -65,13 +67,13 @@ public class WebHookSerializer implements TypeSerializer<WebHook> {
 
         if (enabled) {
             if (filterName != null) {
-                Optional<Class<? extends WebHookFilter>> opt = WebAPI.getWebHookService().getFilter(filterName);
+                Optional<Class<? extends WebAPIBaseFilter>> opt = WebAPI.getWebHookService().getFilter(filterName);
                 if (!opt.isPresent()) {
                     logger.warn("    Could not find filter with name '" + filterName + "'");
                 } else {
                     try {
                         Constructor ctor = opt.get().getConstructor(WebHook.class, ConfigurationNode.class);
-                        hook.setFilter((WebHookFilter) ctor.newInstance(hook, filterConfig));
+                        hook.setFilter((WebAPIBaseFilter) ctor.newInstance(hook, filterConfig));
                     } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
                         logger.warn("    Could not setup filter '" + filterName + "': " + e.getMessage());
                     }

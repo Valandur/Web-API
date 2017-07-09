@@ -6,10 +6,7 @@ import org.spongepowered.api.util.Tuple;
 import org.spongepowered.api.world.extent.BlockVolume;
 import valandur.webapi.api.cache.world.ICachedWorld;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * The block service performs block operations on the world, such as getting or setting them.
@@ -54,5 +51,22 @@ public interface IBlockService {
      */
     Optional<BlockState> getBlockAt(ICachedWorld world, Vector3i pos);
 
+    /**
+     * Gets the interval at which blocks are checked in the {@link #getBiomes(ICachedWorld, Vector3i, Vector3i)}
+     * method. The y-coordinate does not matter, as biomes are only in x and z direction.
+     * @return The current block interval.
+     */
+    Vector3i getBiomeInterval();
+
+    /**
+     * Gets the biome type ids for the specified area. The biome type is checked for every n-th block within the
+     * region, where n is defined by {@link #getBiomeInterval()}. This means the resulting array will contain the
+     * blocks indexed by x-direction first, with the array and sub-arrays being 1/n-th the size of the specified
+     * region.
+     * @param world The world to get the biome ids from
+     * @param min The lowest point that defines the region.
+     * @param max The highest point that defines the region.
+     * @return A matrix containing the biome ids for every n-th block, indexed by x-coordinate first.
+     */
     Optional<String[][]> getBiomes(ICachedWorld world, Vector3i min, Vector3i max);
 }

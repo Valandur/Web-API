@@ -14,7 +14,9 @@ import org.spongepowered.api.event.EventListener;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.util.Tuple;
 import valandur.webapi.WebAPI;
+import valandur.webapi.api.hook.WebAPIBaseFilter;
 import valandur.webapi.api.hook.IWebHookService;
+import valandur.webapi.api.hook.WebHookHeader;
 import valandur.webapi.hook.filter.BlockTypeFilter;
 import valandur.webapi.hook.filter.ItemTypeFilter;
 import valandur.webapi.hook.filter.PlayerFilter;
@@ -39,7 +41,7 @@ public class WebHookService implements IWebHookService {
     private Map<String, CommandWebHook> commandHooks = new HashMap<>();
     private Map<WebHookType, List<WebHook>> eventHooks = new HashMap<>();
     private Map<Class<? extends Event>, Tuple<List<WebHook>, EventListener>> customHooks = new HashMap<>();
-    private Map<String, Class<? extends WebHookFilter>> filters = new HashMap<>();
+    private Map<String, Class<? extends WebAPIBaseFilter>> filters = new HashMap<>();
 
     public Map<String, CommandWebHook> getCommandHooks() {
         return commandHooks;
@@ -81,7 +83,7 @@ public class WebHookService implements IWebHookService {
         filters.put(ItemTypeFilter.name, ItemTypeFilter.class);
 
         // Load custom filters
-        extensions.loadPlugins("filters", WebHookFilter.class, filterClass -> {
+        extensions.loadPlugins("filters", WebAPIBaseFilter.class, filterClass -> {
             try {
                 String name = (String) filterClass.getField("name").get(null);
                 filterClass.getConstructor(WebHook.class, ConfigurationNode.class);
@@ -143,7 +145,7 @@ public class WebHookService implements IWebHookService {
         }
     }
 
-    public Optional<Class<? extends WebHookFilter>> getFilter(String name) {
+    public Optional<Class<? extends WebAPIBaseFilter>> getFilter(String name) {
         return filters.containsKey(name) ? Optional.of(filters.get(name)) : Optional.empty();
     }
 

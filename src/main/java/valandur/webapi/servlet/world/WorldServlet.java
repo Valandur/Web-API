@@ -317,6 +317,26 @@ public class WorldServlet extends WebAPIBaseServlet {
         data.addJson("chunk", chunk.get(), true);
     }
 
+    @WebAPIEndpoint(method = HttpMethod.POST, path = "/:world/chunk/:x/:z", perm = "chunk")
+    public void createChunkAt(ServletData data, CachedWorld world, int x, int z) {
+        Optional<Chunk> chunk = WebAPI.runOnMain(() -> {
+            Optional<?> optLive = world.getLive();
+            if (!optLive.isPresent())
+                return null;
+
+            World live = (World)optLive.get();
+            return live.loadChunk(x, 0, z, true).orElse(null);
+        });
+
+        if (!chunk.isPresent()) {
+            data.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not generate chunk");
+            return;
+        }
+
+        data.addJson("ok", true, false);
+        data.addJson("chunk", chunk.get(), true);
+    }
+
     @WebAPIEndpoint(method = HttpMethod.GET, path = "/:world/map/:x/:z", perm = "map")
     public void getMap(ServletData data, CachedWorld world, int x, int z) {
         int bX = TILE_SIZE * x;

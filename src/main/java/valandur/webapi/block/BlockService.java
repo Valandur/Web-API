@@ -20,6 +20,7 @@ public class BlockService implements IBlockService {
 
     public static int MAX_BLOCK_GET_SIZE = 1000;
     public static int MAX_BLOCK_UPDATE_SIZE = 100;
+    public static Vector3i BIOME_INTERVAL = new Vector3i(4, 0, 4);
 
     public IBlockUpdate startBlockUpdate(UUID worldId, List<Tuple<Vector3i, BlockState>> blocks) {
         BlockUpdate update = new BlockUpdate(worldId, blocks);
@@ -65,6 +66,9 @@ public class BlockService implements IBlockService {
         });
     }
 
+    public Vector3i getBiomeInterval() {
+        return BIOME_INTERVAL;
+    }
     public Optional<String[][]> getBiomes(ICachedWorld world, Vector3i min, Vector3i max) {
         return WebAPI.runOnMain(() -> {
             Optional<?> obj = world.getLive();
@@ -73,16 +77,15 @@ public class BlockService implements IBlockService {
                 return null;
 
             World w = (World)obj.get();
-            Vector3i interval = new Vector3i(4, 0, 4);
             BiomeVolume vol = w.getBiomeView(min, max).getRelativeBiomeView();
             Vector3i size = vol.getBiomeSize();
 
-            int maxX = (int)Math.ceil(size.getX() / (float)interval.getX());
-            int maxZ = (int)Math.ceil(size.getZ() / (float)interval.getZ());
+            int maxX = (int)Math.ceil(size.getX() / (float)BIOME_INTERVAL.getX());
+            int maxZ = (int)Math.ceil(size.getZ() / (float)BIOME_INTERVAL.getZ());
             String[][] biomes = new String[maxX][maxZ];
             for (int x = 0; x < maxX; x++) {
                 for (int z = 0; z < maxZ; z++) {
-                    biomes[x][z] = vol.getBiome(x * interval.getX(), 0, z * interval.getZ()).getId();
+                    biomes[x][z] = vol.getBiome(x * BIOME_INTERVAL.getX(), 0, z * BIOME_INTERVAL.getZ()).getId();
                 }
             }
 

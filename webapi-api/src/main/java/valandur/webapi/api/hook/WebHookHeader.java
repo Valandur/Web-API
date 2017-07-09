@@ -1,4 +1,4 @@
-package valandur.webapi.hook;
+package valandur.webapi.api.hook;
 
 import ninja.leaping.configurate.objectmapping.Setting;
 import ninja.leaping.configurate.objectmapping.serialize.ConfigSerializable;

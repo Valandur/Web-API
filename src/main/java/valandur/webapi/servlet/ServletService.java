@@ -27,45 +27,49 @@ public class ServletService implements IServletService {
         servlets.clear();
 
         logger.info("Initializing servlets...");
-        for (Class<? extends WebAPIBaseServlet> servletClass : servletClasses.values()) {
-            String basePath = servletClass.getAnnotation(WebAPIServlet.class).basePath();
-            logger.info("  " + basePath + " -> " + servletClass.getName());
+        servletClasses.values().forEach(this::initServlet);
+        WebAPI.getExtensionService().loadPlugins("servlets", WebAPIBaseServlet.class, this::initServlet);
+    }
+    private void initServlet(Class<? extends WebAPIBaseServlet> servletClass) {
+        Logger logger = WebAPI.getLogger();
 
-            if (basePath.contains("/")) {
-                logger.error("  Base path is not allowed to have slashes");
-                continue;
-            }
+        String basePath = servletClass.getAnnotation(WebAPIServlet.class).basePath();
+        logger.info("  " + basePath + " -> " + servletClass.getName());
 
-            // Create a new instance
-            try {
-                WebAPIBaseServlet serv = servletClass.newInstance();
-                servlets.put(basePath, serv);
+        if (basePath.contains("/")) {
+            logger.error("  Base path is not allowed to have slashes");
+            return;
+        }
 
-                // Get all methods that are correctly annotated
-                List<Tuple<WebAPIEndpoint, Method>> newMethods = Arrays.stream(servletClass.getMethods())
-                        .filter(m -> m.isAnnotationPresent(WebAPIEndpoint.class))
-                        .map(m -> new Tuple<>(m.getAnnotation(WebAPIEndpoint.class), m))
-                        .collect(Collectors.toList());
+        // Create a new instance
+        try {
+            WebAPIBaseServlet serv = servletClass.newInstance();
+            servlets.put(basePath, serv);
 
-                for (Tuple<WebAPIEndpoint, Method> tuple : newMethods) {
-                    WebAPIEndpoint route = tuple.getFirst();
-                    Method method = tuple.getSecond();
+            // Get all methods that are correctly annotated
+            List<Tuple<WebAPIEndpoint, Method>> newMethods = Arrays.stream(servletClass.getMethods())
+                    .filter(m -> m.isAnnotationPresent(WebAPIEndpoint.class))
+                    .map(m -> new Tuple<>(m.getAnnotation(WebAPIEndpoint.class), m))
+                    .collect(Collectors.toList());
+
+            for (Tuple<WebAPIEndpoint, Method> tuple : newMethods) {
+                WebAPIEndpoint route = tuple.getFirst();
+                Method method = tuple.getSecond();
                     /*if (method.getParameterTypes().length != 1) {
                         logger.error("    Method " + method.getName() + " may only have 1 argument");
                         continue;
                     }*/
-                    if (method.getParameterTypes()[0] != IServletData.class &&
-                            method.getParameterTypes()[0] != ServletData.class) {
-                        logger.error("    Method " + method.getName() + " first parameter is not of type IServletData");
-                        continue;
-                    }
-                    method.setAccessible(true);
-                    logger.debug("    [" + route.method() + "] " + route.path() + " -> " +method.getName());
+                if (method.getParameterTypes()[0] != IServletData.class &&
+                        method.getParameterTypes()[0] != ServletData.class) {
+                    logger.error("    Method " + method.getName() + " first parameter is not of type IServletData");
+                    continue;
                 }
-                servletMethods.put(serv, newMethods);
-            } catch (InstantiationException | IllegalAccessException e) {
-                logger.error("  -> Could not init servlet " + servletClass.getName() + ": " + e.getMessage());
+                method.setAccessible(true);
+                logger.debug("    [" + route.method() + "] " + route.path() + " -> " +method.getName());
             }
+            servletMethods.put(serv, newMethods);
+        } catch (InstantiationException | IllegalAccessException e) {
+            logger.error("  -> Could not init servlet " + servletClass.getName() + ": " + e.getMessage());
         }
     }
 

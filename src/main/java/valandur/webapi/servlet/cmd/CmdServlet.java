@@ -43,47 +43,56 @@ public class CmdServlet extends WebAPIBaseServlet {
         final JsonNode reqJson = data.getRequestBody();
 
         if (!reqJson.isArray()) {
-            String cmd = reqJson.get("command").asText().split(" ")[0];
+            Optional<ExecuteCommandRequest> optReq = data.getRequestBody(ExecuteCommandRequest.class);
+            if (!optReq.isPresent()) {
+                data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid command data: " + data.getLastParseError().getMessage());
+                return;
+            }
+
+            ExecuteCommandRequest req = optReq.get();
+
+            String cmd = req.getCommand().split(" ")[0];
             if (!permissionService.permits(data.getPermissions(), new String[]{ cmd })) {
                 data.sendError(HttpServletResponse.SC_FORBIDDEN, "Access denied");
                 return;
             }
 
             data.addJson("ok", true, false);
-            data.addJson("result", runCommand(reqJson), true);
+            data.addJson("result", runCommand(req), true);
             return;
         }
 
         List<Object> res = new ArrayList<>();
-        for (JsonNode node : reqJson) {
-            String cmd = node.get("command").asText().split(" ")[0];
+        Optional<ExecuteCommandRequest[]> optReqs = data.getRequestBody(ExecuteCommandRequest[].class);
+        if (!optReqs.isPresent()) {
+            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid command data: " + data.getLastParseError().getMessage());
+            return;
+        }
+
+        ExecuteCommandRequest[] reqs = optReqs.get();
+        for (ExecuteCommandRequest req : reqs) {
+            String cmd = req.getCommand().split(" ")[0];
             if (!permissionService.permits(data.getPermissions(), new String[]{ cmd })) {
                 res.add(new Exception("Not allowed"));
                 continue;
             }
 
-            res.add(runCommand(node));
+            res.add(runCommand(req));
         }
 
         data.addJson("ok", true, false);
         data.addJson("results", res, true);
     }
 
-    private List<String> runCommand(JsonNode node) {
-        final String cmd = node.get("command").asText();
-        final String name = node.has("name") ? node.get("name").asText() : WebAPI.NAME;
-        final int waitTime = node.has("waitTime") ? node.get("waitTime").asInt() : 0;
-        final int waitLines = node.has("waitLines") ? node.get("waitLines").asInt() : 0;
-        final boolean hideInConsole = node.has("hideInConsole") && node.get("hideInConsole").asBoolean();
-
-        final CommandSource src = new CommandSource(name, waitLines, hideInConsole);
+    private List<String> runCommand(ExecuteCommandRequest req) {
+        final CommandSource src = new CommandSource(req.getName(), req.getWaitLines(), req.isHiddenInConsole());
 
         try {
-            WebAPI.runOnMain(() -> WebAPI.executeCommand(cmd, src));
+            WebAPI.runOnMain(() -> WebAPI.executeCommand(req.getCommand(), src));
 
-            if (waitLines > 0 || waitTime > 0) {
+            if (req.getWaitLines() > 0 || req.getWaitTime() > 0) {
                 synchronized (src) {
-                    src.wait(waitTime > 0 ? waitTime : CMD_WAIT_TIME);
+                    src.wait(req.getWaitTime() > 0 ? req.getWaitTime() : CMD_WAIT_TIME);
                 }
             }
 

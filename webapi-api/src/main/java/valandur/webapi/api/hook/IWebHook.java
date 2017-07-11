@@ -14,6 +14,7 @@ public interface IWebHook {
         JSON, FORM
     }
 
+
     String getAddress();
 
     boolean isEnabled();
@@ -21,6 +22,7 @@ public interface IWebHook {
     WebHookMethod getMethod();
 
     WebHookDataType getDataType();
+
     String getDataTypeHeader();
 
     List<WebHookHeader> getHeaders();
@@ -30,5 +32,6 @@ public interface IWebHook {
     TreeNode<String, Boolean> getPermissions();
 
     WebAPIBaseFilter getFilter();
+
     void setFilter(WebAPIBaseFilter filter);
 }

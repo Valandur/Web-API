@@ -1,5 +1,6 @@
 package valandur.webapi.hook;
 
+import valandur.webapi.api.hook.IWebHook;
 import valandur.webapi.api.hook.WebAPIBaseFilter;
 import valandur.webapi.api.hook.WebHookHeader;
 import valandur.webapi.api.util.TreeNode;
@@ -7,15 +8,7 @@ import valandur.webapi.permission.PermissionService;
 
 import java.util.List;
 
-public class WebHook {
-
-    public enum WebHookMethod {
-        GET, PUT, POST, DELETE
-    }
-
-    public enum WebHookDataType {
-        JSON, FORM
-    }
+public class WebHook implements IWebHook {
 
     private String address;
     public String getAddress() {

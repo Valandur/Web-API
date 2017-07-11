@@ -15,7 +15,7 @@ import org.spongepowered.api.event.user.TargetUserEvent;
 import org.spongepowered.api.event.world.ExplosionEvent;
 import org.spongepowered.api.event.world.GenerateChunkEvent;
 import org.spongepowered.api.event.world.TargetWorldEvent;
-import valandur.webapi.block.BlockUpdateEvent;
+import valandur.webapi.api.block.IBlockOperationEvent;
 import valandur.webapi.api.json.WebAPIBaseSerializer;
 
 import java.io.IOException;
@@ -51,8 +51,8 @@ public class EventSerializer extends WebAPIBaseSerializer<Event> {
             writeField(provider, "inventory", ((InteractInventoryEvent)value).getTargetInventory());
         }
 
-        if (value instanceof BlockUpdateEvent) {
-            writeField(provider, "blockUpdate", ((BlockUpdateEvent)value).getBlockUpdate());
+        if (value instanceof IBlockOperationEvent) {
+            writeField(provider, "blockUpdate", ((IBlockOperationEvent)value).getBlockOperation());
         }
 
         if (value instanceof GenerateChunkEvent) {

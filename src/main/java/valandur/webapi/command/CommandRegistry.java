@@ -118,16 +118,16 @@ public class CommandRegistry {
                 .description(Text.of("Pause/Resume running block updates"))
                 .permission("webapi.command.blocks.pause")
                 .arguments(GenericArguments.choices(Text.of("uuid"),
-                        () -> blockService.getBlockUpdates().stream().map(u -> u.getUUID().toString()).collect(Collectors.toList()),
-                        uuid -> blockService.getBlockUpdate(UUID.fromString(uuid))))
+                        () -> blockService.getBlockOperations().stream().map(u -> u.getUUID().toString()).collect(Collectors.toList()),
+                        uuid -> blockService.getBlockOperation(UUID.fromString(uuid))))
                 .executor(new CmdBlockUpdatesList())
                 .build();
         CommandSpec specBlockUpdatesStop = CommandSpec.builder()
                 .description(Text.of("Stop a running block update"))
                 .permission("webapi.command.blocks.stop")
                 .arguments(GenericArguments.choices(Text.of("uuid"),
-                        () -> blockService.getBlockUpdates().stream().map(u -> u.getUUID().toString()).collect(Collectors.toList()),
-                        uuid -> Util.isValidUUID(uuid) ? blockService.getBlockUpdate(UUID.fromString(uuid)) : null))
+                        () -> blockService.getBlockOperations().stream().map(u -> u.getUUID().toString()).collect(Collectors.toList()),
+                        uuid -> Util.isValidUUID(uuid) ? blockService.getBlockOperation(UUID.fromString(uuid)) : null))
                 .executor(new CmdBlockUpdatesList())
                 .build();
         CommandSpec specBlockUpdates = CommandSpec.builder()

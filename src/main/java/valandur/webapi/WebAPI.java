@@ -55,8 +55,8 @@ import valandur.webapi.api.message.IMessageService;
 import valandur.webapi.api.permission.IPermissionService;
 import valandur.webapi.api.servlet.IServletService;
 import valandur.webapi.block.BlockService;
-import valandur.webapi.block.BlockUpdate;
-import valandur.webapi.block.BlockUpdateStatusChangeEvent;
+import valandur.webapi.block.BlockOperation;
+import valandur.webapi.block.BlockOperationStatusChangeEvent;
 import valandur.webapi.cache.CacheService;
 import valandur.webapi.command.CommandRegistry;
 import valandur.webapi.command.CommandSource;
@@ -80,6 +80,7 @@ import valandur.webapi.servlet.cmd.CmdServlet;
 import valandur.webapi.servlet.entity.EntityServlet;
 import valandur.webapi.servlet.history.HistoryServlet;
 import valandur.webapi.servlet.info.InfoServlet;
+import valandur.webapi.servlet.map.MapServlet;
 import valandur.webapi.servlet.message.MessageServlet;
 import valandur.webapi.servlet.player.PlayerServlet;
 import valandur.webapi.servlet.plugin.PluginServlet;
@@ -288,6 +289,7 @@ public class WebAPI {
         servletService.registerServlet(EntityServlet.class);
         servletService.registerServlet(HistoryServlet.class);
         servletService.registerServlet(InfoServlet.class);
+        servletService.registerServlet(MapServlet.class);
         servletService.registerServlet(MessageServlet.class);
         servletService.registerServlet(PlayerServlet.class);
         servletService.registerServlet(PluginServlet.class);
@@ -322,7 +324,7 @@ public class WebAPI {
         CmdServlet.CMD_WAIT_TIME = config.getNode("cmdWaitTime").getInt();
         BlockService.MAX_BLOCK_GET_SIZE = config.getNode("maxBlockGetSize").getInt();
         BlockService.MAX_BLOCK_UPDATE_SIZE = config.getNode("maxBlockUpdateSize").getInt();
-        BlockUpdate.MAX_BLOCKS_PER_SECOND = config.getNode("maxBlocksPerSecond").getInt();
+        BlockOperation.MAX_BLOCKS_PER_SECOND = config.getNode("maxBlocksPerSecond").getInt();
 
         if (devMode)
             logger.info("WebAPI IS RUNNING IN DEV MODE. USING NON-SHADOWED REFERENCES!");
@@ -625,11 +627,11 @@ public class WebAPI {
     }
 
     @Listener(order = Order.POST)
-    public void onBlockUpdateStatusChange(BlockUpdateStatusChangeEvent event) {
-        BlockUpdate update = event.getBlockUpdate();
+    public void onBlockUpdateStatusChange(BlockOperationStatusChangeEvent event) {
+        BlockOperation update = event.getBlockOperation();
         switch (update.getStatus()) {
             case DONE:
-                logger.info("Block update " + update.getUUID() + " is done, " + update.getBlocksSet() + " blocks set");
+                logger.info("Block update " + update.getUUID() + " is done, " + update.getBlocksProcessed() + " blocks set");
                 break;
 
             case ERRORED:

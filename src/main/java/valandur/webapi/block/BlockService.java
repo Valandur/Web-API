@@ -9,30 +9,30 @@ import org.spongepowered.api.world.extent.BlockVolume;
 import org.spongepowered.api.world.extent.StorageType;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.block.IBlockService;
-import valandur.webapi.api.block.IBlockUpdate;
+import valandur.webapi.api.block.IBlockOperation;
 import valandur.webapi.api.cache.world.ICachedWorld;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class BlockService implements IBlockService {
-    private static Map<UUID, BlockUpdate> blockUpdates = new HashMap<>();
+    private static Map<UUID, BlockOperation> blockUpdates = new HashMap<>();
 
     public static int MAX_BLOCK_GET_SIZE = 1000;
     public static int MAX_BLOCK_UPDATE_SIZE = 100;
     public static Vector3i BIOME_INTERVAL = new Vector3i(4, 0, 4);
 
-    public IBlockUpdate startBlockUpdate(UUID worldId, List<Tuple<Vector3i, BlockState>> blocks) {
-        BlockUpdate update = new BlockUpdate(worldId, blocks);
+    public IBlockOperation startBlockOperation(UUID worldId, List<Tuple<Vector3i, BlockState>> blocks) {
+        BlockOperation update = new BlockOperation(worldId, blocks);
         blockUpdates.put(update.getUUID(), update);
         update.start();
         return update;
     }
 
-    public Collection<IBlockUpdate> getBlockUpdates() {
-        return blockUpdates.values().stream().map(b -> (IBlockUpdate)b).collect(Collectors.toList());
+    public Collection<IBlockOperation> getBlockOperations() {
+        return blockUpdates.values().stream().map(b -> (IBlockOperation)b).collect(Collectors.toList());
     }
-    public Optional<IBlockUpdate> getBlockUpdate(UUID uuid) {
+    public Optional<IBlockOperation> getBlockOperation(UUID uuid) {
         if (!blockUpdates.containsKey(uuid))
             return Optional.empty();
         return Optional.of(blockUpdates.get(uuid));

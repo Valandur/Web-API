@@ -5,28 +5,28 @@ import org.spongepowered.api.event.cause.Cause;
 import java.util.UUID;
 
 /**
- * A block update is a running operation on the world which changes certain blocks. This operation is throttled over
- * time so that it does not slow down the minecraft server too much.
+ * A block operation is a running operation on the world which performs a certain action to blocks. This operation is
+ * throttled over time so that it does not slow down the minecraft server too much.
  */
-public interface IBlockUpdate {
+public interface IBlockOperation {
 
     /**
      * The current status of the update.
      */
-    enum BlockUpdateStatus {
+    enum BlockOperationStatus {
         INIT, RUNNING, PAUSED, DONE, ERRORED,
     }
 
     /**
-     * Gets the number of blocks that have been changed. Blocks that already match what this update would change them
-     * to are not counted here.
-     * @return The number of changed blocks.
+     * Gets the number of blocks that have been processed. When changing blocks the blocks that already match what
+     * they are going to be changed to do not count.
+     * @return The number of retrieved or changed blocks.
      */
-    int getBlocksSet();
+    int getBlocksProcessed();
 
     /**
      * True if this operation resulted in an error, possibly because of an unloaded world or an out-of-bounds error.
-     * If this is true then {@link #getStatus()} will return the state {@link BlockUpdateStatus#ERRORED} and
+     * If this is true then {@link #getStatus()} will return the state {@link BlockOperationStatus#ERRORED} and
      * {@link #getError()} will return an error message.
      * @return True if an error occured, false otherwise.
      */
@@ -42,7 +42,7 @@ public interface IBlockUpdate {
      * Gets the current status of this operation.
      * @return The status of this block update operation.
      */
-    BlockUpdateStatus getStatus();
+    BlockOperationStatus getStatus();
 
     /**
      * Gets the UUID that uniquely identifies this block update operation.
@@ -51,8 +51,8 @@ public interface IBlockUpdate {
     UUID getUUID();
 
     /**
-     * Gets the cause which is used for the block updates.
-     * @return The cause used for the block updates.
+     * Gets the cause which is used for the block operation.
+     * @return The cause used for the block operation.
      */
     Cause getCause();
 

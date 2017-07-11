@@ -61,7 +61,7 @@ import valandur.webapi.json.serializer.server.ServerStatSerializer;
 import valandur.webapi.message.MessageResponse;
 import valandur.webapi.api.json.IJsonService;
 import valandur.webapi.api.util.TreeNode;
-import valandur.webapi.block.BlockUpdate;
+import valandur.webapi.block.BlockOperation;
 import valandur.webapi.command.CommandSource;
 import valandur.webapi.json.serializer.block.BlockSnapshotSerializer;
 import valandur.webapi.json.serializer.block.BlockStateSerializer;
@@ -115,7 +115,7 @@ public class JsonService implements IJsonService {
         // Block
         serializers.put(BlockSnapshot.class, new BlockSnapshotSerializer());
         serializers.put(BlockState.class, new BlockStateSerializer());
-        serializers.put(BlockUpdate.class, new BlockUpdateSerializer());
+        serializers.put(BlockOperation.class, new BlockUpdateSerializer());
         serializers.put(BlockVolume.class, new BlockVolumeSerializer());
 
         // Chat

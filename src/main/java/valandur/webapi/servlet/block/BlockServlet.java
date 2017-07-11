@@ -3,26 +3,21 @@ package valandur.webapi.servlet.block;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.flowpowered.math.vector.Vector3i;
 import org.eclipse.jetty.http.HttpMethod;
-import org.spongepowered.api.Sponge;
 import org.spongepowered.api.block.BlockState;
-import org.spongepowered.api.block.BlockType;
-import org.spongepowered.api.block.trait.BlockTrait;
 import org.spongepowered.api.util.Tuple;
 import org.spongepowered.api.world.extent.BlockVolume;
-import valandur.webapi.WebAPI;
 import valandur.webapi.api.annotation.WebAPIEndpoint;
 import valandur.webapi.api.annotation.WebAPIServlet;
-import valandur.webapi.api.block.IBlockUpdate;
-import valandur.webapi.api.cache.world.ICachedWorld;
+import valandur.webapi.api.block.IBlockOperation;
 import valandur.webapi.api.servlet.WebAPIBaseServlet;
 import valandur.webapi.block.BlockService;
 import valandur.webapi.cache.world.CachedWorld;
 import valandur.webapi.servlet.ServletData;
-import valandur.webapi.util.Util;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.*;
-import java.util.stream.Collectors;
+
+import static valandur.webapi.servlet.block.BlockUpdateRequest.BlockStateRequest;
 
 @WebAPIServlet(basePath = "block")
 public class BlockServlet extends WebAPIBaseServlet {
@@ -92,38 +87,45 @@ public class BlockServlet extends WebAPIBaseServlet {
         int blocksSet = 0;
 
         // Process areas
-        for (JsonNode area : reqJson) {
-            JsonNode wNode = area.get("world");
+        List<BlockUpdateRequest> reqs = new ArrayList<>();
 
-            if (wNode == null || !wNode.isTextual()) {
-                data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid world UUID");
+        if (!reqJson.isArray()) {
+            Optional<BlockUpdateRequest> optReq = data.getRequestBody(BlockUpdateRequest.class);
+            if (!optReq.isPresent()) {
+                data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid block update data: " + data.getLastParseError().getMessage());
                 return;
             }
 
-            // Check uuid
-            String uuid = wNode.asText();
-            if (!Util.isValidUUID(uuid)) {
-                data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid world UUID");
+            reqs.add(optReq.get());
+        } else {
+            Optional<BlockUpdateRequest[]> optReqs = data.getRequestBody(BlockUpdateRequest[].class);
+            if (!optReqs.isPresent()) {
+                data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid block update data: " + data.getLastParseError().getMessage());
                 return;
             }
 
-            // Check world
-            Optional<ICachedWorld> world = WebAPI.getCacheService().getWorld(UUID.fromString(uuid));
-            if (!world.isPresent()) {
-                data.sendError(HttpServletResponse.SC_NOT_FOUND, "World with UUID '" + uuid + "' could not be found");
+            reqs = Arrays.asList(optReqs.get());
+        }
+
+        List<IBlockOperation> updates = new ArrayList<>();
+        for (BlockUpdateRequest req : reqs) {
+            if (!req.getWorld().isPresent()) {
+                data.sendError(HttpServletResponse.SC_BAD_REQUEST, "No valid world provided");
                 return;
             }
 
-            // Check min & max
-            Optional<Vector3i> minOpt = getVector3i(area, "min");
-            Optional<Vector3i> maxOpt = getVector3i(area, "max");
-            if (!minOpt.isPresent() || !maxOpt.isPresent()) {
-                data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Area needs to define 'min' and 'max' properties");
+            if (req.getMin() == null) {
+                data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Min coordinates missing");
                 return;
             }
 
-            Vector3i min = minOpt.get();
-            Vector3i max = maxOpt.get();
+            if (req.getMax() == null) {
+                data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Max coordinates missing");
+                return;
+            }
+
+            Vector3i min = req.getMin();
+            Vector3i max = req.getMax();
 
             // Swamp around min & max if needed
             Vector3i tmp = min.min(max);
@@ -143,53 +145,47 @@ public class BlockServlet extends WebAPIBaseServlet {
             // Collect a list of blocks we want to update
             List<Tuple<Vector3i, BlockState>> blocks = new ArrayList<>();
 
-            // If a property 'block' exists, then all blocks in the area are changed to the same type
-            JsonNode block = area.get("block");
-            if (block != null) {
-                BlockState state = null;
+            if (req.getBlock() != null) {
                 try {
-                    state = parseBlockState(block);
-                } catch (Exception e) {
-                    data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Could not process block state: " + e.getMessage());
-                    continue;
-                }
+                    BlockState state = req.getBlock().getState();
 
-                for (int x = min.getX(); x <= max.getX(); x++) {
-                    for (int y = min.getY(); y <= max.getY(); y++) {
-                        for (int z = min.getZ(); z <= max.getZ(); z++) {
-                            blocks.add(new Tuple<>(new Vector3i(x, y, z), state));
+                    for (int x = min.getX(); x <= max.getX(); x++) {
+                        for (int y = min.getY(); y <= max.getY(); y++) {
+                            for (int z = min.getZ(); z <= max.getZ(); z++) {
+                                blocks.add(new Tuple<>(new Vector3i(x, y, z), state));
+                            }
                         }
                     }
+                } catch (Exception e) {
+                    data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Could not process block state: " + e.getMessage());
+                    return;
                 }
             } else {
-                // otherwise, the property 'blocks' defines nested arrays for every location in the area
-                JsonNode jsonBlocks = area.get("blocks");
-
-                if (jsonBlocks == null) {
+                if (req.getBlocks() == null) {
                     data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Either 'block' or 'blocks' has to be defined on each area");
                     return;
                 }
 
                 for (int x = 0; x < size.getX(); x++) {
-                    JsonNode xBlocks = jsonBlocks.get(x);
+                    BlockStateRequest[][] xBlocks = req.getBlocks()[x];
 
                     if (xBlocks == null)
                         continue;
 
                     for (int y = 0; y < size.getY(); y++) {
-                        JsonNode yBlocks = xBlocks.get(y);
+                        BlockStateRequest[] yBlocks = xBlocks[y];
 
                         if (yBlocks == null)
                             continue;
 
                         for (int z = 0; z < size.getZ(); z++) {
-                            JsonNode b = yBlocks.get(z);
+                            BlockStateRequest block = yBlocks[z];
 
-                            if (b == null)
+                            if (block == null)
                                 continue;
 
                             try {
-                                BlockState state = parseBlockState(b);
+                                BlockState state = block.getState();
                                 blocks.add(new Tuple<>(new Vector3i(min.getX() + x, min.getY() + y, min.getZ() + z), state));
                             } catch (Exception e) {
                                 data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Could not process block state: " + e.getMessage());
@@ -200,16 +196,18 @@ public class BlockServlet extends WebAPIBaseServlet {
                 }
             }
 
-            IBlockUpdate update = blockService.startBlockUpdate(world.get().getUUID(), blocks);
-            data.addJson("ok", true, false);
-            data.addJson("update", update, true);
+            IBlockOperation update = blockService.startBlockOperation(req.getWorld().get().getUUID(), blocks);
+            updates.add(update);
         }
+
+        data.addJson("ok", true, false);
+        data.addJson("update", updates, true);
     }
 
     @WebAPIEndpoint(method = HttpMethod.GET, path = "/update", perm = "update.list")
     public void getBlockUpdates(ServletData data) {
         data.addJson("ok", true, false);
-        data.addJson("updates", blockService.getBlockUpdates(), data.getQueryParam("details").isPresent());
+        data.addJson("updates", blockService.getBlockOperations(), data.getQueryParam("details").isPresent());
     }
 
     @WebAPIEndpoint(method = HttpMethod.PUT, path = "/update/:uuid", perm = "update.change")
@@ -217,7 +215,7 @@ public class BlockServlet extends WebAPIBaseServlet {
         JsonNode reqJson = data.getRequestBody();
 
         // Check block update
-        Optional<IBlockUpdate> update = blockService.getBlockUpdate(uuid);
+        Optional<IBlockOperation> update = blockService.getBlockOperation(uuid);
         if (!update.isPresent()) {
             data.sendError(HttpServletResponse.SC_NOT_FOUND, "Block update with UUID '" + uuid + "' could not be found");
             return;
@@ -236,7 +234,7 @@ public class BlockServlet extends WebAPIBaseServlet {
     @WebAPIEndpoint(method = HttpMethod.DELETE, path = "/update/:uuid", perm = "update.delete")
     public void deleteBlockUpdate(ServletData data, UUID uuid) {
         // Check block update
-        Optional<IBlockUpdate> update = blockService.getBlockUpdate(uuid);
+        Optional<IBlockOperation> update = blockService.getBlockOperation(uuid);
         if (!update.isPresent()) {
             data.sendError(HttpServletResponse.SC_NOT_FOUND, "Block update with UUID '" + uuid + "' could not be found");
             return;
@@ -246,82 +244,5 @@ public class BlockServlet extends WebAPIBaseServlet {
 
         data.addJson("ok", true, false);
         data.addJson("update", update, true);
-    }
-
-    private Optional<Vector3i> getVector3i(JsonNode rootNode, String name) {
-        JsonNode node = rootNode.get(name);
-        if (node == null)
-            return Optional.empty();
-
-        JsonNode xNode = node.get("x");
-        if (xNode == null)
-            return Optional.empty();
-
-        JsonNode yNode = node.get("y");
-        if (yNode == null)
-            return Optional.empty();
-
-        JsonNode zNode = node.get("z");
-        if (zNode == null)
-            return Optional.empty();
-
-        return Optional.of(new Vector3i(xNode.asInt(), yNode.asInt(), zNode.asInt()));
-    }
-
-    private Optional<BlockType> parseBlockType(String type) {
-        return  Sponge.getRegistry().getType(BlockType.class, type);
-    }
-    private BlockState parseBlockState(JsonNode node) throws Exception {
-        String typeStr = node.get("type").asText();
-        Optional<BlockType> type = parseBlockType(typeStr);
-        if (!type.isPresent())
-            throw new Exception("Invalid block type '" + typeStr + "'");
-
-        BlockState state = type.get().getDefaultState();
-
-        List<Tuple<BlockTrait, Object>> traits = parseBlockTraits(type.get(), node.get("data"));
-        for (Tuple<BlockTrait, Object> trait : traits) {
-            Optional<BlockState> newState = state.withTrait(trait.getFirst(), trait.getSecond());
-            if (!newState.isPresent())
-                throw new Exception("Could not apply trait '" + trait.getFirst().getName() + " to block state");
-
-            state = newState.get();
-        }
-
-        return state;
-    }
-    private List<Tuple<BlockTrait, Object>> parseBlockTraits(BlockType type, JsonNode data) throws Exception {
-        List<Tuple<BlockTrait, Object>> list = new ArrayList<>();
-        Iterator<Map.Entry<String, JsonNode>> nodes = data.fields();
-
-        Collection<BlockTrait<?>> traits = type.getTraits();
-
-        while (nodes.hasNext()) {
-            Map.Entry<String, JsonNode> entry = nodes.next();
-
-            Optional<BlockTrait<?>> optTrait = traits.stream().filter(t -> t.getName().equalsIgnoreCase(entry.getKey())).findAny();
-            if (!optTrait.isPresent())
-                throw new Exception("Unknown trait '" + entry.getKey() + "'");
-
-            BlockTrait trait = optTrait.get();
-
-            JsonNode value = entry.getValue();
-            if (value.isBoolean()) {
-                list.add(new Tuple<>(trait, value.asBoolean()));
-            } else if (value.isInt()) {
-                list.add(new Tuple<>(trait, value.asInt()));
-            } else if (value.isTextual()) {
-                Collection<?> values = trait.getPossibleValues();
-                Optional<?> val = values.stream().filter(v -> v.toString().equalsIgnoreCase(value.asText())).findAny();
-                if (!val.isPresent()) {
-                    String allowedValues = values.stream().map(Object::toString).collect(Collectors.joining(", "));
-                    throw new Exception("Trait '" + trait.getName() + "' has value '" + value.asText() + "' but can only have one of: " + allowedValues);
-                } else {
-                    list.add(new Tuple<>(trait, val.get()));
-                }
-            }
-        }
-
-        return list;
     }
 }

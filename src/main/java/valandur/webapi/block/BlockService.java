@@ -2,58 +2,44 @@ package valandur.webapi.block;
 
 import com.flowpowered.math.vector.Vector3i;
 import org.spongepowered.api.block.BlockState;
-import org.spongepowered.api.util.Tuple;
 import org.spongepowered.api.world.World;
 import org.spongepowered.api.world.extent.BiomeVolume;
-import org.spongepowered.api.world.extent.BlockVolume;
-import org.spongepowered.api.world.extent.StorageType;
 import valandur.webapi.WebAPI;
-import valandur.webapi.api.block.IBlockService;
 import valandur.webapi.api.block.IBlockOperation;
+import valandur.webapi.api.block.IBlockService;
 import valandur.webapi.api.cache.world.ICachedWorld;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class BlockService implements IBlockService {
-    private static Map<UUID, BlockOperation> blockUpdates = new HashMap<>();
+    private static Map<UUID, IBlockOperation> blockOps = new HashMap<>();
 
-    public static int MAX_BLOCK_GET_SIZE = 1000;
-    public static int MAX_BLOCK_UPDATE_SIZE = 100;
-    public static Vector3i BIOME_INTERVAL = new Vector3i(4, 0, 4);
+    private static int MAX_BLOCK_GET_SIZE = 1000000;
+    private static int MAX_BLOCK_UPDATE_SIZE = 1000000;
+    private static int MAX_BLOCKS_PER_SECOND = 10000;
+    private static Vector3i BIOME_INTERVAL = new Vector3i(4, 0, 4);
 
-    public IBlockOperation startBlockOperation(UUID worldId, List<Tuple<Vector3i, BlockState>> blocks) {
-        BlockOperation update = new BlockOperation(worldId, blocks);
-        blockUpdates.put(update.getUUID(), update);
-        update.start();
-        return update;
+
+    @Override
+    public IBlockOperation startBlockOperation(IBlockOperation operation) {
+        blockOps.put(operation.getUUID(), operation);
+        operation.start();
+        return operation;
     }
 
+    @Override
     public Collection<IBlockOperation> getBlockOperations() {
-        return blockUpdates.values().stream().map(b -> (IBlockOperation)b).collect(Collectors.toList());
+        return blockOps.values().stream().map(b -> (IBlockOperation)b).collect(Collectors.toList());
     }
+    @Override
     public Optional<IBlockOperation> getBlockOperation(UUID uuid) {
-        if (!blockUpdates.containsKey(uuid))
+        if (!blockOps.containsKey(uuid))
             return Optional.empty();
-        return Optional.of(blockUpdates.get(uuid));
+        return Optional.of(blockOps.get(uuid));
     }
 
-    public Optional<BlockVolume> getBlockVolume(ICachedWorld world, Vector3i min, Vector3i max) {
-        return WebAPI.runOnMain(() -> {
-            Optional<?> obj = world.getLive();
-
-            if (!obj.isPresent() || !(obj.get() instanceof World))
-                return null;
-
-            try {
-                World w = (World) obj.get();
-                return w.getBlockView(min, max).getBlockCopy(StorageType.STANDARD);
-            } catch (OutOfMemoryError ignored) {
-                WebAPI.getLogger().warn("Not enough memory to process block volume!");
-                return null;
-            }
-        });
-    }
+    @Override
     public Optional<BlockState> getBlockAt(ICachedWorld world, Vector3i pos) {
         return WebAPI.runOnMain(() -> {
             Optional<?> obj = world.getLive();
@@ -66,9 +52,26 @@ public class BlockService implements IBlockService {
         });
     }
 
+
+    @Override
+    public int getMaxBlocksPerSecond() {
+        return MAX_BLOCKS_PER_SECOND;
+    }
+    @Override
+    public int getMaxGetBlocks() {
+        return MAX_BLOCK_GET_SIZE;
+    }
+    @Override
+    public int getMaxUpdateBlocks() {
+        return MAX_BLOCK_UPDATE_SIZE;
+    }
+
+    @Override
     public Vector3i getBiomeInterval() {
         return BIOME_INTERVAL;
     }
+
+    @Override
     public Optional<String[][]> getBiomes(ICachedWorld world, Vector3i min, Vector3i max) {
         return WebAPI.runOnMain(() -> {
             Optional<?> obj = world.getLive();

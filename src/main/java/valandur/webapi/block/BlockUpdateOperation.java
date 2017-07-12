@@ -3,18 +3,25 @@ package valandur.webapi.block;
 import com.flowpowered.math.vector.Vector3i;
 import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.world.World;
-import valandur.webapi.cache.world.CachedWorld;
+import valandur.webapi.api.block.IBlockUpdateOperation;
+import valandur.webapi.api.cache.world.ICachedWorld;
 
 import java.util.Map;
 
-public class BlockUpdateOperation extends BlockOperation {
+public class BlockUpdateOperation extends BlockOperation implements IBlockUpdateOperation {
 
-    public BlockUpdateOperation(CachedWorld world, Vector3i min, Vector3i max, Map<Vector3i, BlockState> blocks) {
+    Map<Vector3i, BlockState> newStates;
+
+
+    public BlockUpdateOperation(ICachedWorld world, Vector3i min, Vector3i max, Map<Vector3i, BlockState> blocks) {
         super(world, min, max);
+
+        this.newStates = blocks;
     }
 
     @Override
     protected boolean processBlock(World world, Vector3i pos) {
-        return false;
+        BlockState state = newStates.get(pos);
+        return state != null && world.setBlock(pos, state, cause);
     }
 }

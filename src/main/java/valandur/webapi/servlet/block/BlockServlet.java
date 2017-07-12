@@ -4,13 +4,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.flowpowered.math.vector.Vector3i;
 import org.eclipse.jetty.http.HttpMethod;
 import org.spongepowered.api.block.BlockState;
-import org.spongepowered.api.util.Tuple;
-import org.spongepowered.api.world.extent.BlockVolume;
 import valandur.webapi.api.annotation.WebAPIEndpoint;
 import valandur.webapi.api.annotation.WebAPIServlet;
 import valandur.webapi.api.block.IBlockOperation;
 import valandur.webapi.api.servlet.WebAPIBaseServlet;
-import valandur.webapi.block.BlockService;
+import valandur.webapi.block.BlockGetOperation;
+import valandur.webapi.block.BlockUpdateOperation;
 import valandur.webapi.cache.world.CachedWorld;
 import valandur.webapi.servlet.ServletData;
 
@@ -56,23 +55,20 @@ public class BlockServlet extends WebAPIBaseServlet {
 
         // Check volume size
         int numBlocks = Math.abs((1 + maxX - minX) * (1 + maxY - minY) * (1 + maxZ - minZ));
-        if (BlockService.MAX_BLOCK_GET_SIZE > 0 && numBlocks > BlockService.MAX_BLOCK_GET_SIZE) {
+        if (blockService.getMaxGetBlocks() > 0 && numBlocks > blockService.getMaxGetBlocks()) {
             data.sendError(HttpServletResponse.SC_NOT_ACCEPTABLE, "Size is " + numBlocks +
-                    " blocks, which is larger than the maximum of " + BlockService.MAX_BLOCK_GET_SIZE + " blocks");
+                    " blocks, which is larger than the maximum of " + blockService.getMaxGetBlocks() + " blocks");
             return;
         }
 
         Vector3i min = new Vector3i(minX, minY, minZ);
         Vector3i max = new Vector3i(maxX, maxY, maxZ);
-        Optional<BlockVolume> vol = blockService.getBlockVolume(world, min, max);
-        if (!vol.isPresent()) {
-            data.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                    "Could not get blocks. Is the world loaded? Does the server have enough memory?");
-            return;
-        }
+
+        BlockGetOperation op = new BlockGetOperation(world, min, max);
+        IBlockOperation update = blockService.startBlockOperation(op);
 
         data.addJson("ok", true, false);
-        data.addJson("volume", vol.get(), true);
+        data.addJson("update", update, true);
     }
 
     @WebAPIEndpoint(method = HttpMethod.POST, path = "/", perm = "set")
@@ -136,14 +132,14 @@ public class BlockServlet extends WebAPIBaseServlet {
             Vector3i size = max.sub(min).add(1, 1, 1);
 
             int numBlocks = size.getX() * size.getY() * size.getZ();
-            if (BlockService.MAX_BLOCK_UPDATE_SIZE > 0 && numBlocks > BlockService.MAX_BLOCK_UPDATE_SIZE) {
+            if (blockService.getMaxUpdateBlocks() > 0 && numBlocks > blockService.getMaxUpdateBlocks()) {
                 data.sendError(HttpServletResponse.SC_NOT_ACCEPTABLE, "Area size is " + numBlocks +
-                        " blocks, which is larger than the maximum of " + BlockService.MAX_BLOCK_UPDATE_SIZE + " blocks");
+                        " blocks, which is larger than the maximum of " + blockService.getMaxUpdateBlocks() + " blocks");
                 return;
             }
 
             // Collect a list of blocks we want to update
-            List<Tuple<Vector3i, BlockState>> blocks = new ArrayList<>();
+            Map<Vector3i, BlockState> blocks = new HashMap<>();
 
             if (req.getBlock() != null) {
                 try {
@@ -152,7 +148,7 @@ public class BlockServlet extends WebAPIBaseServlet {
                     for (int x = min.getX(); x <= max.getX(); x++) {
                         for (int y = min.getY(); y <= max.getY(); y++) {
                             for (int z = min.getZ(); z <= max.getZ(); z++) {
-                                blocks.add(new Tuple<>(new Vector3i(x, y, z), state));
+                                blocks.put(new Vector3i(x, y, z), state);
                             }
                         }
                     }
@@ -186,7 +182,7 @@ public class BlockServlet extends WebAPIBaseServlet {
 
                             try {
                                 BlockState state = block.getState();
-                                blocks.add(new Tuple<>(new Vector3i(min.getX() + x, min.getY() + y, min.getZ() + z), state));
+                                blocks.put(new Vector3i(min.getX() + x, min.getY() + y, min.getZ() + z), state);
                             } catch (Exception e) {
                                 data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Could not process block state: " + e.getMessage());
                                 return;
@@ -196,12 +192,13 @@ public class BlockServlet extends WebAPIBaseServlet {
                 }
             }
 
-            IBlockOperation update = blockService.startBlockOperation(req.getWorld().get().getUUID(), blocks);
+            BlockUpdateOperation op = new BlockUpdateOperation(req.getWorld().get(), min, max, blocks);
+            IBlockOperation update = blockService.startBlockOperation(op);
             updates.add(update);
         }
 
         data.addJson("ok", true, false);
-        data.addJson("update", updates, true);
+        data.addJson("updates", updates, true);
     }
 
     @WebAPIEndpoint(method = HttpMethod.GET, path = "/update", perm = "update.list")

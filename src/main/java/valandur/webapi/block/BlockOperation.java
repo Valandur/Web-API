@@ -8,7 +8,8 @@ import org.spongepowered.api.world.Chunk;
 import org.spongepowered.api.world.World;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.block.IBlockOperation;
-import valandur.webapi.cache.world.CachedWorld;
+import valandur.webapi.api.block.IBlockService;
+import valandur.webapi.api.cache.world.ICachedWorld;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -16,7 +17,7 @@ import java.util.concurrent.TimeUnit;
 
 public abstract class BlockOperation implements IBlockOperation {
 
-    public static int MAX_BLOCKS_PER_SECOND = 10000;
+    private IBlockService blockService;
 
     private int currentBlock = 0;
     private int blocksSet = 0;
@@ -49,14 +50,15 @@ public abstract class BlockOperation implements IBlockOperation {
 
     private Task task;
 
-    protected CachedWorld world;
+    protected ICachedWorld world;
     protected final Vector3i min;
     protected final Vector3i max;
     protected final Vector3i size;
     private final int totalBlocks;
 
 
-    public BlockOperation(CachedWorld world, Vector3i min, Vector3i max) {
+    public BlockOperation(ICachedWorld world, Vector3i min, Vector3i max) {
+        this.blockService = WebAPI.getBlockService();
         this.uuid = UUID.randomUUID();
         this.world = world;
         this.min = min;
@@ -94,7 +96,7 @@ public abstract class BlockOperation implements IBlockOperation {
 
         World world = (World)optWorld.get();
 
-        int nextLimit = Math.min(currentBlock + MAX_BLOCKS_PER_SECOND / 2, totalBlocks);
+        int nextLimit = Math.min(currentBlock + blockService.getMaxBlocksPerSecond() / 2, totalBlocks);
         for (int i = currentBlock; i < nextLimit; i++) {
             int x = currentBlock / (size.getY() * size.getZ());
             int y = currentBlock - x * size.getY() * size.getZ();

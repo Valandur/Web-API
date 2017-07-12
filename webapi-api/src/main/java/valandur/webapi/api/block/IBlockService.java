@@ -14,6 +14,24 @@ import java.util.UUID;
 public interface IBlockService {
 
     /**
+     * Gets the maximum number of blocks per second the server processes.
+     * @return The maximum number of blocks processed per second.
+     */
+    int getMaxBlocksPerSecond();
+
+    /**
+     * Gets the maximum number of blocks that can be retrieved with a single operation.
+     * @return The maximum number of blocks that can be checked in a single operation.
+     */
+    int getMaxGetBlocks();
+
+    /**
+     * Gets the maximum number of blocks that can be changed with a single operation.
+     * @return The maximum number of blocks that can be changed in a single operation.
+     */
+    int getMaxUpdateBlocks();
+
+    /**
      * Starts a new block operation on the world.
      * @param operation The operation which will be saved and started.
      * @return The block operation which was started.

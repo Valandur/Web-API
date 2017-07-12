@@ -1,5 +1,6 @@
 package valandur.webapi.api.block;
 
+import com.flowpowered.math.vector.Vector3i;
 import org.spongepowered.api.event.cause.Cause;
 
 import java.util.UUID;
@@ -17,12 +18,18 @@ public interface IBlockOperation {
         INIT, RUNNING, PAUSED, DONE, ERRORED,
     }
 
+
     /**
-     * Gets the number of blocks that have been processed. When changing blocks the blocks that already match what
-     * they are going to be changed to do not count.
-     * @return The number of retrieved or changed blocks.
+     * Gets the minimum block belonging to this operation.
+     * @return The minimum block belonging to this operation.
      */
-    int getBlocksProcessed();
+    Vector3i getMin();
+
+    /**
+     * Gets the maximum block belonging to this operation.
+     * @return The maximum block belonging to this operation.
+     */
+    Vector3i getMax();
 
     /**
      * True if this operation resulted in an error, possibly because of an unloaded world or an out-of-bounds error.
@@ -61,6 +68,12 @@ public interface IBlockOperation {
      * @return The current progress, between 0 and 1.
      */
     float getProgress();
+
+    /**
+     * Gets the estimated amount of time in seconds that this operation will run for.
+     * @return The estimated amount of time remaining until this operation is done.
+     */
+    float getEstimatedSecondsRemaining();
 
     /**
      * Starts this operation. Has no effect if already started, done or errored.

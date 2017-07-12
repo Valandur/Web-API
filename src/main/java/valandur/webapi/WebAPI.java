@@ -322,14 +322,13 @@ public class WebAPI {
         adminPanelEnabled = config.getNode("adminPanel").getBoolean();
         keyStoreLocation = config.getNode("customKeyStore").getString();
         CmdServlet.CMD_WAIT_TIME = config.getNode("cmdWaitTime").getInt();
-        BlockService.MAX_BLOCK_GET_SIZE = config.getNode("maxBlockGetSize").getInt();
-        BlockService.MAX_BLOCK_UPDATE_SIZE = config.getNode("maxBlockUpdateSize").getInt();
-        BlockOperation.MAX_BLOCKS_PER_SECOND = config.getNode("maxBlocksPerSecond").getInt();
 
         if (devMode)
             logger.info("WebAPI IS RUNNING IN DEV MODE. USING NON-SHADOWED REFERENCES!");
 
         authHandler.init();
+
+        blockService.init(config);
 
         extensionService.init();
 
@@ -631,19 +630,19 @@ public class WebAPI {
         BlockOperation update = event.getBlockOperation();
         switch (update.getStatus()) {
             case DONE:
-                logger.info("Block update " + update.getUUID() + " is done, " + update.getBlocksProcessed() + " blocks set");
+                logger.info("Block op " + update.getUUID() + " is done");
                 break;
 
             case ERRORED:
-                logger.warn("Block update " + update.getUUID() + " failed: " + update.getError());
+                logger.warn("Block op " + update.getUUID() + " failed: " + update.getError());
                 break;
 
             case PAUSED:
-                logger.info("Block update " + update.getUUID() + " paused");
+                logger.info("Block op " + update.getUUID() + " paused");
                 break;
 
             case RUNNING:
-                logger.info("Block update " + update.getUUID() + " started");
+                logger.info("Block op " + update.getUUID() + " started");
                 break;
         }
 

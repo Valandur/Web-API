@@ -22,11 +22,10 @@ public class BlockGetOperation extends BlockOperation implements IBlockGetOperat
     }
 
     @Override
-    protected boolean processBlock(World world, Vector3i pos) {
+    protected void processBlock(World world, Vector3i pos) {
         int x = pos.getX() - min.getX();
         int y = pos.getY() - min.getY();
         int z = pos.getZ() - min.getZ();
         blockStates[x][y][z] = world.getBlock(pos).copy();
-        return true;
     }
 }

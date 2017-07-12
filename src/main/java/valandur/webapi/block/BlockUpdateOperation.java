@@ -20,8 +20,12 @@ public class BlockUpdateOperation extends BlockOperation implements IBlockUpdate
     }
 
     @Override
-    protected boolean processBlock(World world, Vector3i pos) {
+    protected void processBlock(World world, Vector3i pos) {
         BlockState state = newStates.get(pos);
-        return state != null && world.setBlock(pos, state, cause);
+
+        if (state == null)
+            return;
+
+        world.setBlock(pos, state, cause);
     }
 }

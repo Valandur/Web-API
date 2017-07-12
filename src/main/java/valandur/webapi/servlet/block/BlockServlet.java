@@ -14,9 +14,13 @@ import valandur.webapi.cache.world.CachedWorld;
 import valandur.webapi.servlet.ServletData;
 
 import javax.servlet.http.HttpServletResponse;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 
-import static valandur.webapi.servlet.block.BlockUpdateRequest.BlockStateRequest;
+import static valandur.webapi.servlet.block.CreateOperationRequest.BlockOperationType;
+import static valandur.webapi.servlet.block.CreateOperationRequest.BlockStateRequest;
 
 @WebAPIServlet(basePath = "block")
 public class BlockServlet extends WebAPIBaseServlet {
@@ -35,103 +39,54 @@ public class BlockServlet extends WebAPIBaseServlet {
         data.addJson("block", state.get(), true);
     }
 
-    @WebAPIEndpoint(method = HttpMethod.GET, path = "/:world/:minX/:minY/:minZ/:maxX/:maxY/:maxZ", perm = "volume")
-    public void getBlockVolume(ServletData data, CachedWorld world, int minX, int minY, int minZ,
-                               int maxX, int maxY, int maxZ) {
-        // Swap around min & max if needed
-        int tmpX = Math.max(minX, maxX);
-        minX = Math.min(minX, maxX);
-        maxX = tmpX;
-
-        // Swap around min & max if needed
-        int tmpY = Math.max(minY, maxY);
-        minY = Math.min(minY, maxY);
-        maxY = tmpY;
-
-        // Swap around min & max if needed
-        int tmpZ = Math.max(minZ, maxZ);
-        minZ = Math.min(minZ, maxZ);
-        maxZ = tmpZ;
-
-        // Check volume size
-        int numBlocks = Math.abs((1 + maxX - minX) * (1 + maxY - minY) * (1 + maxZ - minZ));
-        if (blockService.getMaxGetBlocks() > 0 && numBlocks > blockService.getMaxGetBlocks()) {
-            data.sendError(HttpServletResponse.SC_NOT_ACCEPTABLE, "Size is " + numBlocks +
-                    " blocks, which is larger than the maximum of " + blockService.getMaxGetBlocks() + " blocks");
+    @WebAPIEndpoint(method = HttpMethod.POST, path = "/op", perm = "op.create")
+    public void createBlockOperation(ServletData data) {
+        Optional<CreateOperationRequest> optReq = data.getRequestBody(CreateOperationRequest.class);
+        if (!optReq.isPresent()) {
+            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid block data: " + data.getLastParseError().getMessage());
             return;
         }
 
-        Vector3i min = new Vector3i(minX, minY, minZ);
-        Vector3i max = new Vector3i(maxX, maxY, maxZ);
+        CreateOperationRequest req = optReq.get();
 
-        BlockGetOperation op = new BlockGetOperation(world, min, max);
-        IBlockOperation update = blockService.startBlockOperation(op);
-
-        data.addJson("ok", true, false);
-        data.addJson("update", update, true);
-    }
-
-    @WebAPIEndpoint(method = HttpMethod.POST, path = "/", perm = "set")
-    public void setBlocks(ServletData data) {
-        JsonNode reqJson = data.getRequestBody();
-
-        if (reqJson == null || !reqJson.isArray()) {
-            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid areas");
+        // Check world
+        if (!req.getWorld().isPresent()) {
+            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "No valid world provided");
             return;
         }
 
-        int blocksSet = 0;
-
-        // Process areas
-        List<BlockUpdateRequest> reqs = new ArrayList<>();
-
-        if (!reqJson.isArray()) {
-            Optional<BlockUpdateRequest> optReq = data.getRequestBody(BlockUpdateRequest.class);
-            if (!optReq.isPresent()) {
-                data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid block update data: " + data.getLastParseError().getMessage());
-                return;
-            }
-
-            reqs.add(optReq.get());
-        } else {
-            Optional<BlockUpdateRequest[]> optReqs = data.getRequestBody(BlockUpdateRequest[].class);
-            if (!optReqs.isPresent()) {
-                data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid block update data: " + data.getLastParseError().getMessage());
-                return;
-            }
-
-            reqs = Arrays.asList(optReqs.get());
+        // Check min
+        if (req.getMin() == null) {
+            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Min coordinates missing");
+            return;
         }
 
-        List<IBlockOperation> updates = new ArrayList<>();
-        for (BlockUpdateRequest req : reqs) {
-            if (!req.getWorld().isPresent()) {
-                data.sendError(HttpServletResponse.SC_BAD_REQUEST, "No valid world provided");
-                return;
-            }
+        // Check max
+        if (req.getMax() == null) {
+            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Max coordinates missing");
+            return;
+        }
 
-            if (req.getMin() == null) {
-                data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Min coordinates missing");
-                return;
-            }
+        // Swap around min & max if needed
+        Vector3i min = req.getMin().min(req.getMax());
+        Vector3i max = req.getMax().max(req.getMin());
 
-            if (req.getMax() == null) {
-                data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Max coordinates missing");
-                return;
-            }
+        // Calculate volume size
+        Vector3i size = max.sub(min).add(1, 1, 1);
+        int numBlocks = size.getX() * size.getY() * size.getZ();
 
-            Vector3i min = req.getMin();
-            Vector3i max = req.getMax();
-
-            // Swamp around min & max if needed
-            Vector3i tmp = min.min(max);
-            max = min.max(max);
-            min = tmp;
-
+        IBlockOperation op = null;
+        if (req.getType() == BlockOperationType.GET) {
             // Check volume size
-            Vector3i size = max.sub(min).add(1, 1, 1);
+            if (blockService.getMaxGetBlocks() > 0 && numBlocks > blockService.getMaxGetBlocks()) {
+                data.sendError(HttpServletResponse.SC_NOT_ACCEPTABLE, "Size is " + numBlocks +
+                        " blocks, which is larger than the maximum of " + blockService.getMaxGetBlocks() + " blocks");
+                return;
+            }
 
-            int numBlocks = size.getX() * size.getY() * size.getZ();
+            op = blockService.startBlockOperation(new BlockGetOperation(req.getWorld().get(), min, max));
+        } else if (req.getType() == BlockOperationType.UPDATE) {
+            // Check volume size
             if (blockService.getMaxUpdateBlocks() > 0 && numBlocks > blockService.getMaxUpdateBlocks()) {
                 data.sendError(HttpServletResponse.SC_NOT_ACCEPTABLE, "Area size is " + numBlocks +
                         " blocks, which is larger than the maximum of " + blockService.getMaxUpdateBlocks() + " blocks");
@@ -192,23 +147,34 @@ public class BlockServlet extends WebAPIBaseServlet {
                 }
             }
 
-            BlockUpdateOperation op = new BlockUpdateOperation(req.getWorld().get(), min, max, blocks);
-            IBlockOperation update = blockService.startBlockOperation(op);
-            updates.add(update);
+            op = blockService.startBlockOperation(new BlockUpdateOperation(req.getWorld().get(), min, max, blocks));
         }
 
         data.addJson("ok", true, false);
-        data.addJson("updates", updates, true);
+        data.addJson("operation", op, false);
     }
 
-    @WebAPIEndpoint(method = HttpMethod.GET, path = "/update", perm = "update.list")
-    public void getBlockUpdates(ServletData data) {
+    @WebAPIEndpoint(method = HttpMethod.GET, path = "/op", perm = "op.list")
+    public void getBlockOperations(ServletData data) {
         data.addJson("ok", true, false);
-        data.addJson("updates", blockService.getBlockOperations(), data.getQueryParam("details").isPresent());
+        data.addJson("operations", blockService.getBlockOperations(), data.getQueryParam("details").isPresent());
     }
 
-    @WebAPIEndpoint(method = HttpMethod.PUT, path = "/update/:uuid", perm = "update.change")
-    public void modifyBlockUpdate(ServletData data, UUID uuid) {
+    @WebAPIEndpoint(method = HttpMethod.GET, path = "/op/:uuid", perm = "op.one")
+    public void getBlockOperation(ServletData data, UUID uuid) {
+        // Check block update
+        Optional<IBlockOperation> update = blockService.getBlockOperation(uuid);
+        if (!update.isPresent()) {
+            data.sendError(HttpServletResponse.SC_NOT_FOUND, "Block update with UUID '" + uuid + "' could not be found");
+            return;
+        }
+
+        data.addJson("ok", true, false);
+        data.addJson("operation", update.get(), true);
+    }
+
+    @WebAPIEndpoint(method = HttpMethod.PUT, path = "/op/:uuid", perm = "op.change")
+    public void modifyBlockOperation(ServletData data, UUID uuid) {
         JsonNode reqJson = data.getRequestBody();
 
         // Check block update
@@ -225,11 +191,11 @@ public class BlockServlet extends WebAPIBaseServlet {
         }
 
         data.addJson("ok", true, false);
-        data.addJson("update", update, true);
+        data.addJson("operation", update, true);
     }
 
-    @WebAPIEndpoint(method = HttpMethod.DELETE, path = "/update/:uuid", perm = "update.delete")
-    public void deleteBlockUpdate(ServletData data, UUID uuid) {
+    @WebAPIEndpoint(method = HttpMethod.DELETE, path = "/op/:uuid", perm = "op.delete")
+    public void deleteBlockOperation(ServletData data, UUID uuid) {
         // Check block update
         Optional<IBlockOperation> update = blockService.getBlockOperation(uuid);
         if (!update.isPresent()) {
@@ -240,6 +206,6 @@ public class BlockServlet extends WebAPIBaseServlet {
         update.get().stop("Cancelled by request");
 
         data.addJson("ok", true, false);
-        data.addJson("update", update, true);
+        data.addJson("operation", update.get(), true);
     }
 }

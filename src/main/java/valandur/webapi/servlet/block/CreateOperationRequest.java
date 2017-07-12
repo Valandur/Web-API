@@ -15,7 +15,17 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-public class BlockUpdateRequest {
+public class CreateOperationRequest {
+
+    public enum BlockOperationType {
+        GET, UPDATE,
+    }
+
+    @JsonDeserialize
+    private BlockOperationType type;
+    public BlockOperationType getType() {
+        return type;
+    }
 
     @JsonDeserialize
     private String world;

@@ -42,6 +42,10 @@ import org.spongepowered.api.world.*;
 import org.spongepowered.api.world.explosion.Explosion;
 import org.spongepowered.api.world.extent.BlockVolume;
 import valandur.webapi.WebAPI;
+import valandur.webapi.api.json.IJsonService;
+import valandur.webapi.api.json.WebAPIBaseSerializer;
+import valandur.webapi.api.util.TreeNode;
+import valandur.webapi.block.BlockOperation;
 import valandur.webapi.cache.chat.CachedChatMessage;
 import valandur.webapi.cache.command.CachedCommand;
 import valandur.webapi.cache.command.CachedCommandCall;
@@ -56,16 +60,10 @@ import valandur.webapi.cache.tileentity.CachedTileEntity;
 import valandur.webapi.cache.world.CachedGeneratorType;
 import valandur.webapi.cache.world.CachedWorld;
 import valandur.webapi.cache.world.CachedWorldBorder;
-import valandur.webapi.api.json.WebAPIBaseSerializer;
-import valandur.webapi.json.serializer.server.ServerStatSerializer;
-import valandur.webapi.message.MessageResponse;
-import valandur.webapi.api.json.IJsonService;
-import valandur.webapi.api.util.TreeNode;
-import valandur.webapi.block.BlockOperation;
 import valandur.webapi.command.CommandSource;
+import valandur.webapi.json.serializer.block.BlockOperationSerializer;
 import valandur.webapi.json.serializer.block.BlockSnapshotSerializer;
 import valandur.webapi.json.serializer.block.BlockStateSerializer;
-import valandur.webapi.json.serializer.block.BlockOperationSerializer;
 import valandur.webapi.json.serializer.block.BlockVolumeSerializer;
 import valandur.webapi.json.serializer.chat.CachedChatMessageSerializer;
 import valandur.webapi.json.serializer.command.CachedCommandCallSerializer;
@@ -80,9 +78,11 @@ import valandur.webapi.json.serializer.misc.*;
 import valandur.webapi.json.serializer.player.*;
 import valandur.webapi.json.serializer.plugin.CachedPluginContainerSerializer;
 import valandur.webapi.json.serializer.plugin.PluginContainerSerializer;
+import valandur.webapi.json.serializer.server.ServerStatSerializer;
 import valandur.webapi.json.serializer.tileentity.*;
 import valandur.webapi.json.serializer.user.UserPermissionSerializer;
 import valandur.webapi.json.serializer.world.*;
+import valandur.webapi.message.MessageResponse;
 import valandur.webapi.server.ServerStat;
 import valandur.webapi.user.UserPermission;
 import valandur.webapi.util.Util;
@@ -103,7 +103,6 @@ public class JsonService implements IJsonService {
     private Map<Class, Class> registeredSerializers = new HashMap<>();
     private Map<Class, WebAPIBaseSerializer> serializers;
     private Map<String, Class> supportedData;
-
 
     public void init() {
         Logger logger = WebAPI.getLogger();

@@ -1,46 +1,46 @@
 package valandur.webapi.json.serializer.player;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import valandur.webapi.cache.player.CachedPlayer;
 import valandur.webapi.api.json.WebAPIBaseSerializer;
+import valandur.webapi.cache.player.CachedPlayer;
 
 import java.io.IOException;
 
 public class CachedPlayerSerializer extends WebAPIBaseSerializer<CachedPlayer> {
     @Override
-    public void serialize(CachedPlayer value, JsonGenerator gen, SerializerProvider provider) throws IOException {
-        gen.writeStartObject();
+    public void serialize(CachedPlayer value) throws IOException {
+        writeStartObject();
 
-        writeField(provider, "uuid", value.getUUID());
-        writeField(provider, "name", value.getName());
-        writeField(provider, "type", value.getType());
-        writeField(provider, "link", value.getLink());
-        writeField(provider, "location", value.getLocation());
+        writeField("uuid", value.getUUID());
+        writeField("name", value.getName());
+        writeField("type", value.getType());
+        writeField("link", value.getLink());
+        writeField("location", value.getLocation());
 
-        if (shouldWriteDetails(provider)) {
-            writeField(provider, "class", value.getClass().getName());
-            writeField(provider, "rotation", value.getRotation());
-            writeField(provider, "velocity", value.getVelocity());
-            writeField(provider, "scale", value.getScale());
+        if (shouldWriteDetails()) {
+            writeField("class", value.getClass().getName());
+            writeField("rotation", value.getRotation());
+            writeField("velocity", value.getVelocity());
+            writeField("scale", value.getScale());
 
-            gen.writeObjectFieldStart("connection");
-            writeField(provider, "latency", value.getLatency());
-            writeField(provider, "address", value.getAddress());
-            gen.writeEndObject();
+            if (writeObjectFieldStart("connection")) {
+                writeField("latency", value.getLatency());
+                writeField("address", value.getAddress());
+                writeEndObject();
+            }
 
-            gen.writeObjectFieldStart("armour");
-            writeField(provider, "helmet", value.getHelmet());
-            writeField(provider, "chestplate", value.getChestplate());
-            writeField(provider, "leggings", value.getLeggings());
-            writeField(provider, "boots", value.getBoots());
-            gen.writeEndObject();
+            if (writeObjectFieldStart("armour")) {
+                writeField("helmet", value.getHelmet());
+                writeField("chestplate", value.getChestplate());
+                writeField("leggings", value.getLeggings());
+                writeField("boots", value.getBoots());
+                writeEndObject();
+            }
 
-            writeField(provider, "inventory", value.getInventory());
+            writeField("inventory", value.getInventory());
 
-            writeData(provider, value.getData());
+            writeData(value.getData());
         }
 
-        gen.writeEndObject();
+        writeEndObject();
     }
 }

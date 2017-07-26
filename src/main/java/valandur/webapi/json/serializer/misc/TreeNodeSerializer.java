@@ -1,7 +1,5 @@
 package valandur.webapi.json.serializer.misc;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.SerializerProvider;
 import valandur.webapi.api.json.WebAPIBaseSerializer;
 import valandur.webapi.api.util.TreeNode;
 
@@ -10,9 +8,9 @@ import java.util.Collection;
 
 public class TreeNodeSerializer extends WebAPIBaseSerializer<TreeNode<?, ?>> {
     @Override
-    public void serialize(TreeNode<?, ?> value, JsonGenerator gen, SerializerProvider provider) throws IOException {
+    public void serialize(TreeNode<?, ?> value) throws IOException {
         if (value == null) {
-            writeValue(provider, false);
+            writeValue(false);
             return;
         }
 
@@ -21,7 +19,7 @@ public class TreeNodeSerializer extends WebAPIBaseSerializer<TreeNode<?, ?>> {
         Collection<? extends TreeNode<?, ?>> children = value.getChildren();
 
         if (children.size() == 0) {
-            writeValue(provider, val);
+            writeValue(val);
             return;
         }
 
@@ -29,21 +27,21 @@ public class TreeNodeSerializer extends WebAPIBaseSerializer<TreeNode<?, ?>> {
 
         Boolean firstVal = first.getValue() instanceof Boolean ? (Boolean)first.getValue() : first.getValue() != null;
         if (children.size() == 1 && val && first.getKey().toString().equalsIgnoreCase("*") && firstVal) {
-            writeValue(provider, "*");
+            writeValue("*");
             return;
         }
 
-        gen.writeStartObject();
+        writeStartObject();
 
         if (!val) {
-            writeField(provider, ".", false);
+            writeField(".", false);
         }
 
         for (TreeNode<?, ?> child : children) {
             String key = child.getKey() instanceof String ? (String)child.getKey() : child.getKey().toString();
-            writeField(provider, key, child.getValue());
+            writeField(key, child.getValue());
         }
 
-        gen.writeEndObject();
+        writeEndObject();
     }
 }

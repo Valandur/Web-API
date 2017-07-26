@@ -1,7 +1,5 @@
 package valandur.webapi.json.serializer.player;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.SerializerProvider;
 import org.spongepowered.api.data.manipulator.mutable.entity.ExperienceHolderData;
 import valandur.webapi.api.json.WebAPIBaseSerializer;
 
@@ -9,11 +7,11 @@ import java.io.IOException;
 
 public class ExperienceHolderDataSerializer extends WebAPIBaseSerializer<ExperienceHolderData> {
     @Override
-    public void serialize(ExperienceHolderData value, JsonGenerator gen, SerializerProvider provider) throws IOException {
-        gen.writeStartObject();
-        writeField(provider, "level", value.level().get());
-        writeField(provider, "experience", value.experienceSinceLevel().get());
-        writeField(provider, "totalExperience", value.totalExperience().get());
-        gen.writeEndObject();
+    public void serialize(ExperienceHolderData value) throws IOException {
+        writeStartObject();
+        writeField("level", value.level().get());
+        writeField("experience", value.experienceSinceLevel().get());
+        writeField("totalExperience", value.totalExperience().get());
+        writeEndObject();
     }
 }

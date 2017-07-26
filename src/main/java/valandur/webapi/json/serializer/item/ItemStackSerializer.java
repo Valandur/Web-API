@@ -1,7 +1,5 @@
 package valandur.webapi.json.serializer.item;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.SerializerProvider;
 import org.spongepowered.api.item.inventory.ItemStack;
 import valandur.webapi.api.json.WebAPIBaseSerializer;
 
@@ -9,19 +7,19 @@ import java.io.IOException;
 
 public class ItemStackSerializer extends WebAPIBaseSerializer<ItemStack> {
     @Override
-    public void serialize(ItemStack value, JsonGenerator gen, SerializerProvider provider) throws IOException {
-        gen.writeStartObject();
+    public void serialize(ItemStack value) throws IOException {
+        writeStartObject();
 
-        writeField(provider, "id", value.getItem().getId());
-        writeField(provider, "name", value.getTranslation().get());
-        writeField(provider, "quantity", value.getQuantity());
+        writeField("id", value.getItem().getId());
+        writeField("name", value.getTranslation().get());
+        writeField("quantity", value.getQuantity());
 
-        if (shouldWriteDetails(provider)) {
-            gen.writeObjectFieldStart("data");
-            writeData(provider, value);
-            gen.writeEndObject();
+        if (shouldWriteDetails()) {
+            writeObjectFieldStart("data");
+            writeData(value);
+            writeEndObject();
         }
 
-        gen.writeEndObject();
+        writeEndObject();
     }
 }

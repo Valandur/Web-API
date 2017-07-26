@@ -1,34 +1,32 @@
 package valandur.webapi.json.serializer.entity;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.SerializerProvider;
 import org.spongepowered.api.util.Tristate;
-import valandur.webapi.cache.entity.CachedEntity;
 import valandur.webapi.api.json.WebAPIBaseSerializer;
+import valandur.webapi.cache.entity.CachedEntity;
 
 import java.io.IOException;
 
 public class CachedEntitySerializer extends WebAPIBaseSerializer<CachedEntity> {
     @Override
-    public void serialize(CachedEntity value, JsonGenerator gen, SerializerProvider provider) throws IOException {
-        gen.writeStartObject();
+    public void serialize(CachedEntity value) throws IOException {
+        writeStartObject();
 
-        writeField(provider, "uuid", value.getUUID());
-        writeField(provider, "type", value.getType());
-        writeField(provider, "link", value.getLink());
+        writeField("uuid", value.getUUID());
+        writeField("type", value.getType());
+        writeField("link", value.getLink());
 
-        if (shouldWriteDetails(provider)) {
-            writeField(provider, "class", value.getClass().getName());
-            writeField(provider, "location", value.getLocation(), Tristate.FALSE);
-            writeField(provider, "rotation", value.getRotation());
-            writeField(provider, "velocity", value.getVelocity());
-            writeField(provider, "scale", value.getScale());
+        if (shouldWriteDetails()) {
+            writeField("class", value.getClass().getName());
+            writeField("location", value.getLocation(), Tristate.FALSE);
+            writeField("rotation", value.getRotation());
+            writeField("velocity", value.getVelocity());
+            writeField("scale", value.getScale());
 
-            writeField(provider, "inventory", value.getInventory());
+            writeField("inventory", value.getInventory());
 
-            writeData(provider, value.getData());
+            writeData(value.getData());
         }
 
-        gen.writeEndObject();
+        writeEndObject();
     }
 }

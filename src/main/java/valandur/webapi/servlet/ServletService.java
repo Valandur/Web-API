@@ -76,6 +76,9 @@ public class ServletService implements IServletService {
     public Optional<MatchedRoute> getMethod(String verb, String path) {
         // First get the correct servlet
         List<String> pathParts = Util.getPathParts(path);
+        if (pathParts.size() == 0) {
+            return Optional.empty();
+        }
 
         WebAPIBaseServlet servlet = servlets.get(pathParts.get(0));
         if (servlet == null) {

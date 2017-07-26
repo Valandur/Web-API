@@ -97,9 +97,11 @@ public class CacheService implements ICacheService {
         return dur != null ? dur : Long.MAX_VALUE;
     }
 
+    @Override
     public Map<Class, JsonNode> getClasses() {
         return classes;
     }
+    @Override
     public JsonNode getClass(Class type) {
         if (classes.containsKey(type))
             return classes.get(type);
@@ -141,9 +143,11 @@ public class CacheService implements ICacheService {
             }
         });
     }
+    @Override
     public Collection<ICachedWorld> getWorlds() {
         return new ArrayList<>(worlds.values());
     }
+    @Override
     public Optional<ICachedWorld> getWorld(String nameOrUuid) {
         if (Util.isValidUUID(nameOrUuid)) {
             return getWorld(UUID.fromString(nameOrUuid));
@@ -153,6 +157,7 @@ public class CacheService implements ICacheService {
         return world.flatMap(cachedWorld -> getWorld(cachedWorld.getUUID()));
 
     }
+    @Override
     public Optional<ICachedWorld> getWorld(UUID uuid) {
         if (!worlds.containsKey(uuid)) {
             return Optional.empty();
@@ -171,27 +176,33 @@ public class CacheService implements ICacheService {
             return Optional.of(res);
         }
     }
+    @Override
     public ICachedWorld getWorld(World world) {
         Optional<ICachedWorld> w = getWorld(world.getUniqueId());
         return w.orElseGet(() -> updateWorld(world));
     }
+    @Override
     public ICachedWorld updateWorld(World world) {
         CachedWorld w = new CachedWorld(world);
         worlds.put(world.getUniqueId(), w);
         return w;
     }
+    @Override
     public ICachedWorld updateWorld(WorldProperties world) {
         CachedWorld w = new CachedWorld(world);
         worlds.put(world.getUniqueId(), w);
         return w;
     }
+    @Override
     public ICachedWorld removeWorld(UUID worldUuid) {
         return worlds.remove(worldUuid);
     }
 
+    @Override
     public Collection<ICachedPlayer> getPlayers() {
         return new ArrayList<>(players.values());
     }
+    @Override
     public Optional<ICachedPlayer> getPlayer(UUID uuid) {
         if (!players.containsKey(uuid)) {
             return Optional.empty();
@@ -208,22 +219,27 @@ public class CacheService implements ICacheService {
             return Optional.of(res);
         }
     }
+    @Override
     public ICachedPlayer getPlayer(Player player) {
         Optional<ICachedPlayer> p = getPlayer(player.getUniqueId());
         return p.orElseGet(() -> updatePlayer(player));
     }
+    @Override
     public ICachedPlayer updatePlayer(Player player) {
         CachedPlayer p = new CachedPlayer(player);
         players.put(player.getUniqueId(), p);
         return p;
     }
+    @Override
     public ICachedPlayer removePlayer(UUID uuid) {
         return players.remove(uuid);
     }
 
+    @Override
     public Collection<ICachedEntity> getEntities() {
         return new ArrayList<>(entities.values());
     }
+    @Override
     public Optional<ICachedEntity> getEntity(UUID uuid) {
         if (!entities.containsKey(uuid)) {
             return Optional.empty();
@@ -246,15 +262,18 @@ public class CacheService implements ICacheService {
             return Optional.of(res);
         }
     }
+    @Override
     public ICachedEntity getEntity(Entity entity) {
         Optional<ICachedEntity> e = getEntity(entity.getUniqueId());
         return e.orElseGet(() -> updateEntity(entity));
     }
+    @Override
     public ICachedEntity updateEntity(Entity entity) {
         CachedEntity e = new CachedEntity(entity);
         entities.put(entity.getUniqueId(), e);
         return e;
     }
+    @Override
     public ICachedEntity removeEntity(UUID uuid) {
         return entities.remove(uuid);
     }
@@ -267,9 +286,11 @@ public class CacheService implements ICacheService {
             plugins.add(new CachedPluginContainer(plugin));
         }
     }
+    @Override
     public Collection<ICachedPluginContainer> getPlugins() {
         return new ArrayList<>(plugins);
     }
+    @Override
     public Optional<ICachedPluginContainer> getPlugin(String id) {
         for (CachedPluginContainer plugin : plugins) {
             if (plugin.getId().equalsIgnoreCase(id))
@@ -277,6 +298,7 @@ public class CacheService implements ICacheService {
         }
         return Optional.empty();
     }
+    @Override
     public ICachedPluginContainer getPlugin(PluginContainer plugin) {
         Optional<ICachedPluginContainer> e = getPlugin(plugin.getId());
         return e.orElseGet(() -> new CachedPluginContainer(plugin));
@@ -292,9 +314,11 @@ public class CacheService implements ICacheService {
             commands.add(new CachedCommand(cmd, CommandSource.instance));
         }
     }
+    @Override
     public Collection<ICachedCommand> getCommands() {
         return new ArrayList<>(commands);
     }
+    @Override
     public Optional<ICachedCommand> getCommand(String name) {
         for (CachedCommand cmd : commands) {
             if (cmd.getName().equalsIgnoreCase(name))
@@ -303,6 +327,7 @@ public class CacheService implements ICacheService {
         return Optional.empty();
     }
 
+    @Override
     public Optional<Collection<ICachedTileEntity>> getTileEntities() {
         return WebAPI.runOnMain(() -> {
             Collection<ICachedTileEntity> entities = new LinkedList<>();
@@ -317,6 +342,7 @@ public class CacheService implements ICacheService {
             return entities;
         });
     }
+    @Override
     public Optional<Collection<ICachedTileEntity>> getTileEntities(ICachedWorld world) {
         return WebAPI.runOnMain(() -> {
             Optional<?> w = world.getLive();
@@ -333,6 +359,7 @@ public class CacheService implements ICacheService {
             return entities;
         });
     }
+    @Override
     public Optional<ICachedTileEntity> getTileEntity(Location<World> location) {
         Optional<ICachedWorld> w = this.getWorld(location.getExtent().getUniqueId());
         if (!w.isPresent())
@@ -340,6 +367,7 @@ public class CacheService implements ICacheService {
 
         return getTileEntity(w.get(), location.getBlockX(), location.getBlockY(), location.getBlockZ());
     }
+    @Override
     public Optional<ICachedTileEntity> getTileEntity(ICachedWorld world, int x, int y, int z) {
         return WebAPI.runOnMain(() -> {
             Optional<?> w = world.getLive();
@@ -355,6 +383,7 @@ public class CacheService implements ICacheService {
         });
     }
 
+    @Override
     public Optional<Object> executeMethod(ICachedObject cache, String methodName, Class[] paramTypes, Object[] paramValues) {
         return WebAPI.runOnMain(() -> {
             Optional<?> obj = cache.getLive();
@@ -396,6 +425,7 @@ public class CacheService implements ICacheService {
             }
         });
     }
+    @Override
     public Tuple<Map<String, JsonNode>, Map<String, JsonNode>> getExtraData(ICachedObject cache, String[] reqFields, String[] reqMethods) {
         return WebAPI.runOnMain(() -> {
             Map<String, JsonNode> fields = new HashMap<>();

@@ -1,10 +1,7 @@
 package valandur.webapi.json.serializer.event;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.SerializerProvider;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.event.Event;
-import org.spongepowered.api.event.achievement.GrantAchievementEvent;
 import org.spongepowered.api.event.block.TargetBlockEvent;
 import org.spongepowered.api.event.entity.TargetEntityEvent;
 import org.spongepowered.api.event.entity.living.humanoid.HandInteractEvent;
@@ -15,70 +12,70 @@ import org.spongepowered.api.event.user.TargetUserEvent;
 import org.spongepowered.api.event.world.ExplosionEvent;
 import org.spongepowered.api.event.world.GenerateChunkEvent;
 import org.spongepowered.api.event.world.TargetWorldEvent;
-import valandur.webapi.block.BlockUpdateEvent;
-import valandur.webapi.api.json.WebAPISerializer;
+import valandur.webapi.api.block.IBlockOperationEvent;
+import valandur.webapi.api.json.WebAPIBaseSerializer;
 
 import java.io.IOException;
 
-public class EventSerializer extends WebAPISerializer<Event> {
+public class EventSerializer extends WebAPIBaseSerializer<Event> {
     @Override
-    public void serialize(Event value, JsonGenerator gen, SerializerProvider provider) throws IOException {
-        gen.writeStartObject();
+    public void serialize(Event value) throws IOException {
+        writeStartObject();
 
-        writeField(provider, "class", value.getClass().getName());
+        writeField("class", value.getClass().getName());
 
         if (value instanceof TargetEntityEvent) {
             Entity entity = ((TargetEntityEvent)value).getTargetEntity();
-            writeField(provider, "target", entity);
+            writeField("target", entity);
         } else if (value instanceof TargetUserEvent) {
-            writeField(provider, "target", ((TargetUserEvent)value).getTargetUser());
+            writeField("target", ((TargetUserEvent)value).getTargetUser());
         }
 
         if (value instanceof KickPlayerEvent) {
             String msg = ((KickPlayerEvent)value).getMessage().toPlain();
-            writeField(provider, "message", msg);
+            writeField("message", msg);
         }
 
         if (value instanceof BanUserEvent) {
-            writeField(provider, "ban", ((BanUserEvent)value).getBan());
+            writeField("ban", ((BanUserEvent)value).getBan());
         }
 
-        if (value instanceof GrantAchievementEvent) {
-            writeField(provider, "achievement", ((GrantAchievementEvent)value).getAchievement());
-        }
+        /*if (value instanceof GrantAchievementEvent) {
+            writeField("achievement", ((GrantAchievementEvent)value).getAchievement());
+        }*/
 
         if (value instanceof InteractInventoryEvent) {
-            writeField(provider, "inventory", ((InteractInventoryEvent)value).getTargetInventory());
+            writeField("inventory", ((InteractInventoryEvent)value).getTargetInventory());
         }
 
-        if (value instanceof BlockUpdateEvent) {
-            writeField(provider, "blockUpdate", ((BlockUpdateEvent)value).getBlockUpdate());
+        if (value instanceof IBlockOperationEvent) {
+            writeField("blockUpdate", ((IBlockOperationEvent)value).getBlockOperation());
         }
 
         if (value instanceof GenerateChunkEvent) {
-            writeField(provider, "chunk", ((GenerateChunkEvent)value).getTargetChunk());
+            writeField("chunk", ((GenerateChunkEvent)value).getTargetChunk());
         }
 
         if (value instanceof ExplosionEvent) {
-            writeField(provider, "explosion", ((ExplosionEvent)value).getExplosion());
+            writeField("explosion", ((ExplosionEvent)value).getExplosion());
         }
 
         if (value instanceof TargetWorldEvent) {
-            writeField(provider, "world", ((TargetWorldEvent)value).getTargetWorld());
+            writeField("world", ((TargetWorldEvent)value).getTargetWorld());
         }
 
         if (value instanceof TargetBlockEvent) {
-            writeField(provider, "block", ((TargetBlockEvent)value).getTargetBlock());
+            writeField("block", ((TargetBlockEvent)value).getTargetBlock());
         }
 
         if (value instanceof HandInteractEvent) {
-            writeField(provider, "hand", ((HandInteractEvent)value).getHandType());
+            writeField("hand", ((HandInteractEvent)value).getHandType());
         }
 
         try {
-            writeField(provider, "cause", value.getCause());
+            writeField("cause", value.getCause());
         } catch (AbstractMethodError ignored) {}
 
-        gen.writeEndObject();
+        writeEndObject();
     }
 }

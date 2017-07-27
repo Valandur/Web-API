@@ -1,8 +1,9 @@
 package valandur.webapi.servlet.registry;
 
+import org.eclipse.jetty.http.HttpMethod;
 import org.spongepowered.api.CatalogType;
 import org.spongepowered.api.Sponge;
-import valandur.webapi.api.annotation.WebAPIRoute;
+import valandur.webapi.api.annotation.WebAPIEndpoint;
 import valandur.webapi.api.annotation.WebAPIServlet;
 import valandur.webapi.api.servlet.WebAPIBaseServlet;
 import valandur.webapi.servlet.ServletData;
@@ -13,7 +14,7 @@ import java.util.Collection;
 @WebAPIServlet(basePath = "registry")
 public class RegistryServlet extends WebAPIBaseServlet {
 
-    @WebAPIRoute(method = "GET", path = "/:class", perm = "one")
+    @WebAPIEndpoint(method = HttpMethod.GET, path = "/:class", perm = "one")
     public void getRegistry(ServletData data, String className) {
         try {
             Class type = Class.forName(className);

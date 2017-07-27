@@ -1,27 +1,26 @@
 package valandur.webapi.json.serializer.tileentity;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import valandur.webapi.api.cache.tileentity.CachedTileEntity;
-import valandur.webapi.api.json.WebAPISerializer;
+import valandur.webapi.api.json.WebAPIBaseSerializer;
+import valandur.webapi.cache.tileentity.CachedTileEntity;
 
 import java.io.IOException;
 
-public class CachedTileEntitySerializer extends WebAPISerializer<CachedTileEntity> {
+public class CachedTileEntitySerializer extends WebAPIBaseSerializer<CachedTileEntity> {
     @Override
-    public void serialize(CachedTileEntity value, JsonGenerator gen, SerializerProvider provider) throws IOException {
-        gen.writeStartObject();
+    public void serialize(CachedTileEntity value) throws IOException {
+        writeStartObject();
 
-        writeField(provider, "type", value.getType());
-        writeField(provider, "location", value.getLocation());
-        writeField(provider, "link", value.getLink());
+        writeField("type", value.getType());
+        writeField("location", value.getLocation());
+        writeField("link", value.getLink());
 
-        if (shouldWriteDetails(provider)) {
-            writeField(provider, "inventory", value.getInventory());
+        if (shouldWriteDetails()) {
+            writeField("class", value.getClass().getName());
+            writeField("inventory", value.getInventory());
 
-            writeData(provider, value.getData());
+            writeData(value.getData());
         }
 
-        gen.writeEndObject();
+        writeEndObject();
     }
 }

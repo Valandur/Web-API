@@ -1,24 +1,22 @@
 package valandur.webapi.json.serializer.world;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import valandur.webapi.api.cache.world.CachedWorldBorder;
-import valandur.webapi.api.json.WebAPISerializer;
+import valandur.webapi.api.json.WebAPIBaseSerializer;
+import valandur.webapi.cache.world.CachedWorldBorder;
 
 import java.io.IOException;
 
-public class CachedWorldBorderSerializer extends WebAPISerializer<CachedWorldBorder> {
+public class CachedWorldBorderSerializer extends WebAPIBaseSerializer<CachedWorldBorder> {
     @Override
-    public void serialize(CachedWorldBorder value, JsonGenerator gen, SerializerProvider provider) throws IOException {
-        gen.writeStartObject();
-        writeField(provider, "center", value.getCenter());
-        writeField(provider, "diameter", value.getDiameter());
-        writeField(provider, "damageAmount", value.getDamageAmount());
-        writeField(provider, "damageThreshold", value.getDamageThreshold());
-        writeField(provider, "newDiameter", value.getNewDiameter());
-        writeField(provider, "timeRemaining", value.getTimeRemaining());
-        writeField(provider, "warningDistance", value.getWarningDistance());
-        writeField(provider, "warningTime", value.getWarningTime());
-        gen.writeEndObject();
+    public void serialize(CachedWorldBorder value) throws IOException {
+        writeStartObject();
+        writeField("center", value.getCenter());
+        writeField("diameter", value.getDiameter());
+        writeField("damageAmount", value.getDamageAmount());
+        writeField("damageThreshold", value.getDamageThreshold());
+        writeField("newDiameter", value.getNewDiameter());
+        writeField("timeRemaining", value.getTimeRemaining());
+        writeField("warningDistance", value.getWarningDistance());
+        writeField("warningTime", value.getWarningTime());
+        writeEndObject();
     }
 }

@@ -1,16 +1,14 @@
 package valandur.webapi.json.serializer.misc;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import valandur.webapi.api.json.WebAPISerializer;
+import valandur.webapi.api.json.WebAPIBaseSerializer;
 
 import java.io.IOException;
 
-public class ExceptionSerializer extends WebAPISerializer<Exception> {
+public class ExceptionSerializer extends WebAPIBaseSerializer<Exception> {
     @Override
-    public void serialize(Exception value, JsonGenerator gen, SerializerProvider provider) throws IOException {
-        gen.writeStartObject();
-        writeField(provider, "error", value.getMessage());
-        gen.writeEndObject();
+    public void serialize(Exception value) throws IOException {
+        writeStartObject();
+        writeField("error", value.getMessage());
+        writeEndObject();
     }
 }

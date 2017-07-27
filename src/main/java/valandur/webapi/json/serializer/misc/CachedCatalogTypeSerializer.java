@@ -1,18 +1,16 @@
 package valandur.webapi.json.serializer.misc;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import valandur.webapi.api.cache.misc.CachedCatalogType;
-import valandur.webapi.api.json.WebAPISerializer;
+import valandur.webapi.api.json.WebAPIBaseSerializer;
+import valandur.webapi.cache.misc.CachedCatalogType;
 
 import java.io.IOException;
 
-public class CachedCatalogTypeSerializer extends WebAPISerializer<CachedCatalogType> {
+public class CachedCatalogTypeSerializer extends WebAPIBaseSerializer<CachedCatalogType> {
     @Override
-    public void serialize(CachedCatalogType value, JsonGenerator gen, SerializerProvider provider) throws IOException {
-        gen.writeStartObject();
-        writeField(provider, "id", value.getId());
-        writeField(provider, "name", value.getName());
-        gen.writeEndObject();
+    public void serialize(CachedCatalogType value) throws IOException {
+        writeStartObject();
+        writeField("id", value.getId());
+        writeField("name", value.getName());
+        writeEndObject();
     }
 }

@@ -8,8 +8,8 @@ import org.spongepowered.api.util.Tuple;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.util.TreeNode;
 import valandur.webapi.util.Util;
-import valandur.webapi.api.permission.PermissionStruct;
-import valandur.webapi.api.permission.Permissions;
+import valandur.webapi.permission.PermissionStruct;
+import valandur.webapi.permission.PermissionService;
 import valandur.webapi.user.UserPermission;
 
 import javax.servlet.ServletException;
@@ -26,9 +26,9 @@ public class AuthHandler extends AbstractHandler {
     private static final String defaultKey = "__DEFAULT__";
     private static final String configFileName = "permissions.conf";
 
-    private WebAPI api;
     private ConfigurationLoader loader;
     private ConfigurationNode config;
+    private PermissionService permissionService;
 
     private PermissionStruct defaultPerms;
     private Map<String, PermissionStruct> permMap = new HashMap<>();
@@ -43,7 +43,7 @@ public class AuthHandler extends AbstractHandler {
 
 
     public AuthHandler() {
-        api = WebAPI.getInstance();
+        permissionService = WebAPI.getPermissionService();
     }
 
     public void addTempPerm(String key, UserPermission perms) {
@@ -56,17 +56,17 @@ public class AuthHandler extends AbstractHandler {
         loader = tup.getFirst();
         config = tup.getSecond();
 
-        TreeNode<String, Boolean> defs = Permissions.permissionTreeFromConfig(config.getNode("default", "permissions"));
+        TreeNode<String, Boolean> defs = permissionService.permissionTreeFromConfig(config.getNode("default", "permissions"));
         int defLimit = config.getNode("default", "rateLimit").getInt();
         defaultPerms = new PermissionStruct(defs, defLimit);
 
         for (ConfigurationNode node : config.getNode("keys").getChildrenList()) {
             String key = node.getNode("key").getString();
             if (key == null || key.isEmpty()) {
-                api.getLogger().warn("SKIPPING KEY-PERMISSION MAPPING WITH INVALID KEY");
+                WebAPI.getLogger().warn("SKIPPING KEY-PERMISSION MAPPING WITH INVALID KEY");
                 continue;
             }
-            TreeNode<String, Boolean> perms = Permissions.permissionTreeFromConfig(node.getNode("permissions"));
+            TreeNode<String, Boolean> perms = permissionService.permissionTreeFromConfig(node.getNode("permissions"));
             int rateLimit = node.getNode("rateLimit").getInt();
             permMap.put(key, new PermissionStruct(perms, rateLimit));
         }
@@ -122,12 +122,12 @@ public class AuthHandler extends AbstractHandler {
     public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         String addr = request.getRemoteAddr();
         if (useWhitelist && !whitelist.contains(addr)) {
-            api.getLogger().warn(addr + " is not on whitelist: " + target);
+            WebAPI.getLogger().warn(addr + " is not on whitelist: " + target);
             response.sendError(HttpServletResponse.SC_FORBIDDEN);
             baseRequest.setHandled(true);
             return;
         } else if (useBlacklist && blacklist.contains(addr)) {
-            api.getLogger().warn(addr + " is on blacklist: " + target);
+            WebAPI.getLogger().warn(addr + " is on blacklist: " + target);
             response.sendError(HttpServletResponse.SC_FORBIDDEN);
             baseRequest.setHandled(true);
             return;

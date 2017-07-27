@@ -1,23 +1,21 @@
 package valandur.webapi.json.serializer.command;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import valandur.webapi.api.cache.command.CachedCommandCall;
-import valandur.webapi.api.json.WebAPISerializer;
+import valandur.webapi.api.json.WebAPIBaseSerializer;
+import valandur.webapi.cache.command.CachedCommandCall;
 
 import java.io.IOException;
 
-public class CachedCommandCallSerializer extends WebAPISerializer<CachedCommandCall> {
+public class CachedCommandCallSerializer extends WebAPIBaseSerializer<CachedCommandCall> {
     @Override
-    public void serialize(CachedCommandCall value, JsonGenerator gen, SerializerProvider provider) throws IOException {
-        gen.writeStartObject();
-        writeField(provider, "class", value.getClass().getName());
-        writeField(provider, "timestamp", value.getTimestamp());
-        writeField(provider, "command", value.getCommand());
-        writeField(provider, "cause", value.getCause());
-        writeField(provider, "args", value.getArgs());
-        writeField(provider, "cancelled", value.isCancelled());
-        writeField(provider, "result", value.getResult());
-        gen.writeEndObject();
+    public void serialize(CachedCommandCall value) throws IOException {
+        writeStartObject();
+        writeField("class", value.getClass().getName());
+        writeField("timestamp", value.getTimestamp());
+        writeField("command", value.getCommand());
+        writeField("cause", value.getCause());
+        writeField("args", value.getArgs());
+        writeField("cancelled", value.isCancelled());
+        writeField("result", value.getResult());
+        writeEndObject();
     }
 }

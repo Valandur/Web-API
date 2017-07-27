@@ -1,22 +1,21 @@
 package valandur.webapi.json.serializer.player;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.SerializerProvider;
 import org.spongepowered.api.data.manipulator.mutable.entity.AchievementData;
 import org.spongepowered.api.statistic.achievement.Achievement;
-import valandur.webapi.api.json.WebAPISerializer;
+import valandur.webapi.api.json.WebAPIBaseSerializer;
 
 import java.io.IOException;
 
-public class AchievementDataSerializer extends WebAPISerializer<AchievementData> {
+public class AchievementDataSerializer extends WebAPIBaseSerializer<AchievementData> {
+
     @Override
-    public void serialize(AchievementData value, JsonGenerator gen, SerializerProvider provider) throws IOException {
-        gen.writeStartArray();
+    public void serialize(AchievementData value) throws IOException {
+        writeStartArray();
 
         for (Achievement a : value.achievements().get()) {
-            writeValue(provider, a);
+            writeValue(a);
         }
 
-        gen.writeEndArray();
+        writeEndArray();
     }
 }

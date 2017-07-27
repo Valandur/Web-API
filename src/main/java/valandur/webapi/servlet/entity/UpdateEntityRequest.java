@@ -5,7 +5,7 @@ import com.flowpowered.math.vector.Vector3d;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.event.cause.entity.damage.DamageType;
 import valandur.webapi.WebAPI;
-import valandur.webapi.api.cache.world.CachedWorld;
+import valandur.webapi.api.cache.world.ICachedWorld;
 
 import java.util.Collection;
 import java.util.Optional;
@@ -15,7 +15,7 @@ public class UpdateEntityRequest {
 
     @JsonDeserialize
     private String world;
-    public Optional<CachedWorld> getWorld() {
+    public Optional<ICachedWorld> getWorld() {
         return WebAPI.getCacheService().getWorld(world);
     }
 

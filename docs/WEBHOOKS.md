@@ -273,7 +273,6 @@ The structure of the JSON response should look as follows:
 ```json
 {
     "targets": [ "357427c6-3b91-4ead-aad4-15a3e18e6452", "server" ],
-    "formatting": "CODE",
     "message": "Hello there!"
 }
 ```

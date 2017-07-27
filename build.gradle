@@ -1,6 +1,6 @@
 plugins {
     id "java"
-    id "com.qixalite.spongestart" version "1.6.0"
+    id "com.qixalite.spongestart" version "1.6.2"
     id "ninja.miserable.blossom" version "1.0.1"
     id "com.github.johnrengelman.shadow" version "1.2.4"
 }

@@ -6,8 +6,10 @@ import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 import ninja.leaping.configurate.objectmapping.serialize.TypeSerializer;
 import org.slf4j.Logger;
 import valandur.webapi.WebAPI;
+import valandur.webapi.api.hook.WebAPIBaseFilter;
+import valandur.webapi.api.hook.WebHookHeader;
 import valandur.webapi.api.util.TreeNode;
-import valandur.webapi.api.permission.Permissions;
+import valandur.webapi.permission.PermissionService;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -16,6 +18,7 @@ import java.util.List;
 import java.util.Optional;
 
 public class WebHookSerializer implements TypeSerializer<WebHook> {
+
     @Override
     public WebHook deserialize(TypeToken<?> type, ConfigurationNode value) throws ObjectMappingException {
         Logger logger = WebAPI.getLogger();
@@ -34,7 +37,7 @@ public class WebHookSerializer implements TypeSerializer<WebHook> {
         String filterName = filterBase.getNode("name").getString();
         ConfigurationNode filterConfig = filterBase.getNode("config");
 
-        TreeNode<String, Boolean> permissions = Permissions.permitAllNode();
+        TreeNode<String, Boolean> permissions = PermissionService.permitAllNode();
 
         if (!enabled) {
             logger.info("    -> Disabled");
@@ -56,7 +59,7 @@ public class WebHookSerializer implements TypeSerializer<WebHook> {
             if (value.getNode("permissions").isVirtual()) {
                 logger.warn("    Does not specify 'permissions', defaulting to '*'");
             } else {
-                permissions = Permissions.permissionTreeFromConfig(value.getNode("permissions"));
+                permissions = WebAPI.getPermissionService().permissionTreeFromConfig(value.getNode("permissions"));
             }
         }
 
@@ -64,13 +67,13 @@ public class WebHookSerializer implements TypeSerializer<WebHook> {
 
         if (enabled) {
             if (filterName != null) {
-                Optional<Class<? extends WebHookFilter>> opt = WebAPI.getWebHookService().getFilter(filterName);
+                Optional<Class<? extends WebAPIBaseFilter>> opt = WebAPI.getWebHookService().getFilter(filterName);
                 if (!opt.isPresent()) {
                     logger.warn("    Could not find filter with name '" + filterName + "'");
                 } else {
                     try {
                         Constructor ctor = opt.get().getConstructor(WebHook.class, ConfigurationNode.class);
-                        hook.setFilter((WebHookFilter) ctor.newInstance(hook, filterConfig));
+                        hook.setFilter((WebAPIBaseFilter) ctor.newInstance(hook, filterConfig));
                     } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
                         logger.warn("    Could not setup filter '" + filterName + "': " + e.getMessage());
                     }
@@ -91,6 +94,6 @@ public class WebHookSerializer implements TypeSerializer<WebHook> {
         value.getNode("method").setValue(obj.getMethod());
         value.getNode("dataType").setValue(obj.getDataType());
         value.getNode("details").setValue(obj.includeDetails());
-        Permissions.permissionTreeToConfig(value.getNode("permissions"), obj.getPermissions());
+        WebAPI.getPermissionService().permissionTreeToConfig(value.getNode("permissions"), obj.getPermissions());
     }
 }

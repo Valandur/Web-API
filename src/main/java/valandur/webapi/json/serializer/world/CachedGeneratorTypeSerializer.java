@@ -1,25 +1,23 @@
 package valandur.webapi.json.serializer.world;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import valandur.webapi.api.cache.world.CachedGeneratorType;
-import valandur.webapi.api.json.WebAPISerializer;
+import valandur.webapi.api.json.WebAPIBaseSerializer;
+import valandur.webapi.cache.world.CachedGeneratorType;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-public class CachedGeneratorTypeSerializer extends WebAPISerializer<CachedGeneratorType> {
+public class CachedGeneratorTypeSerializer extends WebAPIBaseSerializer<CachedGeneratorType> {
     @Override
-    public void serialize(CachedGeneratorType value, JsonGenerator gen, SerializerProvider provider) throws IOException {
-        gen.writeStartObject();
-        writeField(provider, "id", value.getId());
-        writeField(provider, "name", value.getName());
+    public void serialize(CachedGeneratorType value) throws IOException {
+        writeStartObject();
+        writeField("id", value.getId());
+        writeField("name", value.getName());
         Map<String, Object> settings = new HashMap<>();
         for (Map.Entry<String, Object> entry : value.getSettings().entrySet()) {
-            writeField(provider, entry.getKey(), entry.getValue());
+            writeField(entry.getKey(), entry.getValue());
         }
-        writeField(provider, "settings", settings);
-        gen.writeEndObject();
+        writeField("settings", settings);
+        writeEndObject();
     }
 }

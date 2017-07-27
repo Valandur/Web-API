@@ -1,8 +1,9 @@
 package valandur.webapi.servlet.plugin;
 
-import valandur.webapi.api.annotation.WebAPIRoute;
+import org.eclipse.jetty.http.HttpMethod;
+import valandur.webapi.api.annotation.WebAPIEndpoint;
 import valandur.webapi.api.annotation.WebAPIServlet;
-import valandur.webapi.api.cache.plugin.CachedPluginContainer;
+import valandur.webapi.api.cache.plugin.ICachedPluginContainer;
 import valandur.webapi.api.servlet.WebAPIBaseServlet;
 import valandur.webapi.servlet.ServletData;
 
@@ -12,15 +13,15 @@ import java.util.Optional;
 @WebAPIServlet(basePath = "plugin")
 public class PluginServlet extends WebAPIBaseServlet {
 
-    @WebAPIRoute(method = "GET", path = "/", perm = "list")
+    @WebAPIEndpoint(method = HttpMethod.GET, path = "/", perm = "list")
     public void getPlugins(ServletData data) {
         data.addJson("ok", true, false);
         data.addJson("plugins", cacheService.getPlugins(), data.getQueryParam("details").isPresent());
     }
 
-    @WebAPIRoute(method = "GET", path = "/:plugin", perm = "one")
+    @WebAPIEndpoint(method = HttpMethod.GET, path = "/:plugin", perm = "one")
     public void getPlugin(ServletData data, String pluginName) {
-        Optional<CachedPluginContainer> plugin = cacheService.getPlugin(pluginName);
+        Optional<ICachedPluginContainer> plugin = cacheService.getPlugin(pluginName);
         if (!plugin.isPresent()) {
             data.sendError(HttpServletResponse.SC_NOT_FOUND, "Plugin with id '" + pluginName + "' could not be found");
             return;

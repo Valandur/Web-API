@@ -1,16 +1,14 @@
 package valandur.webapi.json.serializer.misc;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.SerializerProvider;
 import org.spongepowered.api.CatalogType;
-import valandur.webapi.api.cache.misc.CachedCatalogType;
-import valandur.webapi.api.json.WebAPISerializer;
+import valandur.webapi.api.json.WebAPIBaseSerializer;
+import valandur.webapi.cache.misc.CachedCatalogType;
 
 import java.io.IOException;
 
-public class CatalogTypeSerializer extends WebAPISerializer<CatalogType> {
+public class CatalogTypeSerializer extends WebAPIBaseSerializer<CatalogType> {
     @Override
-    public void serialize(CatalogType value, JsonGenerator gen, SerializerProvider provider) throws IOException {
-        writeValue(provider, new CachedCatalogType(value));
+    public void serialize(CatalogType value) throws IOException {
+        writeValue(new CachedCatalogType(value));
     }
 }

@@ -1,28 +1,26 @@
 package valandur.webapi.json.serializer.plugin;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import valandur.webapi.api.cache.plugin.CachedPluginContainer;
-import valandur.webapi.api.json.WebAPISerializer;
+import valandur.webapi.api.json.WebAPIBaseSerializer;
+import valandur.webapi.cache.plugin.CachedPluginContainer;
 
 import java.io.IOException;
 
-public class CachedPluginContainerSerializer extends WebAPISerializer<CachedPluginContainer> {
+public class CachedPluginContainerSerializer extends WebAPIBaseSerializer<CachedPluginContainer> {
     @Override
-    public void serialize(CachedPluginContainer value, JsonGenerator gen, SerializerProvider provider) throws IOException {
-        gen.writeStartObject();
+    public void serialize(CachedPluginContainer value) throws IOException {
+        writeStartObject();
 
-        writeField(provider, "id", value.getId());
-        writeField(provider, "name", value.getName());
-        writeField(provider, "version", value.getVersion());
+        writeField("id", value.getId());
+        writeField("name", value.getName());
+        writeField("version", value.getVersion());
 
-        if (shouldWriteDetails(provider)) {
-            writeField(provider, "class", value.getClass());
-            writeField(provider, "description", value.getDescription());
-            writeField(provider, "url", value.getUrl());
-            writeField(provider, "authors", value.getAuthors());
+        if (shouldWriteDetails()) {
+            writeField("class", value.getClass());
+            writeField("description", value.getDescription());
+            writeField("url", value.getUrl());
+            writeField("authors", value.getAuthors());
         }
 
-        gen.writeEndObject();
+        writeEndObject();
     }
 }

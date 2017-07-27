@@ -1,7 +1,7 @@
 package valandur.webapi.user;
 
 import valandur.webapi.api.util.TreeNode;
-import valandur.webapi.api.permission.PermissionStruct;
+import valandur.webapi.permission.PermissionStruct;
 
 public class UserPermission {
 

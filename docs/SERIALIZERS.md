@@ -3,7 +3,7 @@ The Web-API turns java objects into json data by using serializers. You can exte
 by writing your own serializers which help convert java objects into sensible json.
 
 ## Guidelines
-> All serializers must extend `valandur.webapi.json.serializer.WebAPISerializer`
+> All serializers must extend `valandur.webapi.json.serializer.WebAPIBaseSerializer`
 which itself extends `com.fasterxml.jackson.databind.ser.std.StdSerializer`
 
 > Serializers must be in the `/webapi/serializers` folder (**NOT** the config folder).
@@ -29,7 +29,7 @@ import valandur.webapi.json.serializer.WebAPISerializer;
 
 import java.io.IOException;
 
-public class ObjectSerializer extends WebAPISerializer<Object> {
+public class ObjectSerializer extends WebAPIBaseSerializer<Object> {
     @Override
     public void serialize(Object value, JsonGenerator gen, SerializerProvider provider) throws IOException {
     }
@@ -40,7 +40,7 @@ In this case the generic parameter is `Object`. This probably not what you want,
 to the class you want to serialize. Don't forget to change the type of the `value` parameter 
 in the `serialize` function as well.
 
-You can find more examples in the [json/serializers](https://github.com/Valandur/Web-API/tree/master/src/main/java/valandur/webapi/json/serializers)
+You can find more examples in the [json/serializer](https://github.com/Valandur/Web-API/tree/master/src/main/java/valandur/webapi/json/serializer)
 folder of the repository.
 
 ## Serializing

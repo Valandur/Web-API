@@ -1,19 +1,14 @@
 package valandur.webapi.hook;
 
+import valandur.webapi.api.hook.IWebHook;
+import valandur.webapi.api.hook.WebAPIBaseFilter;
+import valandur.webapi.api.hook.WebHookHeader;
 import valandur.webapi.api.util.TreeNode;
-import valandur.webapi.api.permission.Permissions;
+import valandur.webapi.permission.PermissionService;
 
 import java.util.List;
 
-public class WebHook {
-
-    public enum WebHookMethod {
-        GET, PUT, POST, DELETE
-    }
-
-    public enum WebHookDataType {
-        JSON, FORM
-    }
+public class WebHook implements IWebHook {
 
     private String address;
     public String getAddress() {
@@ -45,16 +40,16 @@ public class WebHook {
         return details;
     }
 
-    private TreeNode<String, Boolean> permissions = Permissions.emptyNode();
+    private TreeNode<String, Boolean> permissions = PermissionService.emptyNode();
     public TreeNode<String, Boolean> getPermissions() {
         return permissions;
     }
 
-    private WebHookFilter filter;
-    public WebHookFilter getFilter() {
+    private WebAPIBaseFilter filter;
+    public WebAPIBaseFilter getFilter() {
         return filter;
     }
-    public void setFilter(WebHookFilter filter) {
+    public void setFilter(WebAPIBaseFilter filter) {
         this.filter = filter;
     }
 

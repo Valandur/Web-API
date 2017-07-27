@@ -1,6 +1,7 @@
 package valandur.webapi.servlet.map;
 
 import com.flowpowered.math.vector.Vector3i;
+import ninja.leaping.configurate.ConfigurationNode;
 import org.eclipse.jetty.http.HttpMethod;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.annotation.WebAPIEndpoint;
@@ -8,6 +9,7 @@ import valandur.webapi.api.annotation.WebAPIServlet;
 import valandur.webapi.api.servlet.WebAPIBaseServlet;
 import valandur.webapi.cache.world.CachedWorld;
 import valandur.webapi.servlet.ServletData;
+import valandur.webapi.util.Util;
 
 import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletResponse;
@@ -31,46 +33,14 @@ public class MapServlet extends WebAPIBaseServlet {
 
 
     public MapServlet() {
-        biomeColorMap.put("minecraft:ocean", "000070");
-        biomeColorMap.put("minecraft:plains", "8DB360");
-        biomeColorMap.put("minecraft:desert", "FA9418");
-        biomeColorMap.put("minecraft:extreme_hills", "606060");
-        biomeColorMap.put("minecraft:forest", "056621");
-        biomeColorMap.put("minecraft:taiga", "0B6659");
-        biomeColorMap.put("minecraft:swampland", "07F9B2");
-        biomeColorMap.put("minecraft:river", "0000FF");
-        biomeColorMap.put("minecraft:hell", "FF0000");
-        biomeColorMap.put("minecraft:sky", "8080FF");
-        biomeColorMap.put("minecraft:frozen_ocean", "9090A0");
-        biomeColorMap.put("minecraft:frozen_river", "A0A0FF");
-        biomeColorMap.put("minecraft:ice_flats", "FFFFFF");
-        biomeColorMap.put("minecraft:ice_mountains", "A0A0A0");
-        biomeColorMap.put("minecraft:mushroom_island", "FF00FF");
-        biomeColorMap.put("minecraft:mushroom_island_shore", "A000FF");
-        biomeColorMap.put("minecraft:beaches", "FADE55");
-        biomeColorMap.put("minecraft:desert_hills", "D25F12");
-        biomeColorMap.put("minecraft:forest_hills", "22551C");
-        biomeColorMap.put("minecraft:taiga_hills", "163933");
-        biomeColorMap.put("minecraft:smaller_extreme_hills", "72789A");
-        biomeColorMap.put("minecraft:jungle", "537B09");
-        biomeColorMap.put("minecraft:jungle_hills", "2C4205");
-        biomeColorMap.put("minecraft:jungle_edge", "628B17");
-        biomeColorMap.put("minecraft:deep_ocean", "000030");
-        biomeColorMap.put("minecraft:stone_beach", "A2A284");
-        biomeColorMap.put("minecraft:cold_beach", "FAF0C0");
-        biomeColorMap.put("minecraft:birch_forest", "307444");
-        biomeColorMap.put("minecraft:birch_forest_hills", "1F5F32");
-        biomeColorMap.put("minecraft:roofed_forest", "40511A");
-        biomeColorMap.put("minecraft:taiga_cold", "31554A");
-        biomeColorMap.put("minecraft:taiga_cold_hills", "243F36");
-        biomeColorMap.put("minecraft:redwood_taiga", "596651");
-        biomeColorMap.put("minecraft:redwood_taiga_hills", "545F3E");
-        biomeColorMap.put("minecraft:extreme_hills_with_trees", "507050");
-        biomeColorMap.put("minecraft:savanna", "BDB25F");
-        biomeColorMap.put("minecraft:savanna_rock", "A79D64");
-        biomeColorMap.put("minecraft:mesa", "D94515");
-        biomeColorMap.put("minecraft:mesa_rock", "B09765");
-        biomeColorMap.put("minecraft:mesa_clear_rock", "CA8C65");
+        biomeColorMap.clear();
+
+        ConfigurationNode config = Util.loadWithDefaults("map.conf", "defaults/map.conf").getSecond();
+
+        ConfigurationNode biomeColors = config.getNode("biomeColors");
+        for (Map.Entry<Object, ? extends ConfigurationNode> entry : biomeColors.getChildrenMap().entrySet()) {
+            biomeColorMap.put(entry.getKey().toString(), entry.getValue().getString());
+        }
     }
 
     @WebAPIEndpoint(method = HttpMethod.GET, path = "/:world/:x/:z", perm = "map")
@@ -88,6 +58,7 @@ public class MapServlet extends WebAPIBaseServlet {
         if (Files.exists(filePath)) {
             try {
                 Files.copy(filePath, data.getOutputStream());
+                data.setHeader("Cache-Control", "public, max-age=31536000");
                 data.setContentType("image/png");
                 data.setDone();
                 return;
@@ -108,11 +79,14 @@ public class MapServlet extends WebAPIBaseServlet {
 
         for (int i = 0; i < biomes.length; i++) {
             for (int j = 0; j < biomes[i].length; j++) {
-                String biome = biomes[i][j].replace("mutated_", "");
+                String biome = biomes[i][j];
 
                 String hexColor = biomeColorMap.get(biome);
+                if (hexColor == null)
+                    hexColor = biomeColorMap.get(biome.replace("mutated_", ""));
+
                 if (hexColor == null) {
-                    WebAPI.getLogger().info("Unkown biome: " + biome);
+                    WebAPI.getLogger().info("No color for biome: " + biome);
 
                     hexColor = "FFFFFF";
                     biomeColorMap.put(biome, hexColor);
@@ -127,6 +101,7 @@ public class MapServlet extends WebAPIBaseServlet {
             ImageIO.write(img, "PNG", new File(filePath.toString()));
             ImageIO.write(img, "PNG", data.getOutputStream());
 
+            data.setHeader("Cache-Control", "public, max-age=31536000");
             data.setContentType("image/png");
             data.setDone();
         } catch (IOException ignored) {}

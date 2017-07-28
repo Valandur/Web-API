@@ -2,10 +2,23 @@
 WebHook filters are used to filter out events that you don't want to be informed about.
 This is especially useful with events that are triggered very often, such as the INTERACT_BLOCK event.
 
+
+## Table of Contents
+1. [Built-In filters](#builtin)
+    1. [WebAPI-BlockType](#builtin-blocktype)
+    1. [WebAPI-Player](#builtin-player)
+    1. [WebAPI-Item](#builtin-item)
+1. [Custom filters](#custom-filters)
+1. [Filter class methods](#filters-methods)
+
+
+<a name="builtin"></a>
 ## Built-In filters
 The Web-API comes with a few built-in filters that can be used directly in the config file.  
 Currently the following filters are provided:
 
+
+<a name="builtin-blocktype"></a>
 ### WebAPI-BlockType
 This filter only forwards events that implement TargetBlockEvent and the target block has a certain
 block type. The block type(s) can be configured in the options.
@@ -19,6 +32,8 @@ filter {
 }
 ```
 
+
+<a name="builtin-player"></a>
 ### WebAPI-Player
 This filter only forwards events that implement TargetPlayerEvent and target a specific player (either
 specified by UUID or name).
@@ -32,6 +47,8 @@ filter {
 }
 ```
 
+
+<a name="builtin-item"></a>
 ### WebAPI-Item
 This filter only forwards events that implement TargetItemEvent and target a specific type of item
 which can be configured in the options.
@@ -44,6 +61,8 @@ filter {
 }
 ```
 
+
+<a name="custom-filters"></a>
 ## Custom filters
 > All filters must extend `valandur.webapi.hook.WebHookFilter`
 
@@ -103,6 +122,8 @@ With the following hook configuration the hook would only send button presses to
 }
 ```
 
+
+<a name="filter-methods"></a>
 ## Filter class methods
 Your custom filter needs to override one method from the `WebHookFilter` class and provide 
 a static property.

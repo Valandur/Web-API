@@ -64,7 +64,7 @@ default {
     permissions = {
         info = "*"
         player = {
-            get = {
+            one = {
                 "*" = true
                 uuid = false
             }
@@ -124,7 +124,7 @@ which endpoints of the API can be accessed and what data is returned for those e
 permissions = {
     info = "*"
     player = {
-        get = {
+        one = {
             "*" = true
             uuid = false
         }
@@ -146,8 +146,8 @@ The `player` node refers to the *Player* endpoint, which provides information ab
 Since the `player.post` permission node is not set, it is not allowed, and sending `POST`
 requests to this endpoint will yield a `403 - Not allowed` error.
 
-The `player.get` permission is allowed, meaning that accessing the endpoint with a `GET`
-request will return data. Which data is specified through the `get` node. The `*` node means
+The `player.one` permission is allowed, meaning that accessing the endpoint which returns one 
+player will return data. Which data is specified through the `one` node. The `*` node means
 that all data is allowed, but more specific permissions always override the `*` node. So
 in this case, all data *except* the `uuid` will be returned.
 
@@ -207,14 +207,19 @@ Denies access to the `info` node and all sub nodes.
 ### Mixed
 ```yaml
 player {
-  get {
+  one {
     "*" = true
     uuid = false
     location {
       y = false
     }
   }
-  post {
+  list {
+    "*" = false
+    uuid = true
+    link = true
+  }
+  change {
     "." = false
   }
 }
@@ -223,6 +228,7 @@ player {
 Key: `player`  
 Value: `An object mapping keys to permission nodes`  
 
-Allows full access to the `player.get` path, **except** for the `uuid` path and 
+Allows full access to the `player.one` path, **except** for the `uuid` path and 
 the `location.y` path.  
-Denies access to the `player.post` path. This could also be written as: `post = false`
+Allows access to the `list` endpoint, but returning only the `uuid` and `link` field.  
+Denies access to the `player.change` path. This could also be written as: `change = false`

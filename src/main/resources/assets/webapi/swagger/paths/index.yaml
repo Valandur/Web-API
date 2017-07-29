@@ -1,13 +1,9 @@
-/block:
-  $ref: "./block.yaml"
 /block/{world}/{x}/{y}/{z}:
   $ref: "./block_one.yaml"
-/block/{world}/{minX}/{minY}/{minZ}/{maxX}/{maxY}/{maxZ}:
-  $ref: "./block_volume.yaml"
-/block/update:
-  $ref: "./block_update.yaml"
-/block/update/{uuid}:
-  $ref: "./block_update_one.yaml"
+/block/op:
+  $ref: "./block_op.yaml"
+/block/op/{uuid}:
+  $ref: "./block_op_one.yaml"
 
 /class:
   $ref: "./class.yaml"

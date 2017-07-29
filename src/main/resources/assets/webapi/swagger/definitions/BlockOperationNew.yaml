@@ -1,10 +1,17 @@
-title: BlockChange
+title: BlockOperationNew
 type: object
 required:
+  - type
   - world
   - min
   - max
 properties:
+  type:
+    type: string
+    enum:
+      - GET
+      - UPDATE
+    description: The type of action to perform. `GET` to fetch world blocks, `UPDATE` to change world blocks.
   world:
     type: string
     description: |

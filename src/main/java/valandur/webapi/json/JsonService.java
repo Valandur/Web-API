@@ -57,6 +57,7 @@ import valandur.webapi.cache.misc.CachedLocation;
 import valandur.webapi.cache.player.CachedPlayer;
 import valandur.webapi.cache.plugin.CachedPluginContainer;
 import valandur.webapi.cache.tileentity.CachedTileEntity;
+import valandur.webapi.cache.world.CachedChunk;
 import valandur.webapi.cache.world.CachedGeneratorType;
 import valandur.webapi.cache.world.CachedWorld;
 import valandur.webapi.cache.world.CachedWorldBorder;
@@ -199,10 +200,10 @@ public class JsonService implements IJsonService {
         serializers.put(UserPermission.class, new UserPermissionSerializer());
 
         // World
+        serializers.put(CachedChunk.class, new CachedChunkSerializer());
         serializers.put(CachedGeneratorType.class, new CachedGeneratorTypeSerializer());
         serializers.put(CachedWorldBorder.class, new CachedWorldBorderSerializer());
         serializers.put(CachedWorld.class, new CachedWorldSerializer());
-        serializers.put(Chunk.class, new ChunkSerializer());
         serializers.put(Dimension.class, new DimensionSerializer());
         serializers.put(Explosion.class, new ExplosionSerializer());
         serializers.put(GeneratorType.class, new GeneratorTypeSerializer());

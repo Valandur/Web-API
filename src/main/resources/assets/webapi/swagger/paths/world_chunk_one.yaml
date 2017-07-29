@@ -1,0 +1,40 @@
+get:
+  summary: Detailed chunk info
+  description: |
+    Get detailed information about a chunk
+
+    > Required permission: world.chunk.one
+  parameters:
+    - name: uuid
+      in: path
+      type: string
+      description: The uuid of the world.
+      required: true
+    - name: x
+      in: path
+      type: string
+      description: The x-coordinate of the chunk.
+    - name: z
+      in: path
+      type: string
+      description: The z-coordinate of the chunk.
+  tags:
+    - World
+    - Chunk
+  responses:
+    400:
+      $ref: "../responses/400.yaml"
+    403:
+      $ref: "../responses/403.yaml"
+    404:
+      $ref: "../responses/404.yaml"
+    200:
+      description: Detailed chunk info
+      schema:
+        type: object
+        properties:
+          ok:
+            type: boolean
+            description: True if the operation was succesfull, false otherwise.
+          chunk:
+            $ref: "../definitions/ChunkFull.yaml"

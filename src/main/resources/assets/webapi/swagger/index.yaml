@@ -39,6 +39,8 @@ produces:
 tags:
   - name: Block
     description: Get information about blocks and manipulate them.
+  - name: Chunk
+    description: Gets information about chunks, and allow creating new chunks.
   - name: Class
     description: Provides information about the classes loaded on the server.
   - name: Command

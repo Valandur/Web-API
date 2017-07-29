@@ -58,3 +58,8 @@
   $ref: "./world.yaml"
 /world/{uuid}:
   $ref: "./world_one.yaml"
+/world/{uuid}/chunk:
+  $ref: "./world_chunk_list.yaml"
+/world/{uuid}/chunk/{x}/{z}:
+  $ref: "./world_chunk_one.yaml"
+

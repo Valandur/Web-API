@@ -15,11 +15,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-public class CreateOperationRequest {
+import static valandur.webapi.api.block.IBlockOperation.BlockOperationType;
 
-    public enum BlockOperationType {
-        GET, UPDATE,
-    }
+public class CreateOperationRequest {
 
     @JsonDeserialize
     private BlockOperationType type;

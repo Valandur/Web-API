@@ -19,7 +19,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-import static valandur.webapi.servlet.block.CreateOperationRequest.BlockOperationType;
+import static valandur.webapi.api.block.IBlockOperation.*;
 import static valandur.webapi.servlet.block.CreateOperationRequest.BlockStateRequest;
 
 @WebAPIServlet(basePath = "block")
@@ -37,6 +37,12 @@ public class BlockServlet extends WebAPIBaseServlet {
         data.addJson("ok", true, false);
         data.addJson("position", pos, false);
         data.addJson("block", state.get(), true);
+    }
+
+    @WebAPIEndpoint(method = HttpMethod.GET, path = "/op", perm = "op.list")
+    public void getBlockOperations(ServletData data) {
+        data.addJson("ok", true, false);
+        data.addJson("operations", blockService.getBlockOperations(), data.getQueryParam("details").isPresent());
     }
 
     @WebAPIEndpoint(method = HttpMethod.POST, path = "/op", perm = "op.create")
@@ -152,12 +158,6 @@ public class BlockServlet extends WebAPIBaseServlet {
 
         data.addJson("ok", true, false);
         data.addJson("operation", op, false);
-    }
-
-    @WebAPIEndpoint(method = HttpMethod.GET, path = "/op", perm = "op.list")
-    public void getBlockOperations(ServletData data) {
-        data.addJson("ok", true, false);
-        data.addJson("operations", blockService.getBlockOperations(), data.getQueryParam("details").isPresent());
     }
 
     @WebAPIEndpoint(method = HttpMethod.GET, path = "/op/:uuid", perm = "op.one")

@@ -40,7 +40,6 @@ import org.spongepowered.api.util.Tuple;
 import org.spongepowered.api.util.ban.Ban;
 import org.spongepowered.api.world.*;
 import org.spongepowered.api.world.explosion.Explosion;
-import org.spongepowered.api.world.extent.BlockVolume;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.json.IJsonService;
 import valandur.webapi.api.json.WebAPIBaseSerializer;
@@ -65,7 +64,6 @@ import valandur.webapi.command.CommandSource;
 import valandur.webapi.json.serializer.block.BlockOperationSerializer;
 import valandur.webapi.json.serializer.block.BlockSnapshotSerializer;
 import valandur.webapi.json.serializer.block.BlockStateSerializer;
-import valandur.webapi.json.serializer.block.BlockVolumeSerializer;
 import valandur.webapi.json.serializer.chat.CachedChatMessageSerializer;
 import valandur.webapi.json.serializer.command.CachedCommandCallSerializer;
 import valandur.webapi.json.serializer.command.CachedCommandResultSerializer;
@@ -116,7 +114,6 @@ public class JsonService implements IJsonService {
         serializers.put(BlockSnapshot.class, new BlockSnapshotSerializer());
         serializers.put(BlockState.class, new BlockStateSerializer());
         serializers.put(BlockOperation.class, new BlockOperationSerializer());
-        serializers.put(BlockVolume.class, new BlockVolumeSerializer());
 
         // Chat
         serializers.put(CachedChatMessage.class, new CachedChatMessageSerializer());

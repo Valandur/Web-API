@@ -12,12 +12,25 @@ import java.util.UUID;
 public interface IBlockOperation {
 
     /**
+     * The type of block operation
+     */
+    enum BlockOperationType {
+        GET, UPDATE,
+    }
+
+    /**
      * The current status of the update.
      */
     enum BlockOperationStatus {
         INIT, RUNNING, PAUSED, DONE, ERRORED,
     }
 
+
+    /**
+     * Gets the type of block operation.
+     * @return The type of block operation.
+     */
+    BlockOperationType getType();
 
     /**
      * Gets the minimum block belonging to this operation.

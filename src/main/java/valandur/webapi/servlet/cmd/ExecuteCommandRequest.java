@@ -13,24 +13,24 @@ public class ExecuteCommandRequest {
     @JsonDeserialize
     private String name;
     public String getName() {
-        return name;
+        return name != null ? name : "Web-API";
     }
 
     @JsonDeserialize
     private Integer waitTime;
     public Integer getWaitTime() {
-        return waitTime;
+        return waitTime != null ? waitTime : CmdServlet.CMD_WAIT_TIME;
     }
 
     @JsonDeserialize
     private Integer waitLines;
     public Integer getWaitLines() {
-        return waitLines;
+        return waitLines != null ? waitLines : 0;
     }
 
     @JsonDeserialize
-    private boolean hideInConsole;
-    public boolean isHiddenInConsole() {
-        return hideInConsole;
+    private Boolean hideInConsole;
+    public Boolean isHiddenInConsole() {
+        return hideInConsole != null ? hideInConsole : false;
     }
 }

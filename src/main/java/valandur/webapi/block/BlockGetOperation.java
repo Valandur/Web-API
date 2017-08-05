@@ -11,6 +11,11 @@ public class BlockGetOperation extends BlockOperation implements IBlockGetOperat
     private BlockState[][][] blockStates;
 
     @Override
+    public String getType() {
+        return "Get";
+    }
+
+    @Override
     public BlockState[][][] getBlocks() {
         return blockStates;
     }

@@ -19,6 +19,10 @@ import static valandur.webapi.api.block.IBlockOperation.BlockOperationType;
 
 public class CreateOperationRequest {
 
+    public enum BlockOperationType {
+        GET, CHANGE,
+    }
+
     @JsonDeserialize
     private BlockOperationType type;
     public BlockOperationType getType() {
@@ -81,38 +85,40 @@ public class CreateOperationRequest {
             BlockState state = type.getDefaultState();
             Collection<BlockTrait<?>> traits = type.getTraits();
 
-            for (Map.Entry<String, JsonNode> entry : data.entrySet()) {
-                Optional<BlockTrait<?>> optTrait = traits.stream().filter(t ->
-                        t.getName().equalsIgnoreCase(entry.getKey())
-                ).findAny();
+            if (data != null) {
+                for (Map.Entry<String, JsonNode> entry : data.entrySet()) {
+                    Optional<BlockTrait<?>> optTrait = traits.stream().filter(t ->
+                            t.getName().equalsIgnoreCase(entry.getKey())
+                    ).findAny();
 
-                if (!optTrait.isPresent())
-                    throw new Exception("Unknown trait '" + entry.getKey() + "'");
+                    if (!optTrait.isPresent())
+                        throw new Exception("Unknown trait '" + entry.getKey() + "'");
 
-                BlockTrait trait = optTrait.get();
-                Object value = null;
+                    BlockTrait trait = optTrait.get();
+                    Object value = null;
 
-                JsonNode nodeValue = entry.getValue();
-                if (nodeValue.isBoolean()) {
-                    value = nodeValue.asBoolean();
-                } else if (nodeValue.isInt()) {
-                    value = nodeValue.asInt();
-                } else if (nodeValue.isTextual()) {
-                    Collection<?> values = trait.getPossibleValues();
-                    Optional<?> val = values.stream().filter(v -> v.toString().equalsIgnoreCase(nodeValue.asText())).findAny();
-                    if (!val.isPresent()) {
-                        String allowedValues = values.stream().map(Object::toString).collect(Collectors.joining(", "));
-                        throw new Exception("Trait '" + trait.getName() + "' has value '" + nodeValue.asText() + "' but can only have one of: " + allowedValues);
-                    } else {
-                        value = val.get();
+                    JsonNode nodeValue = entry.getValue();
+                    if (nodeValue.isBoolean()) {
+                        value = nodeValue.asBoolean();
+                    } else if (nodeValue.isInt()) {
+                        value = nodeValue.asInt();
+                    } else if (nodeValue.isTextual()) {
+                        Collection<?> values = trait.getPossibleValues();
+                        Optional<?> val = values.stream().filter(v -> v.toString().equalsIgnoreCase(nodeValue.asText())).findAny();
+                        if (!val.isPresent()) {
+                            String allowedValues = values.stream().map(Object::toString).collect(Collectors.joining(", "));
+                            throw new Exception("Trait '" + trait.getName() + "' has value '" + nodeValue.asText() + "' but can only have one of: " + allowedValues);
+                        } else {
+                            value = val.get();
+                        }
                     }
+
+                    Optional<BlockState> newState = state.withTrait(trait, value);
+                    if (!newState.isPresent())
+                        throw new Exception("Could not apply trait '" + trait.getName() + " to block state");
+
+                    state = newState.get();
                 }
-
-                Optional<BlockState> newState = state.withTrait(trait, value);
-                if (!newState.isPresent())
-                    throw new Exception("Could not apply trait '" + trait.getName() + " to block state");
-
-                state = newState.get();
             }
 
             return state;

@@ -12,6 +12,7 @@ public class BlockOperationSerializer extends WebAPIBaseSerializer<BlockOperatio
     public void serialize(BlockOperation value) throws IOException {
         writeStartObject();
 
+        writeField("type", value.getType());
         writeField("uuid", value.getUUID());
         writeField("type", value.getType().toString());
         writeField("status", value.getStatus().toString());

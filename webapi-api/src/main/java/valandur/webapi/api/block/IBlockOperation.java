@@ -25,6 +25,11 @@ public interface IBlockOperation {
         INIT, RUNNING, PAUSED, DONE, ERRORED,
     }
 
+    /**
+     * Returns the type of block operation.
+     * @return The type of block operation.
+     */
+    String getType();
 
     /**
      * Gets the type of block operation.

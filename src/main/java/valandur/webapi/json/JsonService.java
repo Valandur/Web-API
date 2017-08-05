@@ -76,6 +76,7 @@ import valandur.webapi.json.serializer.message.MessageResponseSerializer;
 import valandur.webapi.json.serializer.misc.*;
 import valandur.webapi.json.serializer.player.*;
 import valandur.webapi.json.serializer.plugin.CachedPluginContainerSerializer;
+import valandur.webapi.json.serializer.plugin.CachedPluginDependencySerializer;
 import valandur.webapi.json.serializer.plugin.PluginContainerSerializer;
 import valandur.webapi.json.serializer.server.ServerStatSerializer;
 import valandur.webapi.json.serializer.tileentity.*;
@@ -83,6 +84,7 @@ import valandur.webapi.json.serializer.user.UserPermissionSerializer;
 import valandur.webapi.json.serializer.world.*;
 import valandur.webapi.message.MessageResponse;
 import valandur.webapi.server.ServerStat;
+import valandur.webapi.servlet.plugin.CachedPluginDependency;
 import valandur.webapi.user.UserPermission;
 import valandur.webapi.util.Util;
 
@@ -180,6 +182,7 @@ public class JsonService implements IJsonService {
 
         // Plugin
         serializers.put(CachedPluginContainer.class, new CachedPluginContainerSerializer());
+        serializers.put(CachedPluginDependency.class, new CachedPluginDependencySerializer());
         serializers.put(PluginContainer.class, new PluginContainerSerializer());
 
         // Server

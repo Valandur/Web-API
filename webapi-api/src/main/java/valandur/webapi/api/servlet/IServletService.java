@@ -1,5 +1,7 @@
 package valandur.webapi.api.servlet;
 
+import java.util.Map;
+
 /**
  * This service allows registering servlets with the Web-API, which it will serve for clients.
  * Your servlet must inherit from {@link WebAPIBaseServlet} and have the
@@ -14,4 +16,10 @@ public interface IServletService {
      *                sure to provide an empty constructor.
      */
     void registerServlet(Class<? extends WebAPIBaseServlet> servlet);
+
+    /**
+     * Gets a map of all available base paths mapped to the servlets that implement them.
+     * @return A map from base path to implementing servlet class.
+     */
+    Map<String, Class<? extends WebAPIBaseServlet>> getLoadedServlets();
 }

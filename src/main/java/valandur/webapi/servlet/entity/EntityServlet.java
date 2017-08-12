@@ -138,9 +138,9 @@ public class EntityServlet extends WebAPIBaseServlet {
         ICachedEntity entity = cacheService.updateEntity(resEntity.get());
 
         data.setStatus(HttpServletResponse.SC_CREATED);
+        data.setHeader("Location", entity.getLink());
         data.addJson("ok", true, false);
         data.addJson("entity", entity, true);
-        data.setHeader("Location", entity.getLink());
     }
 
     @WebAPIEndpoint(method = HttpMethod.POST, path = "/:entity/method", perm = "method")

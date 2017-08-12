@@ -68,6 +68,7 @@ import valandur.webapi.handler.RateLimitHandler;
 import valandur.webapi.hook.WebHook;
 import valandur.webapi.hook.WebHookSerializer;
 import valandur.webapi.hook.WebHookService;
+import valandur.webapi.integration.nucleus.NucleusServlet;
 import valandur.webapi.json.JsonService;
 import valandur.webapi.message.MessageService;
 import valandur.webapi.permission.PermissionService;
@@ -80,12 +81,14 @@ import valandur.webapi.servlet.cmd.CmdServlet;
 import valandur.webapi.servlet.entity.EntityServlet;
 import valandur.webapi.servlet.history.HistoryServlet;
 import valandur.webapi.servlet.info.InfoServlet;
+import valandur.webapi.integration.huskycrates.HuskyCratesServlet;
 import valandur.webapi.servlet.map.MapServlet;
 import valandur.webapi.servlet.message.MessageServlet;
 import valandur.webapi.servlet.player.PlayerServlet;
 import valandur.webapi.servlet.plugin.PluginServlet;
 import valandur.webapi.servlet.recipe.RecipeServlet;
 import valandur.webapi.servlet.registry.RegistryServlet;
+import valandur.webapi.servlet.servlet.ServletServlet;
 import valandur.webapi.servlet.tileentity.TileEntityServlet;
 import valandur.webapi.servlet.user.UserServlet;
 import valandur.webapi.servlet.world.WorldServlet;
@@ -276,9 +279,6 @@ public class WebAPI {
         // Create permission handler
         authHandler = new AuthHandler();
 
-        // Main init function, that is also called when reloading the plugin
-        init(null);
-
         Reflections.log = null;
         this.reflections = new Reflections();
 
@@ -295,9 +295,24 @@ public class WebAPI {
         servletService.registerServlet(PluginServlet.class);
         servletService.registerServlet(RecipeServlet.class);
         servletService.registerServlet(RegistryServlet.class);
+        servletService.registerServlet(ServletServlet.class);
         servletService.registerServlet(TileEntityServlet.class);
         servletService.registerServlet(UserServlet.class);
         servletService.registerServlet(WorldServlet.class);
+
+        // Other plugin integrations
+        try {
+            Class.forName("com.codehusky.huskycrates.HuskyCrates");
+            servletService.registerServlet(HuskyCratesServlet.class);
+        } catch (ClassNotFoundException ignored) { }
+
+        try {
+            Class.forName("io.github.nucleuspowered.nucleus.api.NucleusAPI");
+            servletService.registerServlet(NucleusServlet.class);
+        } catch (ClassNotFoundException ignored) { }
+
+        // Main init function, that is also called when reloading the plugin
+        init(null);
 
         logger.info(WebAPI.NAME + " ready");
     }

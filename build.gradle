@@ -17,6 +17,9 @@ allprojects {
         maven {
             url "https://repo.spongepowered.org/maven/"
         }
+        maven {
+            url "http://repo.drnaylor.co.uk/artifactory/list/minecraft"
+        }
     }
 
     dependencies {
@@ -44,6 +47,9 @@ dependencies {
     compile project(":webapi-api")
     compile group: "org.reflections", name: "reflections", version: "0.9.10"
     compile group: "org.mindrot", name: "jbcrypt", version: "0.4"
+
+    compileOnly group: "io.github.nucleuspowered", name: "nucleus-api", version: "1.1.0-SNAPSHOT-S6.0"
+    compileOnly fileTree(dir: "lib", include: "*.jar")
 }
 
 shadowJar {
@@ -67,9 +73,9 @@ shadowJar {
 }
 shadowJar.dependsOn([':webapi-api:build'])
 
-task copyJars(type: Copy, dependsOn: ':webapi-api:build') {
+task copyJars(type: Copy, dependsOn: ":webapi-api:build") {
     from([subprojects.jar, shadowJar])
-    into project.file('artifacts')
+    into project.file("artifacts")
 }
 
 artifacts {

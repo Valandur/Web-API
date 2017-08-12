@@ -8,10 +8,11 @@ import valandur.webapi.api.annotation.WebAPIEndpoint;
 import valandur.webapi.api.annotation.WebAPIServlet;
 import valandur.webapi.api.block.IBlockOperation;
 import valandur.webapi.api.servlet.WebAPIBaseServlet;
-import valandur.webapi.block.BlockGetOperation;
 import valandur.webapi.block.BlockChangeOperation;
+import valandur.webapi.block.BlockGetOperation;
 import valandur.webapi.cache.world.CachedWorld;
 import valandur.webapi.servlet.ServletData;
+import valandur.webapi.servlet.block.CreateOperationRequest.BlockOperationType;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.HashMap;
@@ -19,7 +20,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-import static valandur.webapi.api.block.IBlockOperation.*;
 import static valandur.webapi.servlet.block.CreateOperationRequest.BlockStateRequest;
 
 @WebAPIServlet(basePath = "block")

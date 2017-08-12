@@ -27,6 +27,7 @@ import org.spongepowered.api.event.achievement.GrantAchievementEvent;
 import org.spongepowered.api.event.block.InteractBlockEvent;
 import org.spongepowered.api.event.command.SendCommandEvent;
 import org.spongepowered.api.event.entity.DestructEntityEvent;
+import org.spongepowered.api.event.entity.ExpireEntityEvent;
 import org.spongepowered.api.event.entity.SpawnEntityEvent;
 import org.spongepowered.api.event.entity.living.humanoid.player.KickPlayerEvent;
 import org.spongepowered.api.event.filter.cause.First;
@@ -46,18 +47,18 @@ import org.spongepowered.api.util.Tuple;
 import valandur.webapi.api.block.IBlockService;
 import valandur.webapi.api.cache.ICacheService;
 import valandur.webapi.api.extension.IExtensionService;
-import valandur.webapi.api.server.IServerService;
-import valandur.webapi.cache.chat.CachedChatMessage;
-import valandur.webapi.cache.command.CachedCommandCall;
 import valandur.webapi.api.hook.IWebHookService;
 import valandur.webapi.api.json.IJsonService;
 import valandur.webapi.api.message.IMessageService;
 import valandur.webapi.api.permission.IPermissionService;
+import valandur.webapi.api.server.IServerService;
 import valandur.webapi.api.servlet.IServletService;
-import valandur.webapi.block.BlockService;
 import valandur.webapi.block.BlockOperation;
 import valandur.webapi.block.BlockOperationStatusChangeEvent;
+import valandur.webapi.block.BlockService;
 import valandur.webapi.cache.CacheService;
+import valandur.webapi.cache.chat.CachedChatMessage;
+import valandur.webapi.cache.command.CachedCommandCall;
 import valandur.webapi.command.CommandRegistry;
 import valandur.webapi.command.CommandSource;
 import valandur.webapi.extension.ExtensionService;
@@ -68,6 +69,7 @@ import valandur.webapi.handler.RateLimitHandler;
 import valandur.webapi.hook.WebHook;
 import valandur.webapi.hook.WebHookSerializer;
 import valandur.webapi.hook.WebHookService;
+import valandur.webapi.integration.huskycrates.HuskyCratesServlet;
 import valandur.webapi.integration.nucleus.NucleusServlet;
 import valandur.webapi.json.JsonService;
 import valandur.webapi.message.MessageService;
@@ -81,7 +83,6 @@ import valandur.webapi.servlet.cmd.CmdServlet;
 import valandur.webapi.servlet.entity.EntityServlet;
 import valandur.webapi.servlet.history.HistoryServlet;
 import valandur.webapi.servlet.info.InfoServlet;
-import valandur.webapi.integration.huskycrates.HuskyCratesServlet;
 import valandur.webapi.servlet.map.MapServlet;
 import valandur.webapi.servlet.message.MessageServlet;
 import valandur.webapi.servlet.player.PlayerServlet;
@@ -591,6 +592,10 @@ public class WebAPI {
         if (ent instanceof Player) {
             webHookService.notifyHooks(WebHookService.WebHookType.PLAYER_DEATH, event);
         }
+    }
+    @Listener(order = Order.POST)
+    public void onEntityExpire(ExpireEntityEvent event) {
+        cacheService.removeEntity(event.getTargetEntity().getUniqueId());
     }
 
     @Listener(order = Order.POST)

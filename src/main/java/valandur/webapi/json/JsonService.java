@@ -28,6 +28,7 @@ import org.spongepowered.api.data.manipulator.mutable.tileentity.SignData;
 import org.spongepowered.api.effect.potion.PotionEffect;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.living.player.Player;
+import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.Event;
 import org.spongepowered.api.event.cause.Cause;
 import org.spongepowered.api.item.inventory.ItemStack;
@@ -179,6 +180,7 @@ public class JsonService implements IJsonService {
         serializers.put(JoinData.class, new JoinDataSerializer());
         serializers.put(Player.class, new PlayerSerializer());
         serializers.put(StatisticData.class, new StatisticDataSerializer());
+        serializers.put(User.class, new UserSerializer());
 
         // Plugin
         serializers.put(CachedPluginContainer.class, new CachedPluginContainerSerializer());
@@ -267,7 +269,7 @@ public class JsonService implements IJsonService {
     }
 
     @Override
-    public <T> void registerSerializer(Class<T> clazz, Class<WebAPIBaseSerializer<T>> serializer) {
+    public <T> void registerSerializer(Class<T> clazz, Class<? extends WebAPIBaseSerializer<T>> serializer) {
         registeredSerializers.put(clazz, serializer);
     }
 

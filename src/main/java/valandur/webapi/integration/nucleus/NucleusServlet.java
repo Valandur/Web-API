@@ -2,6 +2,7 @@ package valandur.webapi.integration.nucleus;
 
 import io.github.nucleuspowered.nucleus.api.NucleusAPI;
 import io.github.nucleuspowered.nucleus.api.nucleusdata.Home;
+import io.github.nucleuspowered.nucleus.api.nucleusdata.Kit;
 import io.github.nucleuspowered.nucleus.api.nucleusdata.NamedLocation;
 import io.github.nucleuspowered.nucleus.api.service.NucleusHomeService;
 import io.github.nucleuspowered.nucleus.api.service.NucleusJailService;
@@ -68,7 +69,7 @@ public class NucleusServlet extends WebAPIBaseServlet {
     }
 
     @WebAPIEndpoint(method = HttpMethod.POST, path = "jail", perm = "jail.create")
-    public void addJail(ServletData data) {
+    public void createJail(ServletData data) {
         Optional<NucleusJailService> optSrv = NucleusAPI.getJailService();
         if (!optSrv.isPresent()) {
             data.sendError(HttpServletResponse.SC_NOT_FOUND, "Nuclues jail service not available");
@@ -112,7 +113,7 @@ public class NucleusServlet extends WebAPIBaseServlet {
 
         data.setStatus(HttpServletResponse.SC_CREATED);
         data.addJson("ok", true, false);
-        data.addJson("jail", resJail.get(), data.getQueryParam("details").isPresent());
+        data.addJson("jail", resJail.get(), true);
     }
 
     @WebAPIEndpoint(method = HttpMethod.PUT, path = "jail/:name", perm = "jail.change")
@@ -121,7 +122,7 @@ public class NucleusServlet extends WebAPIBaseServlet {
     }
 
     @WebAPIEndpoint(method = HttpMethod.DELETE, path = "jail/:name", perm = "jail.delete")
-    public void removeJail(ServletData data, String name) {
+    public void deleteJail(ServletData data, String name) {
         Optional<NucleusJailService> optSrv = NucleusAPI.getJailService();
         if (!optSrv.isPresent()) {
             data.sendError(HttpServletResponse.SC_NOT_FOUND, "Nuclues jail service not available");
@@ -159,6 +160,90 @@ public class NucleusServlet extends WebAPIBaseServlet {
 
         data.addJson("ok", true, false);
         data.addJson("kits", kits, data.getQueryParam("details").isPresent());
+    }
+
+    @WebAPIEndpoint(method = HttpMethod.GET, path = "kit/:name", perm = "kit.one")
+    public void getKit(ServletData data, String name) {
+        Optional<NucleusKitService> optSrv = NucleusAPI.getKitService();
+        if (!optSrv.isPresent()) {
+            data.sendError(HttpServletResponse.SC_NOT_FOUND, "Nuclues kit service not available");
+            return;
+        }
+
+        NucleusKitService srv = optSrv.get();
+        Optional<Kit> optKit = srv.getKit(name);
+        if (!optKit.isPresent()) {
+            data.sendError(HttpServletResponse.SC_NOT_FOUND, "Kit not found");
+            return;
+        }
+
+        data.addJson("ok", true, false);
+        data.addJson("kit", new CachedKit(name, optKit.get()), true);
+    }
+
+    @WebAPIEndpoint(method = HttpMethod.POST, path = "kit", perm = "kit.create")
+    public void createKit(ServletData data) {
+        Optional<NucleusKitService> optSrv = NucleusAPI.getKitService();
+        if (!optSrv.isPresent()) {
+            data.sendError(HttpServletResponse.SC_NOT_FOUND, "Nuclues kit service not available");
+            return;
+        }
+
+        NucleusKitService srv = optSrv.get();
+
+        Optional<CreateKitRequest> optReq = data.getRequestBody(CreateKitRequest.class);
+        if (!optReq.isPresent()) {
+            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid kit data: " + data.getLastParseError().getMessage());
+            return;
+        }
+
+        CreateKitRequest req = optReq.get();
+
+        if (req.getName().isEmpty()) {
+            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid kit name");
+            return;
+        }
+
+        Optional<Kit> resKit = WebAPI.runOnMain(() -> {
+            Kit kit = srv.createKit();
+            kit.setCost(req.getCost());
+            kit.setInterval(req.getInterval());
+            kit.setStacks(req.getStacks());
+            kit.setCommands(req.getCommands());
+            srv.saveKit(req.getName(), kit);
+            return kit;
+        });
+
+        if (!resKit.isPresent()) {
+            data.addJson("ok", false, false);
+            return;
+        }
+
+        data.setStatus(HttpServletResponse.SC_CREATED);
+        data.addJson("ok", true, false);
+        data.addJson("kit", new CachedKit(req.getName(), resKit.get()), true);
+    }
+
+    @WebAPIEndpoint(method = HttpMethod.DELETE, path = "kit/:name", perm = "kit.delete")
+    public void deleteKit(ServletData data, String name) {
+        Optional<NucleusKitService> optSrv = NucleusAPI.getKitService();
+        if (!optSrv.isPresent()) {
+            data.sendError(HttpServletResponse.SC_NOT_FOUND, "Nuclues kit service not available");
+            return;
+        }
+
+        NucleusKitService srv = optSrv.get();
+
+        Optional<Kit> optKit = srv.getKit(name);
+        if (!optKit.isPresent()) {
+            data.sendError(HttpServletResponse.SC_NOT_FOUND, "Kit not found");
+            return;
+        }
+
+        srv.removeKit(name);
+
+        data.addJson("ok", true, false);
+        data.addJson("kit", new CachedKit(name, optKit.get()), true);
     }
 
 

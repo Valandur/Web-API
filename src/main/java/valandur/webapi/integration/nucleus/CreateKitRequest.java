@@ -17,7 +17,7 @@ public class CreateKitRequest {
     @JsonDeserialize
     private String name;
     public String getName() {
-        return name;
+        return name != null ? name : "";
     }
 
     @JsonDeserialize

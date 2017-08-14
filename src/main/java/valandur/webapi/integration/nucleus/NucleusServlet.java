@@ -7,7 +7,9 @@ import io.github.nucleuspowered.nucleus.api.nucleusdata.NamedLocation;
 import io.github.nucleuspowered.nucleus.api.service.NucleusHomeService;
 import io.github.nucleuspowered.nucleus.api.service.NucleusJailService;
 import io.github.nucleuspowered.nucleus.api.service.NucleusKitService;
+import io.github.nucleuspowered.nucleus.api.service.NucleusServerShopService;
 import org.eclipse.jetty.http.HttpMethod;
+import org.spongepowered.api.CatalogType;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 import valandur.webapi.WebAPI;
@@ -18,10 +20,7 @@ import valandur.webapi.json.JsonService;
 import valandur.webapi.servlet.ServletData;
 
 import javax.servlet.http.HttpServletResponse;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @WebAPIServlet(basePath = "nucleus")
 public class NucleusServlet extends WebAPIBaseServlet {
@@ -224,6 +223,11 @@ public class NucleusServlet extends WebAPIBaseServlet {
         data.addJson("kit", new CachedKit(req.getName(), resKit.get()), true);
     }
 
+    @WebAPIEndpoint(method = HttpMethod.PUT, path = "kit/:name", perm = "kit.change")
+    public void changeKit(ServletData data, String name) {
+
+    }
+
     @WebAPIEndpoint(method = HttpMethod.DELETE, path = "kit/:name", perm = "kit.delete")
     public void deleteKit(ServletData data, String name) {
         Optional<NucleusKitService> optSrv = NucleusAPI.getKitService();
@@ -260,5 +264,31 @@ public class NucleusServlet extends WebAPIBaseServlet {
 
         data.addJson("ok", true, false);
         data.addJson("homes", homes, data.getQueryParam("details").isPresent());
+    }
+
+
+    @WebAPIEndpoint(method = HttpMethod.GET, path = "shop", perm = "shop.list")
+    public void getShops(ServletData data) {
+        Optional<NucleusServerShopService> optSrv = NucleusAPI.getServerShopService();
+        if (!optSrv.isPresent()) {
+            data.sendError(HttpServletResponse.SC_NOT_FOUND, "Nuclues server shop service not available");
+            return;
+        }
+
+        NucleusServerShopService srv = optSrv.get();
+
+        Map<String, Double> buyPrices = new HashMap<>();
+        for (Map.Entry<CatalogType, Double> entry : srv.getBuyPrices().entrySet()) {
+            buyPrices.put(entry.getKey().getId(), entry.getValue());
+        }
+
+        Map<String, Double> sellPrices = new HashMap<>();
+        for (Map.Entry<CatalogType, Double> entry : srv.getSellPrices().entrySet()) {
+            sellPrices.put(entry.getKey().getId(), entry.getValue());
+        }
+
+        data.addJson("ok", true, false);
+        data.addJson("buy", buyPrices, true);
+        data.addJson("sell", sellPrices, true);
     }
 }

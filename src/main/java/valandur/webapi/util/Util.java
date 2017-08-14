@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.flowpowered.math.vector.Vector3d;
 import com.flowpowered.math.vector.Vector3i;
+import io.sentry.Sentry;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
@@ -67,6 +68,7 @@ public class Util {
 
         } catch (IOException | NoSuchElementException e) {
             e.printStackTrace();
+            if (WebAPI.reportErrors()) Sentry.capture(e);
             return null;
         }
     }

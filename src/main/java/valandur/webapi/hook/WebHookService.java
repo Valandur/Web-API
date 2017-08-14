@@ -2,6 +2,7 @@ package valandur.webapi.hook;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.reflect.TypeToken;
+import io.sentry.Sentry;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
 import ninja.leaping.configurate.objectmapping.ObjectMappingException;
@@ -142,6 +143,7 @@ public class WebHookService implements IWebHookService {
             }
         } catch (ObjectMappingException | ClassNotFoundException e) {
             e.printStackTrace();
+            if (WebAPI.reportErrors()) Sentry.capture(e);
         }
     }
 
@@ -192,6 +194,7 @@ public class WebHookService implements IWebHookService {
                 stringData = hook.getDataType() == WebHook.WebHookDataType.JSON ? stringData : "body=" + URLEncoder.encode(stringData, "UTF-8");
             } catch (Exception e) {
                 e.printStackTrace();
+                if (WebAPI.reportErrors()) Sentry.capture(e);
             }
         }
         final String finalData = stringData;

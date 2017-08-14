@@ -2,9 +2,11 @@ package valandur.webapi;
 
 import com.google.common.reflect.TypeToken;
 import com.google.inject.Inject;
+import io.sentry.Sentry;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
 import ninja.leaping.configurate.objectmapping.serialize.TypeSerializers;
+import org.bstats.sponge.Metrics;
 import org.eclipse.jetty.http.HttpVersion;
 import org.eclipse.jetty.server.*;
 import org.eclipse.jetty.server.handler.ContextHandler;
@@ -150,6 +152,9 @@ public class WebAPI {
     }
 
     @Inject
+    private Metrics metrics;
+
+    @Inject
     private Logger logger;
     public static Logger getLogger() {
         return WebAPI.getInstance().logger;
@@ -166,6 +171,11 @@ public class WebAPI {
     private PluginContainer container;
     public static PluginContainer getContainer() {
         return WebAPI.getInstance().container;
+    }
+
+    private boolean reportErrors;
+    public static boolean reportErrors() {
+        return WebAPI.getInstance().reportErrors;
     }
 
     private String serverHost;
@@ -226,6 +236,9 @@ public class WebAPI {
     }
 
 
+    public WebAPI() {
+        Sentry.init();
+    }
 
     @Listener
     public void onPreInitialization(GamePreInitializationEvent event) {
@@ -237,6 +250,7 @@ public class WebAPI {
                 Files.createDirectories(configPath);
             } catch (IOException e) {
                 e.printStackTrace();
+                if (WebAPI.reportErrors()) Sentry.capture(e);
             }
         }
 
@@ -332,6 +346,7 @@ public class WebAPI {
         ConfigurationNode config = tup.getSecond();
 
         devMode = config.getNode("devMode").getBoolean();
+        reportErrors = config.getNode("reportErrors").getBoolean();
         serverHost = config.getNode("host").getString();
         serverPortHttp = config.getNode("http").getInt(-1);
         serverPortHttps = config.getNode("https").getInt(-1);
@@ -479,6 +494,7 @@ public class WebAPI {
             logger.info("API Docs: " + baseUri + "/docs");
         } catch (Exception e) {
             e.printStackTrace();
+            Sentry.capture(e);
         }
 
         if (player != null) {
@@ -492,6 +508,7 @@ public class WebAPI {
                 server = null;
             } catch (Exception e) {
                 e.printStackTrace();
+                if (WebAPI.reportErrors()) Sentry.capture(e);
             }
         }
     }
@@ -678,6 +695,7 @@ public class WebAPI {
                 future.get();
             } catch (InterruptedException | ExecutionException e) {
                 e.printStackTrace();
+                if (WebAPI.reportErrors()) Sentry.capture(e);
             }
         }
     }
@@ -694,6 +712,7 @@ public class WebAPI {
                 return Optional.of(obj);
             } catch (InterruptedException | ExecutionException e) {
                 e.printStackTrace();
+                if (WebAPI.reportErrors()) Sentry.capture(e);
                 return Optional.empty();
             }
         }

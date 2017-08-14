@@ -1,5 +1,6 @@
 package valandur.webapi.server;
 
+import io.sentry.Sentry;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.scheduler.Task;
 import valandur.webapi.WebAPI;
@@ -49,6 +50,7 @@ public class ServerService implements IServerService {
             }
         } catch (IOException e) {
             e.printStackTrace();
+            if (WebAPI.reportErrors()) Sentry.capture(e);
         }
 
         if (tpsTask != null) {

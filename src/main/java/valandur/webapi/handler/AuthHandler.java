@@ -1,5 +1,6 @@
 package valandur.webapi.handler;
 
+import io.sentry.Sentry;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
 import org.eclipse.jetty.server.Request;
@@ -89,6 +90,7 @@ public class AuthHandler extends AbstractHandler {
             loader.save(config);
         } catch (IOException e) {
             e.printStackTrace();
+            if (WebAPI.reportErrors()) Sentry.capture(e);
         }
     }
 

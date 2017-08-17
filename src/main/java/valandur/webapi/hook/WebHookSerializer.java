@@ -69,13 +69,13 @@ public class WebHookSerializer implements TypeSerializer<WebHook> {
             if (filterName != null) {
                 Optional<Class<? extends WebAPIBaseFilter>> opt = WebAPI.getWebHookService().getFilter(filterName);
                 if (!opt.isPresent()) {
-                    logger.warn("    Could not find filter with name '" + filterName + "'");
+                    logger.error("    Could not find filter with name '" + filterName + "'");
                 } else {
                     try {
                         Constructor ctor = opt.get().getConstructor(WebHook.class, ConfigurationNode.class);
                         hook.setFilter((WebAPIBaseFilter) ctor.newInstance(hook, filterConfig));
                     } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
-                        logger.warn("    Could not setup filter '" + filterName + "': " + e.getMessage());
+                        logger.error("    Could not setup filter '" + filterName + "': " + e.getMessage());
                     }
                 }
             }

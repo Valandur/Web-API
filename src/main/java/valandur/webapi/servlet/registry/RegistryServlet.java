@@ -24,6 +24,7 @@ public class RegistryServlet extends WebAPIBaseServlet {
             }
 
             Collection<CatalogType> types = Sponge.getRegistry().getAllOf(type);
+            data.addJson("ok", true, false);
             data.addJson("types", types, false);
         } catch (ClassNotFoundException e) {
             data.sendError(HttpServletResponse.SC_NOT_FOUND, "Class " + className + " could not be found");

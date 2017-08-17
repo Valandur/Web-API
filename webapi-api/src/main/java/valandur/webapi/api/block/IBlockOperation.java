@@ -18,6 +18,11 @@ public interface IBlockOperation {
         INIT, RUNNING, PAUSED, DONE, ERRORED,
     }
 
+    /**
+     * Gets the type of block operation.
+     * @return The type of block operation.
+     */
+    String getType();
 
     /**
      * Gets the minimum block belonging to this operation.

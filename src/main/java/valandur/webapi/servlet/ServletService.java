@@ -10,6 +10,7 @@ import valandur.webapi.api.servlet.IServletData;
 import valandur.webapi.api.servlet.WebAPIBaseServlet;
 import valandur.webapi.util.Util;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -55,10 +56,7 @@ public class ServletService implements IServletService {
             for (Tuple<WebAPIEndpoint, Method> tuple : newMethods) {
                 WebAPIEndpoint route = tuple.getFirst();
                 Method method = tuple.getSecond();
-                    /*if (method.getParameterTypes().length != 1) {
-                        logger.error("    Method " + method.getName() + " may only have 1 argument");
-                        continue;
-                    }*/
+
                 if (method.getParameterTypes()[0] != IServletData.class &&
                         method.getParameterTypes()[0] != ServletData.class) {
                     logger.error("    Method " + method.getName() + " first parameter is not of type IServletData");
@@ -152,6 +150,19 @@ public class ServletService implements IServletService {
             return;
         }
 
+        try {
+            Method m = servlet.getMethod("onRegister");
+            m.invoke(null);
+        } catch (NoSuchMethodException ignored) {
+        } catch (IllegalAccessException | InvocationTargetException e) {
+            e.printStackTrace();
+        }
+
         servletClasses.put(info.basePath(), servlet);
+    }
+
+    @Override
+    public Map<String, Class<? extends WebAPIBaseServlet>> getLoadedServlets() {
+        return servlets.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().getClass()));
     }
 }

@@ -17,10 +17,18 @@ allprojects {
         maven {
             url "https://repo.spongepowered.org/maven/"
         }
+        maven {
+            url "http://repo.drnaylor.co.uk/artifactory/list/minecraft"
+        }
+        maven {
+            url "http://repo.bstats.org/content/repositories/releases/"
+        }
     }
 
     dependencies {
         compileOnly group: "org.spongepowered", name: "spongeapi", version: "${project.spongeVersion}.0-SNAPSHOT"
+        compile group: "io.sentry", name: "sentry", version: "1.4.0"
+        compile group: "org.bstats", name: "bstats-sponge", version: "1.2"
         compile group: "org.eclipse.jetty", name: "jetty-server", version: "9.4.2.v20170220"
         compile group: "org.eclipse.jetty", name: "jetty-servlet", version: "9.4.2.v20170220"
         compile group: "org.eclipse.jetty", name: "jetty-http", version: "9.4.2.v20170220"
@@ -31,24 +39,35 @@ allprojects {
 }
 
 blossom {
-    def location = 'src/main/java/valandur/webapi/WebAPI.java'
-    replaceToken '@version@', project.version, location
+    def locMain = "src/main/java/valandur/webapi/WebAPI.java"
+    replaceToken "@version@", project.version, locMain
+
+    def locSentry = "src/main/resources/sentry.properties"
+    replaceToken "@version@", project.version, locSentry
 }
 
 spongestart {
     eula true
     minecraft project.minecraftVersion
+
+    spongeForgeVersion "1.11.2-2393-6.1.0-BETA-2556"
+    spongeVanillaVersion "1.11.2-6.1.0-BETA-17"
 }
 
 dependencies {
     compile project(":webapi-api")
     compile group: "org.reflections", name: "reflections", version: "0.9.10"
     compile group: "org.mindrot", name: "jbcrypt", version: "0.4"
+
+    compileOnly group: "io.github.nucleuspowered", name: "nucleus-api", version: "1.1.0-SNAPSHOT-S6.0"
+    compileOnly fileTree(dir: "lib", include: "*.jar")
 }
 
 shadowJar {
     configurations  = [project.configurations.compile]
 
+    relocate "io.sentry", "valandur.webapi.shadow.io.sentry"
+    relocate "org.bstats", "valandur.webapi.shadow.org.bstats"
     relocate "com.fasterxml", "valandur.webapi.shadow.com.fasterxml"
     relocate "edu.umd", "valandur.webapi.shadow.edu.umd"
     relocate "javassist", "valandur.webapi.shadow.javassist"
@@ -67,9 +86,9 @@ shadowJar {
 }
 shadowJar.dependsOn([':webapi-api:build'])
 
-task copyJars(type: Copy, dependsOn: ':webapi-api:build') {
+task copyJars(type: Copy, dependsOn: ":webapi-api:build") {
     from([subprojects.jar, shadowJar])
-    into project.file('artifacts')
+    into project.file("artifacts")
 }
 
 artifacts {

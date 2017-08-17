@@ -2,6 +2,7 @@ package valandur.webapi.servlet;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.sentry.Sentry;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.util.TreeNode;
 import valandur.webapi.permission.PermissionService;
@@ -110,6 +111,15 @@ public class ApiServlet extends HttpServlet {
         } catch (InvocationTargetException | IllegalAccessException e) {
             // Error executing the method
             e.printStackTrace();
+
+            if (WebAPI.reportErrors()) {
+                Sentry.clearContext();
+                Sentry.getContext().addExtra("verb", verb);
+                Sentry.getContext().addExtra("request", req.getRequestURI());
+                Sentry.capture(e);
+                Sentry.clearContext();
+            }
+
             resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal server error");
         }
     }

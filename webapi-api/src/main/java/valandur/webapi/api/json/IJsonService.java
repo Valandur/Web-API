@@ -18,7 +18,7 @@ public interface IJsonService {
      * @param serializer The class of serializer to use for the specified class
      * @param <T> The class to serialize
      */
-    <T> void registerSerializer(Class<T> clazz, Class<WebAPIBaseSerializer<T>> serializer);
+    <T> void registerSerializer(Class<T> clazz, Class<? extends WebAPIBaseSerializer<T>> serializer);
 
     /**
      * Gets all DataHolder types that are supported by the Web-API

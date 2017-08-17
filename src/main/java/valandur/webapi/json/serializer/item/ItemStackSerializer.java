@@ -10,8 +10,7 @@ public class ItemStackSerializer extends WebAPIBaseSerializer<ItemStack> {
     public void serialize(ItemStack value) throws IOException {
         writeStartObject();
 
-        writeField("id", value.getItem().getId());
-        writeField("name", value.getTranslation().get());
+        writeField("type", value.getItem());
         writeField("quantity", value.getQuantity());
 
         if (shouldWriteDetails()) {

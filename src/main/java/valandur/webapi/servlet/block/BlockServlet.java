@@ -8,10 +8,11 @@ import valandur.webapi.api.annotation.WebAPIEndpoint;
 import valandur.webapi.api.annotation.WebAPIServlet;
 import valandur.webapi.api.block.IBlockOperation;
 import valandur.webapi.api.servlet.WebAPIBaseServlet;
+import valandur.webapi.block.BlockChangeOperation;
 import valandur.webapi.block.BlockGetOperation;
-import valandur.webapi.block.BlockUpdateOperation;
 import valandur.webapi.cache.world.CachedWorld;
 import valandur.webapi.servlet.ServletData;
+import valandur.webapi.servlet.block.CreateOperationRequest.BlockOperationType;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.HashMap;
@@ -19,7 +20,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-import static valandur.webapi.servlet.block.CreateOperationRequest.BlockOperationType;
 import static valandur.webapi.servlet.block.CreateOperationRequest.BlockStateRequest;
 
 @WebAPIServlet(basePath = "block")
@@ -37,6 +37,12 @@ public class BlockServlet extends WebAPIBaseServlet {
         data.addJson("ok", true, false);
         data.addJson("position", pos, false);
         data.addJson("block", state.get(), true);
+    }
+
+    @WebAPIEndpoint(method = HttpMethod.GET, path = "/op", perm = "op.list")
+    public void getBlockOperations(ServletData data) {
+        data.addJson("ok", true, false);
+        data.addJson("operations", blockService.getBlockOperations(), data.getQueryParam("details").isPresent());
     }
 
     @WebAPIEndpoint(method = HttpMethod.POST, path = "/op", perm = "op.create")
@@ -85,7 +91,7 @@ public class BlockServlet extends WebAPIBaseServlet {
             }
 
             op = blockService.startBlockOperation(new BlockGetOperation(req.getWorld().get(), min, max));
-        } else if (req.getType() == BlockOperationType.UPDATE) {
+        } else if (req.getType() == BlockOperationType.CHANGE) {
             // Check volume size
             if (blockService.getMaxUpdateBlocks() > 0 && numBlocks > blockService.getMaxUpdateBlocks()) {
                 data.sendError(HttpServletResponse.SC_NOT_ACCEPTABLE, "Area size is " + numBlocks +
@@ -147,17 +153,11 @@ public class BlockServlet extends WebAPIBaseServlet {
                 }
             }
 
-            op = blockService.startBlockOperation(new BlockUpdateOperation(req.getWorld().get(), min, max, blocks));
+            op = blockService.startBlockOperation(new BlockChangeOperation(req.getWorld().get(), min, max, blocks));
         }
 
         data.addJson("ok", true, false);
         data.addJson("operation", op, false);
-    }
-
-    @WebAPIEndpoint(method = HttpMethod.GET, path = "/op", perm = "op.list")
-    public void getBlockOperations(ServletData data) {
-        data.addJson("ok", true, false);
-        data.addJson("operations", blockService.getBlockOperations(), data.getQueryParam("details").isPresent());
     }
 
     @WebAPIEndpoint(method = HttpMethod.GET, path = "/op/:uuid", perm = "op.one")

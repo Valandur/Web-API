@@ -1,0 +1,26 @@
+allOf:
+  - $ref: "./Chunk.yaml"
+  - title: ChunkFull
+    type: object
+    properties:
+      world:
+        $ref: "./World.yaml"
+      blockMin:
+        $ref: "./Vector3.yaml"
+      blockMax:
+        $ref: "./Vector3.yaml"
+      isLoaded:
+        type: boolean
+        description: True if the chunk is currently loaded in the world, false otherwise.
+      inhabitedTime:
+        type: number
+        format: integer
+        description: The number of ticks a player has been present in this chunk.
+      difficultyFactor:
+        type: number
+        format: double
+        description: Gets the regional difficulty factor for this chunk.
+      difficultyPercentage:
+        type: number
+        format: double
+        description: Gets the regional difficulty as a percentage for this chunk.

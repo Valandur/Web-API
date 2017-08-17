@@ -1,12 +1,16 @@
 # Web-API
-A RESTful web API for Minecraft Sponge
+A RESTful web API & admin panel for Minecraft Sponge
 
 ## About
 This plugin provides a RESTful web API to manage a Sponge server.
 This can be used to perform various administrative tasks through the web, or provide dynamic content for users.
 
+It also adds an admin panel with which a minecraft server can easily be managed,
+including running commands, chatting, managing players, destroying entities, a map
+& much more.
+
 ## Features
-Provides a RESTful webserver with:
+Provides an AdminPanel to manage your minecraft server and a RESTful webserver with:
 
 * General information about the server
 * History for
@@ -27,12 +31,14 @@ Provides a RESTful webserver with:
 * Arbitrary command execution (like using the server console)
 * Custom serializers to determine how data is turned into JSON
 * Permissions for each endpoint
+* An API for other plugins to expose their own endpoints easily
 
 ## Installation
 1. Setup a Sponge server (Sponge Vanilla & SpongeForge supported)
 2. Add this mod to the mods folder
 3. Start the server
 4. Configure the config files to your needs.
+5. Use `sponge plugins reload` to import your config changes to the server without restarting.
 
 ## Tutorials & Documentation
 Go [here](docs/INDEX.md) to see a list of various documentations and tutorials

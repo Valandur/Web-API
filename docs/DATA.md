@@ -33,6 +33,7 @@ possibly various different things.
 1. [Tameable](#tameable)
 1. [Trades](#trades)
 
+
 <a name="achievements"></a>
 ## Achievements
 Contains a list of achievements that have been granted to the object.
@@ -47,6 +48,7 @@ Contains a list of achievements that have been granted to the object.
 ]
 ```
 
+
 <a name="age"></a>
 ## Age
 Contains information about the age of an object.
@@ -56,6 +58,7 @@ Contains information about the age of an object.
   "age": 35,
 }
 ```
+
 
 <a name="career"></a>
 ## Career

@@ -28,8 +28,11 @@ import org.spongepowered.api.data.manipulator.mutable.tileentity.SignData;
 import org.spongepowered.api.effect.potion.PotionEffect;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.living.player.Player;
+import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.Event;
 import org.spongepowered.api.event.cause.Cause;
+import org.spongepowered.api.event.cause.entity.damage.source.DamageSource;
+import org.spongepowered.api.item.ItemType;
 import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.item.inventory.ItemStackSnapshot;
 import org.spongepowered.api.item.merchant.TradeOffer;
@@ -40,7 +43,6 @@ import org.spongepowered.api.util.Tuple;
 import org.spongepowered.api.util.ban.Ban;
 import org.spongepowered.api.world.*;
 import org.spongepowered.api.world.explosion.Explosion;
-import org.spongepowered.api.world.extent.BlockVolume;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.json.IJsonService;
 import valandur.webapi.api.json.WebAPIBaseSerializer;
@@ -57,6 +59,7 @@ import valandur.webapi.cache.misc.CachedLocation;
 import valandur.webapi.cache.player.CachedPlayer;
 import valandur.webapi.cache.plugin.CachedPluginContainer;
 import valandur.webapi.cache.tileentity.CachedTileEntity;
+import valandur.webapi.cache.world.CachedChunk;
 import valandur.webapi.cache.world.CachedGeneratorType;
 import valandur.webapi.cache.world.CachedWorld;
 import valandur.webapi.cache.world.CachedWorldBorder;
@@ -64,19 +67,20 @@ import valandur.webapi.command.CommandSource;
 import valandur.webapi.json.serializer.block.BlockOperationSerializer;
 import valandur.webapi.json.serializer.block.BlockSnapshotSerializer;
 import valandur.webapi.json.serializer.block.BlockStateSerializer;
-import valandur.webapi.json.serializer.block.BlockVolumeSerializer;
 import valandur.webapi.json.serializer.chat.CachedChatMessageSerializer;
 import valandur.webapi.json.serializer.command.CachedCommandCallSerializer;
 import valandur.webapi.json.serializer.command.CachedCommandResultSerializer;
 import valandur.webapi.json.serializer.command.CachedCommandSerializer;
 import valandur.webapi.json.serializer.entity.*;
 import valandur.webapi.json.serializer.event.CauseSerializer;
+import valandur.webapi.json.serializer.event.DamageSourceSerializer;
 import valandur.webapi.json.serializer.event.EventSerializer;
 import valandur.webapi.json.serializer.item.*;
 import valandur.webapi.json.serializer.message.MessageResponseSerializer;
 import valandur.webapi.json.serializer.misc.*;
 import valandur.webapi.json.serializer.player.*;
 import valandur.webapi.json.serializer.plugin.CachedPluginContainerSerializer;
+import valandur.webapi.json.serializer.plugin.CachedPluginDependencySerializer;
 import valandur.webapi.json.serializer.plugin.PluginContainerSerializer;
 import valandur.webapi.json.serializer.server.ServerStatSerializer;
 import valandur.webapi.json.serializer.tileentity.*;
@@ -84,6 +88,7 @@ import valandur.webapi.json.serializer.user.UserPermissionSerializer;
 import valandur.webapi.json.serializer.world.*;
 import valandur.webapi.message.MessageResponse;
 import valandur.webapi.server.ServerStat;
+import valandur.webapi.servlet.plugin.CachedPluginDependency;
 import valandur.webapi.user.UserPermission;
 import valandur.webapi.util.Util;
 
@@ -115,7 +120,6 @@ public class JsonService implements IJsonService {
         serializers.put(BlockSnapshot.class, new BlockSnapshotSerializer());
         serializers.put(BlockState.class, new BlockStateSerializer());
         serializers.put(BlockOperation.class, new BlockOperationSerializer());
-        serializers.put(BlockVolume.class, new BlockVolumeSerializer());
 
         // Chat
         serializers.put(CachedChatMessage.class, new CachedChatMessageSerializer());
@@ -140,6 +144,7 @@ public class JsonService implements IJsonService {
 
         // Event
         serializers.put(Cause.class, new CauseSerializer());
+        serializers.put(DamageSource.class, new DamageSourceSerializer());
         serializers.put(Event.class, new EventSerializer());
 
         // Item
@@ -147,6 +152,7 @@ public class JsonService implements IJsonService {
         serializers.put(DurabilityData.class, new DurabilityDataSerializer());
         serializers.put(ItemStack.class, new ItemStackSerializer());
         serializers.put(ItemStackSnapshot.class, new ItemStackSnapshotSerializer());
+        serializers.put(ItemType.class, new ItemTypeSerializer());
         serializers.put(PotionEffectData.class, new PotionEffectDataSerializer());
         serializers.put(PotionEffect.class, new PotionEffectSerializer());
         serializers.put(SpawnableData.class, new SpawnableDataSerializer());
@@ -179,9 +185,11 @@ public class JsonService implements IJsonService {
         serializers.put(JoinData.class, new JoinDataSerializer());
         serializers.put(Player.class, new PlayerSerializer());
         serializers.put(StatisticData.class, new StatisticDataSerializer());
+        serializers.put(User.class, new UserSerializer());
 
         // Plugin
         serializers.put(CachedPluginContainer.class, new CachedPluginContainerSerializer());
+        serializers.put(CachedPluginDependency.class, new CachedPluginDependencySerializer());
         serializers.put(PluginContainer.class, new PluginContainerSerializer());
 
         // Server
@@ -199,10 +207,10 @@ public class JsonService implements IJsonService {
         serializers.put(UserPermission.class, new UserPermissionSerializer());
 
         // World
+        serializers.put(CachedChunk.class, new CachedChunkSerializer());
         serializers.put(CachedGeneratorType.class, new CachedGeneratorTypeSerializer());
         serializers.put(CachedWorldBorder.class, new CachedWorldBorderSerializer());
         serializers.put(CachedWorld.class, new CachedWorldSerializer());
-        serializers.put(Chunk.class, new ChunkSerializer());
         serializers.put(Dimension.class, new DimensionSerializer());
         serializers.put(Explosion.class, new ExplosionSerializer());
         serializers.put(GeneratorType.class, new GeneratorTypeSerializer());
@@ -266,7 +274,7 @@ public class JsonService implements IJsonService {
     }
 
     @Override
-    public <T> void registerSerializer(Class<T> clazz, Class<WebAPIBaseSerializer<T>> serializer) {
+    public <T> void registerSerializer(Class<T> clazz, Class<? extends WebAPIBaseSerializer<T>> serializer) {
         registeredSerializers.put(clazz, serializer);
     }
 

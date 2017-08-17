@@ -46,7 +46,7 @@ public class InfoServlet extends WebAPIBaseServlet {
         data.addJson("properties", serverService.getProperties(), true);
     }
 
-    @WebAPIEndpoint(method = HttpMethod.GET, path = "/properties", perm = "properties")
+    @WebAPIEndpoint(method = HttpMethod.POST, path = "/properties", perm = "properties")
     public void setProperties(ServletData data) {
         JsonNode body = data.getRequestBody();
         JsonNode props = body.get("properties");

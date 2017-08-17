@@ -13,15 +13,14 @@ import valandur.webapi.api.annotation.WebAPIEndpoint;
 import valandur.webapi.api.annotation.WebAPIServlet;
 import valandur.webapi.api.cache.world.ICachedWorld;
 import valandur.webapi.api.servlet.WebAPIBaseServlet;
+import valandur.webapi.cache.world.CachedChunk;
 import valandur.webapi.cache.world.CachedWorld;
 import valandur.webapi.servlet.ServletData;
 import valandur.webapi.util.Util;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 
 @WebAPIServlet(basePath = "world")
@@ -240,7 +239,25 @@ public class WorldServlet extends WebAPIBaseServlet {
         data.addJson("world", world, true);
     }
 
-    @WebAPIEndpoint(method = HttpMethod.GET, path = "/:world/chunk/:x/:z", perm = "chunk")
+    @WebAPIEndpoint(method = HttpMethod.GET, path = "/:world/chunk", perm = "chunk.list")
+    public void getChunks(ServletData data, CachedWorld world) {
+        Optional<?> optWorld = world.getLive();
+        if (!optWorld.isPresent()) {
+            data.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not get world");
+            return;
+        }
+
+        World w = (World)optWorld.get();
+        List<CachedChunk> chunks = new ArrayList<>();
+
+        Iterable<Chunk> iterable = w.getLoadedChunks();
+        iterable.forEach(c -> chunks.add(new CachedChunk(c)));
+
+        data.addJson("ok", true, false);
+        data.addJson("chunks", chunks, data.getQueryParam("details").isPresent());
+    }
+
+    @WebAPIEndpoint(method = HttpMethod.GET, path = "/:world/chunk/:x/:z", perm = "chunk.one")
     public void getChunkAt(ServletData data, CachedWorld world, int x, int z) {
         Optional<Chunk> chunk = WebAPI.runOnMain(() -> {
             Optional<?> optLive = world.getLive();
@@ -257,10 +274,10 @@ public class WorldServlet extends WebAPIBaseServlet {
         }
 
         data.addJson("ok", true, false);
-        data.addJson("chunk", chunk.get(), true);
+        data.addJson("chunk", chunk.map(CachedChunk::new), true);
     }
 
-    @WebAPIEndpoint(method = HttpMethod.POST, path = "/:world/chunk/:x/:z", perm = "chunk")
+    @WebAPIEndpoint(method = HttpMethod.POST, path = "/:world/chunk/:x/:z", perm = "chunk.create")
     public void createChunkAt(ServletData data, CachedWorld world, int x, int z) {
         Optional<Chunk> chunk = WebAPI.runOnMain(() -> {
             Optional<?> optLive = world.getLive();
@@ -277,6 +294,6 @@ public class WorldServlet extends WebAPIBaseServlet {
         }
 
         data.addJson("ok", true, false);
-        data.addJson("chunk", chunk.get(), true);
+        data.addJson("chunk", chunk.map(CachedChunk::new), true);
     }
 }

@@ -5,6 +5,7 @@ current implementation state in the Web-API.
 If you see any data which is missing that you need feel free to contact
 me or submit a pull request.
 
+
 ## Key
 
 | Symbol | State       |

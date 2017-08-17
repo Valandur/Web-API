@@ -1,5 +1,6 @@
 package valandur.webapi.extension;
 
+import io.sentry.Sentry;
 import org.slf4j.Logger;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.extension.IExtensionService;
@@ -54,6 +55,7 @@ public class ExtensionService implements IExtensionService {
                     .collect(Collectors.toList());
         } catch (IOException e) {
             e.printStackTrace();
+            if (WebAPI.reportErrors()) Sentry.capture(e);
             return;
         }
 

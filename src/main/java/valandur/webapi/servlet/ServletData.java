@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.sentry.Sentry;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.servlet.IServletData;
 import valandur.webapi.api.util.TreeNode;
@@ -119,6 +120,7 @@ public class ServletData implements IServletData {
             errorSent = true;
         } catch (IOException e) {
             e.printStackTrace();
+            if (WebAPI.reportErrors()) Sentry.capture(e);
         }
     }
 }

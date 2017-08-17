@@ -25,6 +25,10 @@ of events that are sent to your server. Read the [WebHook documentation](WEBHOOK
 This documentation talks about additional data that is included with player, world and entity
 endpoints, as well as the implementation progress of further data which is not yet supported.
 
+1. [API](API.md)  
+This documentation talks about the Web-API API, which other plugins may use to create their 
+own endpoints and expose data easily.
+
 1. [Serializers](SERIALIZERS.md)  
 This short manual shows how to start writing custom serializers for the Web-API, to make sure
 that any custom data is turned properly into JSON. Specifically useful for other plugins/mods.

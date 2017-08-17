@@ -8,9 +8,6 @@ import java.io.IOException;
 public class ItemStackSnapshotSerializer extends WebAPIBaseSerializer<ItemStackSnapshot> {
     @Override
     public void serialize(ItemStackSnapshot value) throws IOException {
-        writeStartObject();
-        writeField("id", value.getType().getId());
-        writeField("quantity", value.getCount());
-        writeEndObject();
+        writeValue(value.createStack());
     }
 }

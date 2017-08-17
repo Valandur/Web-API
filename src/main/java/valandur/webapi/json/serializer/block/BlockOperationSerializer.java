@@ -12,12 +12,13 @@ public class BlockOperationSerializer extends WebAPIBaseSerializer<BlockOperatio
     public void serialize(BlockOperation value) throws IOException {
         writeStartObject();
 
+        writeField("type", value.getType());
         writeField("uuid", value.getUUID());
+        writeField("type", value.getType().toString());
         writeField("status", value.getStatus().toString());
         writeField("progress", value.getProgress());
         writeField("estTimeRemaining", value.getEstimatedSecondsRemaining());
         writeField("link", "/block/op/" + value.getUUID());
-        writeField("error", value.getError());
 
         if (shouldWriteDetails()) {
             writeField("min", value.getMin());
@@ -25,6 +26,7 @@ public class BlockOperationSerializer extends WebAPIBaseSerializer<BlockOperatio
             if (value instanceof BlockGetOperation) {
                 writeField("blocks", ((BlockGetOperation)value).getBlocks());
             }
+            writeField("error", value.getError());
         }
 
         writeEndObject();

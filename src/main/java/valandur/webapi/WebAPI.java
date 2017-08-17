@@ -2,9 +2,11 @@ package valandur.webapi;
 
 import com.google.common.reflect.TypeToken;
 import com.google.inject.Inject;
+import io.sentry.Sentry;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
 import ninja.leaping.configurate.objectmapping.serialize.TypeSerializers;
+import org.bstats.sponge.Metrics;
 import org.eclipse.jetty.http.HttpVersion;
 import org.eclipse.jetty.server.*;
 import org.eclipse.jetty.server.handler.ContextHandler;
@@ -27,6 +29,7 @@ import org.spongepowered.api.event.achievement.GrantAchievementEvent;
 import org.spongepowered.api.event.block.InteractBlockEvent;
 import org.spongepowered.api.event.command.SendCommandEvent;
 import org.spongepowered.api.event.entity.DestructEntityEvent;
+import org.spongepowered.api.event.entity.ExpireEntityEvent;
 import org.spongepowered.api.event.entity.SpawnEntityEvent;
 import org.spongepowered.api.event.entity.living.humanoid.player.KickPlayerEvent;
 import org.spongepowered.api.event.filter.cause.First;
@@ -46,18 +49,18 @@ import org.spongepowered.api.util.Tuple;
 import valandur.webapi.api.block.IBlockService;
 import valandur.webapi.api.cache.ICacheService;
 import valandur.webapi.api.extension.IExtensionService;
-import valandur.webapi.api.server.IServerService;
-import valandur.webapi.cache.chat.CachedChatMessage;
-import valandur.webapi.cache.command.CachedCommandCall;
 import valandur.webapi.api.hook.IWebHookService;
 import valandur.webapi.api.json.IJsonService;
 import valandur.webapi.api.message.IMessageService;
 import valandur.webapi.api.permission.IPermissionService;
+import valandur.webapi.api.server.IServerService;
 import valandur.webapi.api.servlet.IServletService;
-import valandur.webapi.block.BlockService;
 import valandur.webapi.block.BlockOperation;
 import valandur.webapi.block.BlockOperationStatusChangeEvent;
+import valandur.webapi.block.BlockService;
 import valandur.webapi.cache.CacheService;
+import valandur.webapi.cache.chat.CachedChatMessage;
+import valandur.webapi.cache.command.CachedCommandCall;
 import valandur.webapi.command.CommandRegistry;
 import valandur.webapi.command.CommandSource;
 import valandur.webapi.extension.ExtensionService;
@@ -68,6 +71,8 @@ import valandur.webapi.handler.RateLimitHandler;
 import valandur.webapi.hook.WebHook;
 import valandur.webapi.hook.WebHookSerializer;
 import valandur.webapi.hook.WebHookService;
+import valandur.webapi.integration.huskycrates.HuskyCratesServlet;
+import valandur.webapi.integration.nucleus.NucleusServlet;
 import valandur.webapi.json.JsonService;
 import valandur.webapi.message.MessageService;
 import valandur.webapi.permission.PermissionService;
@@ -86,6 +91,7 @@ import valandur.webapi.servlet.player.PlayerServlet;
 import valandur.webapi.servlet.plugin.PluginServlet;
 import valandur.webapi.servlet.recipe.RecipeServlet;
 import valandur.webapi.servlet.registry.RegistryServlet;
+import valandur.webapi.servlet.servlet.ServletServlet;
 import valandur.webapi.servlet.tileentity.TileEntityServlet;
 import valandur.webapi.servlet.user.UserServlet;
 import valandur.webapi.servlet.world.WorldServlet;
@@ -146,6 +152,9 @@ public class WebAPI {
     }
 
     @Inject
+    private Metrics metrics;
+
+    @Inject
     private Logger logger;
     public static Logger getLogger() {
         return WebAPI.getInstance().logger;
@@ -162,6 +171,11 @@ public class WebAPI {
     private PluginContainer container;
     public static PluginContainer getContainer() {
         return WebAPI.getInstance().container;
+    }
+
+    private boolean reportErrors;
+    public static boolean reportErrors() {
+        return WebAPI.getInstance().reportErrors;
     }
 
     private String serverHost;
@@ -222,6 +236,9 @@ public class WebAPI {
     }
 
 
+    public WebAPI() {
+        Sentry.init();
+    }
 
     @Listener
     public void onPreInitialization(GamePreInitializationEvent event) {
@@ -233,6 +250,7 @@ public class WebAPI {
                 Files.createDirectories(configPath);
             } catch (IOException e) {
                 e.printStackTrace();
+                if (WebAPI.reportErrors()) Sentry.capture(e);
             }
         }
 
@@ -276,9 +294,6 @@ public class WebAPI {
         // Create permission handler
         authHandler = new AuthHandler();
 
-        // Main init function, that is also called when reloading the plugin
-        init(null);
-
         Reflections.log = null;
         this.reflections = new Reflections();
 
@@ -295,9 +310,24 @@ public class WebAPI {
         servletService.registerServlet(PluginServlet.class);
         servletService.registerServlet(RecipeServlet.class);
         servletService.registerServlet(RegistryServlet.class);
+        servletService.registerServlet(ServletServlet.class);
         servletService.registerServlet(TileEntityServlet.class);
         servletService.registerServlet(UserServlet.class);
         servletService.registerServlet(WorldServlet.class);
+
+        // Other plugin integrations
+        try {
+            Class.forName("com.codehusky.huskycrates.HuskyCrates");
+            servletService.registerServlet(HuskyCratesServlet.class);
+        } catch (ClassNotFoundException ignored) { }
+
+        try {
+            Class.forName("io.github.nucleuspowered.nucleus.api.NucleusAPI");
+            servletService.registerServlet(NucleusServlet.class);
+        } catch (ClassNotFoundException ignored) { }
+
+        // Main init function, that is also called when reloading the plugin
+        init(null);
 
         logger.info(WebAPI.NAME + " ready");
     }
@@ -316,6 +346,7 @@ public class WebAPI {
         ConfigurationNode config = tup.getSecond();
 
         devMode = config.getNode("devMode").getBoolean();
+        reportErrors = config.getNode("reportErrors").getBoolean();
         serverHost = config.getNode("host").getString();
         serverPortHttp = config.getNode("http").getInt(-1);
         serverPortHttps = config.getNode("https").getInt(-1);
@@ -463,6 +494,7 @@ public class WebAPI {
             logger.info("API Docs: " + baseUri + "/docs");
         } catch (Exception e) {
             e.printStackTrace();
+            Sentry.capture(e);
         }
 
         if (player != null) {
@@ -476,6 +508,7 @@ public class WebAPI {
                 server = null;
             } catch (Exception e) {
                 e.printStackTrace();
+                if (WebAPI.reportErrors()) Sentry.capture(e);
             }
         }
     }
@@ -577,6 +610,10 @@ public class WebAPI {
             webHookService.notifyHooks(WebHookService.WebHookType.PLAYER_DEATH, event);
         }
     }
+    @Listener(order = Order.POST)
+    public void onEntityExpire(ExpireEntityEvent event) {
+        cacheService.removeEntity(event.getTargetEntity().getUniqueId());
+    }
 
     @Listener(order = Order.POST)
     public void onPlayerChat(MessageChannelEvent.Chat event, @First Player player) {
@@ -646,7 +683,7 @@ public class WebAPI {
                 break;
         }
 
-        webHookService.notifyHooks(WebHookService.WebHookType.BLOCK_UPDATE_STATUS, event);
+        webHookService.notifyHooks(WebHookService.WebHookType.BLOCK_OPERATION_STATUS, event);
     }
 
     public static void runOnMain(Runnable runnable) {
@@ -658,6 +695,7 @@ public class WebAPI {
                 future.get();
             } catch (InterruptedException | ExecutionException e) {
                 e.printStackTrace();
+                if (WebAPI.reportErrors()) Sentry.capture(e);
             }
         }
     }
@@ -674,6 +712,7 @@ public class WebAPI {
                 return Optional.of(obj);
             } catch (InterruptedException | ExecutionException e) {
                 e.printStackTrace();
+                if (WebAPI.reportErrors()) Sentry.capture(e);
                 return Optional.empty();
             }
         }

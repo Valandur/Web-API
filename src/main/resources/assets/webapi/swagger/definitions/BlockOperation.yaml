@@ -1,0 +1,27 @@
+title: BlockOperation
+type: object
+properties:
+  uuid:
+    type: string
+    description: The UUID of the block update operation.
+  type:
+    type: string
+    enum:
+      - GET
+      - UPDATE
+    description: The type of action that is being performed by this operation.
+  status:
+    type: string
+    description: |
+      The current status of the operation, one of: INIT, RUNNING, PAUSED, DONE, ERRORED.
+  progress:
+    type: number
+    format: float
+    description: The update progress of this operation, from 0 (nothing done) to 1 (completely done).
+  estTimeRemaining:
+    type: number
+    format: integer
+    description: The estimated amount of seconds remaining before this operation is completed.
+  link:
+    type: string
+    description: The Web-API url to access for details about this operation.

@@ -33,5 +33,11 @@ public interface IMessage {
      * it the key is sent to the message web hook.
      * @return A map of option keys to values.
      */
-    Map<String, String> getOptions();
+    Map<String, Text> getOptions();
+
+    /**
+     * Specifies wether the targets can reply multiple times or just once to this message. (This is per target)
+     * @return True if the targets can only reply once, false otherwise.
+     */
+    boolean isOnce();
 }

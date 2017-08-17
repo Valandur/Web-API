@@ -7,6 +7,7 @@ import valandur.webapi.api.message.IMessage;
 
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @JsonDeserialize
 public class Message implements IMessage {
@@ -30,8 +31,18 @@ public class Message implements IMessage {
     }
 
     @JsonDeserialize
+    private boolean once;
+    public boolean isOnce() {
+        return once;
+    }
+
+    @JsonDeserialize
     private Map<String, String> options;
-    public Map<String, String> getOptions() {
-        return options;
+    public Map<String, Text> getOptions() {
+        return options.entrySet().stream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        e -> TextSerializers.FORMATTING_CODE.deserializeUnchecked(e.getValue())
+                ));
     }
 }

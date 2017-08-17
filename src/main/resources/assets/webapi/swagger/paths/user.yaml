@@ -11,8 +11,7 @@ get:
         type: object
         properties:
           ok:
-            type: boolean
-            description: True if the key is valid, false otherwise.
+            $ref: "../definitions/ok.yaml"
           user:
             $ref: "../definitions/User.yaml"
 post:
@@ -39,8 +38,7 @@ post:
         type: object
         properties:
           ok:
-            type: boolean
-            description: True if the operation was succesfull, false otherwise.
+            $ref: "../definitions/ok.yaml"
           key:
             type: string
             description: An api key that can be used in other parts of the Web-API.

@@ -20,4 +20,9 @@ get:
     200:
       description: Detailed plugin info
       schema:
-        $ref: "../definitions/PluginFull.yaml"
+        type: object
+        properties:
+          ok:
+            $ref: "../definitions/ok.yaml"
+          plugin:
+            $ref: "../definitions/PluginFull.yaml"

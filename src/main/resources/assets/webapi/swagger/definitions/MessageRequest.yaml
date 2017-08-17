@@ -10,6 +10,11 @@ properties:
   message:
     type: string
     description: The message sent to the player. Text formatting can be applied with ampersand formatting.
+  once:
+    type: boolean
+    description: |
+      True if the target can only select one response for this message (further responses are not sent to the
+      webhook endpoint)
   options:
     type: object
     description: |

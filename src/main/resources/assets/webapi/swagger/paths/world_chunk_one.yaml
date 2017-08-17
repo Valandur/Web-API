@@ -34,7 +34,6 @@ get:
         type: object
         properties:
           ok:
-            type: boolean
-            description: True if the operation was succesfull, false otherwise.
+            $ref: "../definitions/ok.yaml"
           chunk:
             $ref: "../definitions/ChunkFull.yaml"

@@ -30,7 +30,12 @@ get:
     200:
       description: Detailed entity info
       schema:
-        $ref: "../definitions/EntityFull.yaml"
+        type: object
+        properties:
+          ok:
+            $ref: "../definitions/ok.yaml"
+          entity:
+            $ref: "../definitions/EntityFull.yaml"
 put:
   summary: Edit entity
   description: |
@@ -64,8 +69,7 @@ put:
         type: object
         properties:
           ok:
-            type: boolean
-            description: True if the operation was successful, false otherwise.
+            $ref: "../definitions/ok.yaml"
           entity:
             $ref: "../definitions/EntityFull.yaml"
 post:
@@ -98,7 +102,12 @@ post:
     200:
       description: Method return value
       schema:
-        $ref: "../definitions/RawResponse.yaml"
+        ok:
+          $ref: "../definitions/ok.yaml"
+        entity:
+          $ref: "../definitions/EntityFull.yaml"
+        result:
+          $ref: "../definitions/RawResponse.yaml"
 delete:
   summary: Destroy an entity
   description: |
@@ -126,7 +135,6 @@ delete:
         type: object
         properties:
           ok:
-            type: boolean
-            description: True if the operation was successful, false otherwise.
+            $ref: "../definitions/ok.yaml"
           entity:
             $ref: "../definitions/EntityFull.yaml"

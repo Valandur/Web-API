@@ -15,8 +15,7 @@ get:
         type: object
         properties:
           ok:
-            type: boolean
-            description: True if the operation was succesfull, false otherwise.
+           $ref: "../definitions/ok.yaml"
           operations:
             type: array
             description: A list of block operations.
@@ -54,5 +53,7 @@ post:
       schema:
         type: object
         properties:
-          update:
+          ok:
+            $ref: "../definitions/ok.yaml"
+          operation:
             $ref: "../definitions/BlockOperationFull.yaml"

@@ -12,7 +12,12 @@ get:
     200:
       description: List of cached classes
       schema:
-        type: array
-        items:
-          type: string
-          description: The name of the class
+        type: object
+        properties:
+          ok:
+            $ref: "../definitions/ok.yaml"
+          classes:
+            type: array
+            items:
+              type: string
+              description: The name of the class

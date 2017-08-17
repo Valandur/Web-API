@@ -14,6 +14,8 @@ get:
       schema:
         type: object
         properties:
+          ok:
+            $ref: "../definitions/ok.yaml"
           messages:
             type: array
             description: A list of command calls.

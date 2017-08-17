@@ -683,7 +683,7 @@ public class WebAPI {
                 break;
         }
 
-        webHookService.notifyHooks(WebHookService.WebHookType.BLOCK_UPDATE_STATUS, event);
+        webHookService.notifyHooks(WebHookService.WebHookType.BLOCK_OPERATION_STATUS, event);
     }
 
     public static void runOnMain(Runnable runnable) {

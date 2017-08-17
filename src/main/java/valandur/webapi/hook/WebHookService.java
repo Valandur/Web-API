@@ -151,42 +151,37 @@ public class WebHookService implements IWebHookService {
         return filters.containsKey(name) ? Optional.of(filters.get(name)) : Optional.empty();
     }
 
+    @Override
     public void notifyHooks(WebHookType type, Object data) {
         List<WebHook> notifyHooks = new ArrayList<>(eventHooks.get(type));
         if (type != WebHookType.CUSTOM_MESSAGE) {
             notifyHooks.addAll(eventHooks.get(WebHookType.ALL));
         }
         for (WebHook hook : notifyHooks) {
-            notifyHook(hook, type, null, new HashMap<>(), data);
+            notifyHook(hook, type, null, data);
         }
     }
-    public void notifyHook(CommandWebHook cmdHook, String source, Map<String, Tuple<String, Object>> data) {
-        Map<String, String> params = data.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, v -> v.getValue().getFirst()));
-        Map<String, Object> body = data.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, v -> v.getValue().getSecond()));
-
+    public void notifyHook(CommandWebHook cmdHook, String source, Map<String, Object> data) {
         for (WebHook hook : cmdHook.getHooks()) {
-            notifyHook(hook, WebHookType.CUSTOM_COMMAND, source, params, body);
+            notifyHook(hook, WebHookType.CUSTOM_COMMAND, source, data);
         }
     }
 
+    @Override
     public void notifyHooks(Class<? extends Event> clazz, Object data) {
         List<WebHook> notifyHooks = new ArrayList<>(customHooks.get(clazz).getFirst());
         for (WebHook hook : notifyHooks) {
-            notifyHook(hook, WebHookType.CUSTOM_EVENT, null, new HashMap<>(), data);
+            notifyHook(hook, WebHookType.CUSTOM_EVENT, null, data);
         }
     }
 
-    private void notifyHook(WebHook hook, WebHookType eventType, String source, Map<String, String> params, Object data) {
+    private void notifyHook(WebHook hook, WebHookType eventType, String source, Object data) {
         // First check the filter before we do any processing
         if (hook.getFilter() != null && !hook.getFilter().process(data)) {
             return;
         }
 
-        String address = hook.getAddress();
-        for (Map.Entry<String, String> entry : params.entrySet()) {
-            address = address.replace("{" + entry.getKey() + "}", entry.getValue());
-        }
-        final String finalAddress = address;
+        final String address = hook.getAddress();
 
         String stringData = json.toString(data, hook.includeDetails(), hook.getPermissions());
         if (data != null) {
@@ -204,15 +199,11 @@ public class WebHookService implements IWebHookService {
             HttpURLConnection connection = null;
             try {
                 //Create connection
-                URL url = new URL(finalAddress);
+                URL url = new URL(address);
                 connection = (HttpURLConnection) url.openConnection();
                 connection.setRequestMethod(hook.getMethod().toString());
                 for (WebHookHeader header : hook.getHeaders()) {
-                    String val = header.getValue();
-                    for (Map.Entry<String, String> entry : params.entrySet()) {
-                        val = val.replace("{" + entry.getKey() + "}", entry.getValue());
-                    }
-                    connection.setRequestProperty(header.getName(), val);
+                    connection.setRequestProperty(header.getName(), header.getValue());
                 }
                 connection.setRequestProperty("User-Agent", userAgent);
                 connection.setRequestProperty("X-WebAPI-Version", WebAPI.VERSION);

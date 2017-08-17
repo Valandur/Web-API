@@ -7,14 +7,12 @@ import org.spongepowered.api.command.args.CommandElement;
 import org.spongepowered.api.command.args.GenericArguments;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.text.Text;
-import org.spongepowered.api.util.Tuple;
-import org.spongepowered.api.world.storage.WorldProperties;
+import org.spongepowered.api.world.World;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.cache.player.ICachedPlayer;
 import valandur.webapi.api.cache.world.ICachedWorld;
 
 import java.util.Optional;
-import java.util.UUID;
 
 @ConfigSerializable
 public class WebHookParam {
@@ -36,8 +34,8 @@ public class WebHookParam {
     }
 
     @Setting
-    private boolean isOptional = false;
-    public boolean isOptional() { return isOptional; }
+    private boolean optional = false;
+    public boolean isOptional() { return optional; }
 
 
     public Optional<CommandElement> getCommandElement() {
@@ -82,13 +80,13 @@ public class WebHookParam {
                 break;
         }
 
-        if (isOptional)
+        if (optional)
             elem = GenericArguments.optional(elem);
 
         return Optional.of(elem);
     }
 
-    public Optional<Tuple<String, Object>> getValue(CommandContext args) {
+    public Optional<Object> getValue(CommandContext args) {
         Optional<String> arg = args.getOne(name);
         if (!arg.isPresent()) return Optional.empty();
 
@@ -101,17 +99,15 @@ public class WebHookParam {
             case DOUBLE:
             case LOCATION:
             case VECTOR3D:
-                return Optional.of(new Tuple<>(obj.toString(), obj));
+                return Optional.of(obj);
 
             case PLAYER:
-                UUID pUuid = ((Player)obj).getUniqueId();
-                ICachedPlayer p = WebAPI.getCacheService().getPlayer(pUuid).orElse(null);
-                return Optional.of(new Tuple<>(p.getUUID().toString(), p));
+                ICachedPlayer p = WebAPI.getCacheService().getPlayer((Player)obj);
+                return Optional.of(p);
 
             case WORLD:
-                UUID wUuid = ((WorldProperties)obj).getUniqueId();
-                ICachedWorld w = WebAPI.getCacheService().getWorld(wUuid).orElse(null);
-                return Optional.of(new Tuple<>(w.getUUID().toString(), w));
+                ICachedWorld w = WebAPI.getCacheService().getWorld((World)obj);
+                return Optional.of(w);
         }
 
         return Optional.empty();

@@ -88,7 +88,7 @@ import valandur.webapi.json.serializer.user.UserPermissionSerializer;
 import valandur.webapi.json.serializer.world.*;
 import valandur.webapi.message.MessageResponse;
 import valandur.webapi.server.ServerStat;
-import valandur.webapi.servlet.plugin.CachedPluginDependency;
+import valandur.webapi.cache.plugin.CachedPluginDependency;
 import valandur.webapi.user.UserPermission;
 import valandur.webapi.util.Util;
 

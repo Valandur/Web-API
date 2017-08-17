@@ -31,6 +31,8 @@ import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.Event;
 import org.spongepowered.api.event.cause.Cause;
+import org.spongepowered.api.event.cause.entity.damage.source.DamageSource;
+import org.spongepowered.api.item.ItemType;
 import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.item.inventory.ItemStackSnapshot;
 import org.spongepowered.api.item.merchant.TradeOffer;
@@ -71,6 +73,7 @@ import valandur.webapi.json.serializer.command.CachedCommandResultSerializer;
 import valandur.webapi.json.serializer.command.CachedCommandSerializer;
 import valandur.webapi.json.serializer.entity.*;
 import valandur.webapi.json.serializer.event.CauseSerializer;
+import valandur.webapi.json.serializer.event.DamageSourceSerializer;
 import valandur.webapi.json.serializer.event.EventSerializer;
 import valandur.webapi.json.serializer.item.*;
 import valandur.webapi.json.serializer.message.MessageResponseSerializer;
@@ -141,6 +144,7 @@ public class JsonService implements IJsonService {
 
         // Event
         serializers.put(Cause.class, new CauseSerializer());
+        serializers.put(DamageSource.class, new DamageSourceSerializer());
         serializers.put(Event.class, new EventSerializer());
 
         // Item
@@ -148,6 +152,7 @@ public class JsonService implements IJsonService {
         serializers.put(DurabilityData.class, new DurabilityDataSerializer());
         serializers.put(ItemStack.class, new ItemStackSerializer());
         serializers.put(ItemStackSnapshot.class, new ItemStackSnapshotSerializer());
+        serializers.put(ItemType.class, new ItemTypeSerializer());
         serializers.put(PotionEffectData.class, new PotionEffectDataSerializer());
         serializers.put(PotionEffect.class, new PotionEffectSerializer());
         serializers.put(SpawnableData.class, new SpawnableDataSerializer());

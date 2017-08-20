@@ -1,5 +1,8 @@
 package valandur.webapi.json;
 
+import io.sentry.Sentry;
+import valandur.webapi.WebAPI;
+
 import javax.tools.Diagnostic;
 import java.io.*;
 import java.util.Locale;
@@ -16,6 +19,7 @@ public class DiagnosticListener implements javax.tools.DiagnosticListener {
             writer = new PrintWriter(new OutputStreamWriter(new FileOutputStream(logFile), "utf-8"));
         } catch (UnsupportedEncodingException | FileNotFoundException e) {
             e.printStackTrace();
+            if (WebAPI.reportErrors()) Sentry.capture(e);
         }
     }
     public void stopLog() {

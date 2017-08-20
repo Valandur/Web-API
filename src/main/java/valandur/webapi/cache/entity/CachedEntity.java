@@ -67,8 +67,7 @@ public class CachedEntity extends CachedObject implements ICachedEntity {
         if (entity instanceof Carrier) {
             try {
                 this.inventory = new CachedInventory(((Carrier) entity).getInventory());
-            } catch (AbstractMethodError ignored) {
-            }
+            } catch (AbstractMethodError ignored) {}
         }
     }
 

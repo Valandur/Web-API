@@ -1,5 +1,6 @@
 package valandur.webapi.handler;
 
+import io.sentry.Sentry;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.AbstractHandler;
 import org.spongepowered.api.Sponge;
@@ -34,7 +35,10 @@ public class AssetHandler extends AbstractHandler {
             try {
                 this.assetString = asset.get().readString();
                 this.contentType = guessContentType(folderPath);
-            } catch (IOException ignored) {}
+            } catch (IOException e) {
+                e.printStackTrace();
+                if (WebAPI.reportErrors()) Sentry.capture(e);
+            }
         } else {
             this.folderPath = folderPath;
         }

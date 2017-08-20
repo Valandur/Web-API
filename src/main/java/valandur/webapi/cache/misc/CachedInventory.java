@@ -54,7 +54,6 @@ public class CachedInventory extends CachedObject implements ICachedInventory {
                 Optional<ItemStack> optItem = slot.peek();
                 optItem.ifPresent(itemStack -> items.add(itemStack.copy()));
             }
-        } catch (AbstractMethodError ignored) {
-        }
+        } catch (AbstractMethodError ignored) {}
     }
 }

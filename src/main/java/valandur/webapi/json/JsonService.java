@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.flowpowered.math.vector.Vector3d;
 import com.flowpowered.math.vector.Vector3i;
+import io.sentry.Sentry;
 import org.slf4j.Logger;
 import org.spongepowered.api.CatalogType;
 import org.spongepowered.api.block.BlockSnapshot;
@@ -248,6 +249,7 @@ public class JsonService implements IJsonService {
                 serializers.put(entry.getKey(), ser);
             } catch (InstantiationException | IllegalAccessException e) {
                 logger.warn("  Could not register serializer " + entry.getValue().getName() + ": " + e.getMessage());
+                if (WebAPI.reportErrors()) Sentry.capture(e);
             }
         }
 
@@ -267,6 +269,7 @@ public class JsonService implements IJsonService {
                 serializers.put(serializer.getHandledClass(), serializer);
             } catch (IllegalAccessException | InstantiationException e) {
                 logger.warn("   Could not instantiate serializer '" + serializerClass.getName() + "': " + e.getMessage());
+                if (WebAPI.reportErrors()) Sentry.capture(e);
             }
         });
 

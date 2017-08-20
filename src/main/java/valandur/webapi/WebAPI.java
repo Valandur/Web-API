@@ -175,6 +175,7 @@ public class WebAPI {
 
     private boolean reportErrors;
     public static boolean reportErrors() {
+        if (WebAPI.getInstance() == null) return true;
         return WebAPI.getInstance().reportErrors;
     }
 

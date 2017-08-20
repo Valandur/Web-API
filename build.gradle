@@ -41,9 +41,6 @@ allprojects {
 blossom {
     def locMain = "src/main/java/valandur/webapi/WebAPI.java"
     replaceToken "@version@", project.version, locMain
-
-    def locSentry = "src/main/resources/sentry.properties"
-    replaceToken "@version@", project.version, locSentry
 }
 
 spongestart {

@@ -42,7 +42,7 @@ public class ServerService implements IServerService {
                     continue;
                 }
 
-                properties.put(key, splits.length > 1 ? splits[1].trim() : null);
+                properties.put(key, splits.length > 1 ? splits[1].trim() : "");
             }
         } catch (IOException e) {
             e.printStackTrace();

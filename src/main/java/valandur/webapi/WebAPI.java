@@ -238,6 +238,8 @@ public class WebAPI {
 
 
     public WebAPI() {
+        System.setProperty("sentry.dsn", "https://fb64795d2a5c4ff18f3c3e4117d7c245:53cf4ea85ae44608ab5b189f0c07b3f1@sentry.io/203545");
+        System.setProperty("sentry.release", "@version@");
         Sentry.init();
     }
 

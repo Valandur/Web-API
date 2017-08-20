@@ -116,6 +116,7 @@ public class ApiServlet extends HttpServlet {
                 Sentry.clearContext();
                 Sentry.getContext().addExtra("verb", verb);
                 Sentry.getContext().addExtra("request", req.getRequestURI());
+                Sentry.getContext().addExtra("body", req.getAttribute("body"));
                 Sentry.capture(e);
                 Sentry.clearContext();
             }

@@ -1,6 +1,7 @@
 package valandur.webapi.servlet.cmd;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.sentry.Sentry;
 import org.eclipse.jetty.http.HttpMethod;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.annotation.WebAPIEndpoint;
@@ -99,6 +100,7 @@ public class CmdServlet extends WebAPIBaseServlet {
             return src.getLines();
         } catch (InterruptedException e) {
             e.printStackTrace();
+            if (WebAPI.reportErrors()) Sentry.capture(e);
             return null;
         }
     }

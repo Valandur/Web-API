@@ -42,6 +42,7 @@ public class PlayerServlet extends WebAPIBaseServlet {
 
     @WebAPIEndpoint(method = HttpMethod.PUT, path = "/:player", perm = "change")
     public void updatePlayer(ServletData data, CachedPlayer player) {
+        data.addJson("ok", true, false);
         data.addJson("player", player, true);
     }
 

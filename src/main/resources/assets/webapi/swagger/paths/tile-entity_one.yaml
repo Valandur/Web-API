@@ -45,7 +45,12 @@ get:
     200:
       description: Detailed tile entity info
       schema:
-        $ref: "../definitions/TileEntityFull.yaml"
+        type: object
+        properties:
+          ok:
+            $ref: "../definitions/ok.yaml"
+          tileEntity:
+            $ref: "../definitions/TileEntityFull.yaml"
 post:
   summary: Execute tile entity methods
   description: |
@@ -91,4 +96,11 @@ post:
     200:
       description: Method return value
       schema:
-        $ref: "../definitions/RawResponse.yaml"
+        type: object
+        properties:
+          ok:
+            $ref: "../definitions/ok.yaml"
+          tileEntity:
+            $ref: "../definitions/TileEntity.yaml"
+          result:
+            $ref: "../definitions/RawResponse.yaml"

@@ -1,5 +1,6 @@
 package valandur.webapi.servlet;
 
+import io.sentry.Sentry;
 import org.slf4j.Logger;
 import org.spongepowered.api.util.Tuple;
 import valandur.webapi.WebAPI;
@@ -68,6 +69,7 @@ public class ServletService implements IServletService {
             servletMethods.put(serv, newMethods);
         } catch (InstantiationException | IllegalAccessException e) {
             logger.error("  -> Could not init servlet " + servletClass.getName() + ": " + e.getMessage());
+            if (WebAPI.reportErrors()) Sentry.capture(e);
         }
     }
 
@@ -156,6 +158,7 @@ public class ServletService implements IServletService {
         } catch (NoSuchMethodException ignored) {
         } catch (IllegalAccessException | InvocationTargetException e) {
             e.printStackTrace();
+            if (WebAPI.reportErrors()) Sentry.capture(e);
         }
 
         servletClasses.put(info.basePath(), servlet);

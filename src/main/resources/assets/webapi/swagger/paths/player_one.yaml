@@ -30,7 +30,12 @@ get:
     200:
       description: Detailed player info
       schema:
-        $ref: "../definitions/PlayerFull.yaml"
+        type: object
+        properties:
+          ok:
+            $ref: "../definitions/ok.yaml"
+          player:
+            $ref: "../definitions/PlayerFull.yaml"
 post:
   summary: Execute player method
   description: |
@@ -61,4 +66,9 @@ post:
     200:
       description: Method return value
       schema:
-        $ref: "../definitions/RawResponse.yaml"
+        type: object
+        properties:
+          ok:
+            $ref: "../definitions/ok.yaml"
+          player:
+            $ref: "../definitions/RawResponse.yaml"

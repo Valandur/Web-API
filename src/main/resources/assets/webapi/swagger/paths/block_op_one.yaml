@@ -18,9 +18,12 @@ get:
     200:
       description: Block operation
       schema:
-        type: array
-        items:
-          $ref: "../definitions/BlockOperationFull.yaml"
+        type: object
+        properties:
+          ok:
+            $ref: "../definitions/ok.yaml"
+          operation:
+            $ref: "../definitions/BlockOperationFull.yaml"
 put:
   summary: Modify block operation
   description: |
@@ -54,6 +57,13 @@ put:
       $ref: "../responses/404.yaml"
     200:
       description: Status change successful
+      schema:
+        type: object
+        properties:
+          ok:
+            $ref: "../definitions/ok.yaml"
+          operation:
+            $ref: "../definitions/BlockOperationFull.yaml"
 delete:
   summary: Cancel block operation
   description: |
@@ -77,3 +87,10 @@ delete:
       $ref: "../responses/404.yaml"
     200:
       description: Cancel successful
+      schema:
+        type: object
+        properties:
+          ok:
+            $ref: "../definitions/ok.yaml"
+          operation:
+            $ref: "../definitions/BlockOperationFull.yaml"

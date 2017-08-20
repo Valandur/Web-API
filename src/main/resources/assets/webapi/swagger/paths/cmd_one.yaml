@@ -18,4 +18,9 @@ get:
     200:
       description: Detailed info about the command
       schema:
-        $ref: "../definitions/CommandFull.yaml"
+        type: object
+        properties:
+          ok:
+           $ref: "../definitions/ok.yaml"
+          command:
+            $ref: "../definitions/CommandFull.yaml"

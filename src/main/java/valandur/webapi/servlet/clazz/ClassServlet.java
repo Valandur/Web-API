@@ -23,6 +23,7 @@ public class ClassServlet extends WebAPIBaseServlet {
     public void getClass(ServletData data, String className) {
         try {
             Class c = Class.forName(className);
+            data.addJson("ok", true, false);
             data.addJson("class", cacheService.getClass(c), true);
         } catch (ClassNotFoundException e) {
             data.sendError(HttpServletResponse.SC_NOT_FOUND, "The class '" + className + "' could not be found");

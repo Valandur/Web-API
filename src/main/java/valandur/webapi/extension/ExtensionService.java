@@ -147,6 +147,7 @@ public class ExtensionService implements IExtensionService {
                 logger.info("    -> " + cls.getName());
             } catch (IOException | ClassNotFoundException e) {
                 logger.error("   Error: See the log file at " + logFile + " for details");
+                if (WebAPI.reportErrors()) Sentry.capture(e);
                 diag.writeException(e);
             }
 

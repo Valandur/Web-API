@@ -33,8 +33,7 @@ get:
         type: object
         properties:
           ok:
-            type: boolean
-            description: True if the operation was succesfull, false otherwise.
+            $ref: "../definitions/ok.yaml"
           world:
             $ref: "../definitions/WorldFull.yaml"
 put:
@@ -70,8 +69,7 @@ put:
         type: object
         properties:
           ok:
-            type: boolean
-            description: True if the operation was successful, false otherwise.
+            $ref: "../definitions/ok.yaml"
           world:
             $ref: "../definitions/WorldFull.yaml"
 post:
@@ -105,8 +103,7 @@ post:
       description: Method return value
       schema:
         ok:
-          type: boolean
-          description: True if the operation was succesfull, false otherwise.
+          $ref: "../definitions/ok.yaml"
         world:
           $ref: "../definitions/WorldFull.yaml"
         result:
@@ -138,7 +135,6 @@ delete:
         type: object
         properties:
           ok:
-            type: boolean
-            description: True if the operation was successful, false otherwise.
+            $ref: "../definitions/ok.yaml"
           world:
             $ref: "../definitions/WorldFull.yaml"

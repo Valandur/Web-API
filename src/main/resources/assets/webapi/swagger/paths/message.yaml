@@ -24,6 +24,7 @@ post:
     200:
       description: Message sent
       schema:
-        ok:
-          type: boolean
-          description: True if the message was sent successfully, false otherwise.
+        type: object
+        properties:
+          ok:
+            $ref: "../definitions/ok.yaml"

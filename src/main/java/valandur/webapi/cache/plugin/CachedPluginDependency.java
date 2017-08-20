@@ -1,4 +1,4 @@
-package valandur.webapi.servlet.plugin;
+package valandur.webapi.cache.plugin;
 
 import org.spongepowered.plugin.meta.PluginDependency;
 import valandur.webapi.api.cache.plugin.ICachedPluginDependency;

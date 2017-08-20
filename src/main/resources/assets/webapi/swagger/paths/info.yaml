@@ -12,4 +12,8 @@ get:
     200:
       description: General info
       schema:
-        $ref: "../definitions/ServerInfo.yaml"
+        type: object
+        properties:
+          allOf:
+            - $ref: "../definitions/ok.yaml"
+            - $ref: "../definitions/ServerInfo.yaml"

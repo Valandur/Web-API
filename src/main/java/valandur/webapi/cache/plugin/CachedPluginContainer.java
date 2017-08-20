@@ -5,7 +5,6 @@ import org.spongepowered.api.plugin.PluginContainer;
 import valandur.webapi.api.cache.plugin.ICachedPluginContainer;
 import valandur.webapi.api.cache.plugin.ICachedPluginDependency;
 import valandur.webapi.cache.CachedObject;
-import valandur.webapi.servlet.plugin.CachedPluginDependency;
 
 import java.util.*;
 

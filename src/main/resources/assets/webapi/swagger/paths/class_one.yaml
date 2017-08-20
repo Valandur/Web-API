@@ -23,5 +23,7 @@ get:
       schema:
         type: object
         properties:
+          ok:
+            $ref: "../definitions/ok.yaml"
           class:
             $ref: "../definitions/Class.yaml"

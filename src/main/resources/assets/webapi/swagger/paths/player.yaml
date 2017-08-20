@@ -14,9 +14,8 @@ get:
       schema:
         type: object
         properties:
-          maxPlayers:
-            type: integer
-            description: The maximum amount of players this server supports.
+          ok:
+            $ref: "../definitions/ok.yaml"
           players:
             type: array
             description: A list of players.

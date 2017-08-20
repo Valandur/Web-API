@@ -14,8 +14,10 @@ get:
       schema:
         type: object
         properties:
+          ok:
+            $ref: "../definitions/ok.yaml"
           plugins:
             type: array
-            description: A list of plugin ids.
+            description: A list of plugins.
             items:
               $ref: "../definitions/Plugin.yaml"

@@ -5,6 +5,7 @@ import org.eclipse.jetty.http.HttpMethod;
 import org.spongepowered.api.Platform;
 import org.spongepowered.api.Server;
 import org.spongepowered.api.Sponge;
+import valandur.webapi.WebAPI;
 import valandur.webapi.api.annotation.WebAPIEndpoint;
 import valandur.webapi.api.annotation.WebAPIServlet;
 import valandur.webapi.api.servlet.WebAPIBaseServlet;
@@ -12,32 +13,36 @@ import valandur.webapi.servlet.ServletData;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.Iterator;
+import java.util.Optional;
 
 @WebAPIServlet(basePath = "info")
 public class InfoServlet extends WebAPIBaseServlet {
 
     @WebAPIEndpoint(method = HttpMethod.GET, path = "/", perm = "get")
     public void getInfo(ServletData data) {
-        Server server = Sponge.getServer();
-        Platform platform = Sponge.getPlatform();
+        Optional<Boolean> optRes = WebAPI.runOnMain(() -> {
+            Server server = Sponge.getServer();
+            Platform platform = Sponge.getPlatform();
 
-        data.addJson("ok", true, false);
+            data.addJson("motd", server.getMotd().toPlain(), false);
+            data.addJson("players", server.getOnlinePlayers().size(), false);
+            data.addJson("maxPlayers", server.getMaxPlayers(), false);
+            data.addJson("address", server.getBoundAddress().map(Object::toString).orElse(null), false);
+            data.addJson("onlineMode", server.getOnlineMode(), false);
+            data.addJson("resourcePack", server.getDefaultResourcePack().orElse(null), false);
+            data.addJson("hasWhitelist", server.hasWhitelist(), false);
 
-        data.addJson("motd", server.getMotd().toPlain(), false);
-        data.addJson("players", server.getOnlinePlayers().size(), false);
-        data.addJson("maxPlayers", server.getMaxPlayers(), false);
-        data.addJson("address", server.getBoundAddress().map(Object::toString).orElse(null), false);
-        data.addJson("onlineMode", server.getOnlineMode(), false);
-        data.addJson("resourcePack", server.getDefaultResourcePack().orElse(null), false);
-        data.addJson("hasWhitelist", server.hasWhitelist(), false);
+            data.addJson("uptimeTicks", server.getRunningTimeTicks(), false);
+            data.addJson("tps", server.getTicksPerSecond(), false);
+            data.addJson("minecraftVersion", platform.getMinecraftVersion().getName(), false);
 
-        data.addJson("uptimeTicks", server.getRunningTimeTicks(), false);
-        data.addJson("tps", server.getTicksPerSecond(), false);
-        data.addJson("minecraftVersion", platform.getMinecraftVersion().getName(), false);
+            data.addJson("game", platform.getContainer(Platform.Component.GAME), true);
+            data.addJson("api", platform.getContainer(Platform.Component.API), true);
+            data.addJson("implementation", platform.getContainer(Platform.Component.IMPLEMENTATION), true);
+            return true;
+        });
 
-        data.addJson("game", platform.getContainer(Platform.Component.GAME), true);
-        data.addJson("api", platform.getContainer(Platform.Component.API), true);
-        data.addJson("implementation", platform.getContainer(Platform.Component.IMPLEMENTATION), true);
+        data.addJson("ok", optRes.orElse(false), false);
     }
 
     @WebAPIEndpoint(method = HttpMethod.GET, path = "/properties", perm = "properties")

@@ -1,7 +1,7 @@
 package valandur.webapi.json.serializer.plugin;
 
 import valandur.webapi.api.json.WebAPIBaseSerializer;
-import valandur.webapi.servlet.plugin.CachedPluginDependency;
+import valandur.webapi.cache.plugin.CachedPluginDependency;
 
 import java.io.IOException;
 

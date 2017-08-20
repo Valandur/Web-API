@@ -1,6 +1,7 @@
 package valandur.webapi.servlet.world;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.sentry.Sentry;
 import org.eclipse.jetty.http.HttpMethod;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.util.Tuple;
@@ -224,6 +225,7 @@ public class WorldServlet extends WebAPIBaseServlet {
                 return Sponge.getServer().deleteWorld(w).get();
             } catch (InterruptedException | ExecutionException e) {
                 e.printStackTrace();
+                if (WebAPI.reportErrors()) Sentry.capture(e);
             }
             return false;
         });

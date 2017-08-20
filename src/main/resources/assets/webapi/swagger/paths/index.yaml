@@ -46,6 +46,9 @@
 /registry/{className}:
   $ref: "./registry.yaml"
 
+/servlet:
+  $ref: "./servlet.yaml"
+
 /tile-entity:
   $ref: "./tile-entity.yaml"
 /tile-entity/{worldUuid}/{x}/{y}/{z}:
@@ -62,4 +65,3 @@
   $ref: "./world_chunk_list.yaml"
 /world/{uuid}/chunk/{x}/{z}:
   $ref: "./world_chunk_one.yaml"
-

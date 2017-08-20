@@ -37,4 +37,11 @@ get:
     200:
       description: Single block
       schema:
-        $ref: "../definitions/BlockFull.yaml"
+        type: object
+        properties:
+          ok:
+           $ref: "../definitions/ok.yaml"
+          location:
+            $ref: "../definitions/Location.yaml"
+          block:
+            $ref: "../definitions/BlockFull.yaml"

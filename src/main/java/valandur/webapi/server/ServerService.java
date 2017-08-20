@@ -10,32 +10,28 @@ import valandur.webapi.api.server.IServerStat;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 
 public class ServerService implements IServerService {
 
-    private Map<String, String> properties = new HashMap<>();
-    private Map<String, String> newProperties = new HashMap<>();
-    @Override
-    public Map<String, String> getProperties() {
-        return newProperties;
-    }
+    private Map<String, String> properties = new ConcurrentHashMap<>();
+    private Map<String, String> newProperties = new ConcurrentHashMap<>();
 
     // Record every 5 seconds. Max 17280 entries = 24 hours of tps
     public static int STATS_INTERVAL = 5;
     public static int MAX_STATS_ENTRIES = 4320;
-    public List<ServerStat<Double>> averageTps = new ArrayList<>();
-    public List<ServerStat<Integer>> onlinePlayers = new ArrayList<>();
+    public Queue<ServerStat<Double>> averageTps = new ConcurrentLinkedQueue<>();
+    public Queue<ServerStat<Integer>> onlinePlayers = new ConcurrentLinkedQueue<>();
 
     private Task tpsTask;
 
 
     public void init() {
         properties.clear();
+        newProperties.clear();
 
         try {
             List<String> lines = Files.readAllLines(Paths.get("./server.properties"));
@@ -58,13 +54,13 @@ public class ServerService implements IServerService {
         }
 
         tpsTask = Task.builder().execute(() -> {
-            averageTps.add(0, new ServerStat<>(Sponge.getServer().getTicksPerSecond()));
+            averageTps.add(new ServerStat<>(Sponge.getServer().getTicksPerSecond()));
             while (averageTps.size() > MAX_STATS_ENTRIES)
-                averageTps.remove(averageTps.size() - 1);
+                averageTps.poll();
 
-            onlinePlayers.add(0, new ServerStat<>(Sponge.getServer().getOnlinePlayers().size()));
+            onlinePlayers.add(new ServerStat<>(Sponge.getServer().getOnlinePlayers().size()));
             while (onlinePlayers.size() > MAX_STATS_ENTRIES)
-                onlinePlayers.remove(onlinePlayers.size() - 1);
+                onlinePlayers.poll();
         }).async().interval(STATS_INTERVAL, TimeUnit.SECONDS).name("Web-API - Average TPS").submit(WebAPI.getInstance());
 
         newProperties.putAll(properties);
@@ -79,6 +75,10 @@ public class ServerService implements IServerService {
         return new ArrayList<>(onlinePlayers);
     }
 
+    @Override
+    public Map<String, String> getProperties() {
+        return newProperties;
+    }
     @Override
     public void setProperty(String key, String value) {
         newProperties.put(key, value);

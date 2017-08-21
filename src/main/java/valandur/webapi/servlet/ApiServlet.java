@@ -3,6 +3,7 @@ package valandur.webapi.servlet;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.sentry.Sentry;
+import io.sentry.context.Context;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.util.TreeNode;
 import valandur.webapi.permission.PermissionService;
@@ -39,61 +40,61 @@ public class ApiServlet extends HttpServlet {
             return;
         }
 
+        Optional<MatchedRoute> optMatch = servletService.getMethod(verb, req.getPathInfo());
+        if (!optMatch.isPresent()) {
+            // We couldn't find a method
+            resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Unknown/Invalid request path");
+            return;
+        }
+
+        MatchedRoute match = optMatch.get();
+
+        String specPerm = match.getRoute().perm();
+        if (!specPerm.isEmpty()) {
+            specPerm = match.getServletSpec().basePath() + "." + specPerm;
+            String[] reqPerms = specPerm.split("\\.");
+            TreeNode<String, Boolean> permissions = (TreeNode<String, Boolean>) req.getAttribute("perms");
+
+            if (permissions == null) {
+                WebAPI.getLogger().warn(req.getRemoteAddr() + " does not have permisson to access " + req.getRequestURI());
+                resp.sendError(HttpServletResponse.SC_FORBIDDEN, "Not authorized");
+                return;
+            }
+
+            TreeNode<String, Boolean> methodPerms = permissionService.subPermissions(permissions, reqPerms);
+            if (!methodPerms.getValue()) {
+                WebAPI.getLogger().warn(req.getRemoteAddr() + " does not have permission to access " + req.getRequestURI());
+                resp.sendError(HttpServletResponse.SC_FORBIDDEN, "Not authorized");
+                return;
+            }
+
+            req.setAttribute("dataPerms", methodPerms);
+        } else {
+            req.setAttribute("dataPerms", PermissionService.permitAllNode());
+        }
+
+        if (verb.equalsIgnoreCase("Post") || verb.equalsIgnoreCase("Put")) {
+            try {
+                ObjectMapper mapper = new ObjectMapper();
+                JsonNode node = mapper.readTree(req.getReader());
+                req.setAttribute("body", node);
+            } catch (Exception e) {
+                resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid JSON request body");
+                return;
+            }
+        }
+
+        if (match.getArgumentError() != HttpServletResponse.SC_OK) {
+            resp.sendError(match.getArgumentError(), match.getArgumentErrorMessage());
+            return;
+        }
+
+        ServletData data = new ServletData(req, resp, match.getMatchedParts());
+
+        List<Object> params = match.getMatchedParams();
+        params.add(0, data);
+
         try {
-            Optional<MatchedRoute> optMatch = servletService.getMethod(verb, req.getPathInfo());
-            if (!optMatch.isPresent()) {
-                // We couldn't find a method
-                resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Unknown/Invalid request path");
-                return;
-            }
-
-            MatchedRoute match = optMatch.get();
-
-            String specPerm = match.getRoute().perm();
-            if (!specPerm.isEmpty()) {
-                specPerm = match.getServletSpec().basePath() + "." + specPerm;
-                String[] reqPerms = specPerm.split("\\.");
-                TreeNode<String, Boolean> permissions = (TreeNode<String, Boolean>) req.getAttribute("perms");
-
-                if (permissions == null) {
-                    WebAPI.getLogger().warn(req.getRemoteAddr() + " does not have permisson to access " + req.getRequestURI());
-                    resp.sendError(HttpServletResponse.SC_FORBIDDEN, "Not authorized");
-                    return;
-                }
-
-                TreeNode<String, Boolean> methodPerms = permissionService.subPermissions(permissions, reqPerms);
-                if (!methodPerms.getValue()) {
-                    WebAPI.getLogger().warn(req.getRemoteAddr() + " does not have permission to access " + req.getRequestURI());
-                    resp.sendError(HttpServletResponse.SC_FORBIDDEN, "Not authorized");
-                    return;
-                }
-
-                req.setAttribute("dataPerms", methodPerms);
-            } else {
-                req.setAttribute("dataPerms", PermissionService.permitAllNode());
-            }
-
-            if (verb.equalsIgnoreCase("Post") || verb.equalsIgnoreCase("Put")) {
-                try {
-                    ObjectMapper mapper = new ObjectMapper();
-                    JsonNode node = mapper.readTree(req.getReader());
-                    req.setAttribute("body", node);
-                } catch (Exception e) {
-                    resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid JSON request body");
-                    return;
-                }
-            }
-
-            if (match.getArgumentError() != HttpServletResponse.SC_OK) {
-                resp.sendError(match.getArgumentError(), match.getArgumentErrorMessage());
-                return;
-            }
-
-            ServletData data = new ServletData(req, resp, match.getMatchedParts());
-
-            List<Object> params = match.getMatchedParams();
-            params.add(0, data);
-
             match.getMethod().invoke(match.getServlet(), params.toArray());
 
             if (!data.isDone() && !data.isErrorSent()) {
@@ -113,12 +114,13 @@ public class ApiServlet extends HttpServlet {
             e.printStackTrace();
 
             if (WebAPI.reportErrors()) {
-                Sentry.clearContext();
-                Sentry.getContext().addExtra("verb", verb);
-                Sentry.getContext().addExtra("request", req.getRequestURI());
-                Sentry.getContext().addExtra("body", req.getAttribute("body"));
+                Context context = Sentry.getContext();
+                context.addExtra("request_verb", verb);
+                context.addExtra("request_uri", req.getRequestURI());
+                context.addExtra("request_query", req.getQueryString());
+                context.addExtra("request_body", data.getRequestBody().toString());
+                context.addExtra("response_body", data.getNode().toString());
                 Sentry.capture(e);
-                Sentry.clearContext();
             }
 
             resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal server error");

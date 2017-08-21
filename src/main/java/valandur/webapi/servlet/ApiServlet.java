@@ -2,8 +2,6 @@ package valandur.webapi.servlet;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.sentry.Sentry;
-import io.sentry.context.Context;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.util.TreeNode;
 import valandur.webapi.permission.PermissionService;
@@ -34,6 +32,10 @@ public class ApiServlet extends HttpServlet {
         resp.addHeader("Access-Control-Allow-Origin","*");
         resp.addHeader("Access-Control-Allow-Methods","GET,PUT,POST,DELETE");
         resp.addHeader("Access-Control-Allow-Headers","Origin, X-Requested-With, Content-Type, Accept");
+
+        WebAPI.sentryExtra("request_verb", verb);
+        WebAPI.sentryExtra("request_uri", req.getRequestURI());
+        WebAPI.sentryExtra("request_query", req.getQueryString());
 
         // Return early if OPTIONS
         if (req.getMethod().equals("OPTIONS") ) {
@@ -78,6 +80,8 @@ public class ApiServlet extends HttpServlet {
                 ObjectMapper mapper = new ObjectMapper();
                 JsonNode node = mapper.readTree(req.getReader());
                 req.setAttribute("body", node);
+
+                WebAPI.sentryExtra("request_body", node != null ? node.toString() : "");
             } catch (Exception e) {
                 resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid JSON request body");
                 return;
@@ -103,7 +107,10 @@ public class ApiServlet extends HttpServlet {
                 try {
                     PrintWriter out = data.getWriter();
                     ObjectMapper om = new ObjectMapper();
-                    out.write(om.writeValueAsString(data.getNode()));
+                    String res = om.writeValueAsString(data.getNode());
+                    out.write(res);
+
+                    WebAPI.sentryExtra("request_body", res);
                 } catch(IllegalStateException ignored) {
                     // We already used the output buffer in stream mode, so getting it as a writer now doesn't work
                     // Just do nothing in this case, because we can assume the output was already handled by the servlet
@@ -113,15 +120,7 @@ public class ApiServlet extends HttpServlet {
             // Error executing the method
             e.printStackTrace();
 
-            if (WebAPI.reportErrors()) {
-                Context context = Sentry.getContext();
-                context.addExtra("request_verb", verb);
-                context.addExtra("request_uri", req.getRequestURI());
-                context.addExtra("request_query", req.getQueryString());
-                context.addExtra("request_body", data.getRequestBody().toString());
-                context.addExtra("response_body", data.getNode().toString());
-                Sentry.capture(e);
-            }
+            if (WebAPI.reportErrors()) WebAPI.sentryCapture(e);
 
             resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal server error");
         }

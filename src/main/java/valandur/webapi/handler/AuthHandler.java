@@ -90,7 +90,7 @@ public class AuthHandler extends AbstractHandler {
             loader.save(config);
         } catch (IOException e) {
             e.printStackTrace();
-            if (WebAPI.reportErrors()) Sentry.capture(e);
+            if (WebAPI.reportErrors()) WebAPI.sentryCapture(e);
         }
     }
 

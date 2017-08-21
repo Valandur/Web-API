@@ -143,7 +143,7 @@ public class WebHookService implements IWebHookService {
             }
         } catch (ObjectMappingException | ClassNotFoundException e) {
             e.printStackTrace();
-            if (WebAPI.reportErrors()) Sentry.capture(e);
+            if (WebAPI.reportErrors()) WebAPI.sentryCapture(e);
         }
     }
 
@@ -189,7 +189,7 @@ public class WebHookService implements IWebHookService {
                 stringData = hook.getDataType() == WebHook.WebHookDataType.JSON ? stringData : "body=" + URLEncoder.encode(stringData, "UTF-8");
             } catch (Exception e) {
                 e.printStackTrace();
-                if (WebAPI.reportErrors()) Sentry.capture(e);
+                if (WebAPI.reportErrors()) WebAPI.sentryCapture(e);
             }
         }
         final String finalData = stringData;

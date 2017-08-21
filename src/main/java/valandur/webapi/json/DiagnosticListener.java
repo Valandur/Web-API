@@ -19,7 +19,7 @@ public class DiagnosticListener implements javax.tools.DiagnosticListener {
             writer = new PrintWriter(new OutputStreamWriter(new FileOutputStream(logFile), "utf-8"));
         } catch (UnsupportedEncodingException | FileNotFoundException e) {
             e.printStackTrace();
-            if (WebAPI.reportErrors()) Sentry.capture(e);
+            if (WebAPI.reportErrors()) WebAPI.sentryCapture(e);
         }
     }
     public void stopLog() {

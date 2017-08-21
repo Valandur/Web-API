@@ -55,7 +55,7 @@ public class ExtensionService implements IExtensionService {
                     .collect(Collectors.toList());
         } catch (IOException e) {
             e.printStackTrace();
-            if (WebAPI.reportErrors()) Sentry.capture(e);
+            if (WebAPI.reportErrors()) WebAPI.sentryCapture(e);
             return;
         }
 
@@ -147,7 +147,7 @@ public class ExtensionService implements IExtensionService {
                 logger.info("    -> " + cls.getName());
             } catch (IOException | ClassNotFoundException e) {
                 logger.error("   Error: See the log file at " + logFile + " for details");
-                if (WebAPI.reportErrors()) Sentry.capture(e);
+                if (WebAPI.reportErrors()) WebAPI.sentryCapture(e);
                 diag.writeException(e);
             }
 

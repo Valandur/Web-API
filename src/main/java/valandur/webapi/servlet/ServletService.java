@@ -69,7 +69,7 @@ public class ServletService implements IServletService {
             servletMethods.put(serv, newMethods);
         } catch (InstantiationException | IllegalAccessException e) {
             logger.error("  -> Could not init servlet " + servletClass.getName() + ": " + e.getMessage());
-            if (WebAPI.reportErrors()) Sentry.capture(e);
+            if (WebAPI.reportErrors()) WebAPI.sentryCapture(e);
         }
     }
 
@@ -158,7 +158,7 @@ public class ServletService implements IServletService {
         } catch (NoSuchMethodException ignored) {
         } catch (IllegalAccessException | InvocationTargetException e) {
             e.printStackTrace();
-            if (WebAPI.reportErrors()) Sentry.capture(e);
+            if (WebAPI.reportErrors()) WebAPI.sentryCapture(e);
         }
 
         servletClasses.put(info.basePath(), servlet);

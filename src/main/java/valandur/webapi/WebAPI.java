@@ -127,7 +127,7 @@ public class WebAPI {
 
     public static final String ID = "webapi";
     public static final String NAME = "Web-API";
-    public static final String VERSION = "@version@";
+    public static final String VERSION = "4.4.2";
     public static final String DESCRIPTION = "Access Minecraft through a Web API";
     public static final String URL = "https://github.com/Valandur/Web-API";
 
@@ -241,18 +241,9 @@ public class WebAPI {
 
     public WebAPI() {
         System.setProperty("sentry.dsn", "https://fb64795d2a5c4ff18f3c3e4117d7c245:53cf4ea85ae44608ab5b189f0c07b3f1@sentry.io/203545");
-        System.setProperty("sentry.release", "@version@");
+        System.setProperty("sentry.release", WebAPI.VERSION);
 
         Sentry.init();
-
-        Context context = Sentry.getContext();
-        context.addTag("java_version", System.getProperty("java.version"));
-        context.addTag("os_name", System.getProperty("os.name"));
-        context.addTag("os_arch", System.getProperty("os.arch"));
-        context.addTag("os_version", System.getProperty("os.version"));
-        context.addExtra("java_compiler", System.getProperty("java.compiler"));
-        context.addExtra("processors", Runtime.getRuntime().availableProcessors());
-        context.addExtra("max_memory", Runtime.getRuntime().maxMemory());
     }
 
     @Listener
@@ -265,7 +256,7 @@ public class WebAPI {
                 Files.createDirectories(configPath);
             } catch (IOException e) {
                 e.printStackTrace();
-                if (WebAPI.reportErrors()) Sentry.capture(e);
+                if (WebAPI.reportErrors()) WebAPI.sentryCapture(e);
             }
         }
 
@@ -369,12 +360,6 @@ public class WebAPI {
         adminPanelEnabled = config.getNode("adminPanel").getBoolean();
         keyStoreLocation = config.getNode("customKeyStore").getString();
         CmdServlet.CMD_WAIT_TIME = config.getNode("cmdWaitTime").getInt();
-
-        // Add more sentry context
-        Context context = Sentry.getContext();
-        context.addExtra("server_host", serverHost);
-        context.addExtra("server_port_http", serverPortHttp.toString());
-        context.addExtra("server_port_https", serverPortHttps.toString());
 
         if (devMode)
             logger.info("WebAPI IS RUNNING IN DEV MODE. USING NON-SHADOWED REFERENCES!");
@@ -533,10 +518,10 @@ public class WebAPI {
             logger.error("Web-API webserver could not start, probably because one of the ports needed for HTTP " +
                     "and/or HTTPS are in use or not accessible (ports below 1024 are protected)");
             e.printStackTrace();
-            Sentry.capture(e);
+            WebAPI.sentryCapture(e);
         } catch (Exception e) {
             e.printStackTrace();
-            Sentry.capture(e);
+            WebAPI.sentryCapture(e);
         }
 
         if (player != null) {
@@ -550,7 +535,7 @@ public class WebAPI {
                 server = null;
             } catch (Exception e) {
                 e.printStackTrace();
-                if (WebAPI.reportErrors()) Sentry.capture(e);
+                if (WebAPI.reportErrors()) WebAPI.sentryCapture(e);
             }
         }
     }
@@ -562,11 +547,7 @@ public class WebAPI {
         return context;
     }
 
-    public static CommandResult executeCommand(String command, CommandSource source) {
-        CommandManager cmdManager = Sponge.getGame().getCommandManager();
-        return cmdManager.process(source, command);
-    }
-
+    // Event listeners
     @Listener
     public void onServerStart(GameStartedServerEvent event) {
         startWebServer(null);
@@ -728,6 +709,13 @@ public class WebAPI {
         webHookService.notifyHooks(WebHookService.WebHookType.BLOCK_OPERATION_STATUS, event);
     }
 
+    // Execute a command
+    public static CommandResult executeCommand(String command, CommandSource source) {
+        CommandManager cmdManager = Sponge.getGame().getCommandManager();
+        return cmdManager.process(source, command);
+    }
+
+    // Run functions on the main server thread
     public static void runOnMain(Runnable runnable) {
         if (Sponge.getServer().isMainThread()) {
             runnable.run();
@@ -737,7 +725,7 @@ public class WebAPI {
                 future.get();
             } catch (InterruptedException | ExecutionException e) {
                 e.printStackTrace();
-                if (WebAPI.reportErrors()) Sentry.capture(e);
+                if (WebAPI.reportErrors()) WebAPI.sentryCapture(e);
             }
         }
     }
@@ -754,9 +742,41 @@ public class WebAPI {
                 return Optional.of(obj);
             } catch (InterruptedException | ExecutionException e) {
                 e.printStackTrace();
-                if (WebAPI.reportErrors()) Sentry.capture(e);
+                if (WebAPI.reportErrors()) WebAPI.sentryCapture(e);
                 return Optional.empty();
             }
         }
+    }
+
+    // Sentry logging
+    public static void sentryTag(String name, String value) {
+        Sentry.getContext().addTag(name, value);
+    }
+    public static void sentryExtra(String name, Object value) {
+        Sentry.getContext().addExtra(name, value);
+    }
+
+    private static void addDefaultContext() {
+        Context context = Sentry.getContext();
+        context.addTag("java_version", System.getProperty("java.version"));
+        context.addTag("os_name", System.getProperty("os.name"));
+        context.addTag("os_arch", System.getProperty("os.arch"));
+        context.addTag("os_version", System.getProperty("os.version"));
+        context.addExtra("processors", Runtime.getRuntime().availableProcessors());
+        context.addExtra("memory_max", Runtime.getRuntime().maxMemory());
+        context.addExtra("memory_total", Runtime.getRuntime().totalMemory());
+        context.addExtra("memory_free", Runtime.getRuntime().freeMemory());
+
+        context.addExtra("server_host", WebAPI.getInstance().serverHost);
+        context.addExtra("server_port_http", WebAPI.getInstance().serverPortHttp);
+        context.addExtra("server_port_https", WebAPI.getInstance().serverPortHttps);
+    }
+    public static void sentryCapture(String message) {
+        addDefaultContext();
+        WebAPI.sentryCapture(message);
+    }
+    public static void sentryCapture(Exception e) {
+        addDefaultContext();
+        WebAPI.sentryCapture(e);
     }
 }

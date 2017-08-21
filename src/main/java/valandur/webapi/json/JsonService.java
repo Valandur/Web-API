@@ -249,7 +249,7 @@ public class JsonService implements IJsonService {
                 serializers.put(entry.getKey(), ser);
             } catch (InstantiationException | IllegalAccessException e) {
                 logger.warn("  Could not register serializer " + entry.getValue().getName() + ": " + e.getMessage());
-                if (WebAPI.reportErrors()) Sentry.capture(e);
+                if (WebAPI.reportErrors()) WebAPI.sentryCapture(e);
             }
         }
 
@@ -269,7 +269,7 @@ public class JsonService implements IJsonService {
                 serializers.put(serializer.getHandledClass(), serializer);
             } catch (IllegalAccessException | InstantiationException e) {
                 logger.warn("   Could not instantiate serializer '" + serializerClass.getName() + "': " + e.getMessage());
-                if (WebAPI.reportErrors()) Sentry.capture(e);
+                if (WebAPI.reportErrors()) WebAPI.sentryCapture(e);
             }
         });
 

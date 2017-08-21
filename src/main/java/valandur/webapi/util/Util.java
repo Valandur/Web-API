@@ -68,7 +68,7 @@ public class Util {
 
         } catch (IOException | NoSuchElementException e) {
             e.printStackTrace();
-            if (WebAPI.reportErrors()) Sentry.capture(e);
+            if (WebAPI.reportErrors()) WebAPI.sentryCapture(e);
             return null;
         }
     }

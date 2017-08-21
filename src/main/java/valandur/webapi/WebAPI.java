@@ -3,6 +3,7 @@ package valandur.webapi;
 import com.google.common.reflect.TypeToken;
 import com.google.inject.Inject;
 import io.sentry.Sentry;
+import io.sentry.context.Context;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
 import ninja.leaping.configurate.objectmapping.serialize.TypeSerializers;
@@ -102,6 +103,7 @@ import valandur.webapi.util.JettyLogger;
 import valandur.webapi.util.Util;
 
 import java.io.IOException;
+import java.net.SocketException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.LinkedList;
@@ -125,7 +127,7 @@ public class WebAPI {
 
     public static final String ID = "webapi";
     public static final String NAME = "Web-API";
-    public static final String VERSION = "@version@";
+    public static final String VERSION = "4.4.2";
     public static final String DESCRIPTION = "Access Minecraft through a Web API";
     public static final String URL = "https://github.com/Valandur/Web-API";
 
@@ -180,8 +182,8 @@ public class WebAPI {
     }
 
     private String serverHost;
-    private int serverPortHttp;
-    private int serverPortHttps;
+    private Integer serverPortHttp;
+    private Integer serverPortHttps;
     private String keyStoreLocation;
     private Server server;
 
@@ -239,7 +241,8 @@ public class WebAPI {
 
     public WebAPI() {
         System.setProperty("sentry.dsn", "https://fb64795d2a5c4ff18f3c3e4117d7c245:53cf4ea85ae44608ab5b189f0c07b3f1@sentry.io/203545");
-        System.setProperty("sentry.release", "@version@");
+        System.setProperty("sentry.release", WebAPI.VERSION);
+
         Sentry.init();
     }
 
@@ -253,7 +256,7 @@ public class WebAPI {
                 Files.createDirectories(configPath);
             } catch (IOException e) {
                 e.printStackTrace();
-                if (WebAPI.reportErrors()) Sentry.capture(e);
+                if (WebAPI.reportErrors()) WebAPI.sentryCapture(e);
             }
         }
 
@@ -348,6 +351,7 @@ public class WebAPI {
         Tuple<ConfigurationLoader, ConfigurationNode> tup = Util.loadWithDefaults("config.conf", "defaults/config.conf");
         ConfigurationNode config = tup.getSecond();
 
+        // Save important config values to variables
         devMode = config.getNode("devMode").getBoolean();
         reportErrors = config.getNode("reportErrors").getBoolean();
         serverHost = config.getNode("host").getString();
@@ -398,6 +402,13 @@ public class WebAPI {
 
             // HTTP
             if (serverPortHttp >= 0) {
+                if (serverPortHttp < 1024) {
+                    logger.warn("You are using an HTTP port < 1024 which is not recommended! \n" +
+                            "This might cause errors when not running the server as root/admin. \n" +
+                            "Running the server as root/admin is not recommended. " +
+                            "Please use a port above 1024 for HTTP."
+                    );
+                }
                 ServerConnector httpConn = new ServerConnector(server, new HttpConnectionFactory(httpConfig));
                 httpConn.setHost(serverHost);
                 httpConn.setPort(serverPortHttp);
@@ -409,6 +420,14 @@ public class WebAPI {
 
             // HTTPS
             if (serverPortHttps >= 0) {
+                if (serverPortHttps < 1024) {
+                    logger.warn("You are using an HTTPS port < 1024 which is not recommended! \n" +
+                            "This might cause errors when not running the server as root/admin. \n" +
+                            "Running the server as root/admin is not recommended. " +
+                            "Please use a port above 1024 for HTTPS."
+                    );
+                }
+
                 // Update http config
                 httpConfig.setSecureScheme("https");
                 httpConfig.setSecurePort(serverPortHttps);
@@ -495,9 +514,14 @@ public class WebAPI {
 
             logger.info("AdminPanel: " + baseUri + "/admin");
             logger.info("API Docs: " + baseUri + "/docs");
+        } catch(SocketException e) {
+            logger.error("Web-API webserver could not start, probably because one of the ports needed for HTTP " +
+                    "and/or HTTPS are in use or not accessible (ports below 1024 are protected)");
+            e.printStackTrace();
+            WebAPI.sentryCapture(e);
         } catch (Exception e) {
             e.printStackTrace();
-            Sentry.capture(e);
+            WebAPI.sentryCapture(e);
         }
 
         if (player != null) {
@@ -511,7 +535,7 @@ public class WebAPI {
                 server = null;
             } catch (Exception e) {
                 e.printStackTrace();
-                if (WebAPI.reportErrors()) Sentry.capture(e);
+                if (WebAPI.reportErrors()) WebAPI.sentryCapture(e);
             }
         }
     }
@@ -523,11 +547,7 @@ public class WebAPI {
         return context;
     }
 
-    public static CommandResult executeCommand(String command, CommandSource source) {
-        CommandManager cmdManager = Sponge.getGame().getCommandManager();
-        return cmdManager.process(source, command);
-    }
-
+    // Event listeners
     @Listener
     public void onServerStart(GameStartedServerEvent event) {
         startWebServer(null);
@@ -689,6 +709,13 @@ public class WebAPI {
         webHookService.notifyHooks(WebHookService.WebHookType.BLOCK_OPERATION_STATUS, event);
     }
 
+    // Execute a command
+    public static CommandResult executeCommand(String command, CommandSource source) {
+        CommandManager cmdManager = Sponge.getGame().getCommandManager();
+        return cmdManager.process(source, command);
+    }
+
+    // Run functions on the main server thread
     public static void runOnMain(Runnable runnable) {
         if (Sponge.getServer().isMainThread()) {
             runnable.run();
@@ -698,7 +725,7 @@ public class WebAPI {
                 future.get();
             } catch (InterruptedException | ExecutionException e) {
                 e.printStackTrace();
-                if (WebAPI.reportErrors()) Sentry.capture(e);
+                if (WebAPI.reportErrors()) WebAPI.sentryCapture(e);
             }
         }
     }
@@ -715,9 +742,41 @@ public class WebAPI {
                 return Optional.of(obj);
             } catch (InterruptedException | ExecutionException e) {
                 e.printStackTrace();
-                if (WebAPI.reportErrors()) Sentry.capture(e);
+                if (WebAPI.reportErrors()) WebAPI.sentryCapture(e);
                 return Optional.empty();
             }
         }
+    }
+
+    // Sentry logging
+    public static void sentryTag(String name, String value) {
+        Sentry.getContext().addTag(name, value);
+    }
+    public static void sentryExtra(String name, Object value) {
+        Sentry.getContext().addExtra(name, value);
+    }
+
+    private static void addDefaultContext() {
+        Context context = Sentry.getContext();
+        context.addTag("java_version", System.getProperty("java.version"));
+        context.addTag("os_name", System.getProperty("os.name"));
+        context.addTag("os_arch", System.getProperty("os.arch"));
+        context.addTag("os_version", System.getProperty("os.version"));
+        context.addExtra("processors", Runtime.getRuntime().availableProcessors());
+        context.addExtra("memory_max", Runtime.getRuntime().maxMemory());
+        context.addExtra("memory_total", Runtime.getRuntime().totalMemory());
+        context.addExtra("memory_free", Runtime.getRuntime().freeMemory());
+
+        context.addExtra("server_host", WebAPI.getInstance().serverHost);
+        context.addExtra("server_port_http", WebAPI.getInstance().serverPortHttp);
+        context.addExtra("server_port_https", WebAPI.getInstance().serverPortHttps);
+    }
+    public static void sentryCapture(String message) {
+        addDefaultContext();
+        WebAPI.sentryCapture(message);
+    }
+    public static void sentryCapture(Exception e) {
+        addDefaultContext();
+        WebAPI.sentryCapture(e);
     }
 }

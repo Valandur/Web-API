@@ -46,7 +46,7 @@ public class ServerService implements IServerService {
             }
         } catch (IOException e) {
             e.printStackTrace();
-            if (WebAPI.reportErrors()) Sentry.capture(e);
+            if (WebAPI.reportErrors()) WebAPI.sentryCapture(e);
         }
 
         if (tpsTask != null) {

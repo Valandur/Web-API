@@ -100,7 +100,7 @@ public class CmdServlet extends WebAPIBaseServlet {
             return src.getLines();
         } catch (InterruptedException e) {
             e.printStackTrace();
-            if (WebAPI.reportErrors()) Sentry.capture(e);
+            if (WebAPI.reportErrors()) WebAPI.sentryCapture(e);
             return null;
         }
     }

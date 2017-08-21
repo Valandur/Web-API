@@ -2,7 +2,6 @@ package valandur.webapi.servlet;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.sentry.Sentry;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.util.TreeNode;
 import valandur.webapi.permission.PermissionService;
@@ -34,66 +33,72 @@ public class ApiServlet extends HttpServlet {
         resp.addHeader("Access-Control-Allow-Methods","GET,PUT,POST,DELETE");
         resp.addHeader("Access-Control-Allow-Headers","Origin, X-Requested-With, Content-Type, Accept");
 
+        WebAPI.sentryExtra("request_verb", verb);
+        WebAPI.sentryExtra("request_uri", req.getRequestURI());
+        WebAPI.sentryExtra("request_query", req.getQueryString());
+
         // Return early if OPTIONS
         if (req.getMethod().equals("OPTIONS") ) {
             return;
         }
 
+        Optional<MatchedRoute> optMatch = servletService.getMethod(verb, req.getPathInfo());
+        if (!optMatch.isPresent()) {
+            // We couldn't find a method
+            resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Unknown/Invalid request path");
+            return;
+        }
+
+        MatchedRoute match = optMatch.get();
+
+        String specPerm = match.getRoute().perm();
+        if (!specPerm.isEmpty()) {
+            specPerm = match.getServletSpec().basePath() + "." + specPerm;
+            String[] reqPerms = specPerm.split("\\.");
+            TreeNode<String, Boolean> permissions = (TreeNode<String, Boolean>) req.getAttribute("perms");
+
+            if (permissions == null) {
+                WebAPI.getLogger().warn(req.getRemoteAddr() + " does not have permisson to access " + req.getRequestURI());
+                resp.sendError(HttpServletResponse.SC_FORBIDDEN, "Not authorized");
+                return;
+            }
+
+            TreeNode<String, Boolean> methodPerms = permissionService.subPermissions(permissions, reqPerms);
+            if (!methodPerms.getValue()) {
+                WebAPI.getLogger().warn(req.getRemoteAddr() + " does not have permission to access " + req.getRequestURI());
+                resp.sendError(HttpServletResponse.SC_FORBIDDEN, "Not authorized");
+                return;
+            }
+
+            req.setAttribute("dataPerms", methodPerms);
+        } else {
+            req.setAttribute("dataPerms", PermissionService.permitAllNode());
+        }
+
+        if (verb.equalsIgnoreCase("Post") || verb.equalsIgnoreCase("Put")) {
+            try {
+                ObjectMapper mapper = new ObjectMapper();
+                JsonNode node = mapper.readTree(req.getReader());
+                req.setAttribute("body", node);
+
+                WebAPI.sentryExtra("request_body", node != null ? node.toString() : "");
+            } catch (Exception e) {
+                resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid JSON request body");
+                return;
+            }
+        }
+
+        if (match.getArgumentError() != HttpServletResponse.SC_OK) {
+            resp.sendError(match.getArgumentError(), match.getArgumentErrorMessage());
+            return;
+        }
+
+        ServletData data = new ServletData(req, resp, match.getMatchedParts());
+
+        List<Object> params = match.getMatchedParams();
+        params.add(0, data);
+
         try {
-            Optional<MatchedRoute> optMatch = servletService.getMethod(verb, req.getPathInfo());
-            if (!optMatch.isPresent()) {
-                // We couldn't find a method
-                resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Unknown/Invalid request path");
-                return;
-            }
-
-            MatchedRoute match = optMatch.get();
-
-            String specPerm = match.getRoute().perm();
-            if (!specPerm.isEmpty()) {
-                specPerm = match.getServletSpec().basePath() + "." + specPerm;
-                String[] reqPerms = specPerm.split("\\.");
-                TreeNode<String, Boolean> permissions = (TreeNode<String, Boolean>) req.getAttribute("perms");
-
-                if (permissions == null) {
-                    WebAPI.getLogger().warn(req.getRemoteAddr() + " does not have permisson to access " + req.getRequestURI());
-                    resp.sendError(HttpServletResponse.SC_FORBIDDEN, "Not authorized");
-                    return;
-                }
-
-                TreeNode<String, Boolean> methodPerms = permissionService.subPermissions(permissions, reqPerms);
-                if (!methodPerms.getValue()) {
-                    WebAPI.getLogger().warn(req.getRemoteAddr() + " does not have permission to access " + req.getRequestURI());
-                    resp.sendError(HttpServletResponse.SC_FORBIDDEN, "Not authorized");
-                    return;
-                }
-
-                req.setAttribute("dataPerms", methodPerms);
-            } else {
-                req.setAttribute("dataPerms", PermissionService.permitAllNode());
-            }
-
-            if (verb.equalsIgnoreCase("Post") || verb.equalsIgnoreCase("Put")) {
-                try {
-                    ObjectMapper mapper = new ObjectMapper();
-                    JsonNode node = mapper.readTree(req.getReader());
-                    req.setAttribute("body", node);
-                } catch (Exception e) {
-                    resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid JSON request body");
-                    return;
-                }
-            }
-
-            if (match.getArgumentError() != HttpServletResponse.SC_OK) {
-                resp.sendError(match.getArgumentError(), match.getArgumentErrorMessage());
-                return;
-            }
-
-            ServletData data = new ServletData(req, resp, match.getMatchedParts());
-
-            List<Object> params = match.getMatchedParams();
-            params.add(0, data);
-
             match.getMethod().invoke(match.getServlet(), params.toArray());
 
             if (!data.isDone() && !data.isErrorSent()) {
@@ -102,7 +107,10 @@ public class ApiServlet extends HttpServlet {
                 try {
                     PrintWriter out = data.getWriter();
                     ObjectMapper om = new ObjectMapper();
-                    out.write(om.writeValueAsString(data.getNode()));
+                    String res = om.writeValueAsString(data.getNode());
+                    out.write(res);
+
+                    WebAPI.sentryExtra("request_body", res);
                 } catch(IllegalStateException ignored) {
                     // We already used the output buffer in stream mode, so getting it as a writer now doesn't work
                     // Just do nothing in this case, because we can assume the output was already handled by the servlet
@@ -112,14 +120,7 @@ public class ApiServlet extends HttpServlet {
             // Error executing the method
             e.printStackTrace();
 
-            if (WebAPI.reportErrors()) {
-                Sentry.clearContext();
-                Sentry.getContext().addExtra("verb", verb);
-                Sentry.getContext().addExtra("request", req.getRequestURI());
-                Sentry.getContext().addExtra("body", req.getAttribute("body"));
-                Sentry.capture(e);
-                Sentry.clearContext();
-            }
+            if (WebAPI.reportErrors()) WebAPI.sentryCapture(e);
 
             resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal server error");
         }

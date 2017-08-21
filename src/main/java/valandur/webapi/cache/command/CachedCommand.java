@@ -39,7 +39,9 @@ public class CachedCommand extends CachedObject implements ICachedCommand {
 
         this.name = cmd.getPrimaryAlias();
         this.aliases = cmd.getAllAliases().toArray(new String[cmd.getAllAliases().size()]);
-        this.usage = cmd.getCallable().getUsage(source).toPlain();
+        try {
+            this.usage = cmd.getCallable().getUsage(source).toPlain();
+        } catch (Exception ignored) {}
         this.description = cmd.getCallable().getShortDescription(source).orElse(Text.EMPTY).toPlain();
         this.help = cmd.getCallable().getHelp(source).orElse(Text.EMPTY).toPlain();
     }

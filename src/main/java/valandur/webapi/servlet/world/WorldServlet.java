@@ -225,7 +225,7 @@ public class WorldServlet extends WebAPIBaseServlet {
                 return Sponge.getServer().deleteWorld(w).get();
             } catch (InterruptedException | ExecutionException e) {
                 e.printStackTrace();
-                if (WebAPI.reportErrors()) Sentry.capture(e);
+                if (WebAPI.reportErrors()) WebAPI.sentryCapture(e);
             }
             return false;
         });

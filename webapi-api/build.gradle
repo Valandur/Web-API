@@ -3,7 +3,7 @@ plugins {
 }
 
 dependencies {
-    compile group: "net.jodah", name: "typetools", version: "0.4.9"
+    compile group: "net.jodah", name: "typetools", version: "0.5.0"
 }
 
 artifacts {

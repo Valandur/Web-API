@@ -1,5 +1,7 @@
 package valandur.webapi;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.reflect.TypeToken;
 import com.google.inject.Inject;
 import io.sentry.Sentry;
@@ -102,8 +104,13 @@ import valandur.webapi.user.Users;
 import valandur.webapi.util.JettyLogger;
 import valandur.webapi.util.Util;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
 import java.net.SocketException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.LinkedList;
@@ -130,6 +137,7 @@ public class WebAPI {
     public static final String VERSION = "@version@";
     public static final String DESCRIPTION = "Access Minecraft through a Web API";
     public static final String URL = "https://github.com/Valandur/Web-API";
+    private static final String UPDATE_URL = "https://ore.spongepowered.org/api/projects/webapi/versions";
 
     private static WebAPI instance;
     public static WebAPI getInstance() {
@@ -137,6 +145,7 @@ public class WebAPI {
     }
 
     private static SpongeExecutorService syncExecutor;
+    private static SpongeExecutorService asyncExecutor;
 
     private Reflections reflections;
     public static Reflections getReflections() {
@@ -262,6 +271,7 @@ public class WebAPI {
 
         // Reusable sync executor to run code on main server thread
         syncExecutor = Sponge.getScheduler().createSyncExecutor(this);
+        asyncExecutor = Sponge.getScheduler().createSyncExecutor(this);
 
         // Register custom serializers
         TypeSerializers.getDefaultSerializers().registerType(TypeToken.of(WebHook.class), new WebHookSerializer());
@@ -540,6 +550,72 @@ public class WebAPI {
         }
     }
 
+    private void checkForUpdates() {
+        if (devMode) {
+            logger.info("SKIPPING UPDATE CHECK IN DEV MODE");
+            return;
+        }
+
+        asyncExecutor.execute(() -> {
+            HttpURLConnection connection = null;
+            try {
+                java.net.URL url = new URL(UPDATE_URL);
+                connection = (HttpURLConnection) url.openConnection();
+                connection.setRequestMethod("GET");
+                connection.setRequestProperty("User-Agent", "Web-API");
+                connection.setRequestProperty("X-WebAPI-Version", WebAPI.VERSION);
+                connection.setRequestProperty("accept", "application/json");
+                connection.setRequestProperty("charset", "utf-8");
+                connection.setUseCaches(false);
+
+                //Get Response
+                int code = connection.getResponseCode();
+                if (code != 200) {
+                    logger.warn("Could not check for updates: " + code);
+                    return;
+                }
+
+                InputStream is = connection.getInputStream();
+                BufferedReader rd = new BufferedReader(new InputStreamReader(is));
+                StringBuilder response = new StringBuilder();
+                String line;
+                while ((line = rd.readLine()) != null) {
+                    response.append(line);
+                    response.append('\r');
+                }
+                rd.close();
+
+                String respString = response.toString().trim();
+                if (respString.isEmpty() || respString.equalsIgnoreCase("OK")) {
+                    logger.warn("Empty response received when checking for updates");
+                    return;
+                }
+
+                ObjectMapper map = new ObjectMapper();
+                JsonNode resp = map.readTree(respString);
+
+                String version = container.getVersion().orElse("");
+                String newVersion = resp.get(0).get("name").asText().split("-")[0];
+
+                if (newVersion.equalsIgnoreCase(version)) {
+                    return;
+                }
+
+                logger.warn("------- Web-API update -------");
+                logger.warn("Latest: " + newVersion);
+                logger.warn("Current: " + version);
+                logger.warn("Get it from Sponge Ore or Github!");
+                logger.warn("------------------------------");
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                if (connection != null) {
+                    connection.disconnect();
+                }
+            }
+        });
+    }
+
     private ContextHandler newContext(String path, Handler handler) {
         ContextHandler context = new ContextHandler();
         context.setContextPath(path);
@@ -551,6 +627,8 @@ public class WebAPI {
     @Listener
     public void onServerStart(GameStartedServerEvent event) {
         startWebServer(null);
+
+        checkForUpdates();
 
         webHookService.notifyHooks(WebHookService.WebHookType.SERVER_START, event);
     }
@@ -574,6 +652,8 @@ public class WebAPI {
         init(p.orElse(null));
 
         startWebServer(p.orElse(null));
+
+        checkForUpdates();
 
         logger.info("Reloaded " + WebAPI.NAME);
     }

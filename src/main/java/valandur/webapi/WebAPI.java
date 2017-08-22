@@ -372,7 +372,7 @@ public class WebAPI {
         CmdServlet.CMD_WAIT_TIME = config.getNode("cmdWaitTime").getInt();
 
         if (devMode)
-            logger.info("WebAPI IS RUNNING IN DEV MODE. USING NON-SHADOWED REFERENCES!");
+            logger.warn("WebAPI IS RUNNING IN DEV MODE. USING NON-SHADOWED REFERENCES!");
 
         authHandler.init();
 
@@ -552,7 +552,7 @@ public class WebAPI {
 
     private void checkForUpdates() {
         if (devMode) {
-            logger.info("SKIPPING UPDATE CHECK IN DEV MODE");
+            logger.warn("SKIPPING UPDATE CHECK IN DEV MODE");
             return;
         }
 

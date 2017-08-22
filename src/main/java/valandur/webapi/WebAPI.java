@@ -773,10 +773,10 @@ public class WebAPI {
     }
     public static void sentryCapture(String message) {
         addDefaultContext();
-        WebAPI.sentryCapture(message);
+        Sentry.capture(message);
     }
     public static void sentryCapture(Exception e) {
         addDefaultContext();
-        WebAPI.sentryCapture(e);
+        Sentry.capture(e);
     }
 }

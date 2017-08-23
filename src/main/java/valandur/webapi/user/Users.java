@@ -68,7 +68,7 @@ public class Users {
         return user != null ? Optional.of(user) : Optional.empty();
     }
     public static Optional<UserPermission> getUser(String username, String password) {
-        if (!users.containsKey(username)) {
+        if (username == null || password == null || !users.containsKey(username)) {
             return Optional.empty();
         }
 

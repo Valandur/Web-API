@@ -1,7 +1,6 @@
 package valandur.webapi.servlet.cmd;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.sentry.Sentry;
 import org.eclipse.jetty.http.HttpMethod;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.annotation.WebAPIEndpoint;
@@ -42,6 +41,11 @@ public class CmdServlet extends WebAPIBaseServlet {
     @WebAPIEndpoint(method = HttpMethod.POST, path = "/", perm = "run")
     public void runCommands(ServletData data) {
         final JsonNode reqJson = data.getRequestBody();
+
+        if (reqJson == null) {
+            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid command data: " + data.getLastParseError().getMessage());
+            return;
+        }
 
         if (!reqJson.isArray()) {
             Optional<ExecuteCommandRequest> optReq = data.getRequestBody(ExecuteCommandRequest.class);

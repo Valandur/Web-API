@@ -17,7 +17,6 @@ public class CachedPluginContainerSerializer extends WebAPIBaseSerializer<Cached
         writeField("version", value.getVersion());
 
         if (shouldWriteDetails()) {
-            writeField("class", value.getClass());
             writeField("description", value.getDescription());
             writeField("url", value.getUrl());
             writeField("authors", value.getAuthors());

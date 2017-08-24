@@ -1,6 +1,5 @@
 package valandur.webapi.server;
 
-import io.sentry.Sentry;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.scheduler.Task;
 import valandur.webapi.WebAPI;
@@ -26,7 +25,7 @@ public class ServerService implements IServerService {
     public Queue<ServerStat<Double>> averageTps = new ConcurrentLinkedQueue<>();
     public Queue<ServerStat<Integer>> onlinePlayers = new ConcurrentLinkedQueue<>();
 
-    private Task tpsTask;
+    private Task statTask;
 
 
     public void init() {
@@ -49,16 +48,18 @@ public class ServerService implements IServerService {
             if (WebAPI.reportErrors()) WebAPI.sentryCapture(e);
         }
 
-        if (tpsTask != null) {
-            tpsTask.cancel();
+        if (statTask != null) {
+            statTask.cancel();
         }
 
-        tpsTask = Task.builder().execute(() -> {
-            averageTps.add(new ServerStat<>(Sponge.getServer().getTicksPerSecond()));
+        statTask = Task.builder().execute(() -> {
+            WebAPI.runOnMain(() -> {
+                averageTps.add(new ServerStat<>(Sponge.getServer().getTicksPerSecond()));
+                onlinePlayers.add(new ServerStat<>(Sponge.getServer().getOnlinePlayers().size()));
+            });
+
             while (averageTps.size() > MAX_STATS_ENTRIES)
                 averageTps.poll();
-
-            onlinePlayers.add(new ServerStat<>(Sponge.getServer().getOnlinePlayers().size()));
             while (onlinePlayers.size() > MAX_STATS_ENTRIES)
                 onlinePlayers.poll();
         }).async().interval(STATS_INTERVAL, TimeUnit.SECONDS).name("Web-API - Average TPS").submit(WebAPI.getInstance());

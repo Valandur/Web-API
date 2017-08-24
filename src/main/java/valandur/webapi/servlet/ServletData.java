@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.sentry.Sentry;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.servlet.IServletData;
 import valandur.webapi.api.util.TreeNode;
@@ -74,9 +73,13 @@ public class ServletData implements IServletData {
         return (JsonNode)req.getAttribute("body");
     }
     public <T> Optional<T> getRequestBody(Class<T> clazz) {
+        JsonNode json = getRequestBody();
+        if (json == null)
+            return Optional.empty();
+
         ObjectMapper mapper = new ObjectMapper();
         try {
-            T data = mapper.treeToValue(getRequestBody(), clazz);
+            T data = mapper.treeToValue(json, clazz);
             return Optional.of(data);
         } catch (JsonProcessingException e) {
             lastParseError = e;

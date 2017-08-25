@@ -110,7 +110,7 @@ public class ApiServlet extends HttpServlet {
                     String res = om.writeValueAsString(data.getNode());
                     out.write(res);
 
-                    WebAPI.sentryExtra("request_body", res);
+                    WebAPI.sentryExtra("result_body", res);
                 } catch(IllegalStateException ignored) {
                     // We already used the output buffer in stream mode, so getting it as a writer now doesn't work
                     // Just do nothing in this case, because we can assume the output was already handled by the servlet

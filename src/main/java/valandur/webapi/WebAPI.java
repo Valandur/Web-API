@@ -527,8 +527,6 @@ public class WebAPI {
         } catch(SocketException e) {
             logger.error("Web-API webserver could not start, probably because one of the ports needed for HTTP " +
                     "and/or HTTPS are in use or not accessible (ports below 1024 are protected)");
-            e.printStackTrace();
-            WebAPI.sentryCapture(e);
         } catch (Exception e) {
             e.printStackTrace();
             WebAPI.sentryCapture(e);

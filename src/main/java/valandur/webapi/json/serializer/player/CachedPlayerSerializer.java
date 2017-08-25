@@ -17,7 +17,6 @@ public class CachedPlayerSerializer extends WebAPIBaseSerializer<CachedPlayer> {
         writeField("location", value.getLocation());
 
         if (shouldWriteDetails()) {
-            writeField("class", value.getClass().getName());
             writeField("rotation", value.getRotation());
             writeField("velocity", value.getVelocity());
             writeField("scale", value.getScale());

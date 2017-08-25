@@ -16,7 +16,6 @@ public class CachedEntitySerializer extends WebAPIBaseSerializer<CachedEntity> {
         writeField("link", value.getLink());
 
         if (shouldWriteDetails()) {
-            writeField("class", value.getClass().getName());
             writeField("location", value.getLocation(), Tristate.FALSE);
             writeField("rotation", value.getRotation());
             writeField("velocity", value.getVelocity());

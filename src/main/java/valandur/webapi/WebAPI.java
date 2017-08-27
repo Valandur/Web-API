@@ -20,6 +20,8 @@ import org.eclipse.jetty.util.log.Log;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.reflections.Reflections;
 import org.slf4j.Logger;
+import org.spongepowered.api.Platform;
+import org.spongepowered.api.Platform.Component;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandManager;
 import org.spongepowered.api.command.CommandResult;
@@ -104,6 +106,7 @@ import valandur.webapi.user.Users;
 import valandur.webapi.util.JettyLogger;
 import valandur.webapi.util.Util;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -162,6 +165,10 @@ public class WebAPI {
         return WebAPI.getInstance().adminPanelEnabled;
     }
 
+    private static String spongeApi;
+    private static String spongeGame;
+    private static String spongeImpl;
+
     @Inject
     private Metrics metrics;
 
@@ -190,9 +197,9 @@ public class WebAPI {
         return WebAPI.getInstance().reportErrors;
     }
 
-    private String serverHost;
-    private Integer serverPortHttp;
-    private Integer serverPortHttps;
+    private static String serverHost;
+    private static Integer serverPortHttp;
+    private static Integer serverPortHttps;
     private String keyStoreLocation;
     private Server server;
 
@@ -250,7 +257,8 @@ public class WebAPI {
 
     public WebAPI() {
         System.setProperty("sentry.dsn", "https://fb64795d2a5c4ff18f3c3e4117d7c245:53cf4ea85ae44608ab5b189f0c07b3f1@sentry.io/203545");
-        System.setProperty("sentry.release", WebAPI.VERSION);
+        System.setProperty("sentry.release", WebAPI.VERSION.split("-")[0]);
+        System.setProperty("sentry.maxmessagelength", "2000");
 
         Sentry.init();
     }
@@ -258,6 +266,11 @@ public class WebAPI {
     @Listener
     public void onPreInitialization(GamePreInitializationEvent event) {
         WebAPI.instance = this;
+
+        Platform platform = Sponge.getPlatform();
+        spongeApi = platform.getContainer(Component.API).getVersion().orElse(null);
+        spongeGame = platform.getContainer(Component.GAME).getVersion().orElse(null);
+        spongeImpl = platform.getContainer(Component.IMPLEMENTATION).getVersion().orElse(null);
 
         // Create our config directory if it doesn't exist
         if (!Files.exists(configPath)) {
@@ -827,8 +840,12 @@ public class WebAPI {
     }
 
     // Sentry logging
-    public static void sentryTag(String name, String value) {
-        Sentry.getContext().addTag(name, value);
+    public static void sentryNewRequest(HttpServletRequest req) {
+        Sentry.clearContext();
+        Context context = Sentry.getContext();
+        context.addExtra("request_protocol", req.getProtocol());
+        context.addExtra("request_method", req.getMethod());
+        context.addExtra("request_uri", req.getRequestURI());
     }
     public static void sentryExtra(String name, Object value) {
         Sentry.getContext().addExtra(name, value);
@@ -845,13 +862,13 @@ public class WebAPI {
         context.addExtra("memory_total", Runtime.getRuntime().totalMemory());
         context.addExtra("memory_free", Runtime.getRuntime().freeMemory());
 
-        context.addExtra("server_host", WebAPI.getInstance().serverHost);
-        context.addExtra("server_port_http", WebAPI.getInstance().serverPortHttp);
-        context.addExtra("server_port_https", WebAPI.getInstance().serverPortHttps);
-    }
-    public static void sentryCapture(String message) {
-        addDefaultContext();
-        Sentry.capture(message);
+        context.addExtra("server_host", serverHost);
+        context.addExtra("server_port_http", serverPortHttp);
+        context.addExtra("server_port_https", serverPortHttps);
+
+        context.addExtra("sponge_api", spongeApi);
+        context.addExtra("sponge_game", spongeGame);
+        context.addExtra("sponge_impl", spongeImpl);
     }
     public static void sentryCapture(Exception e) {
         addDefaultContext();

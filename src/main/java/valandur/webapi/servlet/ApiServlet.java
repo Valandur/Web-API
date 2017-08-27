@@ -33,9 +33,7 @@ public class ApiServlet extends HttpServlet {
         resp.addHeader("Access-Control-Allow-Methods","GET,PUT,POST,DELETE");
         resp.addHeader("Access-Control-Allow-Headers","Origin, X-Requested-With, Content-Type, Accept");
 
-        WebAPI.sentryExtra("request_verb", verb);
-        WebAPI.sentryExtra("request_uri", req.getRequestURI());
-        WebAPI.sentryExtra("request_query", req.getQueryString());
+        WebAPI.sentryNewRequest(req);
 
         // Return early if OPTIONS
         if (req.getMethod().equals("OPTIONS") ) {
@@ -109,8 +107,6 @@ public class ApiServlet extends HttpServlet {
                     ObjectMapper om = new ObjectMapper();
                     String res = om.writeValueAsString(data.getNode());
                     out.write(res);
-
-                    WebAPI.sentryExtra("result_body", res);
                 } catch(IllegalStateException ignored) {
                     // We already used the output buffer in stream mode, so getting it as a writer now doesn't work
                     // Just do nothing in this case, because we can assume the output was already handled by the servlet

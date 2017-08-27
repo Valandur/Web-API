@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 public class BlockService implements IBlockService {
     private static Map<UUID, IBlockOperation> blockOps = new HashMap<>();
 
+    private static final String UNKOWN_BIOME_ID = "<unknown>";
     private static int MAX_BLOCK_GET_SIZE = 1000000;
     private static int MAX_BLOCK_UPDATE_SIZE = 1000000;
     private static int MAX_BLOCKS_PER_SECOND = 10000;
@@ -79,6 +80,11 @@ public class BlockService implements IBlockService {
     }
 
     @Override
+    public String getUnknownBiomeId() {
+        return UNKOWN_BIOME_ID;
+    }
+
+    @Override
     public Optional<String[][]> getBiomes(ICachedWorld world, Vector3i min, Vector3i max) {
         return WebAPI.runOnMain(() -> {
             Optional<?> obj = world.getLive();
@@ -95,7 +101,13 @@ public class BlockService implements IBlockService {
             String[][] biomes = new String[maxX][maxZ];
             for (int x = 0; x < maxX; x++) {
                 for (int z = 0; z < maxZ; z++) {
-                    biomes[x][z] = vol.getBiome(x * BIOME_INTERVAL.getX(), 0, z * BIOME_INTERVAL.getZ()).getId();
+                    int newX = x * BIOME_INTERVAL.getX();
+                    int newZ = z * BIOME_INTERVAL.getZ();
+                    biomes[x][z] = vol.getBiome(newX, 0, newZ).getId();
+                    if (biomes[x][z] == null) {
+                        WebAPI.getLogger().warn("Unknown biome at [" + (min.getX() + newX) + "," + (min.getZ() + newZ) + "]");
+                        biomes[x][z] = UNKOWN_BIOME_ID;
+                    }
                 }
             }
 

@@ -80,13 +80,13 @@ public class MapServlet extends WebAPIBaseServlet {
         for (int i = 0; i < biomes.length; i++) {
             for (int j = 0; j < biomes[i].length; j++) {
                 String biome = biomes[i][j];
-
                 String hexColor = biomeColorMap.get(biome);
+
                 if (hexColor == null)
                     hexColor = biomeColorMap.get(biome.replace("mutated_", ""));
 
                 if (hexColor == null) {
-                    WebAPI.getLogger().info("No color for biome: " + biome);
+                    WebAPI.getLogger().info("No color for biome: " + biome + ". You can set one in the map.conf file");
 
                     hexColor = "FFFFFF";
                     biomeColorMap.put(biome, hexColor);

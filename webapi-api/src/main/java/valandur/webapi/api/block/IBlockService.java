@@ -67,6 +67,12 @@ public interface IBlockService {
     Vector3i getBiomeInterval();
 
     /**
+     * Returns the id used when the biome cannot be determined.
+     * @return The id of unidentified biomes.
+     */
+    String getUnknownBiomeId();
+
+    /**
      * Gets the biome type ids for the specified area. The biome type is checked for every n-th block within the
      * region, where n is defined by {@link #getBiomeInterval()}. This means the resulting array will contain the
      * blocks indexed by x-direction first, with the array and sub-arrays being 1/n-th the size of the specified

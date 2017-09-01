@@ -605,7 +605,7 @@ public class WebAPI {
                 ObjectMapper map = new ObjectMapper();
                 JsonNode resp = map.readTree(respString);
 
-                String version = container.getVersion().orElse("");
+                String version = container.getVersion().orElse("").split("-")[0];
                 String newVersion = resp.get(0).get("name").asText().split("-")[0];
 
                 if (newVersion.equalsIgnoreCase(version)) {

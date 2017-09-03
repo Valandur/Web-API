@@ -9,41 +9,49 @@ import valandur.webapi.cache.CachedObject;
 public class CachedWorldBorder extends CachedObject implements ICachedWorldBorder {
 
     private Vector3d center;
+    @Override
     public Vector3d getCenter() {
         return center;
     }
 
     private double diameter;
+    @Override
     public double getDiameter() {
         return diameter;
     }
 
     private double damageAmount;
+    @Override
     public double getDamageAmount() {
         return damageAmount;
     }
 
     private double damageThreshold;
+    @Override
     public double getDamageThreshold() {
         return damageThreshold;
     }
 
     private double newDiameter;
+    @Override
     public double getNewDiameter() {
         return newDiameter;
     }
 
     private long timeRemaining;
+    @Override
     public long getTimeRemaining() {
         return timeRemaining;
     }
 
     private int warningDistance;
+    @Override
     public int getWarningDistance() {
         return warningDistance;
     }
 
     private int warningTime;
+    @Override
     public int getWarningTime() {
         return warningTime;
     }
@@ -52,7 +60,7 @@ public class CachedWorldBorder extends CachedObject implements ICachedWorldBorde
     public CachedWorldBorder(WorldBorder border) {
         super(border);
 
-        this.center = border.getCenter();
+        this.center = border.getCenter().clone();
         this.diameter = border.getDiameter();
         this.damageAmount = border.getDamageAmount();
         this.damageThreshold = border.getDamageThreshold();
@@ -65,7 +73,7 @@ public class CachedWorldBorder extends CachedObject implements ICachedWorldBorde
     public CachedWorldBorder(WorldProperties properties) {
         super(properties);
 
-        this.center = properties.getWorldBorderCenter();
+        this.center = properties.getWorldBorderCenter().clone();
         this.diameter = properties.getWorldBorderDiameter();
         this.damageAmount = properties.getWorldBorderDamageAmount();
         this.damageThreshold = properties.getWorldBorderDamageThreshold();

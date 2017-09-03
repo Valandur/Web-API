@@ -1,12 +1,14 @@
 package valandur.webapi.cache.world;
 
 import com.flowpowered.math.vector.Vector3i;
+import org.spongepowered.api.Sponge;
 import org.spongepowered.api.world.Chunk;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.cache.world.ICachedChunk;
 import valandur.webapi.api.cache.world.ICachedWorld;
 import valandur.webapi.cache.CachedObject;
 
+import java.util.Optional;
 import java.util.UUID;
 
 public class CachedChunk extends CachedObject implements ICachedChunk {
@@ -69,14 +71,28 @@ public class CachedChunk extends CachedObject implements ICachedChunk {
     public CachedChunk(Chunk chunk) {
         super(chunk);
 
-        this.uuid = chunk.getUniqueId();
-        this.pos = chunk.getPosition();
+        this.uuid = UUID.fromString(chunk.getUniqueId().toString());
+        this.pos = chunk.getPosition().clone();
         this.world = WebAPI.getCacheService().getWorld(chunk.getWorld());
-        this.blockMin = chunk.getBlockMin();
-        this.blockMax = chunk.getBlockMax();
+        this.blockMin = chunk.getBlockMin().clone();
+        this.blockMax = chunk.getBlockMax().clone();
         this.isLoaded = chunk.isLoaded();
         this.inhabitedTime = chunk.getInhabittedTime();
         this.regionalDifficultyFactor = chunk.getRegionalDifficultyFactor();
         this.regionalDifficultyPercentage = chunk.getRegionalDifficultyPercentage();
+    }
+
+    @Override
+    public Optional<?> getLive() {
+        if (world.isLoaded()) {
+            return Sponge.getServer().getWorld(uuid).flatMap(w -> w.getChunk(pos));
+        } else {
+            return Optional.empty();
+        }
+    }
+
+    @Override
+    public String getLink() {
+        return "/api/world/" + world.getUUID() + "/" + pos.getX() + "/" + pos.getZ();
     }
 }

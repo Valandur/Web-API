@@ -10,6 +10,7 @@ public class DamageSourceSerializer extends WebAPIBaseSerializer<DamageSource> {
     @Override
     protected void serialize(DamageSource value) throws IOException {
         writeStartObject();
+        writeField("class", value.getClass().getName());
         writeField("affectsCreative", value.doesAffectCreative());
         writeField("isAbsolute", value.isAbsolute());
         writeField("isBypassingArmour", value.isBypassingArmor());

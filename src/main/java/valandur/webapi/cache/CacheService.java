@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
+import org.spongepowered.api.CatalogType;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.block.tileentity.TileEntity;
 import org.spongepowered.api.command.CommandMapping;
@@ -11,8 +12,10 @@ import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.command.SendCommandEvent;
 import org.spongepowered.api.event.message.MessageEvent;
+import org.spongepowered.api.item.inventory.Inventory;
 import org.spongepowered.api.plugin.PluginContainer;
 import org.spongepowered.api.util.Tuple;
+import org.spongepowered.api.world.Chunk;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 import org.spongepowered.api.world.storage.WorldProperties;
@@ -31,11 +34,14 @@ import valandur.webapi.cache.chat.CachedChatMessage;
 import valandur.webapi.cache.command.CachedCommand;
 import valandur.webapi.cache.command.CachedCommandCall;
 import valandur.webapi.cache.entity.CachedEntity;
+import valandur.webapi.cache.misc.CachedCatalogType;
+import valandur.webapi.cache.misc.CachedInventory;
+import valandur.webapi.cache.misc.CachedLocation;
 import valandur.webapi.cache.player.CachedPlayer;
 import valandur.webapi.cache.plugin.CachedPluginContainer;
 import valandur.webapi.cache.tileentity.CachedTileEntity;
+import valandur.webapi.cache.world.CachedChunk;
 import valandur.webapi.cache.world.CachedWorld;
-import valandur.webapi.command.CommandSource;
 import valandur.webapi.json.JsonService;
 import valandur.webapi.permission.PermissionService;
 import valandur.webapi.util.Util;
@@ -49,7 +55,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class CacheService implements ICacheService {
 
-    private String configFileName = "cache.conf";
+    private static final String configFileName = "cache.conf";
 
     private JsonService json;
 
@@ -59,8 +65,8 @@ public class CacheService implements ICacheService {
 
     private ConcurrentLinkedQueue<CachedChatMessage> chatMessages = new ConcurrentLinkedQueue<>();
     private ConcurrentLinkedQueue<CachedCommandCall> commandCalls = new ConcurrentLinkedQueue<>();
-    private Collection<CachedPluginContainer> plugins = new LinkedHashSet<>();
-    private Collection<CachedCommand> commands = new LinkedHashSet<>();
+    private Map<String, CachedCommand> commands = new ConcurrentHashMap<>();
+    private Map<String, CachedPluginContainer> plugins = new ConcurrentHashMap<>();
     private Map<UUID, CachedWorld> worlds = new ConcurrentHashMap<>();
     private Map<UUID, CachedPlayer> players = new ConcurrentHashMap<>();
     private Map<UUID, CachedEntity> entities = new ConcurrentHashMap<>();
@@ -89,6 +95,54 @@ public class CacheService implements ICacheService {
         for (ConfigurationNode node : durationNode.getChildrenMap().values()) {
             cacheDurations.put(node.getKey().toString(), node.getLong());
         }
+    }
+
+    @Override
+    public Object asCachedObject(Object obj) {
+        Class c = obj.getClass();
+
+        // If the object is already clearly a cached object then just return it
+        if (obj instanceof CachedObject)
+            return obj;
+
+        // If the object is a primitive type we don't have to do anything either
+        if (obj instanceof Boolean)
+            return obj;
+        if (obj instanceof Integer)
+            return obj;
+        if (obj instanceof Float)
+            return obj;
+        if (obj instanceof Double)
+            return obj;
+        if (obj instanceof String)
+            return obj;
+
+        // If the object is of a type that we have a cached version for, then create one of those
+        if (obj instanceof Player)
+            return getPlayer((Player)obj);
+        if (obj instanceof Entity)
+            return getEntity((Entity)obj);
+        if (obj instanceof World)
+            return getWorld((World)obj);
+        if (obj instanceof Chunk)
+            return new CachedChunk((Chunk)obj);
+        if (obj instanceof TileEntity)
+            return new CachedTileEntity((TileEntity)obj);
+        if (obj instanceof PluginContainer)
+            return getPlugin((PluginContainer)obj);
+        if (obj instanceof Inventory)
+            return new CachedInventory((Inventory)obj);
+        if (obj instanceof CommandMapping)
+            return getCommand((CommandMapping)obj);
+
+        if (obj instanceof Location)
+            return new CachedLocation((Location)obj);
+        if (obj instanceof CatalogType)
+            return new CachedCatalogType((CatalogType)obj);
+
+        // If this is an unkown object type then we can't create a cached version of it, so we better not try
+        // and save it because we don't know if it's thread safe or not.
+        return null;
     }
 
     @Override
@@ -227,7 +281,7 @@ public class CacheService implements ICacheService {
     @Override
     public ICachedPlayer updatePlayer(Player player) {
         CachedPlayer p = new CachedPlayer(player);
-        players.put(player.getUniqueId(), p);
+        players.put(p.getUUID(), p);
         return p;
     }
     @Override
@@ -270,7 +324,7 @@ public class CacheService implements ICacheService {
     @Override
     public ICachedEntity updateEntity(Entity entity) {
         CachedEntity e = new CachedEntity(entity);
-        entities.put(entity.getUniqueId(), e);
+        entities.put(e.getUUID(), e);
         return e;
     }
     @Override
@@ -283,25 +337,31 @@ public class CacheService implements ICacheService {
 
         Collection<PluginContainer> newPlugins = Sponge.getPluginManager().getPlugins();
         for (PluginContainer plugin : newPlugins) {
-            plugins.add(new CachedPluginContainer(plugin));
+            plugins.put(plugin.getId(), new CachedPluginContainer(plugin));
         }
     }
     @Override
     public Collection<ICachedPluginContainer> getPlugins() {
-        return new ArrayList<>(plugins);
+        return new ArrayList<>(plugins.values());
     }
     @Override
     public Optional<ICachedPluginContainer> getPlugin(String id) {
-        for (CachedPluginContainer plugin : plugins) {
-            if (plugin.getId().equalsIgnoreCase(id))
-                return Optional.of(plugin);
+        if (!plugins.containsKey(id)) {
+            return Optional.empty();
         }
-        return Optional.empty();
+
+        return Optional.of(plugins.get(id));
     }
     @Override
     public ICachedPluginContainer getPlugin(PluginContainer plugin) {
         Optional<ICachedPluginContainer> e = getPlugin(plugin.getId());
-        return e.orElseGet(() -> new CachedPluginContainer(plugin));
+        return e.orElseGet(() -> updatePlugin(plugin));
+    }
+    @Override
+    public ICachedPluginContainer updatePlugin(PluginContainer plugin) {
+        CachedPluginContainer c = new CachedPluginContainer(plugin);
+        plugins.put(c.getId(), c);
+        return c;
     }
 
     public void updateCommands() {
@@ -309,22 +369,33 @@ public class CacheService implements ICacheService {
 
         Collection<CommandMapping> newCommands = Sponge.getCommandManager().getAll().values();
         for (CommandMapping cmd : newCommands) {
-            if (commands.stream().anyMatch(c -> c.getName().equalsIgnoreCase(cmd.getPrimaryAlias())))
+            if (commands.containsKey(cmd.getPrimaryAlias()))
                 continue;
-            commands.add(new CachedCommand(cmd, CommandSource.instance));
+            commands.put(cmd.getPrimaryAlias(), new CachedCommand(cmd));
         }
     }
     @Override
     public Collection<ICachedCommand> getCommands() {
-        return new ArrayList<>(commands);
+        return new ArrayList<>(commands.values());
     }
     @Override
     public Optional<ICachedCommand> getCommand(String name) {
-        for (CachedCommand cmd : commands) {
-            if (cmd.getName().equalsIgnoreCase(name))
-                return Optional.of(cmd);
+        if (!commands.containsKey(name)) {
+            return Optional.empty();
         }
-        return Optional.empty();
+
+        return Optional.of(commands.get(name));
+    }
+    @Override
+    public ICachedCommand getCommand(CommandMapping command) {
+        Optional<ICachedCommand> e = getCommand(command.getPrimaryAlias());
+        return e.orElseGet(() -> updateCommand(command));
+    }
+    @Override
+    public ICachedCommand updateCommand(CommandMapping command) {
+        CachedCommand c = new CachedCommand(command);
+        commands.put(c.getName(), c);
+        return c;
     }
 
     @Override

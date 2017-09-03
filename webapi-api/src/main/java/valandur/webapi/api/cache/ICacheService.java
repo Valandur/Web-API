@@ -1,6 +1,7 @@
 package valandur.webapi.api.cache;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import org.spongepowered.api.command.CommandMapping;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.plugin.PluginContainer;
@@ -23,6 +24,17 @@ import java.util.*;
  * The cache service provides access to all objects which are cached by the Web-API.
  */
 public interface ICacheService {
+
+    /**
+     * Returns the specified object as a cached object. Performs a deep copy if necessary. Converts all applicable
+     * data types to their cached variants. This is especially useful if you're working with an object whose type
+     * you don't know. Just call this method on it and the returned object will be a thread safe copy, or null if
+     * a thread safe copy cannot be created because the object is of an unknown type.
+     * @param obj The object which is returned in it's cached form.
+     * @return The cached version of the object. Not necessarily the same type as the original object. {@code Null}
+     * if the object is of an unknown type.
+     */
+    Object asCachedObject(Object obj);
 
     /**
      * Gets the amount of time a certain object is cached for.
@@ -203,12 +215,20 @@ public interface ICacheService {
     Optional<ICachedPluginContainer> getPlugin(String id);
 
     /**
-     * Gets the passed plugin as a cached object. This method first tries to get the plugin from the cache, and if
-     * it is not found converts it into a cached object.
-     * @param plugin The plugin which is returned in it's cached form.
-     * @return The cached version of the specified plugin.
+     * Gets the passed plugin container as a cached object. This method first tries to get the plugin container from
+     * the cache, and if it is not found uses the {@link #updatePlugin(PluginContainer)} method to convert it into a
+     * cached object.
+     * @param plugin The plugin container which is returned in it's cached form.
+     * @return The cached version of the specified plugin container.
      */
     ICachedPluginContainer getPlugin(PluginContainer plugin);
+
+    /**
+     * Updates the internal representation of the passed plugin container and returns it.
+     * @param plugin The plugin container which will be updated.
+     * @return The updated cached plugin container.
+     */
+    ICachedPluginContainer updatePlugin(PluginContainer plugin);
 
     /**
      * Gets a collection of all the commands registered on the server.
@@ -222,6 +242,22 @@ public interface ICacheService {
      * @return An optional containing the command if found, empty otherwise.
      */
     Optional<ICachedCommand> getCommand(String name);
+
+    /**
+     * Gets the passed command as a cached object. This method first tries to get the command from the cache,
+     * and if it is not found uses the {@link #updateCommand(CommandMapping)} method to convert it into a
+     * cached object.
+     * @param command The command which is returned in it's cached form.
+     * @return The cached version of the specified command.
+     */
+    public ICachedCommand getCommand(CommandMapping command);
+
+    /**
+     * Updates the internal representation of the passed command and returns it.
+     * @param command The command which will be updated.
+     * @return The updated cached command.
+     */
+    ICachedCommand updateCommand(CommandMapping command);
 
     /**
      * Tries to get a collection of all the tile entities on the server.

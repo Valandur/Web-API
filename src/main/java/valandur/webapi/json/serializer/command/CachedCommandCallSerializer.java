@@ -9,7 +9,6 @@ public class CachedCommandCallSerializer extends WebAPIBaseSerializer<CachedComm
     @Override
     public void serialize(CachedCommandCall value) throws IOException {
         writeStartObject();
-        writeField("class", value.getClass().getName());
         writeField("timestamp", value.getTimestamp());
         writeField("command", value.getCommand());
         writeField("cause", value.getCause());

@@ -16,16 +16,19 @@ import java.util.Optional;
 public class CachedTileEntity extends CachedObject implements ICachedTileEntity {
 
     private String type;
+    @Override
     public String getType() {
         return type;
     }
 
     private ICachedLocation location;
+    @Override
     public ICachedLocation getLocation() {
         return location;
     }
 
     protected ICachedInventory inventory;
+    @Override
     public ICachedInventory getInventory() {
         return inventory;
     }

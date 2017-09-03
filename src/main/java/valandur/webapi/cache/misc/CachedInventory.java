@@ -14,26 +14,31 @@ import java.util.Optional;
 public class CachedInventory extends CachedObject implements ICachedInventory {
 
     private String name;
+    @Override
     public String getName() {
         return name;
     }
 
     private ICachedCatalogType type;
+    @Override
     public ICachedCatalogType getType() {
         return type;
     }
 
     private int capacity;
+    @Override
     public int getCapacity() {
         return capacity;
     }
 
     private int totalItems;
+    @Override
     public int getTotalItems() {
         return totalItems;
     }
 
     private List<ItemStack> items;
+    @Override
     public List<ItemStack> getItems() {
         return items;
     }

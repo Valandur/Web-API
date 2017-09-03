@@ -16,6 +16,7 @@ public class ItemStackSerializer extends WebAPIBaseSerializer<ItemStack> {
         if (shouldWriteDetails()) {
             writeObjectFieldStart("data");
             writeData(value);
+            writeProperties(value);
             writeEndObject();
         }
 

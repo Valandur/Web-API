@@ -5,6 +5,9 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import net.jodah.typetools.TypeResolver;
 import org.spongepowered.api.data.DataHolder;
+import org.spongepowered.api.data.Property;
+import org.spongepowered.api.data.manipulator.DataManipulator;
+import org.spongepowered.api.data.property.PropertyHolder;
 import org.spongepowered.api.util.Tristate;
 import valandur.webapi.api.WebAPIAPI;
 import valandur.webapi.api.permission.IPermissionService;
@@ -12,6 +15,7 @@ import valandur.webapi.api.util.TreeNode;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -21,9 +25,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public abstract class WebAPIBaseSerializer<T> extends StdSerializer<T> {
 
-    protected Map<Long, SerializerProvider> currentProviders = new HashMap<>();
-    protected Map<Long, Stack<Boolean>> localObjects = new HashMap<>();
-    protected Map<Long, Stack<Boolean>> localArrays = new HashMap<>();
+    protected Map<Long, SerializerProvider> currentProviders = new ConcurrentHashMap<>();
+    protected Map<Long, Stack<Boolean>> localObjects = new ConcurrentHashMap<>();
+    protected Map<Long, Stack<Boolean>> localArrays = new ConcurrentHashMap<>();
 
     protected IJsonService jsonService;
     protected IPermissionService permissionService;
@@ -190,15 +194,22 @@ public abstract class WebAPIBaseSerializer<T> extends StdSerializer<T> {
      * @throws IOException Is thrown when serialization fails.
      */
     protected void writeData(DataHolder holder) throws IOException {
-        SerializerProvider provider = getCurrentProvider();
-
-        for (Map.Entry<String, Class> entry : jsonService.getSupportedData().entrySet()) {
+        for (Map.Entry<String, Class<? extends DataManipulator>> entry : jsonService.getSupportedData().entrySet()) {
             Optional<?> m = holder.get(entry.getValue());
 
             if (!m.isPresent())
                 continue;
 
             writeField(entry.getKey(), m.get());
+        }
+    }
+
+    protected void writeProperties(PropertyHolder holder) throws IOException {
+        for (Property<?, ?> property : holder.getApplicableProperties()) {
+            String key = property.getKey().toString();
+            key = key.replace("Property", "");
+            key = Character.toLowerCase(key.charAt(0)) + key.substring(1);
+            writeField(key, property.getValue());
         }
     }
 

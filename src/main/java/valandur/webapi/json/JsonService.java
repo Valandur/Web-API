@@ -11,12 +11,12 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.flowpowered.math.vector.Vector3d;
 import com.flowpowered.math.vector.Vector3i;
-import io.sentry.Sentry;
 import org.slf4j.Logger;
 import org.spongepowered.api.CatalogType;
 import org.spongepowered.api.block.BlockSnapshot;
 import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.block.tileentity.TileEntity;
+import org.spongepowered.api.data.manipulator.DataManipulator;
 import org.spongepowered.api.data.manipulator.mutable.DyeableData;
 import org.spongepowered.api.data.manipulator.mutable.PotionEffectData;
 import org.spongepowered.api.data.manipulator.mutable.block.ConnectedDirectionData;
@@ -55,10 +55,12 @@ import valandur.webapi.cache.command.CachedCommandCall;
 import valandur.webapi.cache.command.CachedCommandResult;
 import valandur.webapi.cache.entity.CachedEntity;
 import valandur.webapi.cache.misc.CachedCatalogType;
+import valandur.webapi.cache.misc.CachedCause;
 import valandur.webapi.cache.misc.CachedInventory;
 import valandur.webapi.cache.misc.CachedLocation;
 import valandur.webapi.cache.player.CachedPlayer;
 import valandur.webapi.cache.plugin.CachedPluginContainer;
+import valandur.webapi.cache.plugin.CachedPluginDependency;
 import valandur.webapi.cache.tileentity.CachedTileEntity;
 import valandur.webapi.cache.world.CachedChunk;
 import valandur.webapi.cache.world.CachedGeneratorType;
@@ -73,6 +75,7 @@ import valandur.webapi.json.serializer.command.CachedCommandCallSerializer;
 import valandur.webapi.json.serializer.command.CachedCommandResultSerializer;
 import valandur.webapi.json.serializer.command.CachedCommandSerializer;
 import valandur.webapi.json.serializer.entity.*;
+import valandur.webapi.json.serializer.event.CachedCauseSerializer;
 import valandur.webapi.json.serializer.event.CauseSerializer;
 import valandur.webapi.json.serializer.event.DamageSourceSerializer;
 import valandur.webapi.json.serializer.event.EventSerializer;
@@ -89,7 +92,6 @@ import valandur.webapi.json.serializer.user.UserPermissionSerializer;
 import valandur.webapi.json.serializer.world.*;
 import valandur.webapi.message.MessageResponse;
 import valandur.webapi.server.ServerStat;
-import valandur.webapi.cache.plugin.CachedPluginDependency;
 import valandur.webapi.user.UserPermission;
 import valandur.webapi.util.Util;
 
@@ -102,13 +104,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class JsonService implements IJsonService {
 
-    private Map<Class, Class> registeredSerializers = new HashMap<>();
+    private Map<Class, Class<? extends WebAPIBaseSerializer>> registeredSerializers = new HashMap<>();
     private Map<Class, WebAPIBaseSerializer> serializers;
-    private Map<String, Class> supportedData;
+    private Map<String, Class<? extends DataManipulator>> supportedData;
 
     public void init() {
         Logger logger = WebAPI.getLogger();
@@ -144,6 +147,7 @@ public class JsonService implements IJsonService {
         serializers.put(TradeOffer.class, new TradeOfferSerializer());
 
         // Event
+        serializers.put(CachedCause.class, new CachedCauseSerializer());
         serializers.put(Cause.class, new CauseSerializer());
         serializers.put(DamageSource.class, new DamageSourceSerializer());
         serializers.put(Event.class, new EventSerializer());
@@ -220,7 +224,7 @@ public class JsonService implements IJsonService {
 
 
         // Data
-        supportedData = new HashMap<>();
+        supportedData = new ConcurrentHashMap<>();
         supportedData.put("achievements", AchievementData.class);
         supportedData.put("career", CareerData.class);
         supportedData.put("connectedDirection", ConnectedDirectionData.class);
@@ -243,9 +247,9 @@ public class JsonService implements IJsonService {
 
         // Load registered serializers
         logger.info("Loading registered serializers...");
-        for (Map.Entry<Class, Class> entry : registeredSerializers.entrySet()) {
+        for (Map.Entry<Class, Class<? extends WebAPIBaseSerializer>> entry : registeredSerializers.entrySet()) {
             try {
-                WebAPIBaseSerializer ser = (WebAPIBaseSerializer)entry.getValue().newInstance();
+                WebAPIBaseSerializer ser = entry.getValue().newInstance();
                 serializers.put(entry.getKey(), ser);
             } catch (InstantiationException | IllegalAccessException e) {
                 logger.warn("  Could not register serializer " + entry.getValue().getName() + ": " + e.getMessage());
@@ -281,7 +285,7 @@ public class JsonService implements IJsonService {
         registeredSerializers.put(clazz, serializer);
     }
 
-    public Map<String, Class> getSupportedData() {
+    public Map<String, Class<? extends DataManipulator>> getSupportedData() {
         return supportedData;
     }
 

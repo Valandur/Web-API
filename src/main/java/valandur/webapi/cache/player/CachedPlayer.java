@@ -11,36 +11,43 @@ import java.util.Optional;
 public class CachedPlayer extends CachedEntity implements ICachedPlayer {
 
     private String name;
+    @Override
     public String getName() {
         return name;
     }
 
     private String address;
+    @Override
     public String getAddress() {
         return address;
     }
 
     private int latency;
+    @Override
     public int getLatency() {
         return latency;
     }
 
     private ItemStack helmet;
+    @Override
     public ItemStack getHelmet() {
         return helmet;
     }
 
     private ItemStack chestplate;
+    @Override
     public ItemStack getChestplate() {
         return chestplate;
     }
 
     private ItemStack leggings;
+    @Override
     public ItemStack getLeggings() {
         return leggings;
     }
 
     private ItemStack boots;
+    @Override
     public ItemStack getBoots() {
         return boots;
     }

@@ -49,9 +49,4 @@ public class CachedPluginDependency extends CachedObject implements ICachedPlugi
     public Optional<?> getLive() {
         return Optional.of(new PluginDependency(loadOrder, id, version, optional));
     }
-
-    @Override
-    public String getLink() {
-        return null;
-    }
 }

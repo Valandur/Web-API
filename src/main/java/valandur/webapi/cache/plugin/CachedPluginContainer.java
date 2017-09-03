@@ -11,36 +11,43 @@ import java.util.*;
 public class CachedPluginContainer extends CachedObject implements ICachedPluginContainer {
 
     private String id;
+    @Override
     public String getId() {
         return id;
     }
 
     private String name;
+    @Override
     public String getName() {
         return name;
     }
 
     private String version;
+    @Override
     public String getVersion() {
         return version;
     }
 
     private String description;
+    @Override
     public String getDescription() {
         return description;
     }
 
     private String url;
+    @Override
     public String getUrl() {
         return url;
     }
 
     private List<String> authors;
+    @Override
     public List<String> getAuthors() {
         return authors;
     }
 
-    private Set<CachedPluginDependency> dependencies = new HashSet<>();
+    private Set<ICachedPluginDependency> dependencies = new HashSet<>();
+    @Override
     public Set<ICachedPluginDependency> getDependencies() {
         return new HashSet<>(dependencies);
     }

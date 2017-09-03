@@ -1,6 +1,7 @@
 package valandur.webapi.api.json;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import org.spongepowered.api.data.manipulator.DataManipulator;
 import valandur.webapi.api.util.TreeNode;
 
 import java.util.Map;
@@ -24,7 +25,7 @@ public interface IJsonService {
      * Gets all DataHolder types that are supported by the Web-API
      * @return A map from json key to DataHolder type
      */
-    Map<String, Class> getSupportedData();
+    Map<String, Class<? extends DataManipulator>> getSupportedData();
 
     /**
      * Converts an object directly to a json string. Includes details if specified.

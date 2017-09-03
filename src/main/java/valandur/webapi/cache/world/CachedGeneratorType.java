@@ -2,6 +2,7 @@ package valandur.webapi.cache.world;
 
 import org.spongepowered.api.data.DataQuery;
 import org.spongepowered.api.world.GeneratorType;
+import valandur.webapi.WebAPI;
 import valandur.webapi.api.cache.world.ICachedGeneratorType;
 import valandur.webapi.cache.misc.CachedCatalogType;
 
@@ -12,6 +13,7 @@ import java.util.Optional;
 public class CachedGeneratorType extends CachedCatalogType implements ICachedGeneratorType {
 
     private Map<String, Object> settings = new HashMap<>();
+    @Override
     public Map<String, Object> getSettings() {
         return settings;
     }
@@ -25,7 +27,7 @@ public class CachedGeneratorType extends CachedCatalogType implements ICachedGen
             if (!val.isPresent())
                 continue;
 
-            this.settings.put(query.asString("."), val.get());
+            this.settings.put(query.asString("."), WebAPI.getCacheService().asCachedObject(val.get()));
         }
     }
 }

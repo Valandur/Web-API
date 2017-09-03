@@ -7,11 +7,13 @@ import valandur.webapi.cache.CachedObject;
 public class CachedCatalogType extends CachedObject implements ICachedCatalogType {
 
     private String id;
+    @Override
     public String getId() {
         return id;
     }
 
     private String name;
+    @Override
     public String getName() {
         return name;
     }

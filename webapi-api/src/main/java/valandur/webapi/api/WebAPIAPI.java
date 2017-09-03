@@ -18,7 +18,7 @@ import java.util.Optional;
  * When writing a servlet or a json serializer please note that these services are already provided as class
  * variables (inherited from WebAPIBaseServlet or WebAPIBaseSerializer).
  */
-public class WebAPIAPI {
+public abstract class WebAPIAPI {
 
     /**
      * Gets the block service from the Web-API. Used to fetch and manipulate blocks.

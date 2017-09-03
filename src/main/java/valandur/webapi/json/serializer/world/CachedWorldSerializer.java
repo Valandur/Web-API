@@ -15,6 +15,7 @@ public class CachedWorldSerializer extends WebAPIBaseSerializer<CachedWorld> {
         writeField("link", value.getLink());
 
         if (shouldWriteDetails()) {
+            writeField("class", value.getObjectClass().getName());
             writeField("isLoaded", value.isLoaded());
             writeField("loadOnStartup", value.doesLoadOnStartup());
             writeField("keepSpawnLoaded", value.doesKeepSpawnLoaded());

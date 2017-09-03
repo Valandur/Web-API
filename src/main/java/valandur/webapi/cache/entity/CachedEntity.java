@@ -18,36 +18,43 @@ import java.util.UUID;
 public class CachedEntity extends CachedObject implements ICachedEntity {
 
     protected String type;
+    @Override
     public String getType() {
         return type;
     }
 
     protected UUID uuid;
+    @Override
     public UUID getUUID() {
         return uuid;
     }
 
     private ICachedLocation location;
+    @Override
     public ICachedLocation getLocation() {
         return location;
     }
 
     private Vector3d rotation;
+    @Override
     public Vector3d getRotation() {
         return rotation;
     }
 
     private Vector3d velocity;
+    @Override
     public Vector3d getVelocity() {
         return velocity;
     }
 
     private Vector3d scale;
+    @Override
     public Vector3d getScale() {
         return scale;
     }
 
     private ICachedInventory inventory;
+    @Override
     public ICachedInventory getInventory() {
         return inventory;
     }

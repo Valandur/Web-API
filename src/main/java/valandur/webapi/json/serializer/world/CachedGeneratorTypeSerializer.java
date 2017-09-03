@@ -13,6 +13,7 @@ public class CachedGeneratorTypeSerializer extends WebAPIBaseSerializer<CachedGe
         writeStartObject();
         writeField("id", value.getId());
         writeField("name", value.getName());
+        writeField("class", value.getObjectClass().getName());
         Map<String, Object> settings = new HashMap<>();
         for (Map.Entry<String, Object> entry : value.getSettings().entrySet()) {
             writeField(entry.getKey(), entry.getValue());

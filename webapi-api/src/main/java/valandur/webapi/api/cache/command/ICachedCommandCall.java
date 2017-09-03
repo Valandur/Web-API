@@ -1,7 +1,7 @@
 package valandur.webapi.api.cache.command;
 
-import org.spongepowered.api.event.cause.Cause;
 import valandur.webapi.api.cache.ICachedObject;
+import valandur.webapi.api.cache.misc.ICachedCause;
 
 public interface ICachedCommandCall extends ICachedObject {
 
@@ -11,7 +11,7 @@ public interface ICachedCommandCall extends ICachedObject {
 
     String getArgs();
 
-    Cause getCause();
+    ICachedCause getCause();
 
     boolean isCancelled();
 

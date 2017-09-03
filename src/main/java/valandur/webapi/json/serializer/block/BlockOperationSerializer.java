@@ -14,7 +14,6 @@ public class BlockOperationSerializer extends WebAPIBaseSerializer<BlockOperatio
 
         writeField("type", value.getType());
         writeField("uuid", value.getUUID());
-        writeField("type", value.getType().toString());
         writeField("status", value.getStatus().toString());
         writeField("progress", value.getProgress());
         writeField("estTimeRemaining", value.getEstimatedSecondsRemaining());

@@ -16,6 +16,7 @@ import org.eclipse.jetty.server.handler.ContextHandler;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
 import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.servlet.ServletContextHandler;
+import org.eclipse.jetty.util.MultiException;
 import org.eclipse.jetty.util.log.Log;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.reflections.Reflections;
@@ -537,16 +538,30 @@ public class WebAPI {
 
             logger.info("AdminPanel: " + baseUri + "/admin");
             logger.info("API Docs: " + baseUri + "/docs");
-        } catch(SocketException e) {
+        } catch (SocketException e) {
             logger.error("Web-API webserver could not start, probably because one of the ports needed for HTTP " +
                     "and/or HTTPS are in use or not accessible (ports below 1024 are protected)");
+        } catch (MultiException e) {
+            e.getThrowables().forEach(t -> {
+                if (t instanceof SocketException) {
+                    logger.error("Web-API webserver could not start, probably because one of the ports needed for HTTP " +
+                            "and/or HTTPS are in use or not accessible (ports below 1024 are protected)");
+                } else {
+                    t.printStackTrace();
+                    WebAPI.sentryCapture(t);
+                }
+            });
         } catch (Exception e) {
             e.printStackTrace();
             WebAPI.sentryCapture(e);
         }
 
         if (player != null) {
-            player.sendMessage(Text.builder().color(TextColors.AQUA).append(Text.of("[" + WebAPI.NAME + "] The web server has been restarted!")).toText());
+            player.sendMessage(Text.builder()
+                    .color(TextColors.AQUA)
+                    .append(Text.of("[" + WebAPI.NAME + "] The web server has been restarted!"))
+                    .toText()
+            );
         }
     }
     private void stopWebServer() {
@@ -873,5 +888,9 @@ public class WebAPI {
     public static void sentryCapture(Exception e) {
         addDefaultContext();
         Sentry.capture(e);
+    }
+    public static void sentryCapture(Throwable t) {
+        addDefaultContext();
+        Sentry.capture(t);
     }
 }

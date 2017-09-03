@@ -15,7 +15,7 @@ public class CachedTileEntitySerializer extends WebAPIBaseSerializer<CachedTileE
         writeField("link", value.getLink());
 
         if (shouldWriteDetails()) {
-            writeField("class", value.getClass().getName());
+            writeField("class", value.getObjectClass().getName());
             writeField("inventory", value.getInventory());
 
             writeData(value.getData());

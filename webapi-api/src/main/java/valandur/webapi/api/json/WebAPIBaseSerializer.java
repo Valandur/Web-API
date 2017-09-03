@@ -190,15 +190,22 @@ public abstract class WebAPIBaseSerializer<T> extends StdSerializer<T> {
      * @throws IOException Is thrown when serialization fails.
      */
     protected void writeData(DataHolder holder) throws IOException {
-        SerializerProvider provider = getCurrentProvider();
-
-        for (Map.Entry<String, Class> entry : jsonService.getSupportedData().entrySet()) {
+        for (Map.Entry<String, Class<? extends DataManipulator>> entry : jsonService.getSupportedData().entrySet()) {
             Optional<?> m = holder.get(entry.getValue());
 
             if (!m.isPresent())
                 continue;
 
             writeField(entry.getKey(), m.get());
+        }
+    }
+
+    protected void writeProperties(PropertyHolder holder) throws IOException {
+        for (Property<?, ?> property : holder.getApplicableProperties()) {
+            String key = property.getKey().toString();
+            key = key.replace("Property", "");
+            key = Character.toLowerCase(key.charAt(0)) + key.substring(1);
+            writeField(key, property.getValue());
         }
     }
 

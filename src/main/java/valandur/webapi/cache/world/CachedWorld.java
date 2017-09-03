@@ -19,91 +19,109 @@ import java.util.UUID;
 public class CachedWorld extends CachedObject implements ICachedWorld {
 
     private UUID uuid;
+    @Override
     public UUID getUUID() {
         return uuid;
     }
 
     private String name;
+    @Override
     public String getName() {
         return name;
     }
 
     private boolean loaded;
+    @Override
     public boolean isLoaded() {
         return loaded;
     }
 
     private boolean loadOnStartup;
+    @Override
     public boolean doesLoadOnStartup() {
         return loadOnStartup;
     }
 
     private boolean keepSpawnLoaded;
+    @Override
     public boolean doesKeepSpawnLoaded() {
         return keepSpawnLoaded;
     }
 
     private boolean allowCommands;
+    @Override
     public boolean doesAllowCommands() {
         return allowCommands;
     }
 
     private boolean generateBonusChests;
+    @Override
     public boolean doesGenerateBonusChests() {
         return generateBonusChests;
     }
 
     private boolean mapFeaturesEnabled;
+    @Override
     public boolean areMapFeaturesEnabled() {
         return mapFeaturesEnabled;
     }
 
     private ICachedWorldBorder border;
+    @Override
     public ICachedWorldBorder getBorder() {
         return border;
     }
 
     private ICachedCatalogType difficulty;
+    @Override
     public ICachedCatalogType getDifficulty() {
         return difficulty;
     }
 
     private ICachedCatalogType dimensionType;
+    @Override
     public ICachedCatalogType getDimensionType() {
         return dimensionType;
     }
 
     private ICachedCatalogType gameMode;
+    @Override
     public ICachedCatalogType getGameMode() {
         return gameMode;
     }
 
     private Map<String, String> gameRules;
+    @Override
     public Map<String, String> getGameRules() {
         return gameRules;
     }
 
     private ICachedGeneratorType generatorType;
+    @Override
     public ICachedGeneratorType getGeneratorType() {
         return generatorType;
     }
 
     private long seed;
+    @Override
     public long getSeed() {
         return seed;
     }
 
     private Vector3i spawn;
+    @Override
     public Vector3i getSpawn() {
         return spawn;
     }
 
     private long time;
+    @Override
     public long getTime() {
         return time;
     }
 
     private CachedCatalogType weather;
+    @Override
     public CachedCatalogType getWeather() {
         return weather;
     }

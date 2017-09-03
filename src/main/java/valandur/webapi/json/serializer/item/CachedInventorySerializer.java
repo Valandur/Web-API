@@ -12,14 +12,19 @@ public class CachedInventorySerializer extends WebAPIBaseSerializer<CachedInvent
         writeStartObject();
         writeField("type", value.getType());
         writeField("name", value.getName());
-        writeField("capacity", value.getCapacity());
-        writeField("totalItems", value.getTotalItems());
 
-        writeArrayFieldStart("items");
-        for (ItemStack stack : value.getItems()) {
-            writeValue(stack);
+        if (shouldWriteDetails()) {
+            writeField("class", value.getObjectClass().getName());
+            writeField("capacity", value.getCapacity());
+            writeField("totalItems", value.getTotalItems());
+
+            writeArrayFieldStart("items");
+            for (ItemStack stack : value.getItems()) {
+                writeValue(stack);
+            }
+            writeEndArray();
         }
-        writeEndArray();
+
         writeEndObject();
     }
 }

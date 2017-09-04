@@ -117,9 +117,7 @@ import java.net.SocketException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Supplier;
@@ -655,6 +653,16 @@ public class WebAPI {
         startWebServer(null);
 
         checkForUpdates();
+
+        // Add custom bstats metrics
+        metrics.addCustomChart(new Metrics.SimplePie("report_errors", () -> reportErrors ? "Yes" : "No"));
+        metrics.addCustomChart(new Metrics.SimplePie("admin_panel", () -> adminPanelEnabled ? "Yes" : "No"));
+        metrics.addCustomChart(new Metrics.SimpleBarChart("protocols", () -> {
+            Map<String, Integer> map = new HashMap<>();
+            map.put("HTTP", serverPortHttp >= 0 ? 1 : 0);
+            map.put("HTTPS", serverPortHttps >= 0 ? 1 : 0);
+            return map;
+        }));
 
         webHookService.notifyHooks(WebHookService.WebHookType.SERVER_START, event);
     }

@@ -1,6 +1,5 @@
 package valandur.webapi.handler;
 
-import io.sentry.Sentry;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.AbstractHandler;
 import org.spongepowered.api.Sponge;
@@ -51,7 +50,7 @@ public class AssetHandler extends AbstractHandler {
     @Override
     public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         if (assetString != null) {
-            response.setContentType(contentType + "; charset=utf-8");
+            response.setContentType(contentType);
             response.setStatus(HttpServletResponse.SC_OK);
 
             PrintWriter out = response.getWriter();

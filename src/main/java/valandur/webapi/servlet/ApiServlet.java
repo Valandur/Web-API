@@ -2,6 +2,9 @@ package valandur.webapi.servlet;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.util.TreeNode;
 import valandur.webapi.permission.PermissionService;
@@ -14,6 +17,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public class ApiServlet extends HttpServlet {
@@ -75,13 +79,32 @@ public class ApiServlet extends HttpServlet {
 
         if (verb.equalsIgnoreCase("Post") || verb.equalsIgnoreCase("Put")) {
             try {
-                ObjectMapper mapper = new ObjectMapper();
-                JsonNode node = mapper.readTree(req.getReader());
-                req.setAttribute("body", node);
+                String type = req.getContentType();
 
-                WebAPI.sentryExtra("request_body", node != null ? node.toString() : "");
+                if (type.contains("application/x-www-form-urlencoded")) {
+                    Map<String, String[]> params = req.getParameterMap();
+                    ObjectNode obj = JsonNodeFactory.instance.objectNode();
+                    for (Map.Entry<String, String[]> entry : params.entrySet()) {
+                        ArrayNode arr = JsonNodeFactory.instance.arrayNode();
+                        for (String s : entry.getValue()) {
+                            arr.add(s);
+                        }
+                        obj.set(entry.getKey(), arr);
+                    }
+                    req.setAttribute("body", obj);
+                } else if (type.contains("application/json")) {
+                    ObjectMapper mapper = new ObjectMapper();
+                    JsonNode node = mapper.readTree(req.getReader());
+                    req.setAttribute("body", node);
+
+                    WebAPI.sentryExtra("request_body", node != null ? node.toString() : "");
+                } else {
+                    resp.sendError(HttpServletResponse.SC_BAD_REQUEST,
+                            "Unknown request body type. Use either application/json or application/x-www-form-urlencoded");
+                    return;
+                }
             } catch (Exception e) {
-                resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid JSON request body");
+                resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Could not parse request body: " + e.getMessage());
                 return;
             }
         }

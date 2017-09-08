@@ -79,6 +79,7 @@ import valandur.webapi.hook.WebHookSerializer;
 import valandur.webapi.hook.WebHookService;
 import valandur.webapi.integration.huskycrates.HuskyCratesServlet;
 import valandur.webapi.integration.nucleus.NucleusServlet;
+import valandur.webapi.integration.webbhooks.WebBookServlet;
 import valandur.webapi.json.JsonService;
 import valandur.webapi.message.MessageService;
 import valandur.webapi.permission.PermissionService;
@@ -121,6 +122,7 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 @Plugin(
         id = WebAPI.ID,
@@ -167,6 +169,7 @@ public class WebAPI {
     private static String spongeApi;
     private static String spongeGame;
     private static String spongeImpl;
+    private static String pluginList;
 
     @Inject
     private Metrics metrics;
@@ -270,6 +273,8 @@ public class WebAPI {
         spongeApi = platform.getContainer(Component.API).getVersion().orElse(null);
         spongeGame = platform.getContainer(Component.GAME).getVersion().orElse(null);
         spongeImpl = platform.getContainer(Component.IMPLEMENTATION).getVersion().orElse(null);
+        pluginList = Sponge.getPluginManager().getPlugins().stream()
+                .map(PluginContainer::getId).collect(Collectors.joining(","));
 
         // Create our config directory if it doesn't exist
         if (!Files.exists(configPath)) {
@@ -354,6 +359,11 @@ public class WebAPI {
             servletService.registerServlet(NucleusServlet.class);
         } catch (ClassNotFoundException ignored) { }
 
+        try {
+            Class.forName("de.dosmike.sponge.WebBooks.WebBooks");
+            servletService.registerServlet(WebBookServlet.class);
+        } catch (ClassNotFoundException ignored) { }
+
         // Main init function, that is also called when reloading the plugin
         init(null);
 
@@ -383,8 +393,9 @@ public class WebAPI {
         keyStoreLocation = config.getNode("customKeyStore").getString();
         CmdServlet.CMD_WAIT_TIME = config.getNode("cmdWaitTime").getInt();
 
-        if (devMode)
+        if (devMode) {
             logger.warn("WebAPI IS RUNNING IN DEV MODE. USING NON-SHADOWED REFERENCES!");
+        }
 
         authHandler.init();
 
@@ -876,10 +887,13 @@ public class WebAPI {
 
     private static void addDefaultContext() {
         Context context = Sentry.getContext();
+        context.addTag("full_release", WebAPI.VERSION);
+
         context.addTag("java_version", System.getProperty("java.version"));
         context.addTag("os_name", System.getProperty("os.name"));
         context.addTag("os_arch", System.getProperty("os.arch"));
         context.addTag("os_version", System.getProperty("os.version"));
+
         context.addExtra("processors", Runtime.getRuntime().availableProcessors());
         context.addExtra("memory_max", Runtime.getRuntime().maxMemory());
         context.addExtra("memory_total", Runtime.getRuntime().totalMemory());
@@ -892,6 +906,8 @@ public class WebAPI {
         context.addExtra("sponge_api", spongeApi);
         context.addExtra("sponge_game", spongeGame);
         context.addExtra("sponge_impl", spongeImpl);
+
+        context.addExtra("plugins", pluginList);
     }
     public static void sentryCapture(Exception e) {
         addDefaultContext();
@@ -900,5 +916,9 @@ public class WebAPI {
     public static void sentryCapture(Throwable t) {
         addDefaultContext();
         Sentry.capture(t);
+    }
+    public static void sentryCapture(String msg) {
+        addDefaultContext();
+        Sentry.capture(msg);
     }
 }

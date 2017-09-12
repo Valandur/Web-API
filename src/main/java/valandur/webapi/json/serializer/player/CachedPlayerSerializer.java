@@ -12,7 +12,7 @@ public class CachedPlayerSerializer extends WebAPIBaseSerializer<CachedPlayer> {
 
         writeField("uuid", value.getUUID());
         writeField("name", value.getName());
-        writeField("type", value.getType());
+        writeField("online", value.isOnline());
         writeField("link", value.getLink());
         writeField("location", value.getLocation());
 

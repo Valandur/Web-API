@@ -1,9 +1,12 @@
 package valandur.webapi.cache;
 
 import org.spongepowered.api.data.DataHolder;
+import org.spongepowered.api.data.manipulator.DataManipulator;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.cache.ICachedObject;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 public abstract class CachedObject implements ICachedObject {
@@ -16,9 +19,9 @@ public abstract class CachedObject implements ICachedObject {
         return clazz;
     }
 
-    protected DataHolder data;
+    protected Map<String, Object> data;
     @Override
-    public DataHolder getData() {
+    public Map<String, Object> getData() {
         return data;
     }
 
@@ -30,7 +33,18 @@ public abstract class CachedObject implements ICachedObject {
         if (obj != null) this.clazz = obj.getClass();
 
         if (obj instanceof DataHolder) {
-            this.data = ((DataHolder)obj).copy();
+            DataHolder holder = (DataHolder)obj;
+
+            this.data = new HashMap<>();
+            for (Map.Entry<String, Class<? extends DataManipulator>> entry :
+                    WebAPI.getJsonService().getSupportedData().entrySet()) {
+                Optional<?> m = holder.get(entry.getValue());
+
+                if (!m.isPresent())
+                    continue;
+
+                data.put(entry.getKey(), ((DataManipulator)m.get()).copy());
+            }
         }
     }
 

@@ -2,6 +2,7 @@ package valandur.webapi.api.cache;
 
 import org.spongepowered.api.data.DataHolder;
 
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -19,7 +20,7 @@ public interface ICachedObject {
      * Gets any data associated with the object if the original object was a {@link DataHolder}.
      * @return Data stored on the object.
      */
-    DataHolder getData();
+    Map<String, Object> getData();
 
     /**
      * Gets a link representing a Web-API endpoint where details for the object can be retrieved..

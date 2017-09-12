@@ -7,6 +7,9 @@ properties:
   uuid:
     type: string
     description: The unique identifier of the player.
+  online:
+    type: boolean
+    description: True if the player is currently online, false otherwise.
   location:
     $ref: "./Location.yaml"
   name:
@@ -21,6 +24,7 @@ properties:
 example:
   type: minecraft:player
   uuid: 357427c6-3b91-4ead-aad4-15a3e18e6452
+  online: true
   location:
     world:
       name: world

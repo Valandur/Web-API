@@ -10,11 +10,15 @@ import org.spongepowered.api.data.manipulator.DataManipulator;
 import org.spongepowered.api.data.property.PropertyHolder;
 import org.spongepowered.api.util.Tristate;
 import valandur.webapi.api.WebAPIAPI;
+import valandur.webapi.api.cache.ICacheService;
 import valandur.webapi.api.permission.IPermissionService;
 import valandur.webapi.api.util.TreeNode;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Stack;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -29,6 +33,7 @@ public abstract class WebAPIBaseSerializer<T> extends StdSerializer<T> {
     protected Map<Long, Stack<Boolean>> localObjects = new ConcurrentHashMap<>();
     protected Map<Long, Stack<Boolean>> localArrays = new ConcurrentHashMap<>();
 
+    protected ICacheService cacheService;
     protected IJsonService jsonService;
     protected IPermissionService permissionService;
 
@@ -46,6 +51,7 @@ public abstract class WebAPIBaseSerializer<T> extends StdSerializer<T> {
     public WebAPIBaseSerializer() {
         this(null);
         this.clazz = TypeResolver.resolveRawArgument(WebAPIBaseSerializer.class, getClass());
+        this.cacheService = WebAPIAPI.getCacheService().orElse(null);
         this.jsonService = WebAPIAPI.getJsonService().orElse(null);
         this.permissionService = WebAPIAPI.getPermissionService().orElse(null);
     }
@@ -188,13 +194,14 @@ public abstract class WebAPIBaseSerializer<T> extends StdSerializer<T> {
     }
 
     /**
-     * Serializes the specified {@link DataHolder} on the current object. This adds all known data as properties to
+     * Serializes the specified data on the current object. This adds all known data as properties to
      * the current object.
-     * @param holder The {@link DataHolder} to serialize.
+     * @param holder The data holder holding the data to serialize
      * @throws IOException Is thrown when serialization fails.
      */
     protected void writeData(DataHolder holder) throws IOException {
-        for (Map.Entry<String, Class<? extends DataManipulator>> entry : jsonService.getSupportedData().entrySet()) {
+        for (Map.Entry<String, Class<? extends DataManipulator>> entry :
+                jsonService.getSupportedData().entrySet()) {
             Optional<?> m = holder.get(entry.getValue());
 
             if (!m.isPresent())
@@ -204,6 +211,24 @@ public abstract class WebAPIBaseSerializer<T> extends StdSerializer<T> {
         }
     }
 
+    /**
+     * Serializes the specified data map on the current object.
+     * @param data The data map to serialize.
+     * @throws IOException Is thrown when serialization fails.
+     */
+    protected void writeData(Map<String, Object> data) throws IOException {
+        if (data == null) return;
+
+        for (Map.Entry<String, Object> entry : data.entrySet()) {
+            writeField(entry.getKey(), entry.getValue());
+        }
+    }
+
+    /**
+     * Writes all properties to the current object.
+     * @param holder The holder of the properties.
+     * @throws IOException Is thrown when serialization fails.
+     */
     protected void writeProperties(PropertyHolder holder) throws IOException {
         for (Property<?, ?> property : holder.getApplicableProperties()) {
             String key = property.getKey().toString();

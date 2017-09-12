@@ -11,7 +11,7 @@ import valandur.webapi.api.annotation.WebAPIEndpoint;
 import valandur.webapi.api.annotation.WebAPIServlet;
 import valandur.webapi.api.servlet.WebAPIBaseServlet;
 import valandur.webapi.json.JsonService;
-import valandur.webapi.servlet.ServletData;
+import valandur.webapi.servlet.base.ServletData;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.Optional;

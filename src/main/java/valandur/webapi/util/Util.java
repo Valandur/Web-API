@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.flowpowered.math.vector.Vector3d;
 import com.flowpowered.math.vector.Vector3i;
-import io.sentry.Sentry;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
@@ -40,15 +39,23 @@ public class Util {
     public static Tuple<ConfigurationLoader, ConfigurationNode> loadWithDefaults(String path, String defaultPath) {
         try {
             Path filePath = WebAPI.getConfigPath().resolve(path);
-            Asset asset = Sponge.getAssetManager().getAsset(WebAPI.getInstance(), defaultPath).get();
+            Optional<Asset> optAsset = Sponge.getAssetManager().getAsset(WebAPI.getInstance(), defaultPath);
+            if (!optAsset.isPresent()) {
+                throw new IOException("Could not find default asset " + defaultPath);
+            }
+            Asset asset = optAsset.get();
 
             if (!Files.exists(filePath))
                 asset.copyToDirectory(WebAPI.getConfigPath());
 
-            ConfigurationLoader<CommentedConfigurationNode> loader = HoconConfigurationLoader.builder().setPath(filePath).build();
+            ConfigurationLoader<CommentedConfigurationNode> loader = HoconConfigurationLoader.builder()
+                    .setPath(filePath)
+                    .build();
             CommentedConfigurationNode config = loader.load();
 
-            ConfigurationLoader<CommentedConfigurationNode> defLoader = HoconConfigurationLoader.builder().setURL(asset.getUrl()).build();
+            ConfigurationLoader<CommentedConfigurationNode> defLoader = HoconConfigurationLoader.builder()
+                    .setURL(asset.getUrl())
+                    .build();
             CommentedConfigurationNode defConfig = defLoader.load();
 
             int version = config.getNode("version").getInt(0);
@@ -68,7 +75,10 @@ public class Util {
 
         } catch (IOException | NoSuchElementException e) {
             e.printStackTrace();
-            if (WebAPI.reportErrors()) WebAPI.sentryCapture(e);
+            if (WebAPI.reportErrors()) {
+                WebAPI.sentryExtra("config", path);
+                WebAPI.sentryCapture(e);
+            }
             return null;
         }
     }

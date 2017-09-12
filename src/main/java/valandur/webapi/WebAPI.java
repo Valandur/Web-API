@@ -11,6 +11,8 @@ import ninja.leaping.configurate.loader.ConfigurationLoader;
 import ninja.leaping.configurate.objectmapping.serialize.TypeSerializers;
 import org.bstats.sponge.Metrics;
 import org.eclipse.jetty.http.HttpVersion;
+import org.eclipse.jetty.rewrite.handler.RedirectPatternRule;
+import org.eclipse.jetty.rewrite.handler.RewriteHandler;
 import org.eclipse.jetty.server.*;
 import org.eclipse.jetty.server.handler.ContextHandler;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
@@ -19,7 +21,6 @@ import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.util.MultiException;
 import org.eclipse.jetty.util.log.Log;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
-import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.spongepowered.api.Platform;
 import org.spongepowered.api.Platform.Component;
@@ -70,59 +71,45 @@ import valandur.webapi.cache.command.CachedCommandCall;
 import valandur.webapi.command.CommandRegistry;
 import valandur.webapi.command.CommandSource;
 import valandur.webapi.extension.ExtensionService;
-import valandur.webapi.handler.AssetHandler;
-import valandur.webapi.handler.AuthHandler;
-import valandur.webapi.handler.ErrorHandler;
-import valandur.webapi.handler.RateLimitHandler;
 import valandur.webapi.hook.WebHook;
 import valandur.webapi.hook.WebHookSerializer;
 import valandur.webapi.hook.WebHookService;
 import valandur.webapi.integration.huskycrates.HuskyCratesServlet;
+import valandur.webapi.integration.nations.NationsServlet;
 import valandur.webapi.integration.nucleus.NucleusServlet;
+import valandur.webapi.integration.webbhooks.WebBookServlet;
 import valandur.webapi.json.JsonService;
 import valandur.webapi.message.MessageService;
 import valandur.webapi.permission.PermissionService;
 import valandur.webapi.server.ServerService;
-import valandur.webapi.servlet.ApiServlet;
-import valandur.webapi.servlet.ServletService;
-import valandur.webapi.servlet.block.BlockServlet;
-import valandur.webapi.servlet.clazz.ClassServlet;
-import valandur.webapi.servlet.cmd.CmdServlet;
-import valandur.webapi.servlet.entity.EntityServlet;
-import valandur.webapi.servlet.history.HistoryServlet;
-import valandur.webapi.servlet.info.InfoServlet;
-import valandur.webapi.servlet.map.MapServlet;
-import valandur.webapi.servlet.message.MessageServlet;
-import valandur.webapi.servlet.player.PlayerServlet;
-import valandur.webapi.servlet.plugin.PluginServlet;
-import valandur.webapi.servlet.recipe.RecipeServlet;
-import valandur.webapi.servlet.registry.RegistryServlet;
-import valandur.webapi.servlet.servlet.ServletServlet;
-import valandur.webapi.servlet.tileentity.TileEntityServlet;
-import valandur.webapi.servlet.user.UserServlet;
-import valandur.webapi.servlet.world.WorldServlet;
+import valandur.webapi.servlet.*;
+import valandur.webapi.servlet.base.ApiServlet;
+import valandur.webapi.servlet.base.ServletService;
+import valandur.webapi.servlet.handler.AssetHandler;
+import valandur.webapi.servlet.handler.AuthHandler;
+import valandur.webapi.servlet.handler.ErrorHandler;
+import valandur.webapi.servlet.handler.RateLimitHandler;
 import valandur.webapi.user.UserPermission;
 import valandur.webapi.user.UserPermissionConfigSerializer;
 import valandur.webapi.user.Users;
 import valandur.webapi.util.JettyLogger;
 import valandur.webapi.util.Util;
 
+import javax.net.ssl.HttpsURLConnection;
 import javax.servlet.http.HttpServletRequest;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
 import java.net.SocketException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 @Plugin(
         id = WebAPI.ID,
@@ -151,11 +138,6 @@ public class WebAPI {
     private static SpongeExecutorService syncExecutor;
     private static SpongeExecutorService asyncExecutor;
 
-    private Reflections reflections;
-    public static Reflections getReflections() {
-        return WebAPI.getInstance().reflections;
-    }
-
     private boolean devMode = false;
     public static boolean isDevMode() {
         return WebAPI.getInstance().devMode;
@@ -169,6 +151,7 @@ public class WebAPI {
     private static String spongeApi;
     private static String spongeGame;
     private static String spongeImpl;
+    private static String pluginList;
 
     @Inject
     private Metrics metrics;
@@ -260,6 +243,7 @@ public class WebAPI {
         System.setProperty("sentry.dsn", "https://fb64795d2a5c4ff18f3c3e4117d7c245:53cf4ea85ae44608ab5b189f0c07b3f1@sentry.io/203545");
         System.setProperty("sentry.release", WebAPI.VERSION.split("-")[0]);
         System.setProperty("sentry.maxmessagelength", "2000");
+        System.setProperty("sentry.stacktrace.app.packages", WebAPI.class.getPackage().getName());
 
         Sentry.init();
     }
@@ -272,6 +256,8 @@ public class WebAPI {
         spongeApi = platform.getContainer(Component.API).getVersion().orElse(null);
         spongeGame = platform.getContainer(Component.GAME).getVersion().orElse(null);
         spongeImpl = platform.getContainer(Component.IMPLEMENTATION).getVersion().orElse(null);
+        pluginList = Sponge.getPluginManager().getPlugins().stream()
+                .map(PluginContainer::getId).collect(Collectors.joining(","));
 
         // Create our config directory if it doesn't exist
         if (!Files.exists(configPath)) {
@@ -324,12 +310,8 @@ public class WebAPI {
         // Create permission handler
         authHandler = new AuthHandler();
 
-        Reflections.log = null;
-        this.reflections = new Reflections();
-
         logger.info("Registering servlets...");
         servletService.registerServlet(BlockServlet.class);
-        servletService.registerServlet(ClassServlet.class);
         servletService.registerServlet(CmdServlet.class);
         servletService.registerServlet(EntityServlet.class);
         servletService.registerServlet(HistoryServlet.class);
@@ -348,12 +330,26 @@ public class WebAPI {
         // Other plugin integrations
         try {
             Class.forName("com.codehusky.huskycrates.HuskyCrates");
+            logger.info("  Integrating with HuskyCrates...");
             servletService.registerServlet(HuskyCratesServlet.class);
         } catch (ClassNotFoundException ignored) { }
 
         try {
             Class.forName("io.github.nucleuspowered.nucleus.api.NucleusAPI");
+            logger.info("  Integrating with Nucleus...");
             servletService.registerServlet(NucleusServlet.class);
+        } catch (ClassNotFoundException ignored) { }
+
+        try {
+            Class.forName("com.arckenver.nations.NationsPlugin");
+            logger.info("  Integrating with Nations...");
+            servletService.registerServlet(NationsServlet.class);
+        } catch (ClassNotFoundException ignored) { }
+
+        try {
+            Class.forName("de.dosmike.sponge.WebBooks.WebBooks");
+            logger.info("  Integrating with WebBooks...");
+            servletService.registerServlet(WebBookServlet.class);
         } catch (ClassNotFoundException ignored) { }
 
         // Main init function, that is also called when reloading the plugin
@@ -385,8 +381,9 @@ public class WebAPI {
         keyStoreLocation = config.getNode("customKeyStore").getString();
         CmdServlet.CMD_WAIT_TIME = config.getNode("cmdWaitTime").getInt();
 
-        if (devMode)
+        if (devMode) {
             logger.warn("WebAPI IS RUNNING IN DEV MODE. USING NON-SHADOWED REFERENCES!");
+        }
 
         authHandler.init();
 
@@ -459,7 +456,7 @@ public class WebAPI {
                 String loc = keyStoreLocation;
                 if (loc == null || loc.isEmpty()) {
                     loc = Sponge.getAssetManager().getAsset(WebAPI.getInstance(), "keystore.jks")
-                            .map(a -> a.getUrl().toString()).orElse(null);
+                            .map(a -> a.getUrl().toString()).orElse("");
                 }
 
                 // SSL Factory
@@ -496,13 +493,13 @@ public class WebAPI {
             server.addBean(new ErrorHandler(server));
 
             // Collection of all handlers
-            List<Handler> handlers = new LinkedList<>();
+            List<Handler> mainHandlers = new LinkedList<>();
 
             final String baseUri = tempUri;
 
             // Asset handlers
-            handlers.add(newContext("/docs", new AssetHandler("pages/redoc.html")));
-            handlers.add(newContext("/swagger", new AssetHandler("swagger", (path) -> {
+            mainHandlers.add(newContext("/docs", new AssetHandler("pages/redoc.html")));
+            mainHandlers.add(newContext("/swagger", new AssetHandler("swagger", (path) -> {
                 if (!path.endsWith("/swagger/index.yaml"))
                     return null;
                 return (data) -> {
@@ -513,25 +510,36 @@ public class WebAPI {
                 };
             })));
 
-            if (adminPanelEnabled)
-                handlers.add(newContext("/admin", new AssetHandler("admin")));
+            if (adminPanelEnabled) {
+                // Rewrite handler
+                RewriteHandler rewrite = new RewriteHandler();
+                rewrite.setRewriteRequestURI(true);
+                rewrite.setRewritePathInfo(true);
+
+                RedirectPatternRule redirect = new RedirectPatternRule();
+                redirect.setPattern("/*");
+                redirect.setLocation("/admin");
+                rewrite.addRule(redirect);
+                mainHandlers.add(newContext("/", rewrite));
+
+                mainHandlers.add(newContext("/admin", new AssetHandler("admin")));
+            }
 
             // Setup all servlets
             servletService.init();
 
             // Main servlet context
             ServletContextHandler servletsContext = new ServletContextHandler();
-            servletsContext.setContextPath("/api");
             servletsContext.addServlet(ApiServlet.class, "/*");
 
             // Use a list to make requests first go through the auth handler and rate-limit handler
             HandlerList list = new HandlerList();
             list.setHandlers(new Handler[]{ authHandler, new RateLimitHandler(), servletsContext });
-            handlers.add(list);
+            mainHandlers.add(newContext("/api", list));
 
             // Add collection of handlers to server
             ContextHandlerCollection coll = new ContextHandlerCollection();
-            coll.setHandlers(handlers.toArray(new Handler[handlers.size()]));
+            coll.setHandlers(mainHandlers.toArray(new Handler[mainHandlers.size()]));
             server.setHandler(coll);
 
             server.start();
@@ -583,13 +591,12 @@ public class WebAPI {
         }
 
         asyncExecutor.execute(() -> {
-            HttpURLConnection connection = null;
+            HttpsURLConnection connection = null;
             try {
                 java.net.URL url = new URL(UPDATE_URL);
-                connection = (HttpURLConnection) url.openConnection();
+                connection = (HttpsURLConnection) url.openConnection();
                 connection.setRequestMethod("GET");
                 connection.setRequestProperty("User-Agent", "Web-API");
-                connection.setRequestProperty("X-WebAPI-Version", WebAPI.VERSION);
                 connection.setRequestProperty("accept", "application/json");
                 connection.setRequestProperty("charset", "utf-8");
                 connection.setUseCaches(false);
@@ -655,6 +662,16 @@ public class WebAPI {
         startWebServer(null);
 
         checkForUpdates();
+
+        // Add custom bstats metrics
+        metrics.addCustomChart(new Metrics.SimplePie("report_errors", () -> reportErrors ? "Yes" : "No"));
+        metrics.addCustomChart(new Metrics.SimplePie("admin_panel", () -> adminPanelEnabled ? "Yes" : "No"));
+        metrics.addCustomChart(new Metrics.SimpleBarChart("protocols", () -> {
+            Map<String, Integer> map = new HashMap<>();
+            map.put("HTTP", serverPortHttp >= 0 ? 1 : 0);
+            map.put("HTTPS", serverPortHttps >= 0 ? 1 : 0);
+            return map;
+        }));
 
         webHookService.notifyHooks(WebHookService.WebHookType.SERVER_START, event);
     }
@@ -868,10 +885,13 @@ public class WebAPI {
 
     private static void addDefaultContext() {
         Context context = Sentry.getContext();
+        context.addTag("full_release", WebAPI.VERSION);
+
         context.addTag("java_version", System.getProperty("java.version"));
         context.addTag("os_name", System.getProperty("os.name"));
         context.addTag("os_arch", System.getProperty("os.arch"));
         context.addTag("os_version", System.getProperty("os.version"));
+
         context.addExtra("processors", Runtime.getRuntime().availableProcessors());
         context.addExtra("memory_max", Runtime.getRuntime().maxMemory());
         context.addExtra("memory_total", Runtime.getRuntime().totalMemory());
@@ -884,6 +904,8 @@ public class WebAPI {
         context.addExtra("sponge_api", spongeApi);
         context.addExtra("sponge_game", spongeGame);
         context.addExtra("sponge_impl", spongeImpl);
+
+        context.addExtra("plugins", pluginList);
     }
     public static void sentryCapture(Exception e) {
         addDefaultContext();
@@ -892,5 +914,9 @@ public class WebAPI {
     public static void sentryCapture(Throwable t) {
         addDefaultContext();
         Sentry.capture(t);
+    }
+    public static void sentryCapture(String msg) {
+        addDefaultContext();
+        Sentry.capture(msg);
     }
 }

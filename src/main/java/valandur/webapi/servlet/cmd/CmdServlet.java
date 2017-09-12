@@ -43,14 +43,16 @@ public class CmdServlet extends WebAPIBaseServlet {
         final JsonNode reqJson = data.getRequestBody();
 
         if (reqJson == null) {
-            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid command data: " + data.getLastParseError().getMessage());
+            data.sendError(HttpServletResponse.SC_BAD_REQUEST,
+                    "Invalid command data: " + data.getLastParseError().getMessage());
             return;
         }
 
         if (!reqJson.isArray()) {
             Optional<ExecuteCommandRequest> optReq = data.getRequestBody(ExecuteCommandRequest.class);
             if (!optReq.isPresent()) {
-                data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid command data: " + data.getLastParseError().getMessage());
+                data.sendError(HttpServletResponse.SC_BAD_REQUEST,
+                        "Invalid command data: " + data.getLastParseError().getMessage());
                 return;
             }
 
@@ -70,7 +72,8 @@ public class CmdServlet extends WebAPIBaseServlet {
         List<Object> res = new ArrayList<>();
         Optional<ExecuteCommandRequest[]> optReqs = data.getRequestBody(ExecuteCommandRequest[].class);
         if (!optReqs.isPresent()) {
-            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid command data: " + data.getLastParseError().getMessage());
+            data.sendError(HttpServletResponse.SC_BAD_REQUEST,
+                    "Invalid command data: " + data.getLastParseError().getMessage());
             return;
         }
 

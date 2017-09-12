@@ -145,7 +145,7 @@ public class EntityServlet extends WebAPIBaseServlet {
             World w = (World)optWorld.get();
             Entity e = w.createEntity(req.getEntityType().get(), req.getPosition());
 
-            if (w.spawnEntity(e, Cause.source(WebAPI.getInstance()).build())) {
+            if (w.spawnEntity(e, Cause.source(WebAPI.getContainer()).build())) {
                 return e;
             } else {
                 e.remove();

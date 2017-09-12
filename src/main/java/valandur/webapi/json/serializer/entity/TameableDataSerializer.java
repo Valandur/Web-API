@@ -3,7 +3,7 @@ package valandur.webapi.json.serializer.entity;
 import org.spongepowered.api.data.manipulator.mutable.entity.TameableData;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.cache.ICacheService;
-import valandur.webapi.api.cache.entity.ICachedEntity;
+import valandur.webapi.api.cache.player.ICachedPlayer;
 import valandur.webapi.api.json.WebAPIBaseSerializer;
 
 import java.io.IOException;
@@ -19,9 +19,7 @@ public class TameableDataSerializer extends WebAPIBaseSerializer<TameableData> {
         UUID uuid = value.owner().getDirect().orElse(Optional.empty()).orElse(null);
         if (uuid != null) {
             ICacheService srv = WebAPI.getCacheService();
-            ICachedEntity owner = srv.getPlayer(uuid).orElse(null);
-            if (owner == null) owner = srv.getEntity(uuid).orElse(null);
-
+            ICachedPlayer owner = srv.getPlayer(uuid).orElse(null);
             writeField("owner", owner);
         }
         writeEndObject();

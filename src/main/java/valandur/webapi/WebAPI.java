@@ -11,6 +11,8 @@ import ninja.leaping.configurate.loader.ConfigurationLoader;
 import ninja.leaping.configurate.objectmapping.serialize.TypeSerializers;
 import org.bstats.sponge.Metrics;
 import org.eclipse.jetty.http.HttpVersion;
+import org.eclipse.jetty.rewrite.handler.RedirectPatternRule;
+import org.eclipse.jetty.rewrite.handler.RewriteHandler;
 import org.eclipse.jetty.server.*;
 import org.eclipse.jetty.server.handler.ContextHandler;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
@@ -19,7 +21,6 @@ import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.util.MultiException;
 import org.eclipse.jetty.util.log.Log;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
-import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.spongepowered.api.Platform;
 import org.spongepowered.api.Platform.Component;
@@ -87,7 +88,6 @@ import valandur.webapi.server.ServerService;
 import valandur.webapi.servlet.ApiServlet;
 import valandur.webapi.servlet.ServletService;
 import valandur.webapi.servlet.block.BlockServlet;
-import valandur.webapi.servlet.clazz.ClassServlet;
 import valandur.webapi.servlet.cmd.CmdServlet;
 import valandur.webapi.servlet.entity.EntityServlet;
 import valandur.webapi.servlet.history.HistoryServlet;
@@ -108,12 +108,12 @@ import valandur.webapi.user.Users;
 import valandur.webapi.util.JettyLogger;
 import valandur.webapi.util.Util;
 
+import javax.net.ssl.HttpsURLConnection;
 import javax.servlet.http.HttpServletRequest;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
 import java.net.SocketException;
 import java.net.URL;
 import java.nio.file.Files;
@@ -150,11 +150,6 @@ public class WebAPI {
 
     private static SpongeExecutorService syncExecutor;
     private static SpongeExecutorService asyncExecutor;
-
-    private Reflections reflections;
-    public static Reflections getReflections() {
-        return WebAPI.getInstance().reflections;
-    }
 
     private boolean devMode = false;
     public static boolean isDevMode() {
@@ -261,6 +256,7 @@ public class WebAPI {
         System.setProperty("sentry.dsn", "https://fb64795d2a5c4ff18f3c3e4117d7c245:53cf4ea85ae44608ab5b189f0c07b3f1@sentry.io/203545");
         System.setProperty("sentry.release", WebAPI.VERSION.split("-")[0]);
         System.setProperty("sentry.maxmessagelength", "2000");
+        System.setProperty("sentry.stacktrace.app.packages", WebAPI.class.getPackage().getName());
 
         Sentry.init();
     }
@@ -327,12 +323,8 @@ public class WebAPI {
         // Create permission handler
         authHandler = new AuthHandler();
 
-        Reflections.log = null;
-        this.reflections = new Reflections();
-
         logger.info("Registering servlets...");
         servletService.registerServlet(BlockServlet.class);
-        servletService.registerServlet(ClassServlet.class);
         servletService.registerServlet(CmdServlet.class);
         servletService.registerServlet(EntityServlet.class);
         servletService.registerServlet(HistoryServlet.class);
@@ -468,7 +460,7 @@ public class WebAPI {
                 String loc = keyStoreLocation;
                 if (loc == null || loc.isEmpty()) {
                     loc = Sponge.getAssetManager().getAsset(WebAPI.getInstance(), "keystore.jks")
-                            .map(a -> a.getUrl().toString()).orElse(null);
+                            .map(a -> a.getUrl().toString()).orElse("");
                 }
 
                 // SSL Factory
@@ -505,13 +497,13 @@ public class WebAPI {
             server.addBean(new ErrorHandler(server));
 
             // Collection of all handlers
-            List<Handler> handlers = new LinkedList<>();
+            List<Handler> mainHandlers = new LinkedList<>();
 
             final String baseUri = tempUri;
 
             // Asset handlers
-            handlers.add(newContext("/docs", new AssetHandler("pages/redoc.html")));
-            handlers.add(newContext("/swagger", new AssetHandler("swagger", (path) -> {
+            mainHandlers.add(newContext("/docs", new AssetHandler("pages/redoc.html")));
+            mainHandlers.add(newContext("/swagger", new AssetHandler("swagger", (path) -> {
                 if (!path.endsWith("/swagger/index.yaml"))
                     return null;
                 return (data) -> {
@@ -522,25 +514,36 @@ public class WebAPI {
                 };
             })));
 
-            if (adminPanelEnabled)
-                handlers.add(newContext("/admin", new AssetHandler("admin")));
+            if (adminPanelEnabled) {
+                // Rewrite handler
+                RewriteHandler rewrite = new RewriteHandler();
+                rewrite.setRewriteRequestURI(true);
+                rewrite.setRewritePathInfo(true);
+
+                RedirectPatternRule redirect = new RedirectPatternRule();
+                redirect.setPattern("/*");
+                redirect.setLocation("/admin");
+                rewrite.addRule(redirect);
+                mainHandlers.add(newContext("/", rewrite));
+
+                mainHandlers.add(newContext("/admin", new AssetHandler("admin")));
+            }
 
             // Setup all servlets
             servletService.init();
 
             // Main servlet context
             ServletContextHandler servletsContext = new ServletContextHandler();
-            servletsContext.setContextPath("/api");
             servletsContext.addServlet(ApiServlet.class, "/*");
 
             // Use a list to make requests first go through the auth handler and rate-limit handler
             HandlerList list = new HandlerList();
             list.setHandlers(new Handler[]{ authHandler, new RateLimitHandler(), servletsContext });
-            handlers.add(list);
+            mainHandlers.add(newContext("/api", list));
 
             // Add collection of handlers to server
             ContextHandlerCollection coll = new ContextHandlerCollection();
-            coll.setHandlers(handlers.toArray(new Handler[handlers.size()]));
+            coll.setHandlers(mainHandlers.toArray(new Handler[mainHandlers.size()]));
             server.setHandler(coll);
 
             server.start();
@@ -592,13 +595,12 @@ public class WebAPI {
         }
 
         asyncExecutor.execute(() -> {
-            HttpURLConnection connection = null;
+            HttpsURLConnection connection = null;
             try {
                 java.net.URL url = new URL(UPDATE_URL);
-                connection = (HttpURLConnection) url.openConnection();
+                connection = (HttpsURLConnection) url.openConnection();
                 connection.setRequestMethod("GET");
                 connection.setRequestProperty("User-Agent", "Web-API");
-                connection.setRequestProperty("X-WebAPI-Version", WebAPI.VERSION);
                 connection.setRequestProperty("accept", "application/json");
                 connection.setRequestProperty("charset", "utf-8");
                 connection.setUseCaches(false);

@@ -10,6 +10,7 @@ import org.spongepowered.api.data.manipulator.DataManipulator;
 import org.spongepowered.api.data.property.PropertyHolder;
 import org.spongepowered.api.util.Tristate;
 import valandur.webapi.api.WebAPIAPI;
+import valandur.webapi.api.cache.ICacheService;
 import valandur.webapi.api.permission.IPermissionService;
 import valandur.webapi.api.util.TreeNode;
 
@@ -32,6 +33,7 @@ public abstract class WebAPIBaseSerializer<T> extends StdSerializer<T> {
     protected Map<Long, Stack<Boolean>> localObjects = new ConcurrentHashMap<>();
     protected Map<Long, Stack<Boolean>> localArrays = new ConcurrentHashMap<>();
 
+    protected ICacheService cacheService;
     protected IJsonService jsonService;
     protected IPermissionService permissionService;
 
@@ -49,6 +51,7 @@ public abstract class WebAPIBaseSerializer<T> extends StdSerializer<T> {
     public WebAPIBaseSerializer() {
         this(null);
         this.clazz = TypeResolver.resolveRawArgument(WebAPIBaseSerializer.class, getClass());
+        this.cacheService = WebAPIAPI.getCacheService().orElse(null);
         this.jsonService = WebAPIAPI.getJsonService().orElse(null);
         this.permissionService = WebAPIAPI.getPermissionService().orElse(null);
     }

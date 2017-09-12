@@ -32,6 +32,7 @@ allprojects {
         compile group: "org.eclipse.jetty", name: "jetty-server", version: "9.4.6.v20170531"
         compile group: "org.eclipse.jetty", name: "jetty-servlet", version: "9.4.6.v20170531"
         compile group: "org.eclipse.jetty", name: "jetty-http", version: "9.4.6.v20170531"
+        compile group: "org.eclipse.jetty", name: "jetty-rewrite", version: "9.4.6.v20170531"
         compile group: "com.fasterxml.jackson.core", name: "jackson-core", version: "2.9.0"
         compile group: "com.fasterxml.jackson.core", name: "jackson-databind", version: "2.9.0"
         compile group: "com.fasterxml.jackson.core", name: "jackson-annotations", version: "2.9.0"
@@ -46,14 +47,10 @@ blossom {
 spongestart {
     eula true
     minecraft project.minecraftVersion
-
-    spongeForgeVersion "1.11.2-2393-6.1.0-BETA-2556"
-    spongeVanillaVersion "1.11.2-6.1.0-BETA-17"
 }
 
 dependencies {
     compile project(":webapi-api")
-    compile group: "org.reflections", name: "reflections", version: "0.9.10"
     compile group: "org.mindrot", name: "jbcrypt", version: "0.4"
 
     compileOnly group: "io.github.nucleuspowered", name: "nucleus-api", version: "1.1.0-SNAPSHOT-S6.0"
@@ -71,7 +68,6 @@ shadowJar {
     relocate "javax.servlet", "valandur.webapi.shadow.javax.servlet"
     relocate "org.mindrot", "valandur.webapi.shadow.org.mindrot"
     relocate "org.eclipse", "valandur.webapi.shadow.org.eclipse"
-    relocate "org.reflections", "valandur.webapi.shadow.org.reflections"
     relocate "net.jodah", "valandur.webapi.shadow.net.jodah"
     relocate "net.jcip", "valandur.webapi.shadow.net.jcip"
 

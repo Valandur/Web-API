@@ -4,17 +4,19 @@ import com.fasterxml.jackson.databind.JsonNode;
 import org.eclipse.jetty.http.HttpMethod;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.cause.entity.damage.source.DamageSource;
+import org.spongepowered.api.item.inventory.Carrier;
+import org.spongepowered.api.item.inventory.Inventory;
+import org.spongepowered.api.item.inventory.ItemStackSnapshot;
 import org.spongepowered.api.util.Tuple;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.annotation.WebAPIEndpoint;
 import valandur.webapi.api.annotation.WebAPIServlet;
-import valandur.webapi.api.cache.entity.ICachedEntity;
 import valandur.webapi.api.cache.player.ICachedPlayer;
 import valandur.webapi.api.servlet.WebAPIBaseServlet;
 import valandur.webapi.cache.player.CachedPlayer;
+import valandur.webapi.json.request.misc.DamageRequest;
 import valandur.webapi.json.request.player.UpdatePlayerRequest;
 import valandur.webapi.servlet.base.ServletData;
-import valandur.webapi.json.request.entity.UpdateEntityRequest;
 import valandur.webapi.util.Util;
 
 import javax.servlet.http.HttpServletResponse;
@@ -56,7 +58,7 @@ public class PlayerServlet extends WebAPIBaseServlet {
 
         final UpdatePlayerRequest req = optReq.get();
 
-        Optional<ICachedEntity> resPlayer = WebAPI.runOnMain(() -> {
+        Optional<ICachedPlayer> resPlayer = WebAPI.runOnMain(() -> {
             Optional<?> optLive = player.getLive();
             if (!optLive.isPresent())
                 return null;
@@ -76,7 +78,7 @@ public class PlayerServlet extends WebAPIBaseServlet {
             }
 
             if (req.getDamage() != null) {
-                UpdateEntityRequest.DamageRequest dmgReq = req.getDamage();
+                DamageRequest dmgReq = req.getDamage();
                 DamageSource.Builder builder = DamageSource.builder();
                 if (dmgReq.getDamageType().isPresent())
                     builder.type(dmgReq.getDamageType().get());
@@ -84,7 +86,19 @@ public class PlayerServlet extends WebAPIBaseServlet {
                 live.damage(req.getDamage().getAmount(), builder.build());
             }
 
-            return cacheService.updateEntity(live);
+            if (req.hasInventory()) {
+                try {
+                    Inventory inv = ((Carrier) live).getInventory();
+                    inv.clear();
+                    for (ItemStackSnapshot stack : req.getInventory()) {
+                        inv.offer(stack.createStack());
+                    }
+                } catch (Exception e) {
+                    return null;
+                }
+            }
+
+            return cacheService.updatePlayer(live);
         });
 
         data.addJson("ok", resPlayer.isPresent(), false);

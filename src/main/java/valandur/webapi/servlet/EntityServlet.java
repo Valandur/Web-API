@@ -5,6 +5,9 @@ import org.eclipse.jetty.http.HttpMethod;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.event.cause.Cause;
 import org.spongepowered.api.event.cause.entity.damage.source.DamageSource;
+import org.spongepowered.api.item.inventory.Carrier;
+import org.spongepowered.api.item.inventory.Inventory;
+import org.spongepowered.api.item.inventory.ItemStackSnapshot;
 import org.spongepowered.api.util.Tuple;
 import org.spongepowered.api.world.World;
 import valandur.webapi.WebAPI;
@@ -15,6 +18,7 @@ import valandur.webapi.api.servlet.WebAPIBaseServlet;
 import valandur.webapi.cache.entity.CachedEntity;
 import valandur.webapi.json.request.entity.CreateEntityRequest;
 import valandur.webapi.json.request.entity.UpdateEntityRequest;
+import valandur.webapi.json.request.misc.DamageRequest;
 import valandur.webapi.servlet.base.ServletData;
 import valandur.webapi.util.Util;
 
@@ -76,12 +80,29 @@ public class EntityServlet extends WebAPIBaseServlet {
             }
 
             if (req.getDamage() != null) {
-                UpdateEntityRequest.DamageRequest dmgReq = req.getDamage();
+                DamageRequest dmgReq = req.getDamage();
                 DamageSource.Builder builder = DamageSource.builder();
                 if (dmgReq.getDamageType().isPresent())
                     builder.type(dmgReq.getDamageType().get());
 
                 live.damage(req.getDamage().getAmount(), builder.build());
+            }
+
+            if (req.hasInventory()) {
+                if (!(live instanceof Carrier)) {
+                    data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Entity does not have an inventory!");
+                    return null;
+                }
+
+                try {
+                    Inventory inv = ((Carrier) live).getInventory();
+                    inv.clear();
+                    for (ItemStackSnapshot stack : req.getInventory()) {
+                        inv.offer(stack.createStack());
+                    }
+                } catch (Exception e) {
+                    return null;
+                }
             }
 
             return cacheService.updateEntity(live);

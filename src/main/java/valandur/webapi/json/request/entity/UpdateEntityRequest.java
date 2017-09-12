@@ -2,12 +2,14 @@ package valandur.webapi.json.request.entity;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.flowpowered.math.vector.Vector3d;
-import org.spongepowered.api.Sponge;
-import org.spongepowered.api.event.cause.entity.damage.DamageType;
+import org.spongepowered.api.item.inventory.ItemStackSnapshot;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.cache.world.ICachedWorld;
+import valandur.webapi.json.request.item.ItemStackRequest;
+import valandur.webapi.json.request.misc.DamageRequest;
 
-import java.util.Collection;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @JsonDeserialize
@@ -49,19 +51,16 @@ public class UpdateEntityRequest {
         return damage;
     }
 
-
     @JsonDeserialize
-    public static class DamageRequest {
-        @JsonDeserialize
-        private Integer amount;
-        public Integer getAmount() {
-            return amount;
+    private List<ItemStackRequest> inventory;
+    public List<ItemStackSnapshot> getInventory() throws Exception {
+        List<ItemStackSnapshot> res = new ArrayList<>();
+        for (ItemStackRequest stack : inventory) {
+            res.add(stack.getStackSnapshot());
         }
-
-        private String type;
-        public Optional<DamageType> getDamageType() {
-            Collection<DamageType> types = Sponge.getRegistry().getAllOf(DamageType.class);
-            return types.stream().filter(t -> t.getId().equalsIgnoreCase(type) || t.getName().equalsIgnoreCase(type)).findAny();
-        }
+        return res;
+    }
+    public boolean hasInventory() {
+        return inventory != null;
     }
 }

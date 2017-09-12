@@ -1,15 +1,32 @@
 package valandur.webapi.api.cache.player;
 
+import com.flowpowered.math.vector.Vector3d;
 import org.spongepowered.api.item.inventory.ItemStack;
-import valandur.webapi.api.cache.entity.ICachedEntity;
+import valandur.webapi.api.cache.ICachedObject;
+import valandur.webapi.api.cache.misc.ICachedInventory;
+import valandur.webapi.api.cache.misc.ICachedLocation;
 
-public interface ICachedPlayer extends ICachedEntity {
+import java.util.UUID;
+
+public interface ICachedPlayer extends ICachedObject {
+
+    UUID getUUID();
 
     String getName();
 
     String getAddress();
 
     int getLatency();
+
+    boolean isOnline();
+
+    ICachedLocation getLocation();
+
+    Vector3d getRotation();
+
+    Vector3d getVelocity();
+
+    Vector3d getScale();
 
     ItemStack getHelmet();
 
@@ -18,4 +35,6 @@ public interface ICachedPlayer extends ICachedEntity {
     ItemStack getLeggings();
 
     ItemStack getBoots();
+
+    ICachedInventory getInventory();
 }

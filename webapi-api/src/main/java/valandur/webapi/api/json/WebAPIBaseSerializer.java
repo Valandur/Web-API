@@ -14,7 +14,10 @@ import valandur.webapi.api.permission.IPermissionService;
 import valandur.webapi.api.util.TreeNode;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Stack;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -188,13 +191,14 @@ public abstract class WebAPIBaseSerializer<T> extends StdSerializer<T> {
     }
 
     /**
-     * Serializes the specified {@link DataHolder} on the current object. This adds all known data as properties to
+     * Serializes the specified data on the current object. This adds all known data as properties to
      * the current object.
-     * @param holder The {@link DataHolder} to serialize.
+     * @param holder The data holder holding the data to serialize
      * @throws IOException Is thrown when serialization fails.
      */
     protected void writeData(DataHolder holder) throws IOException {
-        for (Map.Entry<String, Class<? extends DataManipulator>> entry : jsonService.getSupportedData().entrySet()) {
+        for (Map.Entry<String, Class<? extends DataManipulator>> entry :
+                jsonService.getSupportedData().entrySet()) {
             Optional<?> m = holder.get(entry.getValue());
 
             if (!m.isPresent())
@@ -204,6 +208,24 @@ public abstract class WebAPIBaseSerializer<T> extends StdSerializer<T> {
         }
     }
 
+    /**
+     * Serializes the specified data map on the current object.
+     * @param data The data map to serialize.
+     * @throws IOException Is thrown when serialization fails.
+     */
+    protected void writeData(Map<String, Object> data) throws IOException {
+        if (data == null) return;
+
+        for (Map.Entry<String, Object> entry : data.entrySet()) {
+            writeField(entry.getKey(), entry.getValue());
+        }
+    }
+
+    /**
+     * Writes all properties to the current object.
+     * @param holder The holder of the properties.
+     * @throws IOException Is thrown when serialization fails.
+     */
     protected void writeProperties(PropertyHolder holder) throws IOException {
         for (Property<?, ?> property : holder.getApplicableProperties()) {
             String key = property.getKey().toString();

@@ -10,10 +10,12 @@ import org.spongepowered.api.block.tileentity.TileEntity;
 import org.spongepowered.api.command.CommandMapping;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.living.player.Player;
+import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.command.SendCommandEvent;
 import org.spongepowered.api.event.message.MessageEvent;
 import org.spongepowered.api.item.inventory.Inventory;
 import org.spongepowered.api.plugin.PluginContainer;
+import org.spongepowered.api.service.user.UserStorageService;
 import org.spongepowered.api.util.Tuple;
 import org.spongepowered.api.world.Chunk;
 import org.spongepowered.api.world.Location;
@@ -259,7 +261,17 @@ public class CacheService implements ICacheService {
     @Override
     public Optional<ICachedPlayer> getPlayer(UUID uuid) {
         if (!players.containsKey(uuid)) {
-            return Optional.empty();
+            return WebAPI.runOnMain(() -> {
+                Optional<UserStorageService> optSrv = Sponge.getServiceManager().provide(UserStorageService.class);
+                if (!optSrv.isPresent())
+                    return null;
+
+                Optional<User> optUser = optSrv.get().get(uuid);
+                if (!optUser.isPresent())
+                    return null;
+
+               return new CachedPlayer(optUser.get());
+            });
         }
 
         final CachedPlayer res = players.get(uuid);

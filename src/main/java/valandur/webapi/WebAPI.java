@@ -71,37 +71,24 @@ import valandur.webapi.cache.command.CachedCommandCall;
 import valandur.webapi.command.CommandRegistry;
 import valandur.webapi.command.CommandSource;
 import valandur.webapi.extension.ExtensionService;
-import valandur.webapi.servlet.handler.AssetHandler;
-import valandur.webapi.servlet.handler.AuthHandler;
-import valandur.webapi.servlet.handler.ErrorHandler;
-import valandur.webapi.servlet.handler.RateLimitHandler;
 import valandur.webapi.hook.WebHook;
 import valandur.webapi.hook.WebHookSerializer;
 import valandur.webapi.hook.WebHookService;
 import valandur.webapi.integration.huskycrates.HuskyCratesServlet;
+import valandur.webapi.integration.nations.NationsServlet;
 import valandur.webapi.integration.nucleus.NucleusServlet;
 import valandur.webapi.integration.webbhooks.WebBookServlet;
 import valandur.webapi.json.JsonService;
 import valandur.webapi.message.MessageService;
 import valandur.webapi.permission.PermissionService;
 import valandur.webapi.server.ServerService;
+import valandur.webapi.servlet.*;
 import valandur.webapi.servlet.base.ApiServlet;
 import valandur.webapi.servlet.base.ServletService;
-import valandur.webapi.servlet.BlockServlet;
-import valandur.webapi.servlet.CmdServlet;
-import valandur.webapi.servlet.EntityServlet;
-import valandur.webapi.servlet.HistoryServlet;
-import valandur.webapi.servlet.InfoServlet;
-import valandur.webapi.servlet.MapServlet;
-import valandur.webapi.servlet.MessageServlet;
-import valandur.webapi.servlet.PlayerServlet;
-import valandur.webapi.servlet.PluginServlet;
-import valandur.webapi.servlet.RecipeServlet;
-import valandur.webapi.servlet.RegistryServlet;
-import valandur.webapi.servlet.ServletServlet;
-import valandur.webapi.servlet.TileEntityServlet;
-import valandur.webapi.servlet.UserServlet;
-import valandur.webapi.servlet.WorldServlet;
+import valandur.webapi.servlet.handler.AssetHandler;
+import valandur.webapi.servlet.handler.AuthHandler;
+import valandur.webapi.servlet.handler.ErrorHandler;
+import valandur.webapi.servlet.handler.RateLimitHandler;
 import valandur.webapi.user.UserPermission;
 import valandur.webapi.user.UserPermissionConfigSerializer;
 import valandur.webapi.user.Users;
@@ -343,16 +330,25 @@ public class WebAPI {
         // Other plugin integrations
         try {
             Class.forName("com.codehusky.huskycrates.HuskyCrates");
+            logger.info("  Integrating with HuskyCrates...");
             servletService.registerServlet(HuskyCratesServlet.class);
         } catch (ClassNotFoundException ignored) { }
 
         try {
             Class.forName("io.github.nucleuspowered.nucleus.api.NucleusAPI");
+            logger.info("  Integrating with Nucleus...");
             servletService.registerServlet(NucleusServlet.class);
         } catch (ClassNotFoundException ignored) { }
 
         try {
+            Class.forName("com.arckenver.nations.NationsPlugin");
+            logger.info("  Integrating with Nations...");
+            servletService.registerServlet(NationsServlet.class);
+        } catch (ClassNotFoundException ignored) { }
+
+        try {
             Class.forName("de.dosmike.sponge.WebBooks.WebBooks");
+            logger.info("  Integrating with WebBooks...");
             servletService.registerServlet(WebBookServlet.class);
         } catch (ClassNotFoundException ignored) { }
 

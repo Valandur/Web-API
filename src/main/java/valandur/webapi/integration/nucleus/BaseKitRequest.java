@@ -21,12 +21,12 @@ public class BaseKitRequest {
     }
 
     @JsonDeserialize
-    private Long interval;
-    public Duration getInterval() {
-        return Duration.ofSeconds(interval != null ? interval : 0);
+    private Long cooldown;
+    public Duration getCooldown() {
+        return Duration.ofSeconds(cooldown != null ? cooldown : 0);
     }
-    public boolean hasInterval() {
-        return interval != null;
+    public boolean hasCooldown() {
+        return cooldown != null;
     }
 
     @JsonDeserialize

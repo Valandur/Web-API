@@ -15,6 +15,7 @@ import org.spongepowered.api.world.World;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.annotation.WebAPIEndpoint;
 import valandur.webapi.api.annotation.WebAPIServlet;
+import valandur.webapi.api.cache.world.ICachedWorld;
 import valandur.webapi.api.servlet.WebAPIBaseServlet;
 import valandur.webapi.json.JsonService;
 import valandur.webapi.servlet.base.ServletData;
@@ -97,13 +98,15 @@ public class NucleusServlet extends WebAPIBaseServlet {
             return;
         }
 
+        ICachedWorld world = req.getWorld().get();
+
         if (req.getPosition() == null) {
             data.sendError(HttpServletResponse.SC_BAD_REQUEST, "No valid position provided");
             return;
         }
 
         Optional<NamedLocation> optRes = WebAPI.runOnMain(() -> {
-            Optional<?> optWorld = req.getWorld().get().getLive();
+            Optional<?> optWorld = world.getLive();
             if (!optWorld.isPresent())
                 return null;
 
@@ -218,9 +221,9 @@ public class NucleusServlet extends WebAPIBaseServlet {
         }
 
         Optional<CachedKit> resKit = WebAPI.runOnMain(() -> {
-            Kit kit = srv.createKit();
+            Kit kit = srv.createKit(req.getName());
             kit.setCost(req.getCost());
-            kit.setInterval(req.getInterval());
+            kit.setCooldown(req.getCooldown());
             try {
                 kit.setStacks(req.getStacks());
             } catch (Exception e) {
@@ -228,7 +231,7 @@ public class NucleusServlet extends WebAPIBaseServlet {
                 return null;
             }
             kit.setCommands(req.getCommands());
-            srv.saveKit(req.getName(), kit);
+            srv.saveKit(kit);
             return new CachedKit(req.getName(), kit);
         });
 
@@ -265,8 +268,8 @@ public class NucleusServlet extends WebAPIBaseServlet {
             if (req.hasCost()) {
                 kit.setCost(req.getCost());
             }
-            if (req.hasInterval()) {
-                kit.setInterval(req.getInterval());
+            if (req.hasCooldown()) {
+                kit.setCooldown(req.getCooldown());
             }
             if (req.hasCommands()) {
                 kit.setCommands(req.getCommands());
@@ -323,9 +326,7 @@ public class NucleusServlet extends WebAPIBaseServlet {
 
         NucleusHomeService srv = optSrv.get();
 
-        Optional<List<Home>> optRes = WebAPI.runOnMain(() -> {
-            return srv.getHomes(uuid);
-        });
+        Optional<List<Home>> optRes = WebAPI.runOnMain(() -> srv.getHomes(uuid));
 
         data.addJson("ok", optRes.isPresent(), false);
         data.addJson("homes", optRes.orElse(null), true);

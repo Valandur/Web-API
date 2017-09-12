@@ -18,16 +18,13 @@ allprojects {
             url "https://repo.spongepowered.org/maven/"
         }
         maven {
-            url "http://repo.drnaylor.co.uk/artifactory/list/minecraft"
-        }
-        maven {
             url "http://repo.bstats.org/content/repositories/releases/"
         }
     }
 
     dependencies {
         compileOnly group: "org.spongepowered", name: "spongeapi", version: "${project.spongeVersion}.0-SNAPSHOT"
-        compile group: "io.sentry", name: "sentry", version: "1.5.0"
+        compile group: "io.sentry", name: "sentry", version: "1.5.3"
         compile group: "org.bstats", name: "bstats-sponge", version: "1.2"
         compile group: "org.eclipse.jetty", name: "jetty-server", version: "9.4.6.v20170531"
         compile group: "org.eclipse.jetty", name: "jetty-servlet", version: "9.4.6.v20170531"
@@ -53,8 +50,9 @@ dependencies {
     compile project(":webapi-api")
     compile group: "org.mindrot", name: "jbcrypt", version: "0.4"
 
-    compileOnly group: "io.github.nucleuspowered", name: "nucleus-api", version: "1.1.0-SNAPSHOT-S6.0"
-    compileOnly fileTree(dir: "lib", include: "*.jar")
+    compileOnly files("lib/Nucleus-1.1.3-LTS-api.jar")
+    compileOnly files("lib/HuskyCrates-v1.7.2.jar")
+    compileOnly files("lib/Nations-2.8-S6.1-MC1.11.2.jar")
 }
 
 shadowJar {

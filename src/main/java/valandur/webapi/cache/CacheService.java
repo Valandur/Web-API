@@ -259,6 +259,25 @@ public class CacheService implements ICacheService {
         return new ArrayList<>(players.values());
     }
     @Override
+    public Optional<ICachedPlayer> getPlayer(String nameOrUuid) {
+        if (Util.isValidUUID(nameOrUuid)) {
+            return getPlayer(UUID.fromString(nameOrUuid));
+        }
+
+        Optional<CachedPlayer> player = players.values().stream().filter(p -> p.getName().equalsIgnoreCase(nameOrUuid)).findAny();
+        if (player.isPresent())
+            return player.flatMap(p -> getPlayer(p.getUUID()));
+
+        return WebAPI.runOnMain(() -> {
+            Optional<UserStorageService> optSrv = Sponge.getServiceManager().provide(UserStorageService.class);
+            if (!optSrv.isPresent())
+                return null;
+
+            Optional<User> optUser = optSrv.get().get(nameOrUuid);
+            return optUser.<ICachedPlayer>map(CachedPlayer::new).orElse(null);
+        });
+    }
+    @Override
     public Optional<ICachedPlayer> getPlayer(UUID uuid) {
         if (!players.containsKey(uuid)) {
             return WebAPI.runOnMain(() -> {
@@ -267,10 +286,8 @@ public class CacheService implements ICacheService {
                     return null;
 
                 Optional<User> optUser = optSrv.get().get(uuid);
-                if (!optUser.isPresent())
-                    return null;
+                return optUser.<ICachedPlayer>map(CachedPlayer::new).orElse(null);
 
-               return new CachedPlayer(optUser.get());
             });
         }
 

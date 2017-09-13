@@ -138,6 +138,15 @@ public interface ICacheService {
     Collection<ICachedPlayer> getPlayers();
 
     /**
+     * Gets a specific player by name or UUID.
+     *
+     * @param nameOrUuid Either the name or UUID of the player. Use {@link #getPlayer(UUID)}} if the UUID is
+     *                   already parsed.
+     * @return An optional containing the player, or empty if not found.
+     */
+    Optional<ICachedPlayer> getPlayer(String nameOrUuid);
+
+    /**
      * Gets a specific player by UUID.
      * @param uuid The UUID of the player.
      * @return An optional containing the cached player if found, or empty otherwise.

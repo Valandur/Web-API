@@ -1,6 +1,7 @@
 package valandur.webapi.integration.mmctickets;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import net.moddedminecraft.mmctickets.data.ticketStatus;
 
 @JsonDeserialize
 public class ChangeTicketRequest {
@@ -12,8 +13,8 @@ public class ChangeTicketRequest {
     }
 
     @JsonDeserialize
-    private Integer status;
-    public Integer getStatus() {
+    private ticketStatus status;
+    public ticketStatus getStatus() {
         return status;
     }
 

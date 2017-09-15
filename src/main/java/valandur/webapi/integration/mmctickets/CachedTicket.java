@@ -1,6 +1,7 @@
 package valandur.webapi.integration.mmctickets;
 
 import net.moddedminecraft.mmctickets.data.TicketData;
+import net.moddedminecraft.mmctickets.data.ticketStatus;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.cache.player.ICachedPlayer;
 import valandur.webapi.api.cache.world.ICachedWorld;
@@ -34,8 +35,8 @@ public class CachedTicket extends CachedObject {
         return comment;
     }
 
-    private int status;
-    public int getStatus() {
+    private ticketStatus status;
+    public ticketStatus getStatus() {
         return status;
     }
 
@@ -59,12 +60,12 @@ public class CachedTicket extends CachedObject {
         super(ticket);
 
         this.id = ticket.getTicketID();
-        this.sender = WebAPI.getCacheService().getPlayer(ticket.getName()).orElse(null);
+        this.sender = WebAPI.getCacheService().getPlayer(ticket.getPlayerUUID()).orElse(null);
         this.timestamp = ticket.getTimestamp();
         this.message = ticket.getMessage();
         this.comment = ticket.getComment();
         this.status = ticket.getStatus();
-        this.staff = WebAPI.getCacheService().getPlayer(ticket.getName()).orElse(null);
+        this.staff = WebAPI.getCacheService().getPlayer(ticket.getPlayerUUID()).orElse(null);
         this.notified = ticket.getNotified();
 
         ICachedWorld world = WebAPI.getCacheService().getWorld(ticket.getWorld()).orElse(null);

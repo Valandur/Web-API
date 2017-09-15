@@ -1,6 +1,7 @@
 package valandur.webapi.api.cache;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import org.spongepowered.api.block.tileentity.TileEntity;
 import org.spongepowered.api.command.CommandMapping;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.living.player.Player;
@@ -19,6 +20,7 @@ import valandur.webapi.api.cache.tileentity.ICachedTileEntity;
 import valandur.webapi.api.cache.world.ICachedWorld;
 
 import java.util.*;
+import java.util.function.Predicate;
 
 /**
  * The cache service provides access to all objects which are cached by the Web-API.
@@ -270,16 +272,18 @@ public interface ICacheService {
 
     /**
      * Tries to get a collection of all the tile entities on the server.
+     * @param predicate The predicate to filter tile entities by.
      * @return An optional of all the tile entities on the server if the operation was successful, empty otherwise.
      */
-    Optional<Collection<ICachedTileEntity>> getTileEntities();
+    Optional<Collection<ICachedTileEntity>> getTileEntities(Predicate<TileEntity> predicate);
 
     /**
      * Tries to get a collection of all the tile entities in the specified world.
      * @param world The world for which all tile entities are retrieved.
+     * @param predicate The predicate to filter tile entities by.
      * @return An optional containing the tile entities if the operation was successful, empty otherwise.
      */
-    Optional<Collection<ICachedTileEntity>> getTileEntities(ICachedWorld world);
+    Optional<Collection<ICachedTileEntity>> getTileEntities(ICachedWorld world, Predicate<TileEntity> predicate);
 
     /**
      * Tries to get a tile entity at the specified location.

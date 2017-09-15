@@ -1,11 +1,20 @@
 get:
   summary: Tile entities list
   description: |
-    Get a list of all tile entities on the server (in all worlds).
+    Get a list of all tile entities on the server (in all worlds, unless specified).
 
     > Required permission: tile-entity.list
   tags:
     - Tile Entity
+  parameters:
+    - name: world
+      in: query
+      type: string
+      description: The uuid of the world to filter entities by.
+    - name: type
+      in: query
+      type: string
+      description: The TileEntityType id to filter the tile entities by.
   responses:
     403:
       $ref: "../responses/403.yaml"

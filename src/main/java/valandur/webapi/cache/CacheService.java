@@ -54,6 +54,7 @@ import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.function.Predicate;
 
 public class CacheService implements ICacheService {
 
@@ -428,12 +429,12 @@ public class CacheService implements ICacheService {
     }
 
     @Override
-    public Optional<Collection<ICachedTileEntity>> getTileEntities() {
+    public Optional<Collection<ICachedTileEntity>> getTileEntities(Predicate<TileEntity> predicate) {
         return WebAPI.runOnMain(() -> {
             Collection<ICachedTileEntity> entities = new LinkedList<>();
 
             for (World world : Sponge.getServer().getWorlds()) {
-                Collection<TileEntity> ents = world.getTileEntities();
+                Collection<TileEntity> ents = world.getTileEntities(predicate);
                 for (TileEntity te : ents) {
                     entities.add(new CachedTileEntity(te));
                 }
@@ -443,14 +444,14 @@ public class CacheService implements ICacheService {
         });
     }
     @Override
-    public Optional<Collection<ICachedTileEntity>> getTileEntities(ICachedWorld world) {
+    public Optional<Collection<ICachedTileEntity>> getTileEntities(ICachedWorld world, Predicate<TileEntity> predicate) {
         return WebAPI.runOnMain(() -> {
             Optional<?> w = world.getLive();
             if (!w.isPresent())
                 return null;
 
             Collection<ICachedTileEntity> entities = new LinkedList<>();
-            Collection<TileEntity> ents = ((World)w.get()).getTileEntities();
+            Collection<TileEntity> ents = ((World)w.get()).getTileEntities(predicate);
             for (TileEntity te : ents) {
                 if (!te.isValid()) continue;
                 entities.add(new CachedTileEntity(te));

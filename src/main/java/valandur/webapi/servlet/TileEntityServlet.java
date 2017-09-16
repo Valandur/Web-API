@@ -25,8 +25,9 @@ public class TileEntityServlet extends WebAPIBaseServlet {
     public void getTileEntities(ServletData data) {
         Optional<String> worldUuid = data.getQueryParam("world");
         Optional<String> typeId = data.getQueryParam("type");
-        Optional<String> limit = data.getQueryParam("limit");
+        Optional<String> limitString = data.getQueryParam("limit");
         Predicate<TileEntity> filter = te -> !typeId.isPresent() || te.getType().getId().equalsIgnoreCase(typeId.get());
+        int limit = Integer.parseInt(limitString.orElse("0"));
 
         if (worldUuid.isPresent()) {
             Optional<ICachedWorld> world = cacheService.getWorld(worldUuid.get());
@@ -35,7 +36,7 @@ public class TileEntityServlet extends WebAPIBaseServlet {
                 return;
             }
 
-            Optional<Collection<ICachedTileEntity>> tileEntities = cacheService.getTileEntities(world.get(), filter);
+            Optional<Collection<ICachedTileEntity>> tileEntities = cacheService.getTileEntities(world.get(), filter, limit);
             if (!tileEntities.isPresent()) {
                 data.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not get tile entities");
                 return;
@@ -46,7 +47,7 @@ public class TileEntityServlet extends WebAPIBaseServlet {
             return;
         }
 
-        Optional<Collection<ICachedTileEntity>> coll = cacheService.getTileEntities(filter);
+        Optional<Collection<ICachedTileEntity>> coll = cacheService.getTileEntities(filter, limit);
         if (!coll.isPresent()) {
             data.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not get tile entities");
             return;

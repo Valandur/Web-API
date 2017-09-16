@@ -273,17 +273,19 @@ public interface ICacheService {
     /**
      * Tries to get a collection of all the tile entities on the server.
      * @param predicate The predicate to filter tile entities by.
+     * @param limit The maximum amount of tile entities to return.
      * @return An optional of all the tile entities on the server if the operation was successful, empty otherwise.
      */
-    Optional<Collection<ICachedTileEntity>> getTileEntities(Predicate<TileEntity> predicate);
+    Optional<Collection<ICachedTileEntity>> getTileEntities(Predicate<TileEntity> predicate, int limit);
 
     /**
      * Tries to get a collection of all the tile entities in the specified world.
      * @param world The world for which all tile entities are retrieved.
      * @param predicate The predicate to filter tile entities by.
+     * @param limit The maximum amount of tile entities to return.
      * @return An optional containing the tile entities if the operation was successful, empty otherwise.
      */
-    Optional<Collection<ICachedTileEntity>> getTileEntities(ICachedWorld world, Predicate<TileEntity> predicate);
+    Optional<Collection<ICachedTileEntity>> getTileEntities(ICachedWorld world, Predicate<TileEntity> predicate, int limit);
 
     /**
      * Tries to get a tile entity at the specified location.

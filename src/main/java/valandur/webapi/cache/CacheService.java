@@ -429,32 +429,47 @@ public class CacheService implements ICacheService {
     }
 
     @Override
-    public Optional<Collection<ICachedTileEntity>> getTileEntities(Predicate<TileEntity> predicate) {
+    public Optional<Collection<ICachedTileEntity>> getTileEntities(Predicate<TileEntity> predicate, int limit) {
         return WebAPI.runOnMain(() -> {
             Collection<ICachedTileEntity> entities = new LinkedList<>();
 
-            for (World world : Sponge.getServer().getWorlds()) {
+            int i = 0;
+            Collection<World> worlds = Sponge.getServer().getWorlds();
+            for (World world : worlds) {
                 Collection<TileEntity> ents = world.getTileEntities(predicate);
                 for (TileEntity te : ents) {
+                    if (!te.isValid()) continue;
                     entities.add(new CachedTileEntity(te));
+
+                    i++;
+                    if (limit > 0 && i >= limit)
+                        break;
                 }
+
+                if (limit > 0 && i >= limit)
+                    break;
             }
 
             return entities;
         });
     }
     @Override
-    public Optional<Collection<ICachedTileEntity>> getTileEntities(ICachedWorld world, Predicate<TileEntity> predicate) {
+    public Optional<Collection<ICachedTileEntity>> getTileEntities(ICachedWorld world, Predicate<TileEntity> predicate, int limit) {
         return WebAPI.runOnMain(() -> {
             Optional<?> w = world.getLive();
             if (!w.isPresent())
                 return null;
 
+            int i = 0;
             Collection<ICachedTileEntity> entities = new LinkedList<>();
             Collection<TileEntity> ents = ((World)w.get()).getTileEntities(predicate);
             for (TileEntity te : ents) {
                 if (!te.isValid()) continue;
                 entities.add(new CachedTileEntity(te));
+
+                i++;
+                if (limit > 0 && i >= limit)
+                    break;
             }
 
             return entities;

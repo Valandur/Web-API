@@ -77,6 +77,16 @@ public class PlayerServlet extends WebAPIBaseServlet {
                 live.setRotation(req.getScale());
             }
 
+            if (req.getFoodLevel() != null) {
+                live.getFoodData().foodLevel().set(req.getFoodLevel());
+            }
+            if (req.getExhaustion() != null) {
+                live.getFoodData().exhaustion().set(req.getExhaustion());
+            }
+            if (req.getSaturation() != null) {
+                live.getFoodData().saturation().set(req.getSaturation());
+            }
+
             if (req.getDamage() != null) {
                 DamageRequest dmgReq = req.getDamage();
                 DamageSource.Builder builder = DamageSource.builder();

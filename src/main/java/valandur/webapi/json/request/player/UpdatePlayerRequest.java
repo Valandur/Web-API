@@ -23,4 +23,22 @@ public class UpdatePlayerRequest extends UpdateEntityRequest {
     public Double getExhaustion() {
         return exhaustion;
     }
+
+    @JsonDeserialize
+    private Integer totalExperience;
+    public Integer getTotalExperience() {
+        return totalExperience;
+    }
+
+    @JsonDeserialize
+    private Integer level;
+    public Integer getLevel() {
+        return level;
+    }
+
+    @JsonDeserialize
+    private Integer experienceSinceLevel;
+    public Integer getExperienceSinceLevel() {
+        return experienceSinceLevel;
+    }
 }

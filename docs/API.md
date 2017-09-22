@@ -5,12 +5,40 @@ other plugins to provide their own endpoints for data without much effort.
 
 
 ## Table of Contents
+1. [Setup](#setup)
 1. [Servlets](#servlets)
     1. [Example](#servlet-example)
 1. [Endpoints](#endpoints)
     1. [Example](#endpoint-example)
 1. [Requests](#requests)
 1. [Responses](#responses)
+
+
+<a name="setup"></a>
+## Setup
+
+> You have to register any servlets you create with the WebAPI
+
+The easiest way to do this is to use `WebAPIAPI.getServletService()`, which will return an optional
+containing the ServletService. If the optional is empty than the WebAPI plugin is not present or 
+loaded on the server. If the ServletService is present you can use 
+`service.registerServlet(Class<? extends WebAPIBaseServlet> servlet)` to register your servlet class
+with the WebAPI.
+```java
+public void onInitialization(GameInitializationEvent event) {
+    ...
+    
+    Optional<IServletService> optSrv = WebAPIAPI.getServletService();
+    if (optSrv.isPresent()) {
+        IServletService srv = optSrv.get();
+        srv.registerServlet(MyServlet.class);
+    }
+    
+    ...
+}
+```
+
+> This should be done in the initialization phase of your plugin, before the server starts!
 
 
 <a name="servlets"></a>
@@ -32,6 +60,17 @@ tells the Web-API that your class is indeed a valid servlet, and which base rout
 
 - The `basePath` specifies at which path your servlet will be available, and all the other 
 routes in your servlet will be relative to this route.The `basePath` does **not** require any slashes `/` and may **not** contain any path parameters (see below).
+
+Servlets may define a `public static void onRegister()` method which will get called by the WebAPI
+when the servlet is registered. This is only done once, even if the user reloads the plugins
+on the server. This is the best place to register any custom serializers that your servlets uses:
+```java
+public static void onRegister() {
+    JsonService json = WebAPI.getJsonService();
+    json.registerSerializer(MyData.class, MyDataSerializer.class);
+}
+```
+
 
 <a name="servlet-example"></a>
 ### Example

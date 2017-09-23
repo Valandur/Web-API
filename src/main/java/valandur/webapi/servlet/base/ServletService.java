@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.spongepowered.api.util.Tuple;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.annotation.WebAPIEndpoint;
+import valandur.webapi.api.annotation.WebAPIEndpoints;
 import valandur.webapi.api.annotation.WebAPIServlet;
 import valandur.webapi.api.servlet.IServletData;
 import valandur.webapi.api.servlet.IServletService;
@@ -48,13 +49,15 @@ public class ServletService implements IServletService {
             servlets.put(basePath, serv);
 
             // Get all methods that are correctly annotated
-            List<Tuple<WebAPIEndpoint, Method>> newMethods = Arrays.stream(servletClass.getMethods())
-                    .filter(m -> m.isAnnotationPresent(WebAPIEndpoint.class))
-                    .map(m -> new Tuple<>(m.getAnnotation(WebAPIEndpoint.class), m))
+            List<Tuple<WebAPIEndpoint[], Method>> methods = Arrays.stream(servletClass.getMethods())
+                    .filter(m -> m.isAnnotationPresent(WebAPIEndpoint.class) ||
+                            m.isAnnotationPresent(WebAPIEndpoints.class))
+                    .map(m -> new Tuple<>(m.getAnnotationsByType(WebAPIEndpoint.class), m))
                     .collect(Collectors.toList());
+            List<Tuple<WebAPIEndpoint, Method>> newMethods = new ArrayList<>();
 
-            for (Tuple<WebAPIEndpoint, Method> tuple : newMethods) {
-                WebAPIEndpoint route = tuple.getFirst();
+            for (Tuple<WebAPIEndpoint[], Method> tuple : methods) {
+                WebAPIEndpoint[] routes = tuple.getFirst();
                 Method method = tuple.getSecond();
 
                 if (method.getParameterTypes()[0] != IServletData.class &&
@@ -62,9 +65,14 @@ public class ServletService implements IServletService {
                     logger.error("    Method " + method.getName() + " first parameter is not of type IServletData");
                     continue;
                 }
+
                 method.setAccessible(true);
-                logger.debug("    [" + route.method() + "] " + route.path() + " -> " +method.getName());
+                for (WebAPIEndpoint route : routes) {
+                    logger.debug("    [" + route.method() + "] " + route.path() + " -> " + method.getName());
+                    newMethods.add(new Tuple<>(route, method));
+                }
             }
+
             servletMethods.put(serv, newMethods);
         } catch (InstantiationException | IllegalAccessException e) {
             logger.error("  -> Could not init servlet " + servletClass.getName() + ": " + e.getMessage());

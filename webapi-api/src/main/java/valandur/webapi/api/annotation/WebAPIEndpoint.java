@@ -2,10 +2,7 @@ package valandur.webapi.api.annotation;
 
 import org.eclipse.jetty.http.HttpMethod;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 
 /**
  * This annotation marks a method as an endpoint for the Web-API. The method needs to have at least one argument of
@@ -13,6 +10,7 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
+@Repeatable(WebAPIEndpoints.class)
 public @interface WebAPIEndpoint {
 
     /**

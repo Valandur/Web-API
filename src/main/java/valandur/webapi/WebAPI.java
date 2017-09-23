@@ -75,6 +75,7 @@ import valandur.webapi.hook.WebHook;
 import valandur.webapi.hook.WebHookSerializer;
 import valandur.webapi.hook.WebHookService;
 import valandur.webapi.integration.huskycrates.HuskyCratesServlet;
+import valandur.webapi.integration.mmctickets.MMCTicketsServlet;
 import valandur.webapi.integration.nations.NationsServlet;
 import valandur.webapi.integration.nucleus.NucleusServlet;
 import valandur.webapi.integration.webbhooks.WebBookServlet;
@@ -335,15 +336,21 @@ public class WebAPI {
         } catch (ClassNotFoundException ignored) { }
 
         try {
-            Class.forName("io.github.nucleuspowered.nucleus.api.NucleusAPI");
-            logger.info("  Integrating with Nucleus...");
-            servletService.registerServlet(NucleusServlet.class);
+            Class.forName("net.moddedminecraft.mmctickets.Main");
+            logger.info("  Integrating with MMCTickets...");
+            servletService.registerServlet(MMCTicketsServlet.class);
         } catch (ClassNotFoundException ignored) { }
 
         try {
             Class.forName("com.arckenver.nations.NationsPlugin");
             logger.info("  Integrating with Nations...");
             servletService.registerServlet(NationsServlet.class);
+        } catch (ClassNotFoundException ignored) { }
+
+        try {
+            Class.forName("io.github.nucleuspowered.nucleus.api.NucleusAPI");
+            logger.info("  Integrating with Nucleus...");
+            servletService.registerServlet(NucleusServlet.class);
         } catch (ClassNotFoundException ignored) { }
 
         try {

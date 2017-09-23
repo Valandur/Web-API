@@ -8,8 +8,8 @@ import org.slf4j.Logger;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.hook.WebAPIBaseFilter;
 import valandur.webapi.api.hook.WebHookHeader;
+import valandur.webapi.api.permission.IPermissionService;
 import valandur.webapi.api.util.TreeNode;
-import valandur.webapi.permission.PermissionService;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -37,7 +37,7 @@ public class WebHookSerializer implements TypeSerializer<WebHook> {
         String filterName = filterBase.getNode("name").getString();
         ConfigurationNode filterConfig = filterBase.getNode("config");
 
-        TreeNode<String, Boolean> permissions = PermissionService.permitAllNode();
+        TreeNode<String, Boolean> permissions = IPermissionService.permitAllNode();
 
         if (!enabled) {
             logger.info("    -> Disabled");

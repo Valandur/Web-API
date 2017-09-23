@@ -2,6 +2,7 @@ package valandur.webapi.api.servlet;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.eclipse.jetty.http.HttpMethod;
 import valandur.webapi.api.annotation.WebAPIEndpoint;
 
 import java.util.Optional;
@@ -10,6 +11,12 @@ import java.util.Optional;
  * This class bundles the data that is received and sent from servlets when a client accesses an endpoint.
  */
 public interface IServletData {
+
+    /**
+     * Returns the http method of the request.
+     * @return The http method used in the request.
+     */
+    HttpMethod getMethod();
 
     /**
      * Gets the object node which is returned as the json response.
@@ -64,6 +71,12 @@ public interface IServletData {
     void setStatus(int status);
 
     /**
+     * Sets the content type of the response.
+     * @param contentType The content type of the response, for example "application/json".
+     */
+    void setContentType(String contentType);
+
+    /**
      * Adds an object to the json response data.
      * @param key The key under which the object is added.
      * @param value The object which is added to the response.
@@ -94,4 +107,10 @@ public interface IServletData {
      * @param message The message describing what went wrong.
      */
     void sendError(int error, String message);
+
+    /**
+     * Tells the Web-API that this requests has already been handled, and no further response/data has to be sent.
+     * If this is not set then the Web-API will automatically serialize the attached json data and send it.
+     */
+    void setDone();
 }

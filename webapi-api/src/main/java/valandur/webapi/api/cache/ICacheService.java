@@ -1,6 +1,7 @@
 package valandur.webapi.api.cache;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import org.spongepowered.api.block.tileentity.TileEntity;
 import org.spongepowered.api.command.CommandMapping;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.living.player.Player;
@@ -19,6 +20,7 @@ import valandur.webapi.api.cache.tileentity.ICachedTileEntity;
 import valandur.webapi.api.cache.world.ICachedWorld;
 
 import java.util.*;
+import java.util.function.Predicate;
 
 /**
  * The cache service provides access to all objects which are cached by the Web-API.
@@ -136,6 +138,15 @@ public interface ICacheService {
      * @return A collection of all the online players.
      */
     Collection<ICachedPlayer> getPlayers();
+
+    /**
+     * Gets a specific player by name or UUID.
+     *
+     * @param nameOrUuid Either the name or UUID of the player. Use {@link #getPlayer(UUID)}} if the UUID is
+     *                   already parsed.
+     * @return An optional containing the player, or empty if not found.
+     */
+    Optional<ICachedPlayer> getPlayer(String nameOrUuid);
 
     /**
      * Gets a specific player by UUID.
@@ -261,16 +272,20 @@ public interface ICacheService {
 
     /**
      * Tries to get a collection of all the tile entities on the server.
+     * @param predicate The predicate to filter tile entities by.
+     * @param limit The maximum amount of tile entities to return.
      * @return An optional of all the tile entities on the server if the operation was successful, empty otherwise.
      */
-    Optional<Collection<ICachedTileEntity>> getTileEntities();
+    Optional<Collection<ICachedTileEntity>> getTileEntities(Predicate<TileEntity> predicate, int limit);
 
     /**
      * Tries to get a collection of all the tile entities in the specified world.
      * @param world The world for which all tile entities are retrieved.
+     * @param predicate The predicate to filter tile entities by.
+     * @param limit The maximum amount of tile entities to return.
      * @return An optional containing the tile entities if the operation was successful, empty otherwise.
      */
-    Optional<Collection<ICachedTileEntity>> getTileEntities(ICachedWorld world);
+    Optional<Collection<ICachedTileEntity>> getTileEntities(ICachedWorld world, Predicate<TileEntity> predicate, int limit);
 
     /**
      * Tries to get a tile entity at the specified location.

@@ -3,7 +3,6 @@ package valandur.webapi.integration.huskycrates;
 import com.codehusky.huskycrates.HuskyCrates;
 import com.codehusky.huskycrates.crate.VirtualCrate;
 import org.eclipse.jetty.http.HttpMethod;
-import org.eclipse.jetty.util.ConcurrentHashSet;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.plugin.PluginContainer;
 import valandur.webapi.WebAPI;
@@ -14,8 +13,9 @@ import valandur.webapi.json.JsonService;
 import valandur.webapi.servlet.base.ServletData;
 
 import javax.servlet.http.HttpServletResponse;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 @WebAPIServlet(basePath = "husky")
 public class HuskyCratesServlet extends WebAPIBaseServlet {
@@ -48,15 +48,16 @@ public class HuskyCratesServlet extends WebAPIBaseServlet {
         HuskyCrates plugin = getHuskyPlugin(data);
         if (plugin == null) return;
 
-        Set<CachedCrate> crates = new ConcurrentHashSet<>();
-        WebAPI.runOnMain(() -> {
+        Optional<List<CachedCrate>> optList = WebAPI.runOnMain(() -> {
+            List<CachedCrate> crates = new ArrayList<>();
             for (VirtualCrate crate : plugin.getCrateUtilities().crateTypes.values()) {
                 crates.add(new CachedCrate(crate));
             }
+            return crates;
         });
 
-        data.addJson("ok", true, false);
-        data.addJson("crates", crates, data.getQueryParam("details").isPresent());
+        data.addJson("ok", optList.isPresent(), false);
+        data.addJson("crates", optList.orElse(null), data.getQueryParam("details").isPresent());
     }
 
     @WebAPIEndpoint(method = HttpMethod.GET, path = "crate/:id", perm = "one")

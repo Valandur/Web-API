@@ -1,6 +1,5 @@
 package valandur.webapi.extension;
 
-import io.sentry.Sentry;
 import org.slf4j.Logger;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.extension.IExtensionService;
@@ -30,11 +29,15 @@ public class ExtensionService implements IExtensionService {
     public void init() {
         // Relocated packages
         relocatedPackages.clear();
-        relocatedPackages.put("import org.eclipse.jetty",     "import valandur.webapi.shadow.org.eclipse.jetty");
-        relocatedPackages.put("import com.fasterxml.jackson", "import valandur.webapi.shadow.fasterxml.jackson");
-        relocatedPackages.put("import javax.servlet",         "import valandur.webapi.shadow.javax.servlet");
-        relocatedPackages.put("import org.reflections",       "import valandur.webapi.shadow.org.reflections");
-        relocatedPackages.put("import net.jodah",             "import valandur.webapi.shadow.net.jodah");
+        relocatedPackages.put("import io.sentry",       "import valandur.webapi.shadow.io.sentry");
+        relocatedPackages.put("import org.eclipse",     "import valandur.webapi.shadow.org.eclipse");
+        relocatedPackages.put("import com.fasterxml",   "import valandur.webapi.shadow.fasterxml");
+        relocatedPackages.put("import javax.servlet",   "import valandur.webapi.shadow.javax.servlet");
+        relocatedPackages.put("import net.jodah",       "import valandur.webapi.shadow.net.jodah");
+        relocatedPackages.put("import org.mindrot",     "import valandur.webapi.shadow.org.mindrot");
+        relocatedPackages.put("import edu.umdh",        "import valandur.webapi.shadow.edu.umd");
+        relocatedPackages.put("import javassist",       "import valandur.webapi.shadow.javassist");
+        relocatedPackages.put("import net.jcip",        "import valandur.webapi.shadow.net.jcip");
     }
 
     public <T> void loadPlugins(String pkg, Class<T> baseClass, Consumer<Class<T>> done) {

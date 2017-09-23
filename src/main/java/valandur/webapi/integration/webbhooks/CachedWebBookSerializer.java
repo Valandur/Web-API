@@ -11,9 +11,11 @@ public class CachedWebBookSerializer extends WebAPIBaseSerializer<CachedWebBook>
         writeStartObject();
 
         writeField("id", value.getId());
+        writeField("title", value.getTitle());
+        writeField("lines", value.getLines());
 
         if (shouldWriteDetails()) {
-            writeField("body", value.getBody());
+            writeField("html", value.generateHtml());
         }
 
         writeEndObject();

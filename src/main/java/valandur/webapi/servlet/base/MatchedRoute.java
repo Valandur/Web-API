@@ -61,6 +61,7 @@ public class MatchedRoute {
 
     public MatchedRoute(WebAPIBaseServlet servlet, WebAPIEndpoint route,
                         Method method, LinkedHashMap<String, String> matchedParts) {
+
         this.servletSpec = servlet.getClass().getAnnotation(WebAPIServlet.class);
         this.servlet = servlet;
         this.route = route;

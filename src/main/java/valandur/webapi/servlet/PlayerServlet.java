@@ -2,6 +2,7 @@ package valandur.webapi.servlet;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import org.eclipse.jetty.http.HttpMethod;
+import org.spongepowered.api.data.manipulator.mutable.entity.ExperienceHolderData;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.cause.entity.damage.source.DamageSource;
 import org.spongepowered.api.item.inventory.Carrier;
@@ -75,6 +76,26 @@ public class PlayerServlet extends WebAPIBaseServlet {
 
             if (req.getScale() != null) {
                 live.setRotation(req.getScale());
+            }
+
+            if (req.getFoodLevel() != null) {
+                live.getFoodData().foodLevel().set(req.getFoodLevel());
+            }
+            if (req.getExhaustion() != null) {
+                live.getFoodData().exhaustion().set(req.getExhaustion());
+            }
+            if (req.getSaturation() != null) {
+                live.getFoodData().saturation().set(req.getSaturation());
+            }
+
+            if (req.getTotalExperience() != null) {
+                live.get(ExperienceHolderData.class).map(exp -> exp.totalExperience().set(req.getTotalExperience()));
+            }
+            if (req.getLevel() != null) {
+                live.get(ExperienceHolderData.class).map(exp -> exp.level().set(req.getLevel()));
+            }
+            if (req.getExperienceSinceLevel() != null) {
+                live.get(ExperienceHolderData.class).map(exp -> exp.experienceSinceLevel().set(req.getExperienceSinceLevel()));
             }
 
             if (req.getDamage() != null) {

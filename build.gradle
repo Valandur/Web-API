@@ -53,6 +53,7 @@ dependencies {
     compileOnly files("lib/Nucleus-1.1.3-LTS-api.jar")
     compileOnly files("lib/HuskyCrates-v1.7.2.jar")
     compileOnly files("lib/Nations-2.8-S6.1-MC1.11.2.jar")
+    compileOnly files("lib/MMCTickets-1.4.0-API-5.2-7.X.jar")
 }
 
 shadowJar {

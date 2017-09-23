@@ -2,10 +2,12 @@ package valandur.webapi.servlet;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import org.eclipse.jetty.http.HttpMethod;
+import org.spongepowered.api.block.tileentity.TileEntity;
 import org.spongepowered.api.util.Tuple;
 import valandur.webapi.api.annotation.WebAPIEndpoint;
 import valandur.webapi.api.annotation.WebAPIServlet;
 import valandur.webapi.api.cache.tileentity.ICachedTileEntity;
+import valandur.webapi.api.cache.world.ICachedWorld;
 import valandur.webapi.api.servlet.WebAPIBaseServlet;
 import valandur.webapi.cache.world.CachedWorld;
 import valandur.webapi.servlet.base.ServletData;
@@ -14,13 +16,38 @@ import valandur.webapi.util.Util;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Collection;
 import java.util.Optional;
+import java.util.function.Predicate;
 
 @WebAPIServlet(basePath = "tile-entity")
 public class TileEntityServlet extends WebAPIBaseServlet {
 
     @WebAPIEndpoint(method = HttpMethod.GET, path = "/", perm = "list")
     public void getTileEntities(ServletData data) {
-        Optional<Collection<ICachedTileEntity>> coll = cacheService.getTileEntities();
+        Optional<String> worldUuid = data.getQueryParam("world");
+        Optional<String> typeId = data.getQueryParam("type");
+        Optional<String> limitString = data.getQueryParam("limit");
+        Predicate<TileEntity> filter = te -> !typeId.isPresent() || te.getType().getId().equalsIgnoreCase(typeId.get());
+        int limit = Integer.parseInt(limitString.orElse("0"));
+
+        if (worldUuid.isPresent()) {
+            Optional<ICachedWorld> world = cacheService.getWorld(worldUuid.get());
+            if (!world.isPresent()) {
+                data.sendError(HttpServletResponse.SC_BAD_REQUEST, "World with UUID '" + worldUuid + "' could not be found");
+                return;
+            }
+
+            Optional<Collection<ICachedTileEntity>> tileEntities = cacheService.getTileEntities(world.get(), filter, limit);
+            if (!tileEntities.isPresent()) {
+                data.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not get tile entities");
+                return;
+            }
+
+            data.addJson("ok", true, false);
+            data.addJson("tileEntities", tileEntities.get(), data.getQueryParam("details").isPresent());
+            return;
+        }
+
+        Optional<Collection<ICachedTileEntity>> coll = cacheService.getTileEntities(filter, limit);
         if (!coll.isPresent()) {
             data.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not get tile entities");
             return;

@@ -25,6 +25,12 @@ public class CachedLocation extends CachedObject implements ICachedLocation {
     }
 
 
+    public CachedLocation(ICachedWorld world, double x, double y, double z) {
+        super(null);
+
+        this.world = world;
+        this.position = new Vector3d(x, y, z);
+    }
     public CachedLocation(Location<World> location) {
         super(null);
 

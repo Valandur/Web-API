@@ -1,11 +1,11 @@
 package valandur.webapi.servlet.base;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.eclipse.jetty.http.HttpMethod;
 import valandur.webapi.WebAPI;
+import valandur.webapi.api.permission.IPermissionService;
 import valandur.webapi.api.servlet.IServletData;
 import valandur.webapi.api.util.TreeNode;
 import valandur.webapi.user.UserPermission;
@@ -45,15 +45,18 @@ public class ServletData implements IServletData {
     }
 
     private ObjectNode node;
+    @Override
     public ObjectNode getNode() {
         return node;
     }
 
     private Exception lastParseError;
+    @Override
     public Exception getLastParseError() {
         return lastParseError;
     }
 
+    @Override
     public boolean isErrorSent() {
         return errorSent;
     }
@@ -69,19 +72,25 @@ public class ServletData implements IServletData {
         this.permissions = (TreeNode<String, Boolean>)req.getAttribute("dataPerms");
     }
 
+    @Override
+    public HttpMethod getMethod() {
+        return HttpMethod.fromString(req.getMethod());
+    }
+
+    @Override
     public JsonNode getRequestBody() {
         return (JsonNode)req.getAttribute("body");
     }
+    @Override
     public <T> Optional<T> getRequestBody(Class<T> clazz) {
         JsonNode json = getRequestBody();
         if (json == null)
             return Optional.empty();
 
-        ObjectMapper mapper = new ObjectMapper();
         try {
-            T data = mapper.treeToValue(json, clazz);
+            T data = WebAPI.getJsonService().toObject(json, clazz, IPermissionService.permitAllNode());
             return Optional.of(data);
-        } catch (JsonProcessingException e) {
+        } catch (IOException e) {
             lastParseError = e;
             return Optional.empty();
         }
@@ -91,30 +100,38 @@ public class ServletData implements IServletData {
         return (UserPermission)req.getAttribute("user");
     }
 
+    @Override
     public void setHeader(String name, String value) {
         resp.setHeader(name, value);
     }
+    @Override
     public void setStatus(int status) {
         resp.setStatus(status);
     }
+    @Override
     public void setContentType(String contentType) {
         resp.setContentType(contentType);
     }
+    @Override
     public void addJson(String key, Object value, boolean details) {
         node.replace(key, WebAPI.getJsonService().toJson(value, details, permissions));
     }
 
+    @Override
     public String getPathParam(String key) {
         return pathParams.get(key);
     }
+    @Override
     public Optional<String> getQueryParam(String key) {
         String value = queryParams.get(key);
         return value != null ? Optional.of(value) : Optional.empty();
     }
 
+    @Override
     public void setDone() {
         isDone = true;
     }
+    @Override
     public void sendError(int error, String message) {
         if (errorSent) return;
 

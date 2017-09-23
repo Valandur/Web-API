@@ -32,6 +32,7 @@ import valandur.webapi.api.cache.player.ICachedPlayer;
 import valandur.webapi.api.cache.plugin.ICachedPluginContainer;
 import valandur.webapi.api.cache.tileentity.ICachedTileEntity;
 import valandur.webapi.api.cache.world.ICachedWorld;
+import valandur.webapi.api.permission.IPermissionService;
 import valandur.webapi.cache.chat.CachedChatMessage;
 import valandur.webapi.cache.command.CachedCommand;
 import valandur.webapi.cache.command.CachedCommandCall;
@@ -45,7 +46,6 @@ import valandur.webapi.cache.tileentity.CachedTileEntity;
 import valandur.webapi.cache.world.CachedChunk;
 import valandur.webapi.cache.world.CachedWorld;
 import valandur.webapi.json.JsonService;
-import valandur.webapi.permission.PermissionService;
 import valandur.webapi.util.Util;
 
 import java.lang.reflect.Field;
@@ -566,7 +566,7 @@ public class CacheService implements ICacheService {
 
                 try {
                     Object res = field.get().get(obj);
-                    fields.put(fieldName, json.toJson(res, true, PermissionService.permitAllNode()));
+                    fields.put(fieldName, json.toJson(res, true, IPermissionService.permitAllNode()));
                 } catch (IllegalAccessException e) {
                     fields.put(fieldName, TextNode.valueOf("ERROR: " + e.toString()));
                 }
@@ -592,7 +592,7 @@ public class CacheService implements ICacheService {
 
                 try {
                     Object res = method.get().invoke(obj);
-                    methods.put(methodName, json.toJson(res, true, PermissionService.permitAllNode()));
+                    methods.put(methodName, json.toJson(res, true, IPermissionService.permitAllNode()));
                 } catch (IllegalAccessException | InvocationTargetException e) {
                     methods.put(methodName, TextNode.valueOf("ERROR: " + e.toString()));
                 }

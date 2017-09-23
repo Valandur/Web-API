@@ -52,4 +52,22 @@ public interface IPermissionService {
      * @return The sub tree representing the permission permitted for that path
      */
     TreeNode<String, Boolean> subPermissions(TreeNode<String, Boolean> perms, List<String> path);
+
+    /**
+     * Returns an empty node, i.e. a node that has no permissions.
+     * @return An empty permissions node
+     */
+    static TreeNode<String, Boolean> emptyNode() {
+        return new TreeNode<>(false);
+    }
+
+    /**
+     * Returns a grant-all permissions node, i.e. a node that contains all permissions.
+     * @return A grant-all permissions node
+     */
+    static TreeNode<String, Boolean> permitAllNode() {
+        TreeNode<String, Boolean> node = new TreeNode<>(true);
+        node.addChild(new TreeNode<>("*", true));
+        return node;
+    }
 }

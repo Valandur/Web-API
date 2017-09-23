@@ -8,6 +8,7 @@ import java.util.*;
 
 public class PermissionService implements IPermissionService {
 
+    @Override
     public TreeNode<String, Boolean> permissionTreeFromConfig(ConfigurationNode config) {
         if (config == null || config.getValue() == null) {
             return new TreeNode<>(false);
@@ -34,6 +35,7 @@ public class PermissionService implements IPermissionService {
         }
         return root;
     }
+    @Override
     public void permissionTreeToConfig(ConfigurationNode config, TreeNode<String, Boolean> perms) {
         if (perms == null) {
             return;
@@ -62,16 +64,20 @@ public class PermissionService implements IPermissionService {
         }
     }
 
+    @Override
     public boolean permits(TreeNode<String, Boolean> perms, String[] reqPerms) {
         return permits(perms, Arrays.asList(reqPerms));
     }
+    @Override
     public boolean permits(TreeNode<String, Boolean> perms, List<String> reqPerms) {
         return  subPermissions(perms, reqPerms).getValue();
     }
 
+    @Override
     public TreeNode<String, Boolean> subPermissions(TreeNode<String, Boolean> perms, String[] path) {
         return subPermissions(perms, Arrays.asList(path));
     }
+    @Override
     public TreeNode<String, Boolean> subPermissions(TreeNode<String, Boolean> perms, List<String> path) {
         // Check if we ourselves already are a permit-all permission
         if (perms.getKey() != null && perms.getKey().equalsIgnoreCase("*") && perms.getValue()) {
@@ -89,20 +95,11 @@ public class PermissionService implements IPermissionService {
 
             // If we don't have a specific permission for this level, check if there is a "*" permission
             Optional<TreeNode<String, Boolean>> allChild = perms.getChild("*");
-            return allChild.orElseGet(PermissionService::emptyNode);
+            return allChild.orElseGet(IPermissionService::emptyNode);
         }
 
         // If we get here then that means we have an exact permission for this path
         // or the path had no elements
         return perms;
-    }
-
-    public static TreeNode<String, Boolean> emptyNode() {
-        return new TreeNode<>(false);
-    }
-    public static TreeNode<String, Boolean> permitAllNode() {
-        TreeNode<String, Boolean> node = new TreeNode<>(true);
-        node.addChild(new TreeNode<>("*", true));
-        return node;
     }
 }

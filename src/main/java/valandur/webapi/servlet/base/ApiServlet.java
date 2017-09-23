@@ -6,7 +6,9 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import valandur.webapi.WebAPI;
+import valandur.webapi.api.permission.IPermissionService;
 import valandur.webapi.api.util.TreeNode;
+import valandur.webapi.json.JsonService;
 import valandur.webapi.permission.PermissionService;
 
 import javax.servlet.ServletException;
@@ -24,11 +26,13 @@ public class ApiServlet extends HttpServlet {
 
     private ServletService servletService;
     private PermissionService permissionService;
+    private JsonService jsonService;
 
 
     public ApiServlet() {
         this.servletService = WebAPI.getServletService();
         this.permissionService = WebAPI.getPermissionService();
+        this.jsonService = WebAPI.getJsonService();
     }
 
     private void handleVerb(String verb, HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -74,7 +78,7 @@ public class ApiServlet extends HttpServlet {
 
             req.setAttribute("dataPerms", methodPerms);
         } else {
-            req.setAttribute("dataPerms", PermissionService.permitAllNode());
+            req.setAttribute("dataPerms", IPermissionService.permitAllNode());
         }
 
         if (verb.equalsIgnoreCase("Post") || verb.equalsIgnoreCase("Put")) {
@@ -93,8 +97,7 @@ public class ApiServlet extends HttpServlet {
                     }
                     req.setAttribute("body", obj);
                 } else if (type.contains("application/json")) {
-                    ObjectMapper mapper = new ObjectMapper();
-                    JsonNode node = mapper.readTree(req.getReader());
+                    JsonNode node = jsonService.toJson(req.getReader(), IPermissionService.permitAllNode());
                     req.setAttribute("body", node);
 
                     WebAPI.sentryExtra("request_body", node != null ? node.toString() : "");

@@ -3,8 +3,8 @@ package valandur.webapi.hook;
 import valandur.webapi.api.hook.IWebHook;
 import valandur.webapi.api.hook.WebAPIBaseFilter;
 import valandur.webapi.api.hook.WebHookHeader;
+import valandur.webapi.api.permission.IPermissionService;
 import valandur.webapi.api.util.TreeNode;
-import valandur.webapi.permission.PermissionService;
 
 import java.util.List;
 
@@ -40,7 +40,7 @@ public class WebHook implements IWebHook {
         return details;
     }
 
-    private TreeNode<String, Boolean> permissions = PermissionService.emptyNode();
+    private TreeNode<String, Boolean> permissions = IPermissionService.emptyNode();
     public TreeNode<String, Boolean> getPermissions() {
         return permissions;
     }

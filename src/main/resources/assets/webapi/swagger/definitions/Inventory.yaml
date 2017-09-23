@@ -6,10 +6,12 @@ properties:
     type: string
     description: The name of the inventory.
   stackCount:
-    type: integer
+    type: number
+    format: integer
     description: The amount of different stacks in the inventory.
   itemCount:
-    type: integer
+    type: number
+    format: integer
     description: The total amount of items in the inventory.
   items:
     type: array

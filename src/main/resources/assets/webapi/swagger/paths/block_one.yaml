@@ -12,17 +12,17 @@ get:
       required: true
     - name: x
       in: path
-      type: integer
+      type: string
       description: The x-coordinate of the block.
       required: true
     - name: y
       in: path
-      type: integer
+      type: string
       description: The y-coordinate of the block.
       required: true
     - name: z
       in: path
-      type: integer
+      type: string
       description: The z-coordinate of the block.
       required: true
   tags:

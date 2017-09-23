@@ -36,6 +36,42 @@ get:
             $ref: "../definitions/ok.yaml"
           player:
             $ref: "../definitions/PlayerFull.yaml"
+put:
+  summary: Edit player
+  description: |
+    Update the properties of an existing player.
+
+    > Required permission: player.change
+  parameters:
+    - name: uuid
+      in: path
+      type: string
+      description: The uuid of the player.
+      required: true
+    - name: UpdatePlayerRequest
+      in: body
+      description: The new properties of the player
+      required: true
+      schema:
+        $ref: "../definitions/UpdatePlayerRequest.yaml"
+  tags:
+    - Player
+  responses:
+    400:
+      $ref: "../responses/400.yaml"
+    403:
+      $ref: "../responses/403.yaml"
+    404:
+      $ref: "../responses/404.yaml"
+    200:
+      description: The changed player
+      schema:
+        type: object
+        properties:
+          ok:
+            $ref: "../definitions/ok.yaml"
+          entity:
+            $ref: "../definitions/PlayerFull.yaml"
 post:
   summary: Execute player method
   description: |

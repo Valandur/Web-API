@@ -41,4 +41,16 @@ public class UpdatePlayerRequest extends UpdateEntityRequest {
     public Integer getExperienceSinceLevel() {
         return experienceSinceLevel;
     }
+
+    @JsonDeserialize
+    private Double health;
+    public Double getHealth() {
+        return health;
+    }
+
+    @JsonDeserialize
+    private Double maxHealth;
+    public Double getMaxHealth() {
+        return maxHealth;
+    }
 }

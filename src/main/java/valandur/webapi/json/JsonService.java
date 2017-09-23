@@ -1,10 +1,7 @@
 package valandur.webapi.json;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.MapperFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
@@ -95,6 +92,8 @@ import valandur.webapi.server.ServerStat;
 import valandur.webapi.user.UserPermission;
 import valandur.webapi.util.Util;
 
+import java.io.IOException;
+import java.io.Reader;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -112,6 +111,7 @@ public class JsonService implements IJsonService {
     private Map<Class, Class<? extends WebAPIBaseSerializer>> registeredSerializers = new HashMap<>();
     private Map<Class, WebAPIBaseSerializer> serializers;
     private Map<String, Class<? extends DataManipulator>> supportedData;
+
 
     public void init() {
         Logger logger = WebAPI.getLogger();
@@ -285,10 +285,12 @@ public class JsonService implements IJsonService {
         registeredSerializers.put(clazz, serializer);
     }
 
+    @Override
     public Map<String, Class<? extends DataManipulator>> getSupportedData() {
         return supportedData;
     }
 
+    @Override
     public String toString(Object obj, boolean details, TreeNode<String, Boolean> perms) {
         ObjectMapper mapper = getDefaultObjectMapper(details, perms);
 
@@ -299,10 +301,40 @@ public class JsonService implements IJsonService {
             return "{\"error\":\"" + e.getMessage() + "\"}";
         }
     }
+
+    @Override
     public JsonNode toJson(Object obj, boolean details, TreeNode<String, Boolean> perms) {
         ObjectMapper mapper = getDefaultObjectMapper(details, perms);
         return mapper.valueToTree(obj);
     }
+    @Override
+    public JsonNode toJson(String json, TreeNode<String, Boolean> perms) throws IOException {
+        ObjectMapper mapper = getDefaultObjectMapper(true, perms);
+        return mapper.readTree(json);
+    }
+    @Override
+    public JsonNode toJson(Reader reader, TreeNode<String, Boolean> perms) throws IOException {
+        ObjectMapper mapper = getDefaultObjectMapper(true, perms);
+        return mapper.readTree(reader);
+    }
+
+    @Override
+    public <T> T toObject(String content, Class<T> clazz, TreeNode<String, Boolean> perms) throws IOException {
+        ObjectMapper mapper = getDefaultObjectMapper(true, perms);
+        return mapper.readValue(content, clazz);
+    }
+    @Override
+    public <T> T toObject(String content, JavaType type, TreeNode<String, Boolean> perms) throws IOException {
+        ObjectMapper mapper = getDefaultObjectMapper(true, perms);
+        return mapper.readValue(content, type);
+    }
+    @Override
+    public <T> T toObject(JsonNode content, Class<T> clazz, TreeNode<String, Boolean> perms) throws IOException {
+        ObjectMapper mapper = getDefaultObjectMapper(true, perms);
+        return mapper.treeToValue(content, clazz);
+    }
+
+    @Override
     public JsonNode classToJson(Class c) {
         ObjectNode json = JsonNodeFactory.instance.objectNode();
 

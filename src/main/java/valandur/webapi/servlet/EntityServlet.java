@@ -9,6 +9,7 @@ import org.spongepowered.api.item.inventory.Carrier;
 import org.spongepowered.api.item.inventory.Inventory;
 import org.spongepowered.api.item.inventory.ItemStackSnapshot;
 import org.spongepowered.api.util.Tuple;
+import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.annotation.WebAPIEndpoint;
@@ -67,10 +68,22 @@ public class EntityServlet extends WebAPIBaseServlet {
 
             Entity live = (Entity)optLive.get();
 
+            if (req.getWorld().isPresent()) {
+                Optional<?> optWorld = req.getWorld().get().getLive();
+                if (!optWorld.isPresent())
+                    return null;
+
+                if (req.getPosition() != null) {
+                    live.transferToWorld((World)optWorld.get(), req.getPosition());
+                } else {
+                    live.transferToWorld((World)optWorld.get());
+                }
+            } else if (req.getPosition() != null) {
+                live.setLocation(new Location<World>(live.getWorld(), req.getPosition()));
+            }
             if (req.getVelocity() != null) {
                 live.setVelocity(req.getVelocity());
             }
-
             if (req.getRotation() != null) {
                 live.setRotation(req.getRotation());
             }

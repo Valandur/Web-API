@@ -3,12 +3,15 @@ package valandur.webapi.servlet;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.eclipse.jetty.http.HttpMethod;
 import org.spongepowered.api.data.manipulator.mutable.entity.ExperienceHolderData;
+import org.spongepowered.api.data.manipulator.mutable.entity.HealthData;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.cause.entity.damage.source.DamageSource;
 import org.spongepowered.api.item.inventory.Carrier;
 import org.spongepowered.api.item.inventory.Inventory;
 import org.spongepowered.api.item.inventory.ItemStackSnapshot;
 import org.spongepowered.api.util.Tuple;
+import org.spongepowered.api.world.Location;
+import org.spongepowered.api.world.World;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.annotation.WebAPIEndpoint;
 import valandur.webapi.api.annotation.WebAPIServlet;
@@ -66,10 +69,22 @@ public class PlayerServlet extends WebAPIBaseServlet {
 
             Player live = (Player)optLive.get();
 
+            if (req.getWorld().isPresent()) {
+                Optional<?> optWorld = req.getWorld().get().getLive();
+                if (!optWorld.isPresent())
+                    return null;
+
+                if (req.getPosition() != null) {
+                    live.transferToWorld((World)optWorld.get(), req.getPosition());
+                } else {
+                    live.transferToWorld((World)optWorld.get());
+                }
+            } else if (req.getPosition() != null) {
+                live.setLocation(new Location<World>(live.getWorld(), req.getPosition()));
+            }
             if (req.getVelocity() != null) {
                 live.setVelocity(req.getVelocity());
             }
-
             if (req.getRotation() != null) {
                 live.setRotation(req.getRotation());
             }
@@ -96,6 +111,13 @@ public class PlayerServlet extends WebAPIBaseServlet {
             }
             if (req.getExperienceSinceLevel() != null) {
                 live.get(ExperienceHolderData.class).map(exp -> exp.experienceSinceLevel().set(req.getExperienceSinceLevel()));
+            }
+
+            if (req.getHealth() != null) {
+                live.get(HealthData.class).map(h -> h.health().set(req.getHealth()));
+            }
+            if (req.getMaxHealth() != null) {
+                live.get(HealthData.class).map(h -> h.maxHealth().set(req.getMaxHealth()));
             }
 
             if (req.getDamage() != null) {

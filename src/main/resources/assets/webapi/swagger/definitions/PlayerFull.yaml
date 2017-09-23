@@ -18,7 +18,8 @@ allOf:
             type: string
             description: The address the player is connecting from
           latency:
-            type: integer
+            type: number
+            format: integer
             description: The delay between the player and server
       armour:
         type: object
@@ -53,13 +54,16 @@ allOf:
         type: object
         properties:
           level:
-            type: integer
+            type: number
+            format: integer
             description: The current level of the player
           experience:
-            type: integer
+            type: number
+            format: integer
             description: The amount of experience SINCE THE LAST LEVEL.
           totalExperience:
-            type: integer
+            type: number
+            format: integer
             description: The total amount of experience earned.
       gameMode:
         type: string

@@ -5,13 +5,16 @@ properties:
     type: string
     description: The message of the day set on the server.
   players:
-    type: integer
+    type: number
+    format: integer
     description: The amount of players currently playing on the server
   maxPlayers:
-    type: integer
+    type: number
+    format: integer
     description: The maximum amount of players allowed on the server
   uptimeTicks:
-    type: integer
+    type: number
+    format: integer
     description: The number of ticks the server has been running
   tps:
     type: number

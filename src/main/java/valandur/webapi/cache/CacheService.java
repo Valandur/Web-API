@@ -145,7 +145,7 @@ public class CacheService implements ICacheService {
 
         // If this is an unkown object type then we can't create a cached version of it, so we better not try
         // and save it because we don't know if it's thread safe or not.
-        return null;
+        return obj.getClass().getName();
     }
 
     @Override

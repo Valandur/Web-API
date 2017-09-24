@@ -23,6 +23,8 @@ public class CmdNotifyHook implements CommandExecutor {
     @Override
     public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
         Map<String, Object> data = new LinkedHashMap<>();
+        data.put("source", WebAPI.getCacheService().asCachedObject(src));
+
         for (WebHookParam param : cmdHook.getParams()) {
             data.put(param.getName(), param.getValue(args).orElse(null));
         }

@@ -8,6 +8,9 @@ import java.io.IOException;
 public class CommandSourceSerializer extends WebAPIBaseSerializer<CommandSource> {
     @Override
     public void serialize(CommandSource value) throws IOException {
-        writeValue(value.getName());
+        writeStartObject();
+        writeField("id", value.getIdentifier());
+        writeField("name", value.getName());
+        writeEndObject();
     }
 }

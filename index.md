@@ -44,7 +44,7 @@ Provides an AdminPanel to manage your minecraft server and a RESTful webserver w
 5. Use `sponge plugins reload` to import your config changes to the server without restarting.
 
 ## Tutorials & Documentation
-Go [here](docs/INDEX.md) to see a list of various documentations and tutorials
+Go [here](https://github.com/Valandur/Web-API/blob/master/docs/INDEX.md) to see a list of various documentations and tutorials
 
 ## Request / Response types
 This API uses JSON as requeset and response formats.

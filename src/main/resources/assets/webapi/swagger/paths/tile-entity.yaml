@@ -15,6 +15,10 @@ get:
       in: query
       type: string
       description: The TileEntityType id to filter the tile entities by.
+    - name: limit
+      in: query
+      type: string
+      description: The maximum amount of tile entities to return.
   responses:
     403:
       $ref: "../responses/403.yaml"

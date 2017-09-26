@@ -3,6 +3,7 @@ package valandur.webapi.message;
 import java.util.UUID;
 
 public class MessageResponse {
+
     private String id;
     public String getId() {
         return id;

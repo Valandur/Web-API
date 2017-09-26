@@ -14,30 +14,39 @@ public class Message implements IMessage {
 
     @JsonDeserialize
     private String id;
+    @Override
     public String getId() {
         return id;
     }
 
     @JsonDeserialize
     private UUID target;
+    @Override
     public UUID getTarget() {
         return target;
     }
 
     @JsonDeserialize
     private String message;
+    @Override
     public Text getMessage() {
         return TextSerializers.FORMATTING_CODE.deserializeUnchecked(message);
     }
 
     @JsonDeserialize
-    private boolean once;
-    public boolean isOnce() {
+    private Boolean once;
+    @Override
+    public Boolean isOnce() {
         return once;
     }
 
     @JsonDeserialize
     private Map<String, String> options;
+    @Override
+    public boolean hasOptions() {
+        return options != null;
+    }
+    @Override
     public Map<String, Text> getOptions() {
         return options.entrySet().stream()
                 .collect(Collectors.toMap(

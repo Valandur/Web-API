@@ -1,6 +1,5 @@
 package valandur.webapi.message;
 
-import org.eclipse.jetty.util.ConcurrentHashSet;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.action.TextActions;
@@ -13,19 +12,25 @@ import valandur.webapi.hook.WebHookService;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentSkipListSet;
 
 public class MessageService implements IMessageService {
 
-    private Map<UUID, Collection<String>> replied = new ConcurrentHashMap<>();
+    private Map<UUID, Set<String>> replied = new ConcurrentHashMap<>();
 
     public boolean sendMessage(IMessage msg) {
-        Text.Builder builder = Text.builder().append(msg.getMessage());
+        Text.Builder builder = Text.builder();
         UUID uuid = UUID.randomUUID();
 
-        if (msg.isOnce())
-            replied.put(uuid, new ConcurrentHashSet<>());
+        if (msg.getMessage() != null) {
+            builder.append(msg.getMessage());
+        }
 
-        if (msg.getOptions().size() > 0) {
+        if (msg.isOnce() != null && msg.isOnce()) {
+            replied.put(uuid, new ConcurrentSkipListSet<>());
+        }
+
+        if (msg.hasOptions() && msg.getOptions().size() > 0) {
             builder.append(Text.of("\n"));
 
             for (Map.Entry<String, Text> entry : msg.getOptions().entrySet()) {

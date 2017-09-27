@@ -78,6 +78,7 @@ import valandur.webapi.integration.huskycrates.HuskyCratesServlet;
 import valandur.webapi.integration.mmctickets.MMCTicketsServlet;
 import valandur.webapi.integration.nations.NationsServlet;
 import valandur.webapi.integration.nucleus.NucleusServlet;
+import valandur.webapi.integration.redprotect.RedProtectServlet;
 import valandur.webapi.integration.webbhooks.WebBookServlet;
 import valandur.webapi.json.JsonService;
 import valandur.webapi.message.MessageService;
@@ -357,6 +358,12 @@ public class WebAPI {
             Class.forName("de.dosmike.sponge.WebBooks.WebBooks");
             logger.info("  Integrating with WebBooks...");
             servletService.registerServlet(WebBookServlet.class);
+        } catch (ClassNotFoundException ignored) { }
+
+        try {
+            Class.forName("br.net.fabiozumbi12.redprotect.RedProtect");
+            logger.info("  Integrating with RedProtect...");
+            servletService.registerServlet(RedProtectServlet.class);
         } catch (ClassNotFoundException ignored) { }
 
         // Main init function, that is also called when reloading the plugin

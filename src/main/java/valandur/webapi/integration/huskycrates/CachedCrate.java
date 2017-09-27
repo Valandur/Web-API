@@ -2,13 +2,12 @@ package valandur.webapi.integration.huskycrates;
 
 import com.codehusky.huskycrates.crate.VirtualCrate;
 import com.codehusky.huskycrates.crate.config.CrateReward;
-import valandur.webapi.cache.CachedObject;
 
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class CachedCrate extends CachedObject {
+public class CachedCrate {
 
     private String id;
     public String getId() {
@@ -42,8 +41,6 @@ public class CachedCrate extends CachedObject {
 
 
     public CachedCrate(VirtualCrate crate) {
-        super(crate);
-
         this.id = crate.id;
         this.name = crate.displayName;
         this.type = crate.crateType;

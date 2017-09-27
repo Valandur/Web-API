@@ -2,12 +2,11 @@ package valandur.webapi.integration.huskycrates;
 
 import com.codehusky.huskycrates.crate.config.CrateReward;
 import org.spongepowered.api.item.inventory.ItemStack;
-import valandur.webapi.cache.CachedObject;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class CachedCrateReward extends CachedObject {
+public class CachedCrateReward {
 
     private String name;
     public String getName() {
@@ -36,8 +35,6 @@ public class CachedCrateReward extends CachedObject {
 
 
     public CachedCrateReward(CrateReward reward) {
-        super(reward);
-
         this.name = reward.getRewardName();
         this.chance = reward.getChance();
         this.displayItem = reward.getDisplayItem().copy();

@@ -5,10 +5,9 @@ import net.moddedminecraft.mmctickets.data.ticketStatus;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.cache.player.ICachedPlayer;
 import valandur.webapi.api.cache.world.ICachedWorld;
-import valandur.webapi.cache.CachedObject;
 import valandur.webapi.cache.misc.CachedLocation;
 
-public class CachedTicket extends CachedObject {
+public class CachedTicket {
 
     private int id;
     public int getId() {
@@ -57,8 +56,6 @@ public class CachedTicket extends CachedObject {
 
 
     public CachedTicket(TicketData ticket) {
-        super(ticket);
-
         this.id = ticket.getTicketID();
         this.sender = WebAPI.getCacheService().getPlayer(ticket.getPlayerUUID()).orElse(null);
         this.timestamp = ticket.getTimestamp();

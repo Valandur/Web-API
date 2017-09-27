@@ -14,10 +14,11 @@ public class ItemStackSerializer extends WebAPIBaseSerializer<ItemStack> {
         writeField("quantity", value.getQuantity());
 
         if (shouldWriteDetails()) {
-            writeObjectFieldStart("data");
-            writeData(value);
-            writeProperties(value);
-            writeEndObject();
+            if (writeObjectFieldStart("data")) {
+                writeData(value);
+                writeProperties(value);
+                writeEndObject();
+            }
         }
 
         writeEndObject();

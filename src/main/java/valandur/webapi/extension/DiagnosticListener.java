@@ -1,6 +1,5 @@
-package valandur.webapi.json;
+package valandur.webapi.extension;
 
-import io.sentry.Sentry;
 import valandur.webapi.WebAPI;
 
 import javax.tools.Diagnostic;

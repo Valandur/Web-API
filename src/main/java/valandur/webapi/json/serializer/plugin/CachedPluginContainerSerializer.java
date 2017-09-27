@@ -20,11 +20,13 @@ public class CachedPluginContainerSerializer extends WebAPIBaseSerializer<Cached
             writeField("description", value.getDescription());
             writeField("url", value.getUrl());
             writeField("authors", value.getAuthors());
-            writeArrayFieldStart("dependencies");
-            for (ICachedPluginDependency dependency : value.getDependencies()) {
-                writeValue(dependency);
+
+            if (writeArrayFieldStart("dependencies")) {
+                for (ICachedPluginDependency dependency : value.getDependencies()) {
+                    writeValue(dependency);
+                }
+                writeEndArray();
             }
-            writeEndArray();
         }
 
         writeEndObject();

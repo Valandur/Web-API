@@ -23,23 +23,26 @@ public class NationSerializer extends WebAPIBaseSerializer<Nation> {
             writeField("taxes", value.getTaxes());
             writeField("flags", value.getFlags());
 
-            writeArrayFieldStart("citizens");
-            for (UUID uuid : value.getCitizens()) {
-                writeValue(cacheService.getPlayer(uuid).orElse(null), Tristate.FALSE);
+            if (writeArrayFieldStart("citizens")) {
+                for (UUID uuid : value.getCitizens()) {
+                    writeValue(cacheService.getPlayer(uuid).orElse(null), Tristate.FALSE);
+                }
+                writeEndArray();
             }
-            writeEndArray();
 
-            writeArrayFieldStart("ministers");
-            for (UUID uuid : value.getMinisters()) {
-                writeValue(cacheService.getPlayer(uuid).orElse(null), Tristate.FALSE);
+            if (writeArrayFieldStart("ministers")) {
+                for (UUID uuid : value.getMinisters()) {
+                    writeValue(cacheService.getPlayer(uuid).orElse(null), Tristate.FALSE);
+                }
+                writeEndArray();
             }
-            writeEndArray();
 
-            writeArrayFieldStart("staff");
-            for (UUID uuid : value.getStaff()) {
-                writeValue(cacheService.getPlayer(uuid).orElse(null), Tristate.FALSE);
+            if (writeArrayFieldStart("staff")) {
+                for (UUID uuid : value.getStaff()) {
+                    writeValue(cacheService.getPlayer(uuid).orElse(null), Tristate.FALSE);
+                }
+                writeEndArray();
             }
-            writeEndArray();
 
             writeField("spawns", value.getSpawns().values());
             writeField("rects", value.getRegion().getRects());

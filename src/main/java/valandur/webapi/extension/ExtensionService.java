@@ -3,7 +3,6 @@ package valandur.webapi.extension;
 import org.slf4j.Logger;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.extension.IExtensionService;
-import valandur.webapi.json.DiagnosticListener;
 
 import javax.tools.JavaCompiler;
 import javax.tools.JavaFileObject;

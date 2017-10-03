@@ -15,12 +15,20 @@ public class MessageServlet extends WebAPIBaseServlet {
 
     @WebAPIEndpoint(method = HttpMethod.POST, path = "/", perm = "create")
     public void sendMessage(ServletData data) {
-        Optional<Message> msg = data.getRequestBody(Message.class);
-        if (!msg.isPresent()) {
+        Optional<Message> optMsg = data.getRequestBody(Message.class);
+        if (!optMsg.isPresent()) {
             data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid message");
             return;
         }
 
-        data.addJson("ok", messageService.sendMessage(msg.get()), false);
+        Message msg = optMsg.get();
+
+        if (msg.getTarget() == null && (msg.getTargets() == null || msg.getTargets().size() == 0)) {
+            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "You need to specify either a " +
+                    "single target or a list of targets");
+            return;
+        }
+
+        data.addJson("ok", messageService.sendMessage(msg), false);
     }
 }

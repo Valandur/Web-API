@@ -3,14 +3,13 @@ package valandur.webapi.integration.nucleus;
 import io.github.nucleuspowered.nucleus.api.nucleusdata.Kit;
 import org.spongepowered.api.data.value.ValueContainer;
 import org.spongepowered.api.item.inventory.ItemStackSnapshot;
-import valandur.webapi.cache.CachedObject;
 
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class CachedKit extends CachedObject {
+public class CachedKit {
 
     private String name;
     public String getName() {
@@ -49,8 +48,6 @@ public class CachedKit extends CachedObject {
 
 
     public CachedKit(String name, Kit kit) {
-        super(kit);
-
         this.name = name;
         this.cost = kit.getCost();
         this.interval = kit.getInterval();

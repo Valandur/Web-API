@@ -19,9 +19,10 @@ public class ZoneSerializer extends WebAPIBaseSerializer<Zone> {
 
         writeField("owner", cacheService.getPlayer(value.getOwner()).orElse(null), Tristate.FALSE);
 
-        writeArrayFieldStart("coowners");
-        for (UUID uuid : value.getCoowners()) {
-            writeValue(cacheService.getPlayer(uuid).orElse(null), Tristate.FALSE);
+        if (writeArrayFieldStart("coowners")) {
+            for (UUID uuid : value.getCoowners()) {
+                writeValue(cacheService.getPlayer(uuid).orElse(null), Tristate.FALSE);
+            }
         }
 
         writeField("flags", value.getFlags());

@@ -1,15 +1,14 @@
 package valandur.webapi.message;
 
-import java.util.UUID;
-
 public class MessageResponse {
+
     private String id;
     public String getId() {
         return id;
     }
 
-    private UUID source;
-    public UUID getSource() {
+    private String source;
+    public String getSource() {
         return source;
     }
 
@@ -19,7 +18,7 @@ public class MessageResponse {
     }
 
 
-    public MessageResponse(String id, String choice, UUID source) {
+    public MessageResponse(String id, String choice, String source) {
         this.id  = id;
         this.choice = choice;
         this.source = source;

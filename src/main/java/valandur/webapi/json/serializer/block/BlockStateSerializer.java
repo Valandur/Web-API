@@ -14,11 +14,12 @@ public class BlockStateSerializer extends WebAPIBaseSerializer<BlockState> {
         writeField("type", value.getType().getName());
 
         if (shouldWriteDetails()) {
-            writeObjectFieldStart("data");
-            for (Map.Entry<BlockTrait<?>, ?> entry : value.getTraitMap().entrySet()) {
-                writeField(entry.getKey().getName(), entry.getValue());
+            if (writeObjectFieldStart("data")) {
+                for (Map.Entry<BlockTrait<?>, ?> entry : value.getTraitMap().entrySet()) {
+                    writeField(entry.getKey().getName(), entry.getValue());
+                }
+                writeEndObject();
             }
-            writeEndObject();
         }
 
         writeEndObject();

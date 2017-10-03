@@ -46,29 +46,29 @@ public class CommandRegistry {
         // Whitelist
         CommandSpec specWhitelistAdd = CommandSpec.builder()
                 .description(Text.of("Add an IP to the whitelist"))
-                .permission("webapi.command.whitelist.add")
+                .permission("webapi.whitelist.add")
                 .arguments(new CmdIpElement(Text.of("ip")))
                 .executor(new CmdAuthListAdd(true))
                 .build();
         CommandSpec specWhitelistRemove = CommandSpec.builder()
                 .description(Text.of("Remove an IP from the whitelist"))
-                .permission("webapi.command.whitelist.remove")
+                .permission("webapi.whitelist.remove")
                 .arguments(new CmdIpElement(Text.of("ip")))
                 .executor(new CmdAuthListRemove(true))
                 .build();
         CommandSpec specWhitelistEnable = CommandSpec.builder()
                 .description(Text.of("Enable the whitelist"))
-                .permission("webapi.command.whitelist.enable")
+                .permission("webapi.whitelist.enable")
                 .executor(new CmdAuthListEnable(true))
                 .build();
         CommandSpec specWhitelistDisable = CommandSpec.builder()
                 .description(Text.of("Disable the whitelist"))
-                .permission("webapi.command.whitelist.disable")
+                .permission("webapi.whitelist.disable")
                 .executor(new CmdAuthListDisable(true))
                 .build();
         CommandSpec specWhitelist = CommandSpec.builder()
                 .description(Text.of("Manage the whitelist"))
-                .permission("webapi.command.whitelist")
+                .permission("webapi.whitelist")
                 .child(specWhitelistAdd, "add")
                 .child(specWhitelistRemove, "remove")
                 .child(specWhitelistEnable, "enable")
@@ -78,64 +78,64 @@ public class CommandRegistry {
         // Blacklist
         CommandSpec specBlacklistAdd = CommandSpec.builder()
                 .description(Text.of("Add an IP to the blacklist"))
-                .permission("webapi.command.blacklist.add")
+                .permission("webapi.blacklist.add")
                 .arguments(GenericArguments.string(Text.of("ip")))
                 .executor(new CmdAuthListAdd(false))
                 .build();
         CommandSpec specBlaclistRemove = CommandSpec.builder()
                 .description(Text.of("Remove an IP from the blacklist"))
-                .permission("webapi.command.blacklist.remove")
+                .permission("webapi.blacklist.remove")
                 .arguments(GenericArguments.string(Text.of("ip")))
                 .executor(new CmdAuthListRemove(false))
                 .build();
         CommandSpec specBlacklistEnable = CommandSpec.builder()
                 .description(Text.of("Enable the blacklist"))
-                .permission("webapi.command.blacklist.enable")
+                .permission("webapi.blacklist.enable")
                 .executor(new CmdAuthListEnable(false))
                 .build();
         CommandSpec specBlacklistDisable = CommandSpec.builder()
                 .description(Text.of("Disable the blacklist"))
-                .permission("webapi.command.blacklist.disable")
+                .permission("webapi.blacklist.disable")
                 .executor(new CmdAuthListDisable(false))
                 .build();
         CommandSpec specBlacklist = CommandSpec.builder()
                 .description(Text.of("Manage the blacklist"))
-                .permission("webapi.command.blacklist")
+                .permission("webapi.blacklist")
                 .child(specBlacklistAdd, "add")
                 .child(specBlaclistRemove, "remove")
                 .child(specBlacklistEnable, "enable")
                 .child(specBlacklistDisable, "disable")
                 .build();
 
+        // Block operations
         final BlockService blockService = WebAPI.getBlockService();
-        // Block updates
-        CommandSpec specBlockUpdatesList = CommandSpec.builder()
-                .description(Text.of("List all running block updates"))
-                .permission("webapi.command.blocks.list")
+        CommandSpec specBlockOpsList = CommandSpec.builder()
+                .description(Text.of("List all running block operations"))
+                .permission("webapi.op.list")
                 .executor(new CmdBlockUpdatesList())
                 .build();
-        CommandSpec specBlockUpdatesPause = CommandSpec.builder()
-                .description(Text.of("Pause/Resume running block updates"))
-                .permission("webapi.command.blocks.pause")
+        CommandSpec specBlockOpsPause = CommandSpec.builder()
+                .description(Text.of("Pause/Resume running block operations"))
+                .permission("webapi.op.pause")
                 .arguments(GenericArguments.choices(Text.of("uuid"),
                         () -> blockService.getBlockOperations().stream().map(u -> u.getUUID().toString()).collect(Collectors.toList()),
                         uuid -> blockService.getBlockOperation(UUID.fromString(uuid))))
                 .executor(new CmdBlockUpdatesList())
                 .build();
-        CommandSpec specBlockUpdatesStop = CommandSpec.builder()
-                .description(Text.of("Stop a running block update"))
-                .permission("webapi.command.blocks.stop")
+        CommandSpec specBlockOpsStop = CommandSpec.builder()
+                .description(Text.of("Stop a running block operation"))
+                .permission("webapi.op.stop")
                 .arguments(GenericArguments.choices(Text.of("uuid"),
                         () -> blockService.getBlockOperations().stream().map(u -> u.getUUID().toString()).collect(Collectors.toList()),
                         uuid -> Util.isValidUUID(uuid) ? blockService.getBlockOperation(UUID.fromString(uuid)) : null))
                 .executor(new CmdBlockUpdatesList())
                 .build();
-        CommandSpec specBlockUpdates = CommandSpec.builder()
-                .description(Text.of("Manage running block updates"))
-                .permission("webapi.command.blocks")
-                .child(specBlockUpdatesList, "list")
-                .child(specBlockUpdatesPause, "pause")
-                .child(specBlockUpdatesStop, "stop", "delete", "remove")
+        CommandSpec specBlockOps = CommandSpec.builder()
+                .description(Text.of("Manage running block operations"))
+                .permission("webapi.op")
+                .child(specBlockOpsList, "list")
+                .child(specBlockOpsPause, "pause")
+                .child(specBlockOpsStop, "stop", "delete", "remove")
                 .build();
 
         // Users
@@ -190,7 +190,7 @@ public class CommandRegistry {
 
             CommandSpec hookCmd = CommandSpec.builder()
                     .description(Text.of("Notify the " + name + " hook"))
-                    .permission("webapi.command.notify." + name)
+                    .permission("webapi.notify." + name)
                     .arguments(args.toArray(new CommandElement[args.size()]))
                     .executor(new CmdNotifyHook(hook))
                     .build();
@@ -201,19 +201,19 @@ public class CommandRegistry {
         // Notify parent
         CommandSpec specNotifyHook = CommandSpec.builder()
                 .description(Text.of("Notify a hook"))
-                .permission("webapi.command.notify")
+                .permission("webapi.notify")
                 .children(hookSpecs)
                 .build();
 
         // Register main command
         CommandSpec spec = CommandSpec.builder()
                 .description(Text.of("Manage Web-API settings"))
-                .permission("webapi.command")
+                .permission("webapi")
                 .child(specWhitelist, "whitelist")
                 .child(specBlacklist, "blacklist")
                 .child(specNotifyHook, "notify")
-                .child(specBlockUpdates, "blocks")
-                .child(specUsers, "users")
+                .child(specBlockOps, "ops", "op", "blockops")
+                .child(specUsers, "users", "user")
                 .build();
         manager.register(WebAPI.getInstance(), spec, "webapi").map(m -> mappings.add(m));
 

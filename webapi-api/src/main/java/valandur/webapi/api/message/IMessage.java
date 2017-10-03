@@ -2,7 +2,7 @@ package valandur.webapi.api.message;
 
 import org.spongepowered.api.text.Text;
 
-import java.util.Map;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -23,6 +23,12 @@ public interface IMessage {
     UUID getTarget();
 
     /**
+     * Gets all the targets this message is sent to, in case it is sent to multiple players.
+     * @return The list of target uuids.
+     */
+    List<UUID> getTargets();
+
+    /**
      * The message that is sent.
      * @return The message content.
      */
@@ -33,7 +39,7 @@ public interface IMessage {
      * it the key is sent to the message web hook.
      * @return A map of option keys to values.
      */
-    Map<String, Text> getOptions();
+    List<IMessageOption> getOptions();
 
     /**
      * True if the message object has options attached, false otherwise.

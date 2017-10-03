@@ -7,6 +7,7 @@ import org.spongepowered.api.text.format.TextColors;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.cache.player.ICachedPlayer;
 import valandur.webapi.api.message.IMessage;
+import valandur.webapi.api.message.IMessageOption;
 import valandur.webapi.api.message.IMessageService;
 import valandur.webapi.hook.WebHookService;
 
@@ -33,10 +34,10 @@ public class MessageService implements IMessageService {
         if (msg.hasOptions() && msg.getOptions().size() > 0) {
             builder.append(Text.of("\n"));
 
-            for (Map.Entry<String, Text> entry : msg.getOptions().entrySet()) {
-                final String data = entry.getKey();
+            for (IMessageOption option : msg.getOptions()) {
+                final String data = option.getKey();
 
-                Text opt = entry.getValue().toBuilder().onClick(TextActions.executeCallback(source -> {
+                Text opt = option.getValue().toBuilder().onClick(TextActions.executeCallback(source -> {
                     if (msg.isOnce()) {
                         Collection<String> replies = replied.get(uuid);
                         if (replies.contains(source.getIdentifier())) {
@@ -50,7 +51,7 @@ public class MessageService implements IMessageService {
                         replies.add(source.getIdentifier());
                     }
 
-                    MessageResponse response = new MessageResponse(msg.getId(), data, msg.getTarget());
+                    MessageResponse response = new MessageResponse(msg.getId(), data, source.getIdentifier());
                     WebAPI.getWebHookService().notifyHooks(WebHookService.WebHookType.CUSTOM_MESSAGE, response);
                 })).build();
 
@@ -60,14 +61,29 @@ public class MessageService implements IMessageService {
 
         Text text = builder.build();
 
-        Optional<ICachedPlayer> player = WebAPI.getCacheService().getPlayer(msg.getTarget());
-        return player.flatMap(cachedPlayer -> WebAPI.runOnMain(() -> {
-            Optional<?> p = cachedPlayer.getLive();
-            if (!p.isPresent())
-                return false;
+        List<ICachedPlayer> cachedPlayers = new ArrayList<>();
+        if (msg.getTarget() != null) {
+            Optional<ICachedPlayer> player = WebAPI.getCacheService().getPlayer(msg.getTarget());
+            player.map(cachedPlayers::add);
+        } else {
+            msg.getTargets().forEach(u -> WebAPI.getCacheService().getPlayer(u).map(cachedPlayers::add));
+        }
 
-            ((Player) p.get()).sendMessage(text);
+        return WebAPI.runOnMain(() -> {
+            List<Player> players = new ArrayList<>();
+            for (ICachedPlayer player : cachedPlayers) {
+                Optional<?> p = player.getLive();
+                if (!p.isPresent())
+                    return false;
+
+                players.add((Player)p.get());
+            }
+
+            for (Player player : players) {
+                player.sendMessage(text);
+            }
+
             return true;
-        })).orElse(false);
+        }).orElse(false);
     }
 }

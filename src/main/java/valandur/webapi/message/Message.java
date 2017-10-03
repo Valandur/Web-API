@@ -4,10 +4,11 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.serializer.TextSerializers;
 import valandur.webapi.api.message.IMessage;
+import valandur.webapi.api.message.IMessageOption;
 
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @JsonDeserialize
 public class Message implements IMessage {
@@ -27,6 +28,11 @@ public class Message implements IMessage {
     }
 
     @JsonDeserialize
+    private List<UUID> targets;
+    @Override
+    public List<UUID> getTargets() { return targets; }
+
+    @JsonDeserialize
     private String message;
     @Override
     public Text getMessage() {
@@ -41,17 +47,13 @@ public class Message implements IMessage {
     }
 
     @JsonDeserialize
-    private Map<String, String> options;
+    private List<MessageOption> options;
     @Override
     public boolean hasOptions() {
         return options != null;
     }
     @Override
-    public Map<String, Text> getOptions() {
-        return options.entrySet().stream()
-                .collect(Collectors.toMap(
-                        Map.Entry::getKey,
-                        e -> TextSerializers.FORMATTING_CODE.deserializeUnchecked(e.getValue())
-                ));
+    public List<IMessageOption> getOptions() {
+        return new ArrayList<>(options);
     }
 }

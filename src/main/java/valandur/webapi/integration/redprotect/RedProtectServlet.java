@@ -3,6 +3,7 @@ package valandur.webapi.integration.redprotect;
 import br.net.fabiozumbi12.redprotect.RedProtect;
 import br.net.fabiozumbi12.redprotect.Region;
 import org.eclipse.jetty.http.HttpMethod;
+import org.spongepowered.api.Sponge;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 import valandur.webapi.WebAPI;
@@ -226,6 +227,29 @@ public class RedProtectServlet extends WebAPIBaseServlet {
             if (req.canDelete() != null) {
                 region.setCanDelete(req.canDelete());
             }
+
+            return new CachedRegion(region);
+        });
+
+        data.addJson("ok", optRegion.isPresent(), false);
+        data.addJson("region", optRegion.orElse(null), true);
+    }
+
+    @WebAPIEndpoint(method = HttpMethod.DELETE, path = "region/:id", perm = "delete")
+    public void deleteRegion(ServletData data, String id) {
+        if (!id.contains("@")) {
+            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid region id");
+            return;
+        }
+
+        Optional<CachedRegion> optRegion = WebAPI.runOnMain(() -> {
+            Region region = RedProtect.rm.getRegionById(id);
+            if (region == null) {
+                return null;
+            }
+
+            World world = Sponge.getServer().getWorld(region.getWorld()).orElse(null);
+            RedProtect.rm.remove(region, world);
 
             return new CachedRegion(region);
         });

@@ -6,6 +6,15 @@ All commands begin with `/webapi`
 [...] denotes *multiple optional* parameters  
 
 
+## Table of Contents
+1. [AdminPanel users](#adminpanel)
+1. [Whitelist](#whitelist)
+1. [Blacklist](#blacklist)
+1. [Block Operations](#blockops)
+1. [Notify commands/WebHooks](#notify)
+
+
+<a name="adminpanel"></a>
 ## AdminPanel Users
 
 | Command | Permission | Description |
@@ -15,6 +24,7 @@ All commands begin with `/webapi`
 | users pw \<user> <password> | webapi.user.changepw | Changes the password of an [AdminPanel](ADMIN_PANEL.md) user |
 
 
+<a name="whitelist"></a>
 ## Whitelist
 
 | Command | Permission | Description |
@@ -25,6 +35,7 @@ All commands begin with `/webapi`
 | whitelist disable | webapi.whitelist.disable | Disables the whitelist for Web-API |
 
 
+<a name="blacklist"></a>
 ## Blacklist
 
 | Command | Permission | Description |
@@ -35,6 +46,7 @@ All commands begin with `/webapi`
 | blacklist disable | webapi.blacklist.disable | Disables the blacklist for Web-API |
 
 
+<a name="blockops"></a>
 ## Block Operations
 
 | Command | Permission | Description |
@@ -44,6 +56,7 @@ All commands begin with `/webapi`
 | ops stop \<uuid> | webapi.op.stop | Stops the specified block operation |
 
 
+<a name="notify"></a>
 ## Notify commands / WebHooks
 
 | Command | Permission | Description |

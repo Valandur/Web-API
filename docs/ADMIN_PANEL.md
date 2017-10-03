@@ -4,6 +4,12 @@ The admin panel provides an access point for server admins and moderators to eas
 server without having to be online/in minceraft or connected to the server through ssh.
 
 
+## Table of Contents
+1. [Creating users](#creating-users)
+1. [Modifying users](#modifying-users)
+
+
+<a name="creating-users"></a>
 ## Creating users
 
 To create a new user for the admin panel enter `/webapi users create [name]` in your server console.
@@ -13,6 +19,8 @@ command `/webapi users create [name] [password]`.
 
 > The permission required to create new users in Web-API is `webapi.users.add`
 
+
+<a name="modifying-users"></a>
 ## Modifying users (changing passwords, etc.)
 
 To change the password use the `/webapi users pw [name] [newpassword]` command.  

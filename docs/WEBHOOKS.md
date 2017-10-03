@@ -137,6 +137,7 @@ as to when that event is triggered.
 | Event / Hook name   | Description |
 | ------------------- | ----------- |
 | ALL                 | Fired for all events listed below
+| CUSTOM_MESSAGE      | Use this hook to capture the response from [Messages](MESSAGE.md)
 | ACHIEVEMENT         | Fired when a player earns a new achievement
 | BLOCK_UPDATE_STATUS | Fired when a Web-API BlockUpdate changes status
 | CHAT                | Fired when a chat message is sent (by players)

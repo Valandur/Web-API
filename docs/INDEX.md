@@ -5,7 +5,7 @@ This is a collection of various documentations and tutorials for various section
 1. [AdminPanel](ADMIN_PANEL.md)  
 Short description of the AdminPanel and how to set it up.
 
-1. [Commands (and their permissions)](COMMANDS.md)  
+1. [Commands (**and their permissions**)](COMMANDS.md)  
 Lists the various commands the Web-API provides, including their required player **permissions**.
 
 1. [Consumer Tutorial](CONSUME.md)  
@@ -18,6 +18,10 @@ This sections describes the basic configuration options of the Web-API.
 1. [Permissions (for API endpoints, **not** commands)](PERMISSIONS.md)  
 This documentation talks about the `permissions.conf` file and the various settings you can use
 to adjust the Web-API to your needs, specifically the permissions that restrict access and data.
+
+1. [Messages](MESSAGE.md)  
+Read this guide to find out how to send messages with interactive options to players and 
+process their responses.
 
 1. [WebHooks](WEBHOOKS.md)  
 This documentation explains how to use WebHooks to have your own app stay informed about stuff

@@ -1,11 +1,9 @@
 package valandur.webapi.api.cache.plugin;
 
+import org.spongepowered.api.plugin.PluginContainer;
 import valandur.webapi.api.cache.ICachedObject;
 
-import java.util.List;
-import java.util.Set;
-
-public interface ICachedPluginContainer extends ICachedObject {
+public interface ICachedPluginContainer extends ICachedObject<PluginContainer> {
 
     String getId();
 
@@ -16,8 +14,4 @@ public interface ICachedPluginContainer extends ICachedObject {
     String getDescription();
 
     String getUrl();
-
-    List<String> getAuthors();
-
-    Set<ICachedPluginDependency> getDependencies();
 }

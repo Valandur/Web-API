@@ -4,68 +4,51 @@ import com.flowpowered.math.vector.Vector3i;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.world.Chunk;
 import valandur.webapi.WebAPI;
-import valandur.webapi.api.cache.world.ICachedChunk;
+import valandur.webapi.api.cache.CachedObject;
 import valandur.webapi.api.cache.world.ICachedWorld;
-import valandur.webapi.cache.CachedObject;
+import valandur.webapi.api.json.JsonDetails;
 
 import java.util.Optional;
 import java.util.UUID;
 
-public class CachedChunk extends CachedObject implements ICachedChunk {
+public class CachedChunk extends CachedObject<Chunk> {
 
-    private UUID uuid;
-    @Override
+    protected UUID uuid;
     public UUID getUUID() {
-        return null;
+        return uuid;
     }
 
-    private Vector3i pos;
-    @Override
+    protected Vector3i pos;
     public Vector3i getPosition() {
-        return null;
+        return pos;
     }
 
-    private ICachedWorld world;
-    @Override
+    @JsonDetails(simple = true)
+    protected ICachedWorld world;
     public ICachedWorld getWorld() {
-        return null;
+        return world;
     }
 
-    private Vector3i blockMin;
-    @Override
-    public Vector3i getBlockMin() {
-        return null;
-    }
-
-    private Vector3i blockMax;
-    @Override
-    public Vector3i getBlockMax() {
-        return null;
-    }
-
-    private boolean isLoaded;
-    @Override
+    @JsonDetails
+    protected boolean loaded;
     public boolean isLoaded() {
-        return false;
+        return loaded;
     }
 
-    private int inhabitedTime;
-    @Override
-    public int getInhabittedTime() {
-        return 0;
-    }
+    @JsonDetails
+    protected Vector3i blockMin;
 
-    private double regionalDifficultyFactor;
-    @Override
-    public double getRegionalDifficultyFactor() {
-        return 0;
-    }
+    @JsonDetails
+    protected Vector3i blockMax;
 
-    private double regionalDifficultyPercentage;
-    @Override
-    public double getRegionalDifficultyPercentage() {
-        return 0;
-    }
+    @JsonDetails
+    protected int inhabitedTime;
+
+    @JsonDetails
+    protected double regionalDifficultyFactor;
+
+    @JsonDetails
+    protected double regionalDifficultyPercentage;
 
 
     public CachedChunk(Chunk chunk) {
@@ -76,14 +59,14 @@ public class CachedChunk extends CachedObject implements ICachedChunk {
         this.world = WebAPI.getCacheService().getWorld(chunk.getWorld());
         this.blockMin = chunk.getBlockMin().clone();
         this.blockMax = chunk.getBlockMax().clone();
-        this.isLoaded = chunk.isLoaded();
+        this.loaded = chunk.isLoaded();
         this.inhabitedTime = chunk.getInhabittedTime();
         this.regionalDifficultyFactor = chunk.getRegionalDifficultyFactor();
         this.regionalDifficultyPercentage = chunk.getRegionalDifficultyPercentage();
     }
 
     @Override
-    public Optional<?> getLive() {
+    public Optional<Chunk> getLive() {
         if (world.isLoaded()) {
             return Sponge.getServer().getWorld(uuid).flatMap(w -> w.getChunk(pos));
         } else {

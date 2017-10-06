@@ -3,12 +3,12 @@ package valandur.webapi.servlet;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.eclipse.jetty.http.HttpMethod;
 import valandur.webapi.WebAPI;
-import valandur.webapi.api.annotation.WebAPIEndpoint;
-import valandur.webapi.api.annotation.WebAPIServlet;
+import valandur.webapi.api.servlet.Endpoint;
+import valandur.webapi.api.servlet.Servlet;
 import valandur.webapi.api.cache.command.ICachedCommand;
-import valandur.webapi.api.servlet.WebAPIBaseServlet;
+import valandur.webapi.api.servlet.BaseServlet;
 import valandur.webapi.command.CommandSource;
-import valandur.webapi.json.request.command.ExecuteCommandRequest;
+import valandur.webapi.servlet.request.command.ExecuteCommandRequest;
 import valandur.webapi.servlet.base.ServletData;
 
 import javax.servlet.http.HttpServletResponse;
@@ -16,18 +16,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-@WebAPIServlet(basePath = "cmd")
-public class CmdServlet extends WebAPIBaseServlet {
+@Servlet(basePath = "cmd")
+public class CmdServlet extends BaseServlet {
 
     public static int CMD_WAIT_TIME = 1000;
 
-    @WebAPIEndpoint(method = HttpMethod.GET, path = "/", perm = "list")
+    @Endpoint(method = HttpMethod.GET, path = "/", perm = "list")
     public void getCommands(ServletData data) {
         data.addJson("ok", true, false);
         data.addJson("commands", cacheService.getCommands(), data.getQueryParam("details").isPresent());
     }
 
-    @WebAPIEndpoint(method = HttpMethod.GET, path = "/:cmd", perm = "one")
+    @Endpoint(method = HttpMethod.GET, path = "/:cmd", perm = "one")
     public void getCommand(ServletData data, String cmdName) {
         Optional<ICachedCommand> cmd = cacheService.getCommand(cmdName);
         if (!cmd.isPresent()) {
@@ -39,7 +39,7 @@ public class CmdServlet extends WebAPIBaseServlet {
         data.addJson("command", cmd.get(), true);
     }
 
-    @WebAPIEndpoint(method = HttpMethod.POST, path = "/", perm = "run")
+    @Endpoint(method = HttpMethod.POST, path = "/", perm = "run")
     public void runCommands(ServletData data) {
         final JsonNode reqJson = data.getRequestBody();
 

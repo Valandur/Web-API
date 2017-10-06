@@ -2,9 +2,7 @@ package valandur.webapi.cache.command;
 
 import org.spongepowered.api.event.command.SendCommandEvent;
 import valandur.webapi.api.cache.command.ICachedCommandCall;
-import valandur.webapi.api.cache.command.ICachedCommandResult;
-import valandur.webapi.api.cache.misc.ICachedCause;
-import valandur.webapi.cache.CachedObject;
+import valandur.webapi.api.cache.CachedObject;
 import valandur.webapi.cache.misc.CachedCause;
 
 import java.util.Date;
@@ -12,38 +10,32 @@ import java.util.Date;
 public class CachedCommandCall extends CachedObject implements ICachedCommandCall {
 
     private Long timestamp;
-    @Override
     public Long getTimestamp() {
         return timestamp;
     }
 
     private String command;
-    @Override
     public String getCommand() {
         return command;
     }
 
     private String args;
-    @Override
     public String getArgs() {
         return args;
     }
 
-    private ICachedCause cause;
-    @Override
-    public ICachedCause getCause() {
+    private CachedCause cause;
+    public CachedCause getCause() {
         return cause;
     }
 
     private boolean cancelled;
-    @Override
     public boolean isCancelled() {
         return cancelled;
     }
 
-    private ICachedCommandResult result;
-    @Override
-    public ICachedCommandResult getResult() {
+    private CachedCommandResult result;
+    public CachedCommandResult getResult() {
         return result;
     }
 

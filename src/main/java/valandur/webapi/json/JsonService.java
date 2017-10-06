@@ -1,11 +1,15 @@
 package valandur.webapi.json;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 import com.flowpowered.math.vector.Vector3d;
 import com.flowpowered.math.vector.Vector3i;
 import org.slf4j.Logger;
@@ -13,6 +17,7 @@ import org.spongepowered.api.CatalogType;
 import org.spongepowered.api.block.BlockSnapshot;
 import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.block.tileentity.TileEntity;
+import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.data.manipulator.DataManipulator;
 import org.spongepowered.api.data.manipulator.mutable.DyeableData;
 import org.spongepowered.api.data.manipulator.mutable.PotionEffectData;
@@ -23,73 +28,56 @@ import org.spongepowered.api.data.manipulator.mutable.entity.*;
 import org.spongepowered.api.data.manipulator.mutable.item.DurabilityData;
 import org.spongepowered.api.data.manipulator.mutable.item.SpawnableData;
 import org.spongepowered.api.data.manipulator.mutable.tileentity.SignData;
+import org.spongepowered.api.data.type.Career;
+import org.spongepowered.api.data.type.DyeColor;
 import org.spongepowered.api.effect.potion.PotionEffect;
+import org.spongepowered.api.effect.potion.PotionEffectType;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.living.player.Player;
-import org.spongepowered.api.entity.living.player.User;
+import org.spongepowered.api.entity.living.player.gamemode.GameMode;
 import org.spongepowered.api.event.Event;
 import org.spongepowered.api.event.cause.Cause;
 import org.spongepowered.api.event.cause.entity.damage.source.DamageSource;
 import org.spongepowered.api.item.ItemType;
+import org.spongepowered.api.item.inventory.Inventory;
 import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.item.inventory.ItemStackSnapshot;
 import org.spongepowered.api.item.merchant.TradeOffer;
 import org.spongepowered.api.plugin.PluginContainer;
 import org.spongepowered.api.profile.GameProfile;
 import org.spongepowered.api.statistic.achievement.Achievement;
-import org.spongepowered.api.util.Tuple;
+import org.spongepowered.api.util.Color;
 import org.spongepowered.api.util.ban.Ban;
-import org.spongepowered.api.world.*;
+import org.spongepowered.api.world.Location;
+import org.spongepowered.api.world.World;
 import org.spongepowered.api.world.explosion.Explosion;
 import valandur.webapi.WebAPI;
+import valandur.webapi.api.cache.ICachedObject;
 import valandur.webapi.api.json.IJsonService;
-import valandur.webapi.api.json.WebAPIBaseSerializer;
+import valandur.webapi.api.json.BaseView;
+import valandur.webapi.api.json.BaseSerializer;
 import valandur.webapi.api.util.TreeNode;
-import valandur.webapi.block.BlockOperation;
-import valandur.webapi.cache.chat.CachedChatMessage;
-import valandur.webapi.cache.command.CachedCommand;
-import valandur.webapi.cache.command.CachedCommandCall;
-import valandur.webapi.cache.command.CachedCommandResult;
 import valandur.webapi.cache.entity.CachedEntity;
 import valandur.webapi.cache.misc.CachedCatalogType;
 import valandur.webapi.cache.misc.CachedCause;
 import valandur.webapi.cache.misc.CachedInventory;
-import valandur.webapi.cache.misc.CachedLocation;
+import valandur.webapi.api.cache.world.CachedLocation;
 import valandur.webapi.cache.player.CachedPlayer;
 import valandur.webapi.cache.plugin.CachedPluginContainer;
-import valandur.webapi.cache.plugin.CachedPluginDependency;
 import valandur.webapi.cache.tileentity.CachedTileEntity;
-import valandur.webapi.cache.world.CachedChunk;
-import valandur.webapi.cache.world.CachedGeneratorType;
 import valandur.webapi.cache.world.CachedWorld;
-import valandur.webapi.cache.world.CachedWorldBorder;
-import valandur.webapi.command.CommandSource;
-import valandur.webapi.json.serializer.block.BlockOperationSerializer;
-import valandur.webapi.json.serializer.block.BlockSnapshotSerializer;
-import valandur.webapi.json.serializer.block.BlockStateSerializer;
-import valandur.webapi.json.serializer.chat.CachedChatMessageSerializer;
-import valandur.webapi.json.serializer.command.CachedCommandCallSerializer;
-import valandur.webapi.json.serializer.command.CachedCommandResultSerializer;
-import valandur.webapi.json.serializer.command.CachedCommandSerializer;
-import valandur.webapi.json.serializer.entity.*;
-import valandur.webapi.json.serializer.event.CachedCauseSerializer;
-import valandur.webapi.json.serializer.event.CauseSerializer;
-import valandur.webapi.json.serializer.event.DamageSourceSerializer;
-import valandur.webapi.json.serializer.event.EventSerializer;
-import valandur.webapi.json.serializer.item.*;
-import valandur.webapi.json.serializer.message.MessageResponseSerializer;
-import valandur.webapi.json.serializer.misc.*;
-import valandur.webapi.json.serializer.player.*;
-import valandur.webapi.json.serializer.plugin.CachedPluginContainerSerializer;
-import valandur.webapi.json.serializer.plugin.CachedPluginDependencySerializer;
-import valandur.webapi.json.serializer.plugin.PluginContainerSerializer;
-import valandur.webapi.json.serializer.server.ServerStatSerializer;
-import valandur.webapi.json.serializer.tileentity.*;
-import valandur.webapi.json.serializer.user.UserPermissionSerializer;
-import valandur.webapi.json.serializer.world.*;
-import valandur.webapi.message.MessageResponse;
-import valandur.webapi.server.ServerStat;
-import valandur.webapi.user.UserPermission;
+import valandur.webapi.json.view.block.BlockSnapshotView;
+import valandur.webapi.json.view.block.BlockStateView;
+import valandur.webapi.json.view.entity.*;
+import valandur.webapi.json.view.event.DamageSourceView;
+import valandur.webapi.json.view.event.EventView;
+import valandur.webapi.json.view.item.*;
+import valandur.webapi.json.view.misc.*;
+import valandur.webapi.json.view.player.*;
+import valandur.webapi.json.view.tileentity.ConnectedDirectionDataView;
+import valandur.webapi.json.view.tileentity.PoweredDataView;
+import valandur.webapi.json.view.tileentity.RedstonePoweredDataView;
+import valandur.webapi.json.view.tileentity.SignDataView;
 import valandur.webapi.util.Util;
 
 import java.io.IOException;
@@ -99,17 +87,13 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Parameter;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class JsonService implements IJsonService {
 
-    private Map<Class, Class<? extends WebAPIBaseSerializer>> registeredSerializers = new HashMap<>();
-    private Map<Class, WebAPIBaseSerializer> serializers;
+    private Map<Class, BaseSerializer> serializers;
     private Map<String, Class<? extends DataManipulator>> supportedData;
 
 
@@ -120,112 +104,78 @@ public class JsonService implements IJsonService {
 
         serializers = new HashMap<>();
 
+        // Cached Objects
+        registerCache(Entity.class, CachedEntity.class);
+        registerCache(Cause.class, CachedCause.class);
+        registerCache(Inventory.class, CachedInventory.class);
+        registerCache(CatalogType.class, CachedCatalogType.class);
+        registerCache(Location.class, CachedLocation.class);
+        registerCache(Player.class, CachedPlayer.class);
+        registerCache(PluginContainer.class, CachedPluginContainer.class);
+        registerCache(TileEntity.class, CachedTileEntity.class);
+        registerCache(World.class, CachedWorld.class);
+
         // Block
-        serializers.put(BlockSnapshot.class, new BlockSnapshotSerializer());
-        serializers.put(BlockState.class, new BlockStateSerializer());
-        serializers.put(BlockOperation.class, new BlockOperationSerializer());
-
-        // Chat
-        serializers.put(CachedChatMessage.class, new CachedChatMessageSerializer());
-
-        // Command
-        serializers.put(CachedCommand.class, new CachedCommandSerializer());
-        serializers.put(CachedCommandCall.class, new CachedCommandCallSerializer());
-        serializers.put(CachedCommandResult.class, new CachedCommandResultSerializer());
+        registerView(BlockSnapshot.class, BlockSnapshotView.class);
+        registerView(BlockState.class, BlockStateView.class);
 
         // Entity
-        serializers.put(AgeableData.class, new AgeableDataSerializer());
-        serializers.put(CachedEntity.class, new CachedEntitySerializer());
-        serializers.put(CareerData.class, new CareerDataSerializer());
-        serializers.put(DyeableData.class, new DyeableDataSerializer());
-        serializers.put(Entity.class, new EntitySerializer());
-        serializers.put(FoodData.class, new FoodDataSerializer());
-        serializers.put(HealthData.class, new HealthDataSerializer());
-        serializers.put(ShearedData.class, new ShearedDataSerializer());
-        serializers.put(TameableData.class, new TameableDataSerializer());
-        serializers.put(TradeOfferData.class, new TradeOfferDataSerializer());
-        serializers.put(TradeOffer.class, new TradeOfferSerializer());
+        registerView(AgeableData.class, AgeableDataView.class);
+        registerView(CareerData.class, CareerDataView.class);
+        registerView(Career.class, CareerView.class);
+        registerView(DyeableData.class, DyeableDataView.class);
+        registerView(DyeColor.class, DyeColorView.class);
+        registerView(FoodData.class, FoodDataView.class);
+        registerView(HealthData.class, HealthDataView.class);
+        registerView(ShearedData.class, ShearedDataView.class);
+        registerView(TameableData.class, TameableDataView.class);
+        registerView(TradeOfferData.class, TradeOfferDataView.class);
+        registerView(TradeOffer.class, TradeOfferView.class);
 
         // Event
-        serializers.put(CachedCause.class, new CachedCauseSerializer());
-        serializers.put(Cause.class, new CauseSerializer());
-        serializers.put(DamageSource.class, new DamageSourceSerializer());
-        serializers.put(Event.class, new EventSerializer());
+        registerView(DamageSource.class, DamageSourceView.class);
+        registerView(Event.class, EventView.class);
 
         // Item
-        serializers.put(CachedInventory.class, new CachedInventorySerializer());
-        serializers.put(DurabilityData.class, new DurabilityDataSerializer());
-        serializers.put(ItemStack.class, new ItemStackSerializer());
-        serializers.put(ItemStackSnapshot.class, new ItemStackSnapshotSerializer());
-        serializers.put(ItemType.class, new ItemTypeSerializer());
-        serializers.put(PotionEffectData.class, new PotionEffectDataSerializer());
-        serializers.put(PotionEffect.class, new PotionEffectSerializer());
-        serializers.put(SpawnableData.class, new SpawnableDataSerializer());
-
-        // Message
-        serializers.put(MessageResponse.class, new MessageResponseSerializer());
+        registerView(DurabilityData.class, DurabilityDataView.class);
+        registerView(ItemStackSnapshot.class, ItemStackSnapshotView.class);
+        registerView(ItemStack.class, ItemStackView.class);
+        registerView(ItemType.class, ItemTypeView.class);
+        registerView(PotionEffectData.class, PotionEffectDataView.class);
+        registerView(PotionEffectType.class, PotionEffectTypeView.class);
+        registerView(PotionEffect.class, PotionEffectView.class);
+        registerView(SpawnableData.class, SpawnableDataView.class);
 
         // Misc.
-        serializers.put(CachedCatalogType.class, new CachedCatalogTypeSerializer());
-        serializers.put(CachedLocation.class, new CachedLocationSerializer());
-        serializers.put(CatalogType.class, new CatalogTypeSerializer());
-        serializers.put(CommandSource.class, new CommandSourceSerializer());
-        serializers.put(Exception.class, new ExceptionSerializer());
-        serializers.put(Instant.class, new InstantSerializer());
-        serializers.put(Location.class, new LocationSerializer());
-        serializers.put(TreeNode.class, new TreeNodeSerializer());
-        serializers.put(Tuple.class, new TupleSerializer());
-        serializers.put(UUID.class, new UUIDSerializer());
-        serializers.put(Vector3d.class, new Vector3dSerializer());
-        serializers.put(Vector3i.class, new Vector3iSerializer());
+        registerView(Color.class, ColorView.class);
+        registerView(CommandSource.class, CommandSourceView.class);
+        registerView(Explosion.class, ExplosionView.class);
+        registerView(Instant.class, InstantView.class);
+        registerView(Vector3d.class, Vector3dView.class);
+        registerView(Vector3i.class, Vector3iView.class);
 
         // Player
-        serializers.put(AchievementData.class, new AchievementDataSerializer());
-        serializers.put(Achievement.class, new AchievementSerializer());
-        serializers.put(Ban.Profile.class, new BanSerializer());
-        serializers.put(CachedPlayer.class, new CachedPlayerSerializer());
-        serializers.put(ExperienceHolderData.class, new ExperienceHolderDataSerializer());
-        serializers.put(GameModeData.class, new GameModeDataSerializer());
-        serializers.put(GameProfile.class, new GameProfileSerializer());
-        serializers.put(JoinData.class, new JoinDataSerializer());
-        serializers.put(Player.class, new PlayerSerializer());
-        serializers.put(StatisticData.class, new StatisticDataSerializer());
-        serializers.put(User.class, new UserSerializer());
-
-        // Plugin
-        serializers.put(CachedPluginContainer.class, new CachedPluginContainerSerializer());
-        serializers.put(CachedPluginDependency.class, new CachedPluginDependencySerializer());
-        serializers.put(PluginContainer.class, new PluginContainerSerializer());
-
-        // Server
-        serializers.put(ServerStat.class, new ServerStatSerializer());
+        registerView(AchievementData.class, AchievementDataView.class);
+        registerView(Achievement.class, AchievementView.class);
+        registerView(Ban.class, BanView.class);
+        registerView(ExperienceHolderData.class, ExperienceHolderDataView.class);
+        registerView(GameModeData.class, GameModeDataView.class);
+        registerView(GameMode.class, GameModeView.class);
+        registerView(GameProfile.class, GameProfileView.class);
+        registerView(JoinData.class, JoinDataView.class);
+        registerView(StatisticData.class, StatisticDataView.class);
 
         // Tile-Entity
-        serializers.put(CachedTileEntity.class, new CachedTileEntitySerializer());
-        serializers.put(ConnectedDirectionData.class, new ConnectedDirectionDataSerializer());
-        serializers.put(PoweredData.class, new PoweredDataSerializer());
-        serializers.put(RedstonePoweredData.class, new RedstonePoweredDataSerializer());
-        serializers.put(SignData.class, new SignDataSerializer());
-        serializers.put(TileEntity.class, new TileEntitySerializer());
-
-        // User
-        serializers.put(UserPermission.class, new UserPermissionSerializer());
-
-        // World
-        serializers.put(CachedChunk.class, new CachedChunkSerializer());
-        serializers.put(CachedGeneratorType.class, new CachedGeneratorTypeSerializer());
-        serializers.put(CachedWorldBorder.class, new CachedWorldBorderSerializer());
-        serializers.put(CachedWorld.class, new CachedWorldSerializer());
-        serializers.put(Dimension.class, new DimensionSerializer());
-        serializers.put(Explosion.class, new ExplosionSerializer());
-        serializers.put(GeneratorType.class, new GeneratorTypeSerializer());
-        serializers.put(WorldBorder.class, new WorldBorderSerializer());
-        serializers.put(World.class, new WorldSerializer());
+        registerView(ConnectedDirectionData.class, ConnectedDirectionDataView.class);
+        registerView(PoweredData.class, PoweredDataView.class);
+        registerView(RedstonePoweredData.class, RedstonePoweredDataView.class);
+        registerView(SignData.class, SignDataView.class);
 
 
         // Data
         supportedData = new ConcurrentHashMap<>();
         supportedData.put("achievements", AchievementData.class);
+        supportedData.put("age", AgeableData.class);
         supportedData.put("career", CareerData.class);
         supportedData.put("connectedDirection", ConnectedDirectionData.class);
         supportedData.put("durability", DurabilityData.class);
@@ -242,30 +192,18 @@ public class JsonService implements IJsonService {
         supportedData.put("sign", SignData.class);
         supportedData.put("spawn", SpawnableData.class);
         supportedData.put("statistics", StatisticData.class);
-        supportedData.put("tameable", TameableData.class);
+        supportedData.put("tamed", TameableData.class);
         supportedData.put("trades", TradeOfferData.class);
-
-        // Load registered serializers
-        logger.info("Loading registered serializers...");
-        for (Map.Entry<Class, Class<? extends WebAPIBaseSerializer>> entry : registeredSerializers.entrySet()) {
-            try {
-                WebAPIBaseSerializer ser = entry.getValue().newInstance();
-                serializers.put(entry.getKey(), ser);
-            } catch (InstantiationException | IllegalAccessException e) {
-                logger.warn("  Could not register serializer " + entry.getValue().getName() + ": " + e.getMessage());
-                if (WebAPI.reportErrors()) WebAPI.sentryCapture(e);
-            }
-        }
 
         // Load extra serializers
         logger.info("Loading custom serializers...");
 
-        WebAPI.getExtensionService().loadPlugins("serializers", WebAPIBaseSerializer.class, serializerClass -> {
+        WebAPI.getExtensionService().loadPlugins("serializers", BaseSerializer.class, serializerClass -> {
             try {
-                WebAPIBaseSerializer serializer = serializerClass.newInstance();
+                BaseSerializer serializer = serializerClass.newInstance();
 
                 // Check if we already have a serializer for that class
-                WebAPIBaseSerializer prev = serializers.remove(serializer.getHandledClass());
+                BaseSerializer prev = serializers.remove(serializer.getHandledClass());
                 if (prev != null) {
                     logger.info("    Replacing existing serializer for '" + serializer.getHandledClass().getName() + "'");
                 }
@@ -281,8 +219,12 @@ public class JsonService implements IJsonService {
     }
 
     @Override
-    public <T> void registerSerializer(Class<T> clazz, Class<? extends WebAPIBaseSerializer<T>> serializer) {
-        registeredSerializers.put(clazz, serializer);
+    public <T> void registerCache(Class<? extends T> handledClass, Class<? extends ICachedObject<T>> cacheClass) {
+        serializers.put(handledClass, new valandur.webapi.json.BaseSerializer(handledClass, cacheClass));
+    }
+    @Override
+    public <T> void registerView(Class<? extends T> handledClass, Class<? extends BaseView<T>> viewClass) {
+        serializers.put(handledClass, new valandur.webapi.json.BaseSerializer(handledClass, viewClass));
     }
 
     @Override
@@ -420,21 +362,35 @@ public class JsonService implements IJsonService {
         }
 
         ObjectMapper om = new ObjectMapper();
-        om.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
-        om.disable(MapperFeature.AUTO_DETECT_CREATORS, MapperFeature.AUTO_DETECT_FIELDS, MapperFeature.AUTO_DETECT_GETTERS, MapperFeature.AUTO_DETECT_IS_GETTERS);
+        om.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        /*om.enable(
+                SerializationFeature.USE_EQUALITY_FOR_OBJECT_ID
+        );
+        om.disable(
+                SerializationFeature.FAIL_ON_EMPTY_BEANS
+        );
+
+        om.enable(
+                MapperFeature.AUTO_DETECT_CREATORS,
+                MapperFeature.AUTO_DETECT_FIELDS
+        );
+        om.disable(
+                MapperFeature.AUTO_DETECT_SETTERS,
+                MapperFeature.AUTO_DETECT_GETTERS,
+                MapperFeature.AUTO_DETECT_IS_GETTERS
+        );*/
 
         SimpleModule mod = new SimpleModule();
-        for (Map.Entry<Class, WebAPIBaseSerializer> entry : serializers.entrySet()) {
+        for (Map.Entry<Class, BaseSerializer> entry : serializers.entrySet()) {
             mod.addSerializer(entry.getKey(), entry.getValue());
         }
         om.registerModule(mod);
 
-        om.setAnnotationIntrospector(new AnnotationIntrospector(!details));
-        om.setConfig(om.getSerializationConfig()
-                .withAttribute("includes", perms)
-                .withAttribute("parents", new ArrayList<String>())
-                .withAttribute("details", new AtomicBoolean(details))
-        );
+        SimpleFilterProvider filterProvider = new SimpleFilterProvider();
+        filterProvider.addFilter(BaseFilter.ID, new BaseFilter(details, perms));
+        om.setFilterProvider(filterProvider);
+
+        om.setAnnotationIntrospector(new AnnotationIntrospector(details));
 
         return om;
     }

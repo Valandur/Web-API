@@ -40,6 +40,7 @@ public class ServletData implements IServletData {
     public ServletOutputStream getOutputStream() throws IOException {
         return resp.getOutputStream();
     }
+    @Override
     public PrintWriter getWriter() throws IOException {
         return resp.getWriter();
     }

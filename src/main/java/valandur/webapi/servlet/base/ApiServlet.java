@@ -38,7 +38,7 @@ public class ApiServlet extends HttpServlet {
     private void handleVerb(String verb, HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         resp.setStatus(HttpServletResponse.SC_OK);
         resp.addHeader("Access-Control-Allow-Origin","*");
-        resp.addHeader("Access-Control-Allow-Methods","GET,PUT,POST,DELETE");
+        resp.addHeader("Access-Control-Allow-Methods","GET,PUT,POST,DELETE,OPTIONS");
         resp.addHeader("Access-Control-Allow-Headers","Origin, X-Requested-With, Content-Type, Accept");
 
         WebAPI.sentryNewRequest(req);
@@ -58,6 +58,7 @@ public class ApiServlet extends HttpServlet {
         MatchedRoute match = optMatch.get();
 
         String specPerm = match.getRoute().perm();
+        TreeNode<String, Boolean> perms;
         if (!specPerm.isEmpty()) {
             specPerm = match.getServletSpec().basePath() + "." + specPerm;
             String[] reqPerms = specPerm.split("\\.");
@@ -76,10 +77,12 @@ public class ApiServlet extends HttpServlet {
                 return;
             }
 
-            req.setAttribute("dataPerms", methodPerms);
+            perms = methodPerms;
         } else {
-            req.setAttribute("dataPerms", IPermissionService.permitAllNode());
+            perms = IPermissionService.permitAllNode();
         }
+
+        req.setAttribute("dataPerms", perms);
 
         if (verb.equalsIgnoreCase("Post") || verb.equalsIgnoreCase("Put")) {
             try {
@@ -97,7 +100,7 @@ public class ApiServlet extends HttpServlet {
                     }
                     req.setAttribute("body", obj);
                 } else if (type.contains("application/json")) {
-                    JsonNode node = jsonService.toJson(req.getReader(), IPermissionService.permitAllNode());
+                    JsonNode node = jsonService.toJson(req.getReader(), perms);
                     req.setAttribute("body", node);
 
                     WebAPI.sentryExtra("request_body", node != null ? node.toString() : "");

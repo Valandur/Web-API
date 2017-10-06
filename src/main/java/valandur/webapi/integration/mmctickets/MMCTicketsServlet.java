@@ -5,28 +5,28 @@ import net.moddedminecraft.mmctickets.data.TicketData;
 import org.eclipse.jetty.http.HttpMethod;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.plugin.PluginContainer;
-import valandur.webapi.WebAPI;
-import valandur.webapi.api.annotation.WebAPIEndpoint;
-import valandur.webapi.api.annotation.WebAPIServlet;
-import valandur.webapi.api.servlet.WebAPIBaseServlet;
-import valandur.webapi.json.JsonService;
-import valandur.webapi.servlet.base.ServletData;
+import valandur.webapi.api.WebAPIAPI;
+import valandur.webapi.api.json.IJsonService;
+import valandur.webapi.api.servlet.BaseServlet;
+import valandur.webapi.api.servlet.Endpoint;
+import valandur.webapi.api.servlet.IServletData;
+import valandur.webapi.api.servlet.Servlet;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-@WebAPIServlet(basePath = "mmctickets")
-public class MMCTicketsServlet extends WebAPIBaseServlet {
+@Servlet(basePath = "mmctickets")
+public class MMCTicketsServlet extends BaseServlet {
 
     public static void onRegister() {
-        JsonService json = WebAPI.getJsonService();
-        json.registerSerializer(CachedTicket.class, CachedTicketSerializer.class);
+        IJsonService json = WebAPIAPI.getJsonService().get();
+        json.registerCache(TicketData.class, CachedTicketData.class);
     }
 
 
-    private Main getMMCTicketsPlugin(ServletData data) {
+    private Main getMMCTicketsPlugin(IServletData data) {
         Optional<PluginContainer> optContainer = Sponge.getPluginManager().getPlugin("mmctickets");
         if (!optContainer.isPresent()) {
             data.sendError(HttpServletResponse.SC_NOT_FOUND, "MMCTickets plugin not found");
@@ -42,15 +42,15 @@ public class MMCTicketsServlet extends WebAPIBaseServlet {
         return (Main)optPlugin.get();
     }
 
-    @WebAPIEndpoint(method = HttpMethod.GET, path = "/ticket", perm = "list")
-    public void getTickets(ServletData data) {
+    @Endpoint(method = HttpMethod.GET, path = "/ticket", perm = "list")
+    public void getTickets(IServletData data) {
         Main plugin = getMMCTicketsPlugin(data);
         if (plugin == null) return;
 
-        Optional<List<CachedTicket>> optTickets = WebAPI.runOnMain(() -> {
-            List<CachedTicket> tickets = new ArrayList<>();
+        Optional<List<CachedTicketData>> optTickets = WebAPIAPI.runOnMain(() -> {
+            List<CachedTicketData> tickets = new ArrayList<>();
             for (TicketData ticket : plugin.getTickets()) {
-                tickets.add(new CachedTicket(ticket));
+                tickets.add(new CachedTicketData(ticket));
             }
             return tickets;
         });
@@ -59,27 +59,27 @@ public class MMCTicketsServlet extends WebAPIBaseServlet {
         data.addJson("tickets", optTickets.orElse(null), data.getQueryParam("details").isPresent());
     }
 
-    @WebAPIEndpoint(method = HttpMethod.GET, path = "/ticket/:id", perm = "one")
-    public void getTicket(ServletData data, Integer id) {
+    @Endpoint(method = HttpMethod.GET, path = "/ticket/:id", perm = "one")
+    public void getTicket(IServletData data, Integer id) {
         Main plugin = getMMCTicketsPlugin(data);
         if (plugin == null) return;
 
-        Optional<CachedTicket> optTicket = WebAPI.runOnMain(() -> {
+        Optional<CachedTicketData> optTicket = WebAPIAPI.runOnMain(() -> {
             TicketData ticketData = plugin.getTicket(id);
             if (ticketData == null) {
                 data.sendError(HttpServletResponse.SC_NOT_FOUND, "Ticket not found");
                 return null;
             }
 
-            return new CachedTicket(ticketData);
+            return new CachedTicketData(ticketData);
         });
 
         data.addJson("ok", optTicket.isPresent(), false);
         data.addJson("ticket", optTicket.orElse(null), true);
     }
 
-    @WebAPIEndpoint(method = HttpMethod.PUT, path = "/ticket/:id", perm = "change")
-    public void changeTicket(ServletData data, Integer id) {
+    @Endpoint(method = HttpMethod.PUT, path = "/ticket/:id", perm = "change")
+    public void changeTicket(IServletData data, Integer id) {
         Main plugin = getMMCTicketsPlugin(data);
         if (plugin == null) return;
 
@@ -91,7 +91,7 @@ public class MMCTicketsServlet extends WebAPIBaseServlet {
 
         ChangeTicketRequest req = optReq.get();
 
-        Optional<CachedTicket> optTicket = WebAPI.runOnMain(() -> {
+        Optional<CachedTicketData> optTicket = WebAPIAPI.runOnMain(() -> {
             TicketData ticketData = plugin.getTicket(id);
             if (ticketData == null) {
                 data.sendError(HttpServletResponse.SC_NOT_FOUND, "Ticket not found");
@@ -108,7 +108,7 @@ public class MMCTicketsServlet extends WebAPIBaseServlet {
                 ticketData.setStatus(req.getStatus());
             }
 
-            return new CachedTicket(ticketData);
+            return new CachedTicketData(ticketData);
         });
 
         data.addJson("ok", optTicket.isPresent(), false);

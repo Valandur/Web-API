@@ -1,12 +1,12 @@
 package valandur.webapi.servlet.base;
 
 import valandur.webapi.WebAPI;
-import valandur.webapi.api.annotation.WebAPIEndpoint;
-import valandur.webapi.api.annotation.WebAPIServlet;
+import valandur.webapi.api.servlet.Endpoint;
+import valandur.webapi.api.servlet.Servlet;
 import valandur.webapi.api.cache.entity.ICachedEntity;
 import valandur.webapi.api.cache.player.ICachedPlayer;
 import valandur.webapi.api.cache.world.ICachedWorld;
-import valandur.webapi.api.servlet.WebAPIBaseServlet;
+import valandur.webapi.api.servlet.BaseServlet;
 import valandur.webapi.cache.entity.CachedEntity;
 import valandur.webapi.cache.player.CachedPlayer;
 import valandur.webapi.cache.world.CachedWorld;
@@ -18,18 +18,18 @@ import java.util.*;
 
 public class MatchedRoute {
 
-    private WebAPIServlet servletSpec;
-    public WebAPIServlet getServletSpec() {
+    private Servlet servletSpec;
+    public Servlet getServletSpec() {
         return servletSpec;
     }
 
-    private WebAPIBaseServlet servlet;
-    public WebAPIBaseServlet getServlet() {
+    private BaseServlet servlet;
+    public BaseServlet getServlet() {
         return servlet;
     }
 
-    private WebAPIEndpoint route;
-    public WebAPIEndpoint getRoute() {
+    private Endpoint route;
+    public Endpoint getRoute() {
         return route;
     }
 
@@ -59,10 +59,10 @@ public class MatchedRoute {
     }
 
 
-    public MatchedRoute(WebAPIBaseServlet servlet, WebAPIEndpoint route,
+    public MatchedRoute(BaseServlet servlet, Endpoint route,
                         Method method, LinkedHashMap<String, String> matchedParts) {
 
-        this.servletSpec = servlet.getClass().getAnnotation(WebAPIServlet.class);
+        this.servletSpec = servlet.getClass().getAnnotation(Servlet.class);
         this.servlet = servlet;
         this.route = route;
         this.method = method;

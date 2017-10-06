@@ -3,8 +3,9 @@ package valandur.webapi.api.servlet;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.eclipse.jetty.http.HttpMethod;
-import valandur.webapi.api.annotation.WebAPIEndpoint;
 
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Optional;
 
 /**
@@ -86,7 +87,7 @@ public interface IServletData {
 
     /**
      * Gets the path parameter with the specified key. The path parameters are parsed according to the
-     * {@link WebAPIEndpoint} annotation.
+     * {@link Endpoint} annotation.
      * @param key The key of the parameter.
      * @return The path parameter, or null if the key is invalid.
      */
@@ -113,4 +114,11 @@ public interface IServletData {
      * If this is not set then the Web-API will automatically serialize the attached json data and send it.
      */
     void setDone();
+
+    /**
+     * Gets the print writer used to write raw output to the stream.
+     * @return The PrintWriter used to write raw output to the stream.
+     * @throws IOException Thrown when the PrintWriter can't be retrieved.
+     */
+    PrintWriter getWriter() throws IOException;
 }

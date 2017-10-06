@@ -22,7 +22,7 @@ import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 import org.spongepowered.api.world.storage.WorldProperties;
 import valandur.webapi.WebAPI;
-import valandur.webapi.api.cache.ICacheService;
+import valandur.webapi.api.cache.CachedObject;import valandur.webapi.api.cache.ICacheService;
 import valandur.webapi.api.cache.ICachedObject;
 import valandur.webapi.api.cache.chat.ICachedChatMessage;
 import valandur.webapi.api.cache.command.ICachedCommand;
@@ -39,7 +39,7 @@ import valandur.webapi.cache.command.CachedCommandCall;
 import valandur.webapi.cache.entity.CachedEntity;
 import valandur.webapi.cache.misc.CachedCatalogType;
 import valandur.webapi.cache.misc.CachedInventory;
-import valandur.webapi.cache.misc.CachedLocation;
+import valandur.webapi.api.cache.world.CachedLocation;
 import valandur.webapi.cache.player.CachedPlayer;
 import valandur.webapi.cache.plugin.CachedPluginContainer;
 import valandur.webapi.cache.tileentity.CachedTileEntity;
@@ -154,7 +154,6 @@ public class CacheService implements ICacheService {
         return dur != null ? dur : Long.MAX_VALUE;
     }
 
-    @Override
     public Map<Class, JsonNode> getClasses() {
         return classes;
     }
@@ -309,8 +308,19 @@ public class CacheService implements ICacheService {
         return p.orElseGet(() -> updatePlayer(player));
     }
     @Override
+    public ICachedPlayer getPlayer(User user) {
+        Optional<ICachedPlayer> p = getPlayer(user.getUniqueId());
+        return p.orElseGet(() -> updatePlayer(user));
+    }
+    @Override
     public ICachedPlayer updatePlayer(Player player) {
         CachedPlayer p = new CachedPlayer(player);
+        players.put(p.getUUID(), p);
+        return p;
+    }
+    @Override
+    public ICachedPlayer updatePlayer(User user) {
+        CachedPlayer p = new CachedPlayer(user);
         players.put(p.getUUID(), p);
         return p;
     }

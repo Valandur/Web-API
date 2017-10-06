@@ -4,10 +4,10 @@ import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
 import org.eclipse.jetty.http.HttpMethod;
-import valandur.webapi.api.annotation.WebAPIEndpoint;
-import valandur.webapi.api.annotation.WebAPIServlet;
+import valandur.webapi.api.servlet.Endpoint;
+import valandur.webapi.api.servlet.Servlet;
 import valandur.webapi.api.cache.plugin.ICachedPluginContainer;
-import valandur.webapi.api.servlet.WebAPIBaseServlet;
+import valandur.webapi.api.servlet.BaseServlet;
 import valandur.webapi.servlet.base.ServletData;
 
 import javax.servlet.http.HttpServletResponse;
@@ -17,16 +17,16 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 
-@WebAPIServlet(basePath = "plugin")
-public class PluginServlet extends WebAPIBaseServlet {
+@Servlet(basePath = "plugin")
+public class PluginServlet extends BaseServlet {
 
-    @WebAPIEndpoint(method = HttpMethod.GET, path = "/", perm = "list")
+    @Endpoint(method = HttpMethod.GET, path = "/", perm = "list")
     public void getPlugins(ServletData data) {
         data.addJson("ok", true, false);
         data.addJson("plugins", cacheService.getPlugins(), data.getQueryParam("details").isPresent());
     }
 
-    @WebAPIEndpoint(method = HttpMethod.GET, path = "/:plugin", perm = "one")
+    @Endpoint(method = HttpMethod.GET, path = "/:plugin", perm = "one")
     public void getPlugin(ServletData data, String pluginName) {
         Optional<ICachedPluginContainer> optPlugin = cacheService.getPlugin(pluginName);
         if (!optPlugin.isPresent()) {
@@ -38,7 +38,7 @@ public class PluginServlet extends WebAPIBaseServlet {
         data.addJson("plugin", optPlugin.get(), true);
     }
 
-    @WebAPIEndpoint(method = HttpMethod.GET, path = "/:plugin/config", perm = "config")
+    @Endpoint(method = HttpMethod.GET, path = "/:plugin/config", perm = "config")
     public void getPluginConfig(ServletData data, String pluginName) {
         Optional<ICachedPluginContainer> optPlugin = cacheService.getPlugin(pluginName);
         if (!optPlugin.isPresent()) {

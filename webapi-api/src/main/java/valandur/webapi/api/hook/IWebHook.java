@@ -31,7 +31,7 @@ public interface IWebHook {
 
     TreeNode<String, Boolean> getPermissions();
 
-    WebAPIBaseFilter getFilter();
+    BaseWebHookFilter getFilter();
 
-    void setFilter(WebAPIBaseFilter filter);
+    void setFilter(BaseWebHookFilter filter);
 }

@@ -62,6 +62,7 @@ import valandur.webapi.api.message.IMessageService;
 import valandur.webapi.api.permission.IPermissionService;
 import valandur.webapi.api.server.IServerService;
 import valandur.webapi.api.servlet.IServletService;
+import valandur.webapi.api.servlet.BaseServlet;
 import valandur.webapi.block.BlockOperation;
 import valandur.webapi.block.BlockOperationStatusChangeEvent;
 import valandur.webapi.block.BlockService;
@@ -684,6 +685,14 @@ public class WebAPI {
             Map<String, Integer> map = new HashMap<>();
             map.put("HTTP", serverPortHttp >= 0 ? 1 : 0);
             map.put("HTTPS", serverPortHttps >= 0 ? 1 : 0);
+            return map;
+        }));
+        metrics.addCustomChart(new Metrics.SimpleBarChart("servlets", () -> {
+            Map<String, Integer> map = new HashMap<>();
+            Collection<Class<? extends BaseServlet>> servlets = servletService.getLoadedServlets().values();
+            for (Class<? extends BaseServlet> servlet : servlets) {
+                map.put(servlet.getClass().getName(), 1);
+            }
             return map;
         }));
 

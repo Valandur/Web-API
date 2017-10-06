@@ -2,11 +2,11 @@ package valandur.webapi.servlet;
 
 import org.eclipse.jetty.http.HttpMethod;
 import valandur.webapi.WebAPI;
-import valandur.webapi.api.annotation.WebAPIEndpoint;
-import valandur.webapi.api.annotation.WebAPIServlet;
-import valandur.webapi.api.servlet.WebAPIBaseServlet;
+import valandur.webapi.api.servlet.Endpoint;
+import valandur.webapi.api.servlet.Servlet;
+import valandur.webapi.api.servlet.BaseServlet;
 import valandur.webapi.servlet.base.ServletData;
-import valandur.webapi.json.request.auth.AuthRequest;
+import valandur.webapi.servlet.request.auth.AuthRequest;
 import valandur.webapi.user.UserPermission;
 import valandur.webapi.user.Users;
 import valandur.webapi.util.Util;
@@ -14,10 +14,10 @@ import valandur.webapi.util.Util;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Optional;
 
-@WebAPIServlet(basePath = "user")
-public class UserServlet extends WebAPIBaseServlet {
+@Servlet(basePath = "user")
+public class UserServlet extends BaseServlet {
 
-    @WebAPIEndpoint(method = HttpMethod.GET, path = "/")
+    @Endpoint(method = HttpMethod.GET, path = "/")
     public void getUserDetails(ServletData data) {
         UserPermission user = data.getUser();
         if (user != null) {
@@ -28,7 +28,7 @@ public class UserServlet extends WebAPIBaseServlet {
         }
     }
 
-    @WebAPIEndpoint(method = HttpMethod.POST, path = "/")
+    @Endpoint(method = HttpMethod.POST, path = "/")
     public void authUser(ServletData data) {
         Optional<AuthRequest> optReq = data.getRequestBody(AuthRequest.class);
         if (!optReq.isPresent()) {

@@ -4,9 +4,9 @@ import org.eclipse.jetty.http.HttpMethod;
 import org.spongepowered.api.CatalogType;
 import org.spongepowered.api.Sponge;
 import valandur.webapi.WebAPI;
-import valandur.webapi.api.annotation.WebAPIEndpoint;
-import valandur.webapi.api.annotation.WebAPIServlet;
-import valandur.webapi.api.servlet.WebAPIBaseServlet;
+import valandur.webapi.api.servlet.Endpoint;
+import valandur.webapi.api.servlet.Servlet;
+import valandur.webapi.api.servlet.BaseServlet;
 import valandur.webapi.servlet.base.ServletData;
 
 import javax.servlet.http.HttpServletResponse;
@@ -15,12 +15,12 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
-@WebAPIServlet(basePath = "registry")
-public class RegistryServlet extends WebAPIBaseServlet {
+@Servlet(basePath = "registry")
+public class RegistryServlet extends BaseServlet {
 
     private Map<Class<? extends CatalogType>, Collection<? extends CatalogType>> registryCache = new ConcurrentHashMap<>();
 
-    @WebAPIEndpoint(method = HttpMethod.GET, path = "/:class", perm = "one")
+    @Endpoint(method = HttpMethod.GET, path = "/:class", perm = "one")
     public void getRegistry(ServletData data, String className) {
         try {
             Class rawType = Class.forName(className);

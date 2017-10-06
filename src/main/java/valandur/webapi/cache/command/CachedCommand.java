@@ -3,11 +3,11 @@ package valandur.webapi.cache.command;
 import org.spongepowered.api.command.CommandMapping;
 import org.spongepowered.api.text.Text;
 import valandur.webapi.api.cache.command.ICachedCommand;
-import valandur.webapi.cache.CachedObject;
+import valandur.webapi.api.cache.CachedObject;
 
 import static valandur.webapi.command.CommandSource.instance;
 
-public class CachedCommand extends CachedObject implements ICachedCommand {
+public class CachedCommand extends CachedObject<CommandMapping> implements ICachedCommand {
 
     private String name;
     @Override
@@ -22,19 +22,16 @@ public class CachedCommand extends CachedObject implements ICachedCommand {
     }
 
     private String[] aliases;
-    @Override
     public String[] getAliases() {
         return aliases;
     }
 
     private String usage;
-    @Override
     public String getUsage() {
         return usage;
     }
 
     private String help;
-    @Override
     public String getHelp() {
         return help;
     }

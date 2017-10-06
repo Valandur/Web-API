@@ -2,7 +2,6 @@ package valandur.webapi.hook;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.reflect.TypeToken;
-import io.sentry.Sentry;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
 import ninja.leaping.configurate.objectmapping.ObjectMappingException;
@@ -15,7 +14,7 @@ import org.spongepowered.api.event.EventListener;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.util.Tuple;
 import valandur.webapi.WebAPI;
-import valandur.webapi.api.hook.WebAPIBaseFilter;
+import valandur.webapi.api.hook.BaseWebHookFilter;
 import valandur.webapi.api.hook.IWebHookService;
 import valandur.webapi.api.hook.WebHookHeader;
 import valandur.webapi.hook.filter.BlockTypeFilter;
@@ -42,7 +41,7 @@ public class WebHookService implements IWebHookService {
     private Map<String, CommandWebHook> commandHooks = new HashMap<>();
     private Map<WebHookType, List<WebHook>> eventHooks = new HashMap<>();
     private Map<Class<? extends Event>, Tuple<List<WebHook>, EventListener>> customHooks = new HashMap<>();
-    private Map<String, Class<? extends WebAPIBaseFilter>> filters = new HashMap<>();
+    private Map<String, Class<? extends BaseWebHookFilter>> filters = new HashMap<>();
 
     public Map<String, CommandWebHook> getCommandHooks() {
         return commandHooks;
@@ -84,7 +83,7 @@ public class WebHookService implements IWebHookService {
         filters.put(ItemTypeFilter.name, ItemTypeFilter.class);
 
         // Load custom filters
-        extensions.loadPlugins("filters", WebAPIBaseFilter.class, filterClass -> {
+        extensions.loadPlugins("filters", BaseWebHookFilter.class, filterClass -> {
             try {
                 String name = (String) filterClass.getField("name").get(null);
                 filterClass.getConstructor(WebHook.class, ConfigurationNode.class);
@@ -147,7 +146,7 @@ public class WebHookService implements IWebHookService {
         }
     }
 
-    public Optional<Class<? extends WebAPIBaseFilter>> getFilter(String name) {
+    public Optional<Class<? extends BaseWebHookFilter>> getFilter(String name) {
         return filters.containsKey(name) ? Optional.of(filters.get(name)) : Optional.empty();
     }
 

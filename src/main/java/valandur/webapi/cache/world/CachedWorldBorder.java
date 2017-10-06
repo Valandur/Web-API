@@ -1,64 +1,56 @@
 package valandur.webapi.cache.world;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.flowpowered.math.vector.Vector3d;
 import org.spongepowered.api.world.WorldBorder;
 import org.spongepowered.api.world.storage.WorldProperties;
-import valandur.webapi.api.cache.world.ICachedWorldBorder;
-import valandur.webapi.cache.CachedObject;
+import valandur.webapi.api.cache.CachedObject;
 
-public class CachedWorldBorder extends CachedObject implements ICachedWorldBorder {
+public class CachedWorldBorder extends CachedObject<WorldBorder> {
 
     private Vector3d center;
-    @Override
     public Vector3d getCenter() {
         return center;
     }
 
     private double diameter;
-    @Override
     public double getDiameter() {
         return diameter;
     }
 
     private double damageAmount;
-    @Override
     public double getDamageAmount() {
         return damageAmount;
     }
 
     private double damageThreshold;
-    @Override
     public double getDamageThreshold() {
         return damageThreshold;
     }
 
     private double newDiameter;
-    @Override
     public double getNewDiameter() {
         return newDiameter;
     }
 
     private long timeRemaining;
-    @Override
     public long getTimeRemaining() {
         return timeRemaining;
     }
 
     private int warningDistance;
-    @Override
     public int getWarningDistance() {
         return warningDistance;
     }
 
     private int warningTime;
-    @Override
     public int getWarningTime() {
         return warningTime;
     }
 
 
     public CachedWorldBorder(WorldBorder border) {
-        super(border);
+        super(null);
 
         this.center = border.getCenter().clone();
         this.diameter = border.getDiameter();
@@ -71,7 +63,7 @@ public class CachedWorldBorder extends CachedObject implements ICachedWorldBorde
     }
 
     public CachedWorldBorder(WorldProperties properties) {
-        super(properties);
+        super(null);
 
         this.center = properties.getWorldBorderCenter().clone();
         this.diameter = properties.getWorldBorderDiameter();
@@ -81,5 +73,11 @@ public class CachedWorldBorder extends CachedObject implements ICachedWorldBorde
         this.timeRemaining = properties.getWorldBorderTimeRemaining();
         this.warningDistance = properties.getWorldBorderWarningDistance();
         this.warningTime = properties.getWorldBorderWarningTime();
+    }
+
+    @JsonIgnore
+    @Override
+    public String getLink() {
+        return super.getLink();
     }
 }

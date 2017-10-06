@@ -1,5 +1,6 @@
 package valandur.webapi.block;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.flowpowered.math.vector.Vector3i;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.event.cause.Cause;
@@ -10,6 +11,7 @@ import valandur.webapi.WebAPI;
 import valandur.webapi.api.block.IBlockOperation;
 import valandur.webapi.api.block.IBlockService;
 import valandur.webapi.api.cache.world.ICachedWorld;
+import valandur.webapi.api.json.JsonDetails;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -18,52 +20,58 @@ import java.util.concurrent.TimeUnit;
 public abstract class BlockOperation implements IBlockOperation {
 
     private IBlockService blockService;
-
+    private final int totalBlocks;
     private int currentBlock = 0;
-
-    @Override
-    public Vector3i getMin() {
-        return min;
-    }
-    @Override
-    public Vector3i getMax() {
-        return max;
-    }
+    private Task task;
 
     protected BlockOperationStatus status = BlockOperationStatus.INIT;
-    public BlockOperationStatus getStatus() {
-        return status;
-    }
-
-    protected String error = null;
-    @Override
-    public boolean hasError() {
-        return error != null;
-    }
-    @Override
-    public String getError() {
-        return error;
-    }
-
     protected UUID uuid;
+    protected String error = null;
+    protected Cause cause;
+    protected ICachedWorld world;
+    protected final Vector3i min;
+    protected final Vector3i max;
+    protected final Vector3i size;
+
     @Override
     public UUID getUUID() {
         return uuid;
     }
 
-    protected Cause cause;
     @Override
+    public BlockOperationStatus getStatus() {
+        return status;
+    }
+
+    @Override
+    @JsonDetails
+    public Vector3i getMin() {
+        return min;
+    }
+
+    @Override
+    @JsonDetails
+    public Vector3i getMax() {
+        return max;
+    }
+
+    @Override
+    @JsonIgnore
+    public boolean hasError() {
+        return error != null;
+    }
+
+    @Override
+    @JsonDetails
+    public String getError() {
+        return error;
+    }
+
+    @Override
+    @JsonIgnore
     public Cause getCause() {
         return cause;
     }
-
-    private Task task;
-
-    protected ICachedWorld world;
-    protected final Vector3i min;
-    protected final Vector3i max;
-    protected final Vector3i size;
-    private final int totalBlocks;
 
 
     public BlockOperation(ICachedWorld world, Vector3i min, Vector3i max) {

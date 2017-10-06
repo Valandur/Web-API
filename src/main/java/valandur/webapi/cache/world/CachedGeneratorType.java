@@ -3,20 +3,15 @@ package valandur.webapi.cache.world;
 import org.spongepowered.api.data.DataQuery;
 import org.spongepowered.api.world.GeneratorType;
 import valandur.webapi.WebAPI;
-import valandur.webapi.api.cache.world.ICachedGeneratorType;
 import valandur.webapi.cache.misc.CachedCatalogType;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-public class CachedGeneratorType extends CachedCatalogType implements ICachedGeneratorType {
+public class CachedGeneratorType extends CachedCatalogType {
 
-    private Map<String, Object> settings = new HashMap<>();
-    @Override
-    public Map<String, Object> getSettings() {
-        return settings;
-    }
+    protected Map<String, Object> settings = new HashMap<>();
 
 
     public CachedGeneratorType(GeneratorType generatorType) {

@@ -1,7 +1,7 @@
 package valandur.webapi.hook;
 
 import valandur.webapi.api.hook.IWebHook;
-import valandur.webapi.api.hook.WebAPIBaseFilter;
+import valandur.webapi.api.hook.BaseWebHookFilter;
 import valandur.webapi.api.hook.WebHookHeader;
 import valandur.webapi.api.permission.IPermissionService;
 import valandur.webapi.api.util.TreeNode;
@@ -45,11 +45,11 @@ public class WebHook implements IWebHook {
         return permissions;
     }
 
-    private WebAPIBaseFilter filter;
-    public WebAPIBaseFilter getFilter() {
+    private BaseWebHookFilter filter;
+    public BaseWebHookFilter getFilter() {
         return filter;
     }
-    public void setFilter(WebAPIBaseFilter filter) {
+    public void setFilter(BaseWebHookFilter filter) {
         this.filter = filter;
     }
 

@@ -1,18 +1,31 @@
 package valandur.webapi.json;
 
-import com.fasterxml.jackson.databind.introspect.AnnotatedMethod;
+import com.fasterxml.jackson.databind.introspect.Annotated;
 import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
 
 public class AnnotationIntrospector extends JacksonAnnotationIntrospector {
 
-    private boolean includeAnyGetter = false;
+    private boolean details = true;
 
-    public AnnotationIntrospector(boolean includeAnyGetter) {
-        this.includeAnyGetter = includeAnyGetter;
+    public AnnotationIntrospector(boolean details) {
+        this.details = details;
     }
 
     @Override
-    public boolean hasAnyGetterAnnotation(AnnotatedMethod am) {
-        return includeAnyGetter && super.hasAnyGetterAnnotation(am);
+    public Boolean hasAnyGetter(Annotated a) {
+        Boolean hasAnyGetter = super.hasAnyGetter(a);
+        return details && hasAnyGetter != null && hasAnyGetter;
+    }
+
+    @Override
+    public Boolean hasAsValue(Annotated a) {
+        Boolean value = super.hasAsValue(a);
+        return value;
+    }
+
+    @Override
+    public Object findFilterId(Annotated a) {
+        Object filter = super.findFilterId(a);
+        return filter != null ? filter : BaseFilter.ID;
     }
 }

@@ -4,8 +4,8 @@ import java.util.Map;
 
 /**
  * This service allows registering servlets with the Web-API, which it will serve for clients.
- * Your servlet must inherit from {@link WebAPIBaseServlet} and have the
- * {@link valandur.webapi.api.annotation.WebAPIServlet} annotation specifying the base path at which the servlet will
+ * Your servlet must inherit from {@link BaseServlet} and have the
+ * {@link Servlet} annotation specifying the base path at which the servlet will
  * be accessible.
  */
 public interface IServletService {
@@ -15,11 +15,11 @@ public interface IServletService {
      * @param servlet The class of servlet to register. The WebAPI will create an instance when starting. Make
      *                sure to provide an empty constructor.
      */
-    void registerServlet(Class<? extends WebAPIBaseServlet> servlet);
+    void registerServlet(Class<? extends BaseServlet> servlet);
 
     /**
      * Gets a map of all available base paths mapped to the servlets that implement them.
      * @return A map from base path to implementing servlet class.
      */
-    Map<String, Class<? extends WebAPIBaseServlet>> getLoadedServlets();
+    Map<String, Class<? extends BaseServlet>> getLoadedServlets();
 }

@@ -4,16 +4,15 @@ import org.spongepowered.api.block.tileentity.TileEntity;
 import org.spongepowered.api.block.tileentity.carrier.TileEntityCarrier;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
-import valandur.webapi.api.cache.misc.ICachedInventory;
-import valandur.webapi.api.cache.misc.ICachedLocation;
 import valandur.webapi.api.cache.tileentity.ICachedTileEntity;
-import valandur.webapi.cache.CachedObject;
+import valandur.webapi.api.json.JsonDetails;
+import valandur.webapi.api.cache.CachedObject;
 import valandur.webapi.cache.misc.CachedInventory;
-import valandur.webapi.cache.misc.CachedLocation;
+import valandur.webapi.api.cache.world.CachedLocation;
 
 import java.util.Optional;
 
-public class CachedTileEntity extends CachedObject implements ICachedTileEntity {
+public class CachedTileEntity extends CachedObject<TileEntity> implements ICachedTileEntity {
 
     private String type;
     @Override
@@ -21,15 +20,14 @@ public class CachedTileEntity extends CachedObject implements ICachedTileEntity 
         return type;
     }
 
-    private ICachedLocation location;
-    @Override
-    public ICachedLocation getLocation() {
+    private CachedLocation location;
+    public CachedLocation getLocation() {
         return location;
     }
 
-    protected ICachedInventory inventory;
-    @Override
-    public ICachedInventory getInventory() {
+    protected CachedInventory inventory;
+    @JsonDetails
+    public CachedInventory getInventory() {
         return inventory;
     }
 
@@ -46,8 +44,8 @@ public class CachedTileEntity extends CachedObject implements ICachedTileEntity 
     }
 
     @Override
-    public Optional<?> getLive() {
-        Optional<?> obj = location.getLive();
+    public Optional<TileEntity> getLive() {
+        Optional<Location> obj = location.getLive();
         return obj.flatMap(o -> ((Location<World>) o).getTileEntity());
     }
 

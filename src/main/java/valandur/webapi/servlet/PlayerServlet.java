@@ -13,13 +13,13 @@ import org.spongepowered.api.util.Tuple;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 import valandur.webapi.WebAPI;
-import valandur.webapi.api.annotation.WebAPIEndpoint;
-import valandur.webapi.api.annotation.WebAPIServlet;
+import valandur.webapi.api.servlet.Endpoint;
+import valandur.webapi.api.servlet.Servlet;
 import valandur.webapi.api.cache.player.ICachedPlayer;
-import valandur.webapi.api.servlet.WebAPIBaseServlet;
+import valandur.webapi.api.servlet.BaseServlet;
 import valandur.webapi.cache.player.CachedPlayer;
-import valandur.webapi.json.request.misc.DamageRequest;
-import valandur.webapi.json.request.player.UpdatePlayerRequest;
+import valandur.webapi.api.json.request.misc.DamageRequest;
+import valandur.webapi.servlet.request.player.UpdatePlayerRequest;
 import valandur.webapi.servlet.base.ServletData;
 import valandur.webapi.util.Util;
 
@@ -27,16 +27,16 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.Optional;
 import java.util.UUID;
 
-@WebAPIServlet(basePath = "player")
-public class PlayerServlet extends WebAPIBaseServlet {
+@Servlet(basePath = "player")
+public class PlayerServlet extends BaseServlet {
 
-    @WebAPIEndpoint(method = HttpMethod.GET, path = "/", perm = "list")
+    @Endpoint(method = HttpMethod.GET, path = "/", perm = "list")
     public void getPlayers(ServletData data) {
         data.addJson("ok", true, false);
         data.addJson("players", cacheService.getPlayers(), data.getQueryParam("details").isPresent());
     }
 
-    @WebAPIEndpoint(method = HttpMethod.GET, path = "/:player", perm = "one")
+    @Endpoint(method = HttpMethod.GET, path = "/:player", perm = "one")
     public void getPlayer(ServletData data, CachedPlayer player) {
         Optional<String> strFields = data.getQueryParam("fields");
         Optional<String> strMethods = data.getQueryParam("methods");
@@ -52,7 +52,7 @@ public class PlayerServlet extends WebAPIBaseServlet {
         data.addJson("player", player, true);
     }
 
-    @WebAPIEndpoint(method = HttpMethod.PUT, path = "/:player", perm = "change")
+    @Endpoint(method = HttpMethod.PUT, path = "/:player", perm = "change")
     public void updatePlayer(ServletData data, CachedPlayer player) {
         Optional<UpdatePlayerRequest> optReq = data.getRequestBody(UpdatePlayerRequest.class);
         if (!optReq.isPresent()) {
@@ -148,7 +148,7 @@ public class PlayerServlet extends WebAPIBaseServlet {
         data.addJson("player", resPlayer.orElse(null), true);
     }
 
-    @WebAPIEndpoint(method = HttpMethod.POST, path = "/:player/method", perm = "method")
+    @Endpoint(method = HttpMethod.POST, path = "/:player/method", perm = "method")
     public void executeMethod(ServletData data) {
         String uuid = data.getPathParam("player");
         if (uuid.split("-").length != 5) {

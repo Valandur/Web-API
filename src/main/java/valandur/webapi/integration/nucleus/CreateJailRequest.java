@@ -2,7 +2,7 @@ package valandur.webapi.integration.nucleus;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.flowpowered.math.vector.Vector3d;
-import valandur.webapi.WebAPI;
+import valandur.webapi.api.WebAPIAPI;
 import valandur.webapi.api.cache.world.ICachedWorld;
 
 import java.util.Optional;
@@ -19,7 +19,7 @@ public class CreateJailRequest {
     @JsonDeserialize
     private String world;
     public Optional<ICachedWorld> getWorld() {
-        return WebAPI.getCacheService().getWorld(world);
+        return WebAPIAPI.getCacheService().flatMap(srv -> srv.getWorld(world));
     }
 
     @JsonDeserialize

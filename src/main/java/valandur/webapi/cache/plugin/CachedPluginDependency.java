@@ -1,35 +1,30 @@
 package valandur.webapi.cache.plugin;
 
 import org.spongepowered.plugin.meta.PluginDependency;
-import valandur.webapi.api.cache.plugin.ICachedPluginDependency;
-import valandur.webapi.cache.CachedObject;
+import valandur.webapi.api.cache.CachedObject;
 
 import java.util.Optional;
 
 import static org.spongepowered.plugin.meta.PluginDependency.LoadOrder;
 
-public class CachedPluginDependency extends CachedObject implements ICachedPluginDependency {
+public class CachedPluginDependency extends CachedObject<PluginDependency> {
 
     private String id;
-    @Override
     public String getId() {
         return null;
     }
 
     private LoadOrder loadOrder;
-    @Override
     public LoadOrder getLoadOrder() {
         return loadOrder;
     }
 
     private String version;
-    @Override
     public String getVersion() {
         return version;
     }
 
     private Boolean optional;
-    @Override
     public Boolean isOptional() {
         return optional;
     }
@@ -46,7 +41,7 @@ public class CachedPluginDependency extends CachedObject implements ICachedPlugi
 
 
     @Override
-    public Optional<?> getLive() {
+    public Optional<PluginDependency> getLive() {
         return Optional.of(new PluginDependency(loadOrder, id, version, optional));
     }
 }

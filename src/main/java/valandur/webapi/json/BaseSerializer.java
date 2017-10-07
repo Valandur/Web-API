@@ -2,12 +2,13 @@ package valandur.webapi.json;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
-public class BaseSerializer<T, U> extends valandur.webapi.api.json.BaseSerializer<T> {
+public class BaseSerializer<T, U> extends StdSerializer<T> {
 
     private Class<? extends T> clazz;
     private Class<? extends U> cache;
@@ -21,7 +22,9 @@ public class BaseSerializer<T, U> extends valandur.webapi.api.json.BaseSerialize
     }
 
 
-    public BaseSerializer(Class<? extends T> handledClass, Class<? extends U> cacheClass) {
+    public BaseSerializer(Class<T> handledClass, Class<U> cacheClass) {
+        super(handledClass);
+
         this.clazz = handledClass;
         this.cache = cacheClass;
         try {

@@ -100,8 +100,10 @@ public class CachedRegion extends CachedObject<Region> {
         }
         this.wMessage = region.getWelcome();
         this.date = region.getDate();
-        // TODO: run each object in the map through cacheService.toCachedObject
-        this.flags = new HashMap<>(region.flags);
+        this.flags = new HashMap<>(region.flags.size());
+        for (Map.Entry<String, Object> entry : region.flags.entrySet()) {
+            this.flags.put(entry.getKey(), cacheService.asCachedObject(entry.getValue()));
+        }
         this.tpPoint = region.getTPPoint() != null ? new CachedLocation(region.getTPPoint()) : null;
     }
 }

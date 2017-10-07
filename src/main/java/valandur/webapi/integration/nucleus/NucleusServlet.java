@@ -165,7 +165,7 @@ public class NucleusServlet extends BaseServlet {
         List<CachedKit> kits = new ArrayList<>();
         WebAPIAPI.runOnMain(() -> {
             for (String name : srv.getKitNames()) {
-                srv.getKit(name).map(k -> kits.add(new CachedKit(name, k)));
+                srv.getKit(name).map(k -> kits.add(new CachedKit(k)));
             }
         });
 
@@ -190,7 +190,7 @@ public class NucleusServlet extends BaseServlet {
                 return null;
             }
 
-            return new CachedKit(name, optKit.get());
+            return new CachedKit(optKit.get());
         });
 
         data.addJson("ok", optRes.isPresent(), false);
@@ -224,15 +224,19 @@ public class NucleusServlet extends BaseServlet {
             Kit kit = srv.createKit(req.getName());
             kit.setCost(req.getCost());
             kit.setCooldown(req.getCooldown());
-            try {
-                kit.setStacks(req.getStacks());
-            } catch (Exception e) {
-                data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Could not process item stack: " + e.getMessage());
-                return null;
+            if (req.hasStacks()) {
+                try {
+                    kit.setStacks(req.getStacks());
+                } catch (Exception e) {
+                    data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Could not process item stack: " + e.getMessage());
+                    return null;
+                }
             }
-            kit.setCommands(req.getCommands());
+            if (req.hasCommands()) {
+                kit.setCommands(req.getCommands());
+            }
             srv.saveKit(kit);
-            return new CachedKit(req.getName(), kit);
+            return new CachedKit(kit);
         });
 
         data.addJson("ok", resKit.isPresent(), false);
@@ -283,7 +287,9 @@ public class NucleusServlet extends BaseServlet {
                 }
             }
 
-            return new CachedKit(name, kit);
+            srv.saveKit(kit);
+
+            return new CachedKit(kit);
         });
 
         data.addJson("ok", optRes.isPresent(), false);
@@ -308,7 +314,7 @@ public class NucleusServlet extends BaseServlet {
             }
 
             srv.removeKit(name);
-            return new CachedKit(name, optKit.get());
+            return new CachedKit(optKit.get());
         });
 
         data.addJson("ok", optRes.isPresent(), false);

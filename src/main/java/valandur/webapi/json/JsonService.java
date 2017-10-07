@@ -53,15 +53,14 @@ import org.spongepowered.api.world.World;
 import org.spongepowered.api.world.explosion.Explosion;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.cache.ICachedObject;
-import valandur.webapi.api.json.IJsonService;
+import valandur.webapi.api.cache.world.CachedLocation;
 import valandur.webapi.api.json.BaseView;
-import valandur.webapi.api.json.BaseSerializer;
+import valandur.webapi.api.json.IJsonService;
 import valandur.webapi.api.util.TreeNode;
 import valandur.webapi.cache.entity.CachedEntity;
 import valandur.webapi.cache.misc.CachedCatalogType;
 import valandur.webapi.cache.misc.CachedCause;
 import valandur.webapi.cache.misc.CachedInventory;
-import valandur.webapi.api.cache.world.CachedLocation;
 import valandur.webapi.cache.player.CachedPlayer;
 import valandur.webapi.cache.plugin.CachedPluginContainer;
 import valandur.webapi.cache.tileentity.CachedTileEntity;
@@ -87,7 +86,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Parameter;
 import java.time.Instant;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -102,7 +100,7 @@ public class JsonService implements IJsonService {
 
         logger.info("Loading serializers...");
 
-        serializers = new HashMap<>();
+        serializers = new ConcurrentHashMap<>();
 
         // Cached Objects
         registerCache(Entity.class, CachedEntity.class);
@@ -174,6 +172,7 @@ public class JsonService implements IJsonService {
 
         // Data
         supportedData = new ConcurrentHashMap<>();
+
         supportedData.put("achievements", AchievementData.class);
         supportedData.put("age", AgeableData.class);
         supportedData.put("career", CareerData.class);
@@ -195,36 +194,16 @@ public class JsonService implements IJsonService {
         supportedData.put("tamed", TameableData.class);
         supportedData.put("trades", TradeOfferData.class);
 
-        // Load extra serializers
-        logger.info("Loading custom serializers...");
-
-        WebAPI.getExtensionService().loadPlugins("serializers", BaseSerializer.class, serializerClass -> {
-            try {
-                BaseSerializer serializer = serializerClass.newInstance();
-
-                // Check if we already have a serializer for that class
-                BaseSerializer prev = serializers.remove(serializer.getHandledClass());
-                if (prev != null) {
-                    logger.info("    Replacing existing serializer for '" + serializer.getHandledClass().getName() + "'");
-                }
-
-                serializers.put(serializer.getHandledClass(), serializer);
-            } catch (IllegalAccessException | InstantiationException e) {
-                logger.warn("   Could not instantiate serializer '" + serializerClass.getName() + "': " + e.getMessage());
-                if (WebAPI.reportErrors()) WebAPI.sentryCapture(e);
-            }
-        });
-
         logger.info("Done loading serializers");
     }
 
     @Override
     public <T> void registerCache(Class<? extends T> handledClass, Class<? extends ICachedObject<T>> cacheClass) {
-        serializers.put(handledClass, new valandur.webapi.json.BaseSerializer(handledClass, cacheClass));
+        serializers.put(handledClass, new BaseSerializer<>(handledClass, cacheClass));
     }
     @Override
     public <T> void registerView(Class<? extends T> handledClass, Class<? extends BaseView<T>> viewClass) {
-        serializers.put(handledClass, new valandur.webapi.json.BaseSerializer(handledClass, viewClass));
+        serializers.put(handledClass, new BaseSerializer<>(handledClass, viewClass));
     }
 
     @Override

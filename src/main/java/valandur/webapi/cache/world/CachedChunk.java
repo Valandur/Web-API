@@ -13,43 +13,56 @@ import java.util.UUID;
 
 public class CachedChunk extends CachedObject<Chunk> {
 
-    protected UUID uuid;
+    private UUID uuid;
     public UUID getUUID() {
         return uuid;
     }
 
-    protected Vector3i pos;
+    private Vector3i pos;
     public Vector3i getPosition() {
         return pos;
     }
 
     @JsonDetails(simple = true)
-    protected ICachedWorld world;
+    private ICachedWorld world;
     public ICachedWorld getWorld() {
         return world;
     }
 
-    @JsonDetails
-    protected boolean loaded;
+    private boolean loaded;
     public boolean isLoaded() {
         return loaded;
     }
 
+    private Vector3i blockMin;
     @JsonDetails
-    protected Vector3i blockMin;
+    public Vector3i getBlockMin() {
+        return blockMin;
+    }
 
+    private Vector3i blockMax;
     @JsonDetails
-    protected Vector3i blockMax;
+    public Vector3i getBlockMax() {
+        return blockMax;
+    }
 
+    private int inhabitedTime;
     @JsonDetails
-    protected int inhabitedTime;
+    public int getInhabitedTime() {
+        return inhabitedTime;
+    }
 
+    private double regionalDifficultyFactor;
     @JsonDetails
-    protected double regionalDifficultyFactor;
+    public double getRegionalDifficultyFactor() {
+        return regionalDifficultyFactor;
+    }
 
+    private double regionalDifficultyPercentage;
     @JsonDetails
-    protected double regionalDifficultyPercentage;
-
+    public double getRegionalDifficultyPercentage() {
+        return regionalDifficultyPercentage;
+    }
 
     public CachedChunk(Chunk chunk) {
         super(chunk);

@@ -11,6 +11,7 @@ import org.spongepowered.api.command.CommandMapping;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.entity.living.player.User;
+import org.spongepowered.api.event.cause.Cause;
 import org.spongepowered.api.event.command.SendCommandEvent;
 import org.spongepowered.api.event.message.MessageEvent;
 import org.spongepowered.api.item.inventory.Inventory;
@@ -22,7 +23,8 @@ import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 import org.spongepowered.api.world.storage.WorldProperties;
 import valandur.webapi.WebAPI;
-import valandur.webapi.api.cache.CachedObject;import valandur.webapi.api.cache.ICacheService;
+import valandur.webapi.api.cache.CachedObject;
+import valandur.webapi.api.cache.ICacheService;
 import valandur.webapi.api.cache.ICachedObject;
 import valandur.webapi.api.cache.chat.ICachedChatMessage;
 import valandur.webapi.api.cache.command.ICachedCommand;
@@ -31,6 +33,7 @@ import valandur.webapi.api.cache.entity.ICachedEntity;
 import valandur.webapi.api.cache.player.ICachedPlayer;
 import valandur.webapi.api.cache.plugin.ICachedPluginContainer;
 import valandur.webapi.api.cache.tileentity.ICachedTileEntity;
+import valandur.webapi.api.cache.world.CachedLocation;
 import valandur.webapi.api.cache.world.ICachedWorld;
 import valandur.webapi.api.permission.IPermissionService;
 import valandur.webapi.cache.chat.CachedChatMessage;
@@ -38,8 +41,8 @@ import valandur.webapi.cache.command.CachedCommand;
 import valandur.webapi.cache.command.CachedCommandCall;
 import valandur.webapi.cache.entity.CachedEntity;
 import valandur.webapi.cache.misc.CachedCatalogType;
+import valandur.webapi.cache.misc.CachedCause;
 import valandur.webapi.cache.misc.CachedInventory;
-import valandur.webapi.api.cache.world.CachedLocation;
 import valandur.webapi.cache.player.CachedPlayer;
 import valandur.webapi.cache.plugin.CachedPluginContainer;
 import valandur.webapi.cache.tileentity.CachedTileEntity;
@@ -138,6 +141,8 @@ public class CacheService implements ICacheService {
         if (obj instanceof CommandMapping)
             return getCommand((CommandMapping)obj);
 
+        if (obj instanceof Cause)
+            return new CachedCause((Cause)obj);
         if (obj instanceof Location)
             return new CachedLocation((Location)obj);
         if (obj instanceof CatalogType)

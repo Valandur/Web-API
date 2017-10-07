@@ -313,6 +313,9 @@ public class WebAPI {
         // Create permission handler
         authHandler = new AuthHandler();
 
+        // Main init function, that is also called when reloading the plugin
+        init(null);
+
         logger.info("Registering servlets...");
         servletService.registerServlet(BlockServlet.class);
         servletService.registerServlet(CmdServlet.class);
@@ -366,9 +369,6 @@ public class WebAPI {
             logger.info("  Integrating with RedProtect...");
             servletService.registerServlet(RedProtectServlet.class);
         } catch (ClassNotFoundException ignored) { }
-
-        // Main init function, that is also called when reloading the plugin
-        init(null);
 
         logger.info(WebAPI.NAME + " ready");
     }

@@ -221,13 +221,13 @@ public class WorldServlet extends BaseServlet {
     @Endpoint(method = HttpMethod.DELETE, path = "/:world", perm = "delete")
     public void deleteWorld(ServletData data, CachedWorld world) {
         Optional<Boolean> deleted = WebAPI.runOnMain(() -> {
-            Optional<?> live = world.getLive();
-            if (!live.isPresent())
+            Optional<WorldProperties> optLive = world.getLiveProps();
+            if (!optLive.isPresent())
                 return false;
 
-            WorldProperties w = (WorldProperties)live.get();
+            WorldProperties live = optLive.get();
             try {
-                return Sponge.getServer().deleteWorld(w).get();
+                return Sponge.getServer().deleteWorld(live).get();
             } catch (InterruptedException | ExecutionException e) {
                 e.printStackTrace();
                 if (WebAPI.reportErrors()) WebAPI.sentryCapture(e);

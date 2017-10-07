@@ -22,9 +22,9 @@ public class CachedKit extends CachedObject<Kit> {
         return cost;
     }
 
-    private Duration interval;
-    public Duration getInterval() {
-        return interval;
+    private long cooldown;
+    public long getCooldown() {
+        return cooldown;
     }
 
     private boolean isFirstJoinKit;
@@ -48,12 +48,12 @@ public class CachedKit extends CachedObject<Kit> {
     }
 
 
-    public CachedKit(String name, Kit kit) {
+    public CachedKit(Kit kit) {
         super(kit);
 
-        this.name = name;
+        this.name = kit.getName();
         this.cost = kit.getCost();
-        this.interval = kit.getInterval();
+        this.cooldown = kit.getCooldown().orElse(Duration.ofNanos(0)).toMillis();
         this.isFirstJoinKit = kit.isFirstJoinKit();
         this.isOneTime = kit.isOneTime();
         this.commands = new ArrayList<>(kit.getCommands());

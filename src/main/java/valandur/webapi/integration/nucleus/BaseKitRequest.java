@@ -14,7 +14,7 @@ public class BaseKitRequest {
     @JsonDeserialize
     private Double cost;
     public double getCost() {
-        return cost != null ? cost : 0;
+        return cost;
     }
     public boolean hasCost() {
         return cost != null;
@@ -23,7 +23,7 @@ public class BaseKitRequest {
     @JsonDeserialize
     private Long cooldown;
     public Duration getCooldown() {
-        return Duration.ofSeconds(cooldown != null ? cooldown : 0);
+        return Duration.ofMillis(cooldown);
     }
     public boolean hasCooldown() {
         return cooldown != null;
@@ -32,7 +32,7 @@ public class BaseKitRequest {
     @JsonDeserialize
     private List<String> commands;
     public List<String> getCommands() {
-        return commands != null ? commands : new ArrayList<>();
+        return commands;
     }
     public boolean hasCommands() {
         return commands != null;

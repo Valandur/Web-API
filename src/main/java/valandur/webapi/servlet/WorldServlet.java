@@ -249,14 +249,14 @@ public class WorldServlet extends BaseServlet {
     @Endpoint(method = HttpMethod.GET, path = "/:world/chunk", perm = "chunk.list")
     public void getChunks(ServletData data, CachedWorld world) {
         Optional<List<CachedChunk>> optChunks = WebAPI.runOnMain(() -> {
-            Optional<?> optWorld = world.getLive();
+            Optional<World> optWorld = world.getLive();
             if (!optWorld.isPresent())
                 return null;
 
-            World w = (World)optWorld.get();
+            World live = optWorld.get();
             List<CachedChunk> chunks = new ArrayList<>();
 
-            Iterable<Chunk> iterable = w.getLoadedChunks();
+            Iterable<Chunk> iterable = live.getLoadedChunks();
             iterable.forEach(c -> chunks.add(new CachedChunk(c)));
 
             return chunks;
@@ -269,11 +269,11 @@ public class WorldServlet extends BaseServlet {
     @Endpoint(method = HttpMethod.GET, path = "/:world/chunk/:x/:z", perm = "chunk.one")
     public void getChunkAt(ServletData data, CachedWorld world, int x, int z) {
         Optional<CachedChunk> optChunk = WebAPI.runOnMain(() -> {
-            Optional<?> optLive = world.getLive();
+            Optional<World> optLive = world.getLive();
             if (!optLive.isPresent())
                 return null;
 
-            World live = (World)optLive.get();
+            World live = optLive.get();
             Optional<Chunk> chunk = live.loadChunk(x, 0, z, false);
             return chunk.map(CachedChunk::new).orElse(null);
         });
@@ -285,11 +285,11 @@ public class WorldServlet extends BaseServlet {
     @Endpoint(method = HttpMethod.POST, path = "/:world/chunk/:x/:z", perm = "chunk.create")
     public void createChunkAt(ServletData data, CachedWorld world, int x, int z) {
         Optional<CachedChunk> optChunk = WebAPI.runOnMain(() -> {
-            Optional<?> optLive = world.getLive();
+            Optional<World> optLive = world.getLive();
             if (!optLive.isPresent())
                 return null;
 
-            World live = (World)optLive.get();
+            World live = optLive.get();
             Optional<Chunk> chunk = live.loadChunk(x, 0, z, true);
             return chunk.map(CachedChunk::new).orElse(null);
         });

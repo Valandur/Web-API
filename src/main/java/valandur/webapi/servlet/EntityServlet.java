@@ -3,6 +3,7 @@ package valandur.webapi.servlet;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.eclipse.jetty.http.HttpMethod;
 import org.spongepowered.api.entity.Entity;
+import org.spongepowered.api.entity.EntityType;
 import org.spongepowered.api.event.cause.Cause;
 import org.spongepowered.api.event.cause.entity.damage.source.DamageSource;
 import org.spongepowered.api.item.inventory.Carrier;
@@ -12,15 +13,16 @@ import org.spongepowered.api.util.Tuple;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 import valandur.webapi.WebAPI;
+import valandur.webapi.api.cache.entity.ICachedEntity;
+import valandur.webapi.api.cache.world.ICachedWorld;
+import valandur.webapi.api.json.request.misc.DamageRequest;
+import valandur.webapi.api.servlet.BaseServlet;
 import valandur.webapi.api.servlet.Endpoint;
 import valandur.webapi.api.servlet.Servlet;
-import valandur.webapi.api.cache.entity.ICachedEntity;
-import valandur.webapi.api.servlet.BaseServlet;
 import valandur.webapi.cache.entity.CachedEntity;
+import valandur.webapi.servlet.base.ServletData;
 import valandur.webapi.servlet.request.entity.CreateEntityRequest;
 import valandur.webapi.servlet.request.entity.UpdateEntityRequest;
-import valandur.webapi.api.json.request.misc.DamageRequest;
-import valandur.webapi.servlet.base.ServletData;
 import valandur.webapi.util.Util;
 
 import javax.servlet.http.HttpServletResponse;
@@ -62,24 +64,24 @@ public class EntityServlet extends BaseServlet {
         final UpdateEntityRequest req = optReq.get();
 
         Optional<ICachedEntity> resEntity = WebAPI.runOnMain(() -> {
-            Optional<?> optLive = entity.getLive();
+            Optional<Entity> optLive = entity.getLive();
             if (!optLive.isPresent())
                 return null;
 
-            Entity live = (Entity)optLive.get();
+            Entity live = optLive.get();
 
             if (req.getWorld().isPresent()) {
-                Optional<?> optWorld = req.getWorld().get().getLive();
+                Optional<World> optWorld = req.getWorld().get().getLive();
                 if (!optWorld.isPresent())
                     return null;
 
                 if (req.getPosition() != null) {
-                    live.transferToWorld((World)optWorld.get(), req.getPosition());
+                    live.transferToWorld(optWorld.get(), req.getPosition());
                 } else {
-                    live.transferToWorld((World)optWorld.get());
+                    live.transferToWorld(optWorld.get());
                 }
             } else if (req.getPosition() != null) {
-                live.setLocation(new Location<World>(live.getWorld(), req.getPosition()));
+                live.setLocation(new Location<>(live.getWorld(), req.getPosition()));
             }
             if (req.getVelocity() != null) {
                 live.setVelocity(req.getVelocity());
@@ -135,12 +137,14 @@ public class EntityServlet extends BaseServlet {
 
         CreateEntityRequest req = optReq.get();
 
-        if (!req.getWorld().isPresent()) {
+        Optional<ICachedWorld> optWorld = req.getWorld();
+        if (!optWorld.isPresent()) {
             data.sendError(HttpServletResponse.SC_BAD_REQUEST, "No valid world provided");
             return;
         }
 
-        if (!req.getEntityType().isPresent()) {
+        Optional<EntityType> optEntType = req.getEntityType();
+        if (!optEntType.isPresent()) {
             data.sendError(HttpServletResponse.SC_BAD_REQUEST, "No valid entity type provided");
             return;
         }
@@ -151,12 +155,12 @@ public class EntityServlet extends BaseServlet {
         }
 
         Optional<Entity> resEntity = WebAPI.runOnMain(() -> {
-            Optional<?> optWorld = req.getWorld().get().getLive();
-            if (!optWorld.isPresent())
+            Optional<World> optLive = optWorld.get().getLive();
+            if (!optLive.isPresent())
                 return null;
 
-            World w = (World)optWorld.get();
-            Entity e = w.createEntity(req.getEntityType().get(), req.getPosition());
+            World w = optLive.get();
+            Entity e = w.createEntity(optEntType.get(), req.getPosition());
 
             if (w.spawnEntity(e, Cause.source(WebAPI.getContainer()).build())) {
                 return e;
@@ -209,12 +213,11 @@ public class EntityServlet extends BaseServlet {
     @Endpoint(method = HttpMethod.DELETE, path = "/:entity", perm = "delete")
     public void removeEntity(ServletData data, CachedEntity entity) {
         Optional<Boolean> deleted = WebAPI.runOnMain(() -> {
-            Optional<?> live = entity.getLive();
+            Optional<Entity> live = entity.getLive();
             if (!live.isPresent())
                 return false;
 
-            Entity e = (Entity)live.get();
-            e.remove();
+            live.get().remove();
             return true;
         });
 

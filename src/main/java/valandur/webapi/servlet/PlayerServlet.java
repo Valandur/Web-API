@@ -63,24 +63,24 @@ public class PlayerServlet extends BaseServlet {
         final UpdatePlayerRequest req = optReq.get();
 
         Optional<ICachedPlayer> resPlayer = WebAPI.runOnMain(() -> {
-            Optional<?> optLive = player.getLive();
+            Optional<Player> optLive = player.getLive();
             if (!optLive.isPresent())
                 return null;
 
-            Player live = (Player)optLive.get();
+            Player live = optLive.get();
 
             if (req.getWorld().isPresent()) {
-                Optional<?> optWorld = req.getWorld().get().getLive();
+                Optional<World> optWorld = req.getWorld().get().getLive();
                 if (!optWorld.isPresent())
                     return null;
 
                 if (req.getPosition() != null) {
-                    live.transferToWorld((World)optWorld.get(), req.getPosition());
+                    live.transferToWorld(optWorld.get(), req.getPosition());
                 } else {
-                    live.transferToWorld((World)optWorld.get());
+                    live.transferToWorld(optWorld.get());
                 }
             } else if (req.getPosition() != null) {
-                live.setLocation(new Location<World>(live.getWorld(), req.getPosition()));
+                live.setLocation(new Location<>(live.getWorld(), req.getPosition()));
             }
             if (req.getVelocity() != null) {
                 live.setVelocity(req.getVelocity());

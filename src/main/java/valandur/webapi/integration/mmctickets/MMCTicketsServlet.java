@@ -6,7 +6,6 @@ import org.eclipse.jetty.http.HttpMethod;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.plugin.PluginContainer;
 import valandur.webapi.api.WebAPIAPI;
-import valandur.webapi.api.json.IJsonService;
 import valandur.webapi.api.servlet.BaseServlet;
 import valandur.webapi.api.servlet.Endpoint;
 import valandur.webapi.api.servlet.IServletData;
@@ -21,8 +20,9 @@ import java.util.Optional;
 public class MMCTicketsServlet extends BaseServlet {
 
     public static void onRegister() {
-        IJsonService json = WebAPIAPI.getJsonService().get();
-        json.registerCache(TicketData.class, CachedTicketData.class);
+        WebAPIAPI.getJsonService().ifPresent(srv -> {
+            srv.registerCache(TicketData.class, CachedTicketData.class);
+        });
     }
 
 

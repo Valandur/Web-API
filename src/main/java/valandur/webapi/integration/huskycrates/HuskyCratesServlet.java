@@ -7,7 +7,6 @@ import org.eclipse.jetty.http.HttpMethod;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.plugin.PluginContainer;
 import valandur.webapi.api.WebAPIAPI;
-import valandur.webapi.api.json.IJsonService;
 import valandur.webapi.api.servlet.BaseServlet;
 import valandur.webapi.api.servlet.Endpoint;
 import valandur.webapi.api.servlet.IServletData;
@@ -22,9 +21,10 @@ import java.util.Optional;
 public class HuskyCratesServlet extends BaseServlet {
 
     public static void onRegister() {
-        IJsonService json = WebAPIAPI.getJsonService().get();
-        json.registerCache(VirtualCrate.class, CachedVirtualCrate.class);
-        json.registerCache(CrateReward.class, CachedCrateReward.class);
+        WebAPIAPI.getJsonService().ifPresent(srv -> {
+            srv.registerCache(VirtualCrate.class, CachedVirtualCrate.class);
+            srv.registerCache(CrateReward.class, CachedCrateReward.class);
+        });
     }
 
 

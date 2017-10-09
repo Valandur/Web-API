@@ -14,7 +14,6 @@ import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 import valandur.webapi.api.WebAPIAPI;
 import valandur.webapi.api.cache.world.ICachedWorld;
-import valandur.webapi.api.json.IJsonService;
 import valandur.webapi.api.servlet.BaseServlet;
 import valandur.webapi.api.servlet.Endpoint;
 import valandur.webapi.api.servlet.IServletData;
@@ -23,15 +22,17 @@ import valandur.webapi.api.servlet.Servlet;
 import javax.servlet.http.HttpServletResponse;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 @Servlet(basePath = "nucleus")
 public class NucleusServlet extends BaseServlet {
 
     public static void onRegister() {
-        IJsonService json = WebAPIAPI.getJsonService().get();
-        json.registerCache(NamedLocation.class, CachedNamedLocation.class);
-        json.registerCache(Kit.class, CachedKit.class);
-        json.registerCache(Home.class, CachedHome.class);
+        WebAPIAPI.getJsonService().ifPresent(srv -> {
+            srv.registerCache(NamedLocation.class, CachedNamedLocation.class);
+            srv.registerCache(Kit.class, CachedKit.class);
+            srv.registerCache(Home.class, CachedHome.class);
+        });
     }
 
 
@@ -45,7 +46,9 @@ public class NucleusServlet extends BaseServlet {
 
         NucleusJailService srv = optSrv.get();
 
-        Optional<List<NamedLocation>> optRes = WebAPIAPI.runOnMain(() -> new ArrayList<>(srv.getJails().values()));
+        Optional<List<CachedNamedLocation>> optRes = WebAPIAPI.runOnMain(
+                () -> srv.getJails().values().stream().map(CachedNamedLocation::new).collect(Collectors.toList())
+        );
 
         data.addJson("ok", optRes.isPresent(), false);
         data.addJson("jails", optRes.orElse(null), data.getQueryParam("details").isPresent());
@@ -61,14 +64,14 @@ public class NucleusServlet extends BaseServlet {
 
         NucleusJailService srv = optSrv.get();
 
-        Optional<NamedLocation> optRes = WebAPIAPI.runOnMain(() -> {
+        Optional<CachedNamedLocation> optRes = WebAPIAPI.runOnMain(() -> {
             Optional<NamedLocation> optJail = srv.getJail(name);
             if (!optJail.isPresent()) {
                 data.sendError(HttpServletResponse.SC_NOT_FOUND, "Jail not found");
                 return null;
             }
 
-            return optJail.get();
+            return new CachedNamedLocation(optJail.get());
         });
 
         data.addJson("ok", optRes.isPresent(), false);
@@ -105,14 +108,15 @@ public class NucleusServlet extends BaseServlet {
             return;
         }
 
-        Optional<NamedLocation> optRes = WebAPIAPI.runOnMain(() -> {
-            Optional<?> optWorld = world.getLive();
+        Optional<CachedNamedLocation> optRes = WebAPIAPI.runOnMain(() -> {
+            Optional<World> optWorld = world.getLive();
             if (!optWorld.isPresent())
                 return null;
 
-            World w = (World)optWorld.get();
+            World w = optWorld.get();
             srv.setJail(req.getName(), new Location<>(w, req.getPosition()), req.getRotation());
-            return srv.getJail(req.getName()).orElse(null);
+            Optional<NamedLocation> optJail = srv.getJail(req.getName());
+            return optJail.map(CachedNamedLocation::new).orElse(null);
         });
 
         data.setStatus(HttpServletResponse.SC_CREATED);
@@ -135,7 +139,7 @@ public class NucleusServlet extends BaseServlet {
 
         NucleusJailService srv = optSrv.get();
 
-        Optional<NamedLocation> optRes = WebAPIAPI.runOnMain(() -> {
+        Optional<CachedNamedLocation> optRes = WebAPIAPI.runOnMain(() -> {
             Optional<NamedLocation> optJail = srv.getJail(name);
             if (!optJail.isPresent()) {
                 data.sendError(HttpServletResponse.SC_NOT_FOUND, "Jail not found");
@@ -144,7 +148,7 @@ public class NucleusServlet extends BaseServlet {
 
             srv.removeJail(name);
 
-            return optJail.get();
+            return new CachedNamedLocation(optJail.get());
         });
 
         data.addJson("ok", optRes.isPresent(), false);
@@ -162,15 +166,14 @@ public class NucleusServlet extends BaseServlet {
 
         NucleusKitService srv = optSrv.get();
 
-        List<CachedKit> kits = new ArrayList<>();
-        WebAPIAPI.runOnMain(() -> {
-            for (String name : srv.getKitNames()) {
-                srv.getKit(name).map(k -> kits.add(new CachedKit(k)));
-            }
-        });
+        Optional<List<CachedKit>> kits = WebAPIAPI.runOnMain(
+                () -> srv.getKitNames().stream()
+                        .map(name -> srv.getKit(name).map(CachedKit::new).orElse(null))
+                        .collect(Collectors.toList())
+        );
 
-        data.addJson("ok", true, false);
-        data.addJson("kits", kits, data.getQueryParam("details").isPresent());
+        data.addJson("ok", kits.isPresent(), false);
+        data.addJson("kits", kits.orElse(null), data.getQueryParam("details").isPresent());
     }
 
     @Endpoint(method = HttpMethod.GET, path = "kit/:name", perm = "kit.one")
@@ -332,7 +335,9 @@ public class NucleusServlet extends BaseServlet {
 
         NucleusHomeService srv = optSrv.get();
 
-        Optional<List<Home>> optRes = WebAPIAPI.runOnMain(() -> srv.getHomes(uuid));
+        Optional<List<CachedHome>> optRes = WebAPIAPI.runOnMain(
+                () -> srv.getHomes(uuid).stream().map(CachedHome::new).collect(Collectors.toList())
+        );
 
         data.addJson("ok", optRes.isPresent(), false);
         data.addJson("homes", optRes.orElse(null), true);

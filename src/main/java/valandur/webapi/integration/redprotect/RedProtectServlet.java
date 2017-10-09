@@ -9,7 +9,6 @@ import org.spongepowered.api.world.World;
 import valandur.webapi.api.WebAPIAPI;
 import valandur.webapi.api.cache.world.CachedLocation;
 import valandur.webapi.api.cache.world.ICachedWorld;
-import valandur.webapi.api.json.IJsonService;
 import valandur.webapi.api.servlet.BaseServlet;
 import valandur.webapi.api.servlet.Endpoint;
 import valandur.webapi.api.servlet.IServletData;
@@ -23,8 +22,9 @@ import java.util.stream.Collectors;
 public class RedProtectServlet extends BaseServlet {
 
     public static void onRegister() {
-        IJsonService json = WebAPIAPI.getJsonService().get();
-        json.registerCache(Region.class, CachedRegion.class);
+        WebAPIAPI.getJsonService().ifPresent(srv -> {
+            srv.registerCache(Region.class, CachedRegion.class);
+        });
     }
 
 
@@ -42,12 +42,12 @@ public class RedProtectServlet extends BaseServlet {
 
             ICachedWorld world = optWorld.get();
             optRegions = WebAPIAPI.runOnMain(() -> {
-                Optional<?> optLive = world.getLive();
+                Optional<World> optLive = world.getLive();
                 if (!optLive.isPresent()) {
                     return null;
                 }
 
-                World live = (World)optLive.get();
+                World live = optLive.get();
                 return RedProtect.rm.getRegionsByWorld(live).stream()
                         .map(CachedRegion::new)
                         .collect(Collectors.toSet());
@@ -96,12 +96,12 @@ public class RedProtectServlet extends BaseServlet {
                 return null;
             }
 
-            Optional<?> optLive = optWorld.get().getLive();
+            Optional<World> optLive = optWorld.get().getLive();
             if (!optLive.isPresent()) {
                 return null;
             }
 
-            World world = (World)optLive.get();
+            World world = optLive.get();
 
             if (req.getMinLoc() == null) {
                 return null;
@@ -144,7 +144,7 @@ public class RedProtectServlet extends BaseServlet {
             Location<World> tpPoint = null;
             Optional<CachedLocation> optTpPoint = req.getTpPos();
             if (optTpPoint.isPresent()) {
-                Optional<?> optLiveTpPoint = optTpPoint.get().getLive();
+                Optional<Location> optLiveTpPoint = optTpPoint.get().getLive();
                 if (!optLiveTpPoint.isPresent()) {
                     return null;
                 }

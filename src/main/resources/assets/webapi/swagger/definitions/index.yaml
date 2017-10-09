@@ -1,39 +1,39 @@
 BlockFull:
-  $ref: "./BlockFull.yaml"
+  $ref: "./block/BlockFull.yaml"
 BlockOperation:
-  $ref: "./BlockOperation.yaml"
+  $ref: "./block/BlockOperation.yaml"
 BlockOperationFull:
-  $ref: "./BlockOperationFull.yaml"
+  $ref: "./block/BlockOperationFull.yaml"
 BlockOperationNew:
-  $ref: "./BlockOperationNew.yaml"
+  $ref: "./block/BlockOperationNew.yaml"
 CatalogType:
   $ref: "./CatalogType.yaml"
 ChatMessage:
   $ref: "./ChatMessage.yaml"
 Chunk:
-  $ref: "./Chunk.yaml"
+  $ref: "./chunk/Chunk.yaml"
 ChunkFull:
-  $ref: "./ChunkFull.yaml"
+  $ref: "./chunk/ChunkFull.yaml"
 Command:
-  $ref: "./Command.yaml"
+  $ref: "./command/Command.yaml"
 CommandCall:
-  $ref: "./CommandCall.yaml"
+  $ref: "./command/CommandCall.yaml"
 CommandFull:
-  $ref: "./CommandFull.yaml"
+  $ref: "./command/CommandFull.yaml"
 CommandRequest:
-  $ref: "./CommandRequest.yaml"
+  $ref: "./command/CommandRequest.yaml"
 CommandResponse:
-  $ref: "./CommandResponse.yaml"
+  $ref: "./command/CommandResponse.yaml"
 CommandResult:
-  $ref: "./CommandResult.yaml"
+  $ref: "./command/CommandResult.yaml"
 CreateEntityRequest:
-  $ref: "./CreateEntityRequest.yaml"
+  $ref: "./entity/CreateEntityRequest.yaml"
 CreateWorldRequest:
-  $ref: "./CreateWorldRequest.yaml"
+  $ref: "./world/CreateWorldRequest.yaml"
 Entity:
-  $ref: "./Entity.yaml"
+  $ref: "./entity/Entity.yaml"
 EntityFull:
-  $ref: "./EntityFull.yaml"
+  $ref: "./entity/EntityFull.yaml"
 Inventory:
   $ref: "./Inventory.yaml"
 ItemStack:
@@ -47,13 +47,13 @@ MessageRequest:
 ok:
   $ref: "./ok.yaml"
 Player:
-  $ref: "./Player.yaml"
+  $ref: "./player/Player.yaml"
 PlayerFull:
-  $ref: "./PlayerFull.yaml"
+  $ref: "./player/PlayerFull.yaml"
 Plugin:
-  $ref: "./Plugin.yaml"
+  $ref: "./plugin/Plugin.yaml"
 PluginFull:
-  $ref: "./PluginFull.yaml"
+  $ref: "./plugin/PluginFull.yaml"
 RawRequest:
   $ref: "./RawRequest.yaml"
 RawRequestParam:
@@ -61,26 +61,26 @@ RawRequestParam:
 RawResponse:
   $ref: "./RawResponse.yaml"
 ServerInfo:
-  $ref: "./ServerInfo.yaml"
+  $ref: "./server/ServerInfo.yaml"
 ServerInfoDetail:
-  $ref: "./ServerInfoDetail.yaml"
+  $ref: "./server/ServerInfoDetail.yaml"
 TileEntity:
-  $ref: "./TileEntity.yaml"
+  $ref: "./tile-entity/TileEntity.yaml"
 TileEntityFull:
-  $ref: "./TileEntityFull.yaml"
+  $ref: "./tile-entity/TileEntityFull.yaml"
 UpdateEntityRequest:
-  $ref: "./UpdateEntityRequest.yaml"
+  $ref: "./entity/UpdateEntityRequest.yaml"
 UpdatePlayerRequest:
-  $ref: "./UpdatePlayerRequest.yaml"
+  $ref: "./player/UpdatePlayerRequest.yaml"
 UpdateWorldRequest:
-  $ref: "./UpdateWorldRequest.yaml"
+  $ref: "./world/UpdateWorldRequest.yaml"
 User:
   $ref: "./User.yaml"
 Vector3:
   $ref: "./Vector3.yaml"
 World:
-  $ref: "./World.yaml"
+  $ref: "./world/World.yaml"
 WorldFull:
-  $ref: "./WorldFull.yaml"
+  $ref: "./world/WorldFull.yaml"
 WorldRequest:
-  $ref: "./WorldRequest.yaml"
+  $ref: "./world/WorldRequest.yaml"

@@ -48,7 +48,12 @@ public class AssetHandler extends AbstractHandler {
     }
 
     @Override
-    public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+    public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response)
+            throws IOException, ServletException {
+        response.addHeader("Access-Control-Allow-Origin","*");
+        response.addHeader("Access-Control-Allow-Methods","GET,PUT,POST,DELETE,OPTIONS");
+        response.addHeader("Access-Control-Allow-Headers","Origin, X-Requested-With, Content-Type, Accept, X-WEBAPI-KEY");
+
         if (assetString != null) {
             response.setContentType(contentType);
             response.setStatus(HttpServletResponse.SC_OK);

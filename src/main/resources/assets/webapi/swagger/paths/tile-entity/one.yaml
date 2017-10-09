@@ -38,11 +38,11 @@ get:
     - Tile Entity
   responses:
     400:
-      $ref: "#/responses/400"
+      $ref: "../../responses/400.yaml"
     403:
-      $ref: "#/responses/403"
+      $ref: "../../responses/403.yaml"
     404:
-      $ref: "#/responses/404"
+      $ref: "../../responses/404.yaml"
     200:
       description: Detailed tile entity info
       schema:
@@ -50,9 +50,9 @@ get:
         type: object
         properties:
           ok:
-            $ref: "#/definitions/ok"
+            $ref: "../../definitions/ok.yaml"
           tileEntity:
-            $ref: "#/definitions/TileEntityFull"
+            $ref: "../../definitions/tile-entity/TileEntityFull.yaml"
 post:
   summary: Execute tile entity methods
   operationId: executeTileEntityMethod
@@ -86,16 +86,16 @@ post:
       description: Information about which method to execute.
       required: true
       schema:
-        $ref: "#/definitions/RawRequest"
+        $ref: "../../definitions/RawRequest.yaml"
   tags:
     - Tile Entity
   responses:
     400:
-      $ref: "#/responses/400"
+      $ref: "../../responses/400.yaml"
     403:
-      $ref: "#/responses/403"
+      $ref: "../../responses/403.yaml"
     404:
-      $ref: "#/responses/404"
+      $ref: "../../responses/404.yaml"
     200:
       description: Method return value
       schema:
@@ -103,8 +103,8 @@ post:
         type: object
         properties:
           ok:
-            $ref: "#/definitions/ok"
+            $ref: "../../definitions/ok.yaml"
           tileEntity:
-            $ref: "#/definitions/TileEntity"
+            $ref: "../../definitions/tile-entity/TileEntity.yaml"
           result:
-            $ref: "#/definitions/RawResponse"
+            $ref: "../../definitions/RawResponse.yaml"

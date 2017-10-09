@@ -23,13 +23,13 @@ get:
     - Player
   responses:
     400:
-      $ref: "#/responses/400"
+      $ref: "../../responses/400.yaml"
     403:
-      $ref: "#/responses/403"
+      $ref: "../../responses/403.yaml"
     404:
-      $ref: "#/responses/404"
+      $ref: "../../responses/404.yaml"
     200:
-      $ref: "#/responses/Player"
+      $ref: "../../responses/Player.yaml"
 put:
   summary: Edit player
   operationId: changePlayer
@@ -48,18 +48,18 @@ put:
       description: The new properties of the player
       required: true
       schema:
-        $ref: "#/definitions/UpdatePlayerRequest"
+        $ref: "../../definitions/player/UpdatePlayerRequest.yaml"
   tags:
     - Player
   responses:
     400:
-      $ref: "#/responses/400"
+      $ref: "../../responses/400.yaml"
     403:
-      $ref: "#/responses/403"
+      $ref: "../../responses/403.yaml"
     404:
-      $ref: "#/responses/404"
+      $ref: "../../responses/404.yaml"
     200:
-      $ref: "#/responses/Player"
+      $ref: "../../responses/Player.yaml"
 post:
   summary: Execute player method
   operationId: executePlayerMethod
@@ -78,16 +78,16 @@ post:
       description: Information about which method to execute.
       required: true
       schema:
-        $ref: "#/definitions/RawRequest"
+        $ref: "../../definitions/RawRequest.yaml"
   tags:
     - Player
   responses:
     400:
-      $ref: "#/responses/400"
+      $ref: "../../responses/400.yaml"
     403:
-      $ref: "#/responses/403"
+      $ref: "../../responses/403.yaml"
     404:
-      $ref: "#/responses/404"
+      $ref: "../../responses/404.yaml"
     200:
       description: Method return value
       schema:
@@ -95,8 +95,8 @@ post:
         type: object
         properties:
           ok:
-            $ref: "#/definitions/ok"
+            $ref: "../../definitions/ok.yaml"
           player:
-            $ref: "#/definitions/RawResponse"
+            $ref: "../../definitions/player/PlayerFull.yaml"
           result:
-            $ref: "#/definitions/RawResponse"
+            $ref: "../../definitions/RawResponse.yaml"

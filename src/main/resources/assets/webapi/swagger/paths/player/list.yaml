@@ -9,7 +9,7 @@ get:
     - Player
   responses:
     403:
-      $ref: "#/responses/403"
+      $ref: "../../responses/403.yaml"
     200:
       description: List of players
       schema:
@@ -17,9 +17,9 @@ get:
         type: object
         properties:
           ok:
-            $ref: "#/definitions/ok"
+            $ref: "../../definitions/ok.yaml"
           players:
             type: array
             description: A list of players.
             items:
-              $ref: "#/definitions/Player"
+              $ref: "../../definitions/player/Player.yaml"

@@ -23,13 +23,13 @@ get:
     - Entity
   responses:
     400:
-      $ref: "#/responses/400"
+      $ref: "../../responses/400.yaml"
     403:
-      $ref: "#/responses/403"
+      $ref: "../../responses/403.yaml"
     404:
-      $ref: "#/responses/404"
+      $ref: "../../responses/404.yaml"
     200:
-      $ref: "#/responses/Entity"
+      $ref: "../../responses/Entity.yaml"
 put:
   summary: Edit entity
   operationId: changeEntity
@@ -48,18 +48,18 @@ put:
       description: The new properties of the entity
       required: true
       schema:
-        $ref: "#/definitions/UpdateEntityRequest"
+        $ref: "../../definitions/entity/UpdateEntityRequest.yaml"
   tags:
     - Entity
   responses:
     400:
-      $ref: "#/responses/400"
+      $ref: "../../responses/400.yaml"
     403:
-      $ref: "#/responses/403"
+      $ref: "../../responses/403.yaml"
     404:
-      $ref: "#/responses/404"
+      $ref: "../../responses/404.yaml"
     200:
-      $ref: "#/responses/Entity"
+      $ref: "../../responses/Entity.yaml"
 post:
   summary: Execute entity method
   operationId: executeEntityMethod
@@ -78,16 +78,16 @@ post:
       description: Information about which method to execute.
       required: true
       schema:
-        $ref: "#/definitions/RawRequest"
+        $ref: "../../definitions/RawRequest.yaml"
   tags:
     - Entity
   responses:
     400:
-      $ref: "#/responses/400"
+      $ref: "../../responses/400.yaml"
     403:
-      $ref: "#/responses/403"
+      $ref: "../../responses/403.yaml"
     404:
-      $ref: "#/responses/404"
+      $ref: "../../responses/404.yaml"
     200:
       description: Method return value
       schema:
@@ -95,11 +95,11 @@ post:
         type: object
         properties:
           ok:
-            $ref: "#/definitions/ok"
+            $ref: "../../definitions/ok.yaml"
           entity:
-            $ref: "#/definitions/EntityFull"
+            $ref: "../../definitions/entity/EntityFull.yaml"
           result:
-            $ref: "#/definitions/RawResponse"
+            $ref: "../../definitions/RawResponse.yaml"
 delete:
   summary: Destroy an entity
   operationId: destroyEntity
@@ -117,10 +117,10 @@ delete:
    - Entity
   responses:
     400:
-      $ref: "#/responses/400"
+      $ref: "../../responses/400.yaml"
     403:
-      $ref: "#/responses/403"
+      $ref: "../../responses/403.yaml"
     404:
-      $ref: "#/responses/404"
+      $ref: "../../responses/404.yaml"
     200:
-      $ref: "#/responses/Entity"
+      $ref: "../../responses/Entity.yaml"

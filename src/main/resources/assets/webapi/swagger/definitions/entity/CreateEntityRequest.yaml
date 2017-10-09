@@ -5,7 +5,7 @@ properties:
     type: string
     description: The UUID or name of the world to create the entity in.
   position:
-    $ref: "#/definitions/Vector3"
+    $ref: "../Vector3.yaml"
   type:
     type: string
     description: The type of the entity. Check `/registry/org.spongepowered.api.entity.EntityType`.

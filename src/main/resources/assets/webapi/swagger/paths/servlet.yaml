@@ -10,7 +10,7 @@ get:
     - Servlet
   responses:
     403:
-      $ref: "#/responses/403"
+      $ref: "../responses/403.yaml"
     200:
       description: Loaded servlets
       schema:
@@ -18,7 +18,7 @@ get:
         type: object
         properties:
           ok:
-            $ref: "#/definitions/ok"
+            $ref: "../definitions/ok.yaml"
           servlets:
             type: object
             description: A mapping of servlet path to implementing class.

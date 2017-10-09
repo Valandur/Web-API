@@ -1,0 +1,32 @@
+get:
+  summary: Detailed jail info
+  operationId: getJail
+  description: |
+    Get detailed information about a jail.
+
+    > Required permission: nucleus.jail.one
+  parameters:
+    - name: name
+      in: path
+      type: string
+      description: The name of the jail to get detailed information about.
+      required: true
+  tags:
+    - Nucleus
+  responses:
+    400:
+      $ref: "../../responses/400.yaml"
+    403:
+      $ref: "../../responses/403.yaml"
+    404:
+      $ref: "../../responses/404.yaml"
+    200:
+      description: Jail
+      schema:
+        title: NucleusJailResponse
+        type: object
+        properties:
+          ok:
+            $ref: "../../definitions/ok.yaml"
+          jail:
+            $ref: "../../definitions/nucleus/NucleusJailFull.yaml"

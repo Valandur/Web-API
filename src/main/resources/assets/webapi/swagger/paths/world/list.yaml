@@ -14,7 +14,7 @@ get:
     - World
   responses:
     403:
-      $ref: "#/responses/403"
+      $ref: "../../responses/403.yaml"
     200:
       description: List of worlds
       schema:
@@ -22,12 +22,12 @@ get:
         type: object
         properties:
           ok:
-            $ref: "#/definitions/ok"
+            $ref: "../../definitions/ok.yaml"
           worlds:
             type: array
             description: A list of worlds.
             items:
-              $ref: "#/definitions/World"
+              $ref: "../../definitions/world/World.yaml"
 post:
   summary: Create a world
   operationId: createWorld
@@ -39,14 +39,14 @@ post:
     - name: CreateWorldRequest
       in: body
       schema:
-        $ref: "#/definitions/CreateWorldRequest"
+        $ref: "../../definitions/world/CreateWorldRequest.yaml"
       required: true
   tags:
     - World
   responses:
     400:
-      $ref: "#/responses/400"
+      $ref: "../../responses/400.yaml"
     403:
-      $ref: "#/responses/403"
+      $ref: "../../responses/403.yaml"
     200:
-      $ref: "#/responses/World"
+      $ref: "../../responses/World.yaml"

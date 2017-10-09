@@ -15,7 +15,7 @@ get:
     - Command
   responses:
     403:
-      $ref: "#/responses/403"
+      $ref: "../../responses/403.yaml"
     200:
       description: Detailed info about the command
       schema:
@@ -23,6 +23,6 @@ get:
         type: object
         properties:
           ok:
-           $ref: "#/definitions/ok"
+           $ref: "../../definitions/ok.yaml"
           command:
-            $ref: "#/definitions/CommandFull"
+            $ref: "../../definitions/cmd/CommandFull.yaml"

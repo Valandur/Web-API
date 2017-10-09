@@ -15,13 +15,13 @@ get:
       - Registry
     responses:
       400:
-        $ref: "#/responses/400"
+        $ref: "../responses/400.yaml"
       403:
-        $ref: "#/responses/403"
+        $ref: "../responses/403.yaml"
       404:
-        $ref: "#/responses/404"
+        $ref: "../responses/404.yaml"
       405:
-        $ref: "#/responses/405"
+        $ref: "../responses/405.yaml"
       200:
         description: List of all values in the CatalogType
         schema:
@@ -29,8 +29,8 @@ get:
           type: object
           properties:
             ok:
-              $ref: "#/definitions/ok"
+              $ref: "../definitions/ok.yaml"
             types:
               type: array
               items:
-                $ref: "#/definitions/CatalogType"
+                $ref: "../definitions/CatalogType.yaml"

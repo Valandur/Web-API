@@ -1,5 +1,5 @@
 allOf:
-  - $ref: "#/definitions/World"
+  - $ref: "./World.yaml"
   - title: WorldFull
     type: object
     properties:
@@ -7,7 +7,7 @@ allOf:
         type: object
         properties:
           center:
-            $ref: "#/definitions/Vector3"
+            $ref: "../Vector3.yaml"
           diameter:
             type: number
             description: The diameter of the world border.
@@ -72,7 +72,7 @@ allOf:
         type: number
         description: The seed used to generate this world.
       spawn:
-        $ref: "#/definitions/Vector3"
+        $ref: "../Vector3.yaml"
       time:
         type: number
         description: The current in game time.

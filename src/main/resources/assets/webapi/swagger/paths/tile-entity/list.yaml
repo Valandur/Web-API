@@ -22,7 +22,7 @@ get:
       description: The maximum amount of tile entities to return.
   responses:
     403:
-      $ref: "#/responses/403"
+      $ref: "../../responses/403.yaml"
     200:
       description: List of tile entities
       schema:
@@ -30,9 +30,9 @@ get:
         type: object
         properties:
           ok:
-            $ref: "#/definitions/ok"
+            $ref: "../../definitions/ok.yaml"
           tileEntities:
             type: array
             description: A list of tile entities.
             items:
-              $ref: "#/definitions/TileEntity"
+              $ref: "../../definitions/tile-entity/TileEntity.yaml"

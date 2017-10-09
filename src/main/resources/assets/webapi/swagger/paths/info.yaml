@@ -9,7 +9,7 @@ get:
     - Info
   responses:
     403:
-      $ref: "#/responses/403"
+      $ref: "../responses/403.yaml"
     200:
       description: General info
       schema:
@@ -18,5 +18,5 @@ get:
           - type: object
             properties:
               ok:
-                $ref: "#/definitions/ok"
-          - $ref: "#/definitions/ServerInfo"
+                $ref: "../definitions/ok.yaml"
+          - $ref: "../definitions/server/ServerInfo.yaml"

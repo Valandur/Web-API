@@ -14,7 +14,7 @@ get:
     - Entity
   responses:
     403:
-      $ref: "#/responses/403"
+      $ref: "../../responses/403.yaml"
     200:
       description: List of entities
       schema:
@@ -22,12 +22,12 @@ get:
         type: object
         properties:
           ok:
-            $ref: "#/definitions/ok"
+            $ref: "../../definitions/ok.yaml"
           entities:
             type: array
             description: A list of entities.
             items:
-              $ref: "#/definitions/Entity"
+              $ref: "../../definitions/entity/Entity.yaml"
 post:
   summary: Create an entity
   operationId: createEntity
@@ -39,14 +39,14 @@ post:
     - name: CreateEntityRequest
       in: body
       schema:
-        $ref: "#/definitions/CreateEntityRequest"
+        $ref: "../../definitions/entity/CreateEntityRequest.yaml"
       required: true
   tags:
     - Entity
   responses:
     400:
-      $ref: "#/responses/400"
+      $ref: "../../responses/400.yaml"
     403:
-      $ref: "#/responses/403"
+      $ref: "../../responses/403.yaml"
     200:
-      $ref: "#/responses/Entity"
+      $ref: "../../responses/Entity.yaml"

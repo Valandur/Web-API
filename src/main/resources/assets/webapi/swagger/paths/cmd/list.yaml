@@ -9,7 +9,7 @@ get:
     - Command
   responses:
     403:
-      $ref: "#/responses/403"
+      $ref: "../../responses/403.yaml"
     200:
       description: List of commands
       schema:
@@ -17,12 +17,12 @@ get:
         type: object
         properties:
           ok:
-            $ref: "#/definitions/ok"
+            $ref: "../../definitions/ok.yaml"
           commands:
             type: array
             description: A list of commands
             items:
-              $ref: "#/definitions/Command"
+              $ref: "../../definitions/cmd/Command.yaml"
 post:
   summary: Execute command
   operationId: executeCommand
@@ -41,12 +41,12 @@ post:
       schema:
         type: array
         items:
-          $ref: "#/definitions/CommandRequest"
+          $ref: "../../definitions/cmd/CommandRequest.yaml"
   tags:
     - Command
   responses:
     403:
-      $ref: "#/responses/403"
+      $ref: "../../responses/403.yaml"
     200:
       description: The command response(s)
       schema:
@@ -54,10 +54,10 @@ post:
         type: object
         properties:
           ok:
-            $ref: "#/definitions/ok"
+            $ref: "../../definitions/ok.yaml"
           result:
-            $ref: "#/definitions/CommandResponse"
+            $ref: "../../definitions/cmd/CommandResponse.yaml"
           results:
             type: array
             items:
-              $ref: "#/definitions/CommandResponse"
+              $ref: "../../definitions/cmd/CommandResponse.yaml"

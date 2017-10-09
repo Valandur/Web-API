@@ -17,4 +17,4 @@ properties:
     type: array
     description: The item stacks in the inventory
     items:
-      $ref: "#/definitions/ItemStack"
+      $ref: "./ItemStack.yaml"

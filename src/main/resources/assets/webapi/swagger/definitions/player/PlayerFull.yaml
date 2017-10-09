@@ -1,16 +1,16 @@
 allOf:
-  - $ref: "#/definitions/Player"
+  - $ref: "./Player.yaml"
   - title: PlayerFull
     type: object
     properties:
       velocity:
-        $ref: "#/definitions/Vector3"
+        $ref: "../Vector3.yaml"
       rotation:
-        $ref: "#/definitions/Vector3"
+        $ref: "../Vector3.yaml"
       scale:
-        $ref: "#/definitions/Vector3"
+        $ref: "../Vector3.yaml"
       inventory:
-        $ref: "#/definitions/Inventory"
+        $ref: "../Inventory.yaml"
       connection:
         type: object
         properties:
@@ -25,13 +25,13 @@ allOf:
         type: object
         properties:
           helmet:
-            $ref: "#/definitions/ItemStack"
+            $ref: "../ItemStack.yaml"
           chestplate:
-            $ref: "#/definitions/ItemStack"
+            $ref: "../ItemStack.yaml"
           leggings:
-            $ref: "#/definitions/ItemStack"
+            $ref: "../ItemStack.yaml"
           boots:
-            $ref: "#/definitions/ItemStack"
+            $ref: "../ItemStack.yaml"
       achievements:
         type: array
         description: An array of achievements the player has been awarded.

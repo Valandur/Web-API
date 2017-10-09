@@ -9,7 +9,7 @@ get:
     - Block
   responses:
     403:
-      $ref: "#/responses/403"
+      $ref: "../../responses/403.yaml"
     200:
       description: List of block operations
       schema:
@@ -17,12 +17,12 @@ get:
         type: object
         properties:
           ok:
-           $ref: "#/definitions/ok"
+           $ref: "../../definitions/ok.yaml"
           operations:
             type: array
             description: A list of block operations.
             items:
-              $ref: "#/definitions/BlockOperation"
+              $ref: "../../definitions/block/BlockOperation.yaml"
 post:
   summary: Create block operation
   operationId: startBlockOperation
@@ -39,17 +39,17 @@ post:
         title: BlockChangeList
         type: array
         items:
-          $ref: "#/definitions/BlockOperationNew"
+          $ref: "../../definitions/block/BlockOperationNew.yaml"
   tags:
     - Block
   responses:
     400:
-      $ref: "#/responses/400"
+      $ref: "../../responses/400.yaml"
     403:
-      $ref: "#/responses/403"
+      $ref: "../../responses/403.yaml"
     404:
-      $ref: "#/responses/404"
+      $ref: "../../responses/404.yaml"
     406:
-      $ref: "#/responses/406"
+      $ref: "../../responses/406.yaml"
     200:
-      $ref: "#/responses/BlockOperation"
+      $ref: "../../responses/BlockOperation.yaml"

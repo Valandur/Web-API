@@ -16,11 +16,11 @@ get:
     - Chunk
   responses:
     400:
-      $ref: "#/responses/400"
+      $ref: "../../responses/400.yaml"
     403:
-      $ref: "#/responses/403"
+      $ref: "../../responses/403.yaml"
     404:
-      $ref: "#/responses/404"
+      $ref: "../../responses/404.yaml"
     200:
       description: A list of all the loaded chunks.
       schema:
@@ -28,9 +28,9 @@ get:
         type: object
         properties:
           ok:
-            $ref: "#/definitions/ok"
+            $ref: "../../definitions/ok.yaml"
           chunks:
             type: array
             description: An array of loaded chunks.
             items:
-              $ref: "#/definitions/Chunk"
+              $ref: "../../definitions/chunk/Chunk.yaml"

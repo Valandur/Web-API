@@ -1,5 +1,5 @@
 allOf:
-  - $ref: "#/definitions/Plugin"
+  - $ref: "./Plugin.yaml"
   - title: PluginFull
     type: object
     properties:

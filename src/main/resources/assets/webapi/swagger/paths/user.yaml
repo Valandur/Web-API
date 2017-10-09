@@ -13,9 +13,9 @@ get:
         type: object
         properties:
           ok:
-            $ref: "#/definitions/ok"
+            $ref: "../definitions/ok.yaml"
           user:
-            $ref: "#/definitions/User"
+            $ref: "../definitions/User.yaml"
 post:
   summary: Login
   operationId: login
@@ -25,15 +25,15 @@ post:
     - name: LoginRequest
       in: body
       schema:
-        $ref: "#/definitions/LoginRequest"
+        $ref: "../definitions/LoginRequest.yaml"
       required: true
   tags:
     - User
   responses:
     400:
-      $ref: "#/responses/400"
+      $ref: "../responses/400.yaml"
     403:
-      $ref: "#/responses/403"
+      $ref: "../responses/403.yaml"
     200:
       description: New API key
       schema:
@@ -41,9 +41,9 @@ post:
         type: object
         properties:
           ok:
-            $ref: "#/definitions/ok"
+            $ref: "../definitions/ok.yaml"
           key:
             type: string
             description: An api key that can be used in other parts of the Web-API.
           user:
-            $ref: "#/definitions/User"
+            $ref: "../definitions/User.yaml"

@@ -12,16 +12,16 @@ post:
       description: Details of the message sent to the player
       required: true
       schema:
-        $ref: "#/definitions/MessageRequest"
+        $ref: "../definitions/MessageRequest.yaml"
   tags:
     - Message
   responses:
     400:
-      $ref: "#/responses/400"
+      $ref: "../responses/400.yaml"
     403:
-      $ref: "#/responses/403"
+      $ref: "../responses/403.yaml"
     404:
-      $ref: "#/responses/404"
+      $ref: "../responses/404.yaml"
     200:
       description: Message sent
       schema:
@@ -29,4 +29,4 @@ post:
         type: object
         properties:
           ok:
-            $ref: "#/definitions/ok"
+            $ref: "../definitions/ok.yaml"

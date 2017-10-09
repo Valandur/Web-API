@@ -23,13 +23,13 @@ get:
     - World
   responses:
     400:
-      $ref: "#/responses/400"
+      $ref: "../../responses/400.yaml"
     403:
-      $ref: "#/responses/403"
+      $ref: "../../responses/403.yaml"
     404:
-      $ref: "#/responses/404"
+      $ref: "../../responses/404.yaml"
     200:
-      $ref: "#/responses/World"
+      $ref: "../../responses/World.yaml"
 put:
   summary: Edit world
   operationId: changeWorld
@@ -48,18 +48,18 @@ put:
       description: The new properties of the world
       required: true
       schema:
-        $ref: "#/definitions/UpdateWorldRequest"
+        $ref: "../../definitions/world/UpdateWorldRequest.yaml"
   tags:
     - World
   responses:
     400:
-      $ref: "#/responses/400"
+      $ref: "../../responses/400.yaml"
     403:
-      $ref: "#/responses/403"
+      $ref: "../../responses/403.yaml"
     404:
-      $ref: "#/responses/404"
+      $ref: "../../responses/404.yaml"
     200:
-      $ref: "#/responses/World"
+      $ref: "../../responses/World.yaml"
 post:
   summary: Execute world methods
   operationId: executeWorldMethod
@@ -78,16 +78,16 @@ post:
       description: Information about which method to execute.
       required: true
       schema:
-        $ref: "#/definitions/RawRequest"
+        $ref: "../../definitions/RawRequest.yaml"
   tags:
     - World
   responses:
     400:
-      $ref: "#/responses/400"
+      $ref: "../../responses/400.yaml"
     403:
-      $ref: "#/responses/403"
+      $ref: "../../responses/403.yaml"
     404:
-      $ref: "#/responses/404"
+      $ref: "../../responses/404.yaml"
     200:
       description: Method return value
       schema:
@@ -95,11 +95,11 @@ post:
         type: object
         properties:
           ok:
-            $ref: "#/definitions/ok"
+            $ref: "../../definitions/ok.yaml"
           world:
-            $ref: "#/definitions/WorldFull"
+            $ref: "../../definitions/world/WorldFull.yaml"
           result:
-            $ref: "#/definitions/RawResponse"
+            $ref: "../../definitions/RawResponse.yaml"
 delete:
   summary: Delete a world
   operationId: deleteWorld
@@ -117,10 +117,10 @@ delete:
    - World
   responses:
     400:
-      $ref: "#/responses/400"
+      $ref: "../../responses/400.yaml"
     403:
-      $ref: "#/responses/403"
+      $ref: "../../responses/403.yaml"
     404:
-      $ref: "#/responses/404"
+      $ref: "../../responses/404.yaml"
     200:
-      $ref: "#/responses/World"
+      $ref: "../../responses/World.yaml"

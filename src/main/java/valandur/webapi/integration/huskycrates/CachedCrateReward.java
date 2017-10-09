@@ -3,7 +3,6 @@ package valandur.webapi.integration.huskycrates;
 import com.codehusky.huskycrates.crate.config.CrateReward;
 import org.spongepowered.api.item.inventory.ItemStack;
 import valandur.webapi.api.cache.CachedObject;
-import valandur.webapi.api.json.JsonDetails;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -21,19 +20,16 @@ public class CachedCrateReward extends CachedObject<CrateReward> {
     }
 
     private ItemStack displayItem;
-    @JsonDetails
     public ItemStack getDisplayItem() {
         return displayItem;
     }
 
-    private boolean shouldAnnounce;
-    @JsonDetails
-    public boolean shouldAnnounce() {
-        return shouldAnnounce;
+    private boolean announce;
+    public boolean isAnnounce() {
+        return announce;
     }
 
     private List<Object> rewards;
-    @JsonDetails
     public List<Object> getRewards() {
         return rewards;
     }
@@ -45,7 +41,7 @@ public class CachedCrateReward extends CachedObject<CrateReward> {
         this.name = reward.getRewardName();
         this.chance = reward.getChance();
         this.displayItem = reward.getDisplayItem().copy();
-        this.shouldAnnounce = reward.shouldAnnounce();
+        this.announce = reward.shouldAnnounce();
         this.rewards = reward.getRewards().stream()
                 .map(o -> o instanceof ItemStack ? ((ItemStack)o).copy() : o)
                 .collect(Collectors.toList());

@@ -5,13 +5,13 @@ properties:
     type: string
     description: The UUID or name of the world that the player is moved to.
   position:
-    $ref: "#/definitions/Vector3"
+    $ref: "../Vector3.yaml"
   velocity:
-    $ref: "#/definitions/Vector3"
+    $ref: "../Vector3.yaml"
   rotation:
-    $ref: "#/definitions/Vector3"
+    $ref: "../Vector3.yaml"
   scale:
-    $ref: "#/definitions/Vector3"
+    $ref: "../Vector3.yaml"
   foodLevel:
     type: number
     format: integer

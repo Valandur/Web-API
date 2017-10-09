@@ -1,5 +1,5 @@
 allOf:
-  - $ref: "#/definitions/Command"
+  - $ref: "./Command.yaml"
   - title: CommandFull
     type: object
     properties:

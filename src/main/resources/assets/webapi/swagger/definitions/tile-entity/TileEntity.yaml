@@ -5,7 +5,7 @@ properties:
     type: string
     description: The type of the tile entity.
   location:
-    $ref: "#/definitions/Location"
+    $ref: "../Location.yaml"
   link:
     type: string
     description: The API URL which contains detailed information about this tile entity.

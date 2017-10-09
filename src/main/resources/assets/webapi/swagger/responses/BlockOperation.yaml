@@ -4,6 +4,6 @@ schema:
   type: object
   properties:
     ok:
-      $ref: "#/definitions/ok"
+      $ref: "../definitions/ok.yaml"
     operation:
-      $ref: "#/definitions/BlockOperationFull"
+      $ref: "../definitions/block/BlockOperationFull.yaml"

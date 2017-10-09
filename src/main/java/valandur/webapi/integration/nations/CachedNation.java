@@ -6,6 +6,7 @@ import org.spongepowered.api.world.World;
 import valandur.webapi.api.cache.CachedObject;
 import valandur.webapi.api.cache.player.ICachedPlayer;
 import valandur.webapi.api.cache.world.CachedLocation;
+import valandur.webapi.api.json.JsonDetails;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -13,22 +14,85 @@ import java.util.stream.Collectors;
 public class CachedNation extends CachedObject<Nation> {
 
     private UUID uuid;
+    public UUID getUuid() {
+        return uuid;
+    }
+
     private String name;
+    public String getName() {
+        return name;
+    }
+
     private String tag;
+    public String getTag() {
+        return tag;
+    }
+
     private ICachedPlayer president;
+    public ICachedPlayer getPresident() {
+        return president;
+    }
 
     private String realName;
+    @JsonDetails
+    public String getRealName() {
+        return realName;
+    }
+
     private double upkeep;
+    @JsonDetails
+    public double getUpkeep() {
+        return upkeep;
+    }
+
     private double taxes;
+    @JsonDetails
+    public double getTaxes() {
+        return taxes;
+    }
+
     private Hashtable<String, Boolean> flags;
+    @JsonDetails
+    public Hashtable<String, Boolean> getFlags() {
+        return flags;
+    }
 
     private List<ICachedPlayer> citizens;
+    @JsonDetails
+    public List<ICachedPlayer> getCitizens() {
+        return citizens;
+    }
+
     private List<ICachedPlayer> ministers;
+    @JsonDetails
+    public List<ICachedPlayer> getMinisters() {
+        return ministers;
+    }
+
     private List<ICachedPlayer> staff;
+    @JsonDetails
+    public List<ICachedPlayer> getStaff() {
+        return staff;
+    }
 
     private Hashtable<String, CachedLocation> spawns;
+    @JsonDetails
+    public Hashtable<String, CachedLocation> getSpawns() {
+        return spawns;
+    }
+
     private Collection<CachedRect> rects;
+    @JsonDetails
+    public Collection<CachedRect> getRects() {
+        return rects;
+    }
+
     private Collection<CachedZone> zones;
+    @JsonDetails
+    public Collection<CachedZone> getZones() {
+        return zones;
+    }
+
 
     public CachedNation(Nation value) {
         super(value);

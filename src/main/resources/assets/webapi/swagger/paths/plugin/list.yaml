@@ -9,7 +9,7 @@ get:
     - Plugin
   responses:
     403:
-      $ref: "#/responses/403"
+      $ref: "../../responses/403.yaml"
     200:
       description: List of plugins
       schema:
@@ -17,9 +17,9 @@ get:
         type: object
         properties:
           ok:
-            $ref: "#/definitions/ok"
+            $ref: "../../definitions/ok.yaml"
           plugins:
             type: array
             description: A list of plugins.
             items:
-              $ref: "#/definitions/Plugin"
+              $ref: "../../definitions/plugin/Plugin.yaml"

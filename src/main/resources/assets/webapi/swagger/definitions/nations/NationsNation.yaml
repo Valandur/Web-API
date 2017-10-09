@@ -1,0 +1,14 @@
+title: Nation
+type: object
+properties:
+  uuid:
+    type: string
+    description: The unique id of the nation.
+  name:
+    type: string
+    description: The name of the nation.
+  tag:
+    type: string
+    description: The tag of the nation.
+  president:
+    $ref: "../player/Player.yaml"

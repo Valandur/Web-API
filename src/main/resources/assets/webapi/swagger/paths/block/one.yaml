@@ -30,11 +30,11 @@ get:
     - Block
   responses:
     400:
-      $ref: "#/responses/400"
+      $ref: "../../responses/400.yaml"
     403:
-      $ref: "#/responses/403"
+      $ref: "../../responses/403.yaml"
     404:
-      $ref: "#/responses/404"
+      $ref: "../../responses/404.yaml"
     200:
       description: Single block
       schema:
@@ -42,8 +42,8 @@ get:
         type: object
         properties:
           ok:
-           $ref: "#/definitions/ok"
+           $ref: "../../definitions/ok.yaml"
           location:
-            $ref: "#/definitions/Location"
+            $ref: "../../definitions/Location.yaml"
           block:
-            $ref: "#/definitions/BlockFull"
+            $ref: "../../definitions/block/BlockFull.yaml"

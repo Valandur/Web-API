@@ -7,10 +7,29 @@ import valandur.webapi.api.cache.world.ICachedWorld;
 public class CachedRect extends CachedObject<Rect> {
 
     private ICachedWorld world;
+    public ICachedWorld getWorld() {
+        return world;
+    }
+
     private int minX;
+    public int getMinX() {
+        return minX;
+    }
+
     private int minY;
+    public int getMinY() {
+        return minY;
+    }
+
     private int maxX;
+    public int getMaxX() {
+        return maxX;
+    }
+
     private int maxY;
+    public int getMaxY() {
+        return maxY;
+    }
     
     
     public CachedRect(Rect value) {

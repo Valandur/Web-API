@@ -15,9 +15,9 @@ get:
     - Plugin
   responses:
     403:
-      $ref: "#/responses/403"
+      $ref: "../../responses/403.yaml"
     404:
-      $ref: "#/responses/404"
+      $ref: "../../responses/404.yaml"
     200:
       description: Detailed plugin info
       schema:
@@ -25,6 +25,6 @@ get:
         type: object
         properties:
           ok:
-            $ref: "#/definitions/ok"
+            $ref: "../../definitions/ok.yaml"
           plugin:
-            $ref: "#/definitions/PluginFull"
+            $ref: "../../definitions/plugin/PluginFull.yaml"

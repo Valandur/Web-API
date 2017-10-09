@@ -3,6 +3,6 @@ type: object
 description: Describes a location in a world.
 properties:
   world:
-    $ref: "#/definitions/World"
+    $ref: "./world/World.yaml"
   position:
-    $ref: "#/definitions/Vector3"
+    $ref: "./Vector3.yaml"

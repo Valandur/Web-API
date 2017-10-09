@@ -4,6 +4,7 @@ import io.github.nucleuspowered.nucleus.api.nucleusdata.Kit;
 import org.spongepowered.api.data.value.ValueContainer;
 import org.spongepowered.api.item.inventory.ItemStackSnapshot;
 import valandur.webapi.api.cache.CachedObject;
+import valandur.webapi.api.json.JsonDetails;
 
 import java.time.Duration;
 import java.util.ArrayList;
@@ -27,22 +28,24 @@ public class CachedKit extends CachedObject<Kit> {
         return cooldown;
     }
 
-    private boolean isFirstJoinKit;
+    private boolean firstJoinKit;
     public boolean isFirstJoinKit() {
-        return isFirstJoinKit;
+        return firstJoinKit;
     }
 
-    private boolean isOneTime;
+    private boolean oneTime;
     public boolean isOneTime() {
-        return isOneTime;
+        return oneTime;
     }
 
     private List<String> commands;
+    @JsonDetails
     public List<String> getCommands() {
         return commands;
     }
 
     private List<ItemStackSnapshot> stacks;
+    @JsonDetails
     public List<ItemStackSnapshot> getStacks() {
         return stacks;
     }
@@ -54,8 +57,8 @@ public class CachedKit extends CachedObject<Kit> {
         this.name = kit.getName();
         this.cost = kit.getCost();
         this.cooldown = kit.getCooldown().orElse(Duration.ofNanos(0)).toMillis();
-        this.isFirstJoinKit = kit.isFirstJoinKit();
-        this.isOneTime = kit.isOneTime();
+        this.firstJoinKit = kit.isFirstJoinKit();
+        this.oneTime = kit.isOneTime();
         this.commands = new ArrayList<>(kit.getCommands());
         this.stacks = kit.getStacks().stream().map(ValueContainer::copy).collect(Collectors.toList());
     }

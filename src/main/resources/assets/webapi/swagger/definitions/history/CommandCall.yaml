@@ -16,7 +16,7 @@ properties:
     type: object
     description: An object describing the source (executor) of the command. Usually a player or the console.
   result:
-    $ref: "#/definitions/CommandResult"
+    $ref: "./CommandResult.yaml"
 example:
   timestamp: 1490533099
   command: unban

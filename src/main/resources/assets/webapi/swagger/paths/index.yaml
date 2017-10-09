@@ -58,3 +58,28 @@
   $ref: "./world/chunk_list.yaml"
 /world/{uuid}/chunk/{x}/{z}:
   $ref: "./world/chunk_one.yaml"
+
+
+/husky/crate:
+  $ref: "./husky/crate_list.yaml"
+/husky/crate/{id}:
+  $ref: "./husky/crate_one.yaml"
+
+/mmctickets/ticket:
+  $ref: "./mmctickets/ticket_list.yaml"
+/mmctickets/ticket/{id}:
+  $ref: "./mmctickets/ticket_one.yaml"
+
+/nations/nation:
+  $ref: "./nations/nation_list.yaml"
+/nations/nation/{id}:
+  $ref: "./nations/nation_one.yaml"
+
+/nucleus/jail:
+  $ref: "./nucleus/jail_list.yaml"
+/nucleus/jail/{name}:
+  $ref: "./nucleus/jail_one.yaml"
+/nucleus/kit:
+  $ref: "./nucleus/kit_list.yaml"
+/nucleus/kit/{name}:
+  $ref: "./nucleus/kit_one.yaml"

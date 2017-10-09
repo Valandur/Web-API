@@ -44,7 +44,7 @@ public class HuskyCratesServlet extends BaseServlet {
         return (HuskyCrates)optPlugin.get();
     }
 
-    @Endpoint(method = HttpMethod.GET, path = "crate", perm = "list")
+    @Endpoint(method = HttpMethod.GET, path = "crate", perm = "crate.list")
     public void getCrates(IServletData data) {
         HuskyCrates plugin = getHuskyPlugin(data);
         if (plugin == null) return;
@@ -61,7 +61,7 @@ public class HuskyCratesServlet extends BaseServlet {
         data.addJson("crates", optList.orElse(null), data.getQueryParam("details").isPresent());
     }
 
-    @Endpoint(method = HttpMethod.GET, path = "crate/:id", perm = "one")
+    @Endpoint(method = HttpMethod.GET, path = "crate/:id", perm = "crate.one")
     public void getCrate(IServletData data, String id) {
         HuskyCrates plugin = getHuskyPlugin(data);
         if (plugin == null) return;

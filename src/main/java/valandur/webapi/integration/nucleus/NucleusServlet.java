@@ -1,15 +1,11 @@
 package valandur.webapi.integration.nucleus;
 
 import io.github.nucleuspowered.nucleus.api.NucleusAPI;
-import io.github.nucleuspowered.nucleus.api.nucleusdata.Home;
 import io.github.nucleuspowered.nucleus.api.nucleusdata.Kit;
 import io.github.nucleuspowered.nucleus.api.nucleusdata.NamedLocation;
-import io.github.nucleuspowered.nucleus.api.service.NucleusHomeService;
 import io.github.nucleuspowered.nucleus.api.service.NucleusJailService;
 import io.github.nucleuspowered.nucleus.api.service.NucleusKitService;
-import io.github.nucleuspowered.nucleus.api.service.NucleusServerShopService;
 import org.eclipse.jetty.http.HttpMethod;
-import org.spongepowered.api.CatalogType;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 import valandur.webapi.api.WebAPIAPI;
@@ -20,8 +16,8 @@ import valandur.webapi.api.servlet.IServletData;
 import valandur.webapi.api.servlet.Servlet;
 
 import javax.servlet.http.HttpServletResponse;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Servlet(basePath = "nucleus")
@@ -31,7 +27,6 @@ public class NucleusServlet extends BaseServlet {
         WebAPIAPI.getJsonService().ifPresent(srv -> {
             srv.registerCache(NamedLocation.class, CachedNamedLocation.class);
             srv.registerCache(Kit.class, CachedKit.class);
-            srv.registerCache(Home.class, CachedHome.class);
         });
     }
 
@@ -322,52 +317,5 @@ public class NucleusServlet extends BaseServlet {
 
         data.addJson("ok", optRes.isPresent(), false);
         data.addJson("kit", optRes.orElse(null), true);
-    }
-
-
-    @Endpoint(method = HttpMethod.GET, path = "home/:uuid", perm = "home.list")
-    public void getHomes(IServletData data, UUID uuid) {
-        Optional<NucleusHomeService> optSrv = NucleusAPI.getHomeService();
-        if (!optSrv.isPresent()) {
-            data.sendError(HttpServletResponse.SC_NOT_FOUND, "Nuclues home service not available");
-            return;
-        }
-
-        NucleusHomeService srv = optSrv.get();
-
-        Optional<List<CachedHome>> optRes = WebAPIAPI.runOnMain(
-                () -> srv.getHomes(uuid).stream().map(CachedHome::new).collect(Collectors.toList())
-        );
-
-        data.addJson("ok", optRes.isPresent(), false);
-        data.addJson("homes", optRes.orElse(null), true);
-    }
-
-
-    @Endpoint(method = HttpMethod.GET, path = "shop", perm = "shop.list")
-    public void getShops(IServletData data) {
-        Optional<NucleusServerShopService> optSrv = NucleusAPI.getServerShopService();
-        if (!optSrv.isPresent()) {
-            data.sendError(HttpServletResponse.SC_NOT_FOUND, "Nuclues server shop service not available");
-            return;
-        }
-
-        NucleusServerShopService srv = optSrv.get();
-
-        Map<String, Double> buyPrices = new ConcurrentHashMap<>();
-        Map<String, Double> sellPrices = new ConcurrentHashMap<>();
-        WebAPIAPI.runOnMain(() -> {
-            for (Map.Entry<CatalogType, Double> entry : srv.getBuyPrices().entrySet()) {
-                buyPrices.put(entry.getKey().getId(), entry.getValue());
-            }
-
-            for (Map.Entry<CatalogType, Double> entry : srv.getSellPrices().entrySet()) {
-                sellPrices.put(entry.getKey().getId(), entry.getValue());
-            }
-        });
-
-        data.addJson("ok", true, false);
-        data.addJson("buy", buyPrices, true);
-        data.addJson("sell", sellPrices, true);
     }
 }

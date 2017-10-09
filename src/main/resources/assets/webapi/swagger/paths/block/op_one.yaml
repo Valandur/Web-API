@@ -15,9 +15,9 @@ get:
     - Block
   responses:
     403:
-      $ref: "#/responses/403"
+      $ref: "../../responses/403.yaml"
     200:
-      $ref: "#/responses/BlockOperation"
+      $ref: "../../responses/BlockOperation.yaml"
 put:
   summary: Modify block operation
   operationId: changeBlockOperation
@@ -39,20 +39,20 @@ put:
         type: object
         properties:
           ok:
-            $ref: "#/definitions/ok"
+            $ref: "../../definitions/ok.yaml"
           operation:
-            $ref: "#/definitions/BlockOperationFull"
+            $ref: "../../definitions/block/BlockOperationFull.yaml"
   tags:
     - Block
   responses:
     400:
-      $ref: "#/responses/400"
+      $ref: "../../responses/400.yaml"
     403:
-      $ref: "#/responses/403"
+      $ref: "../../responses/403.yaml"
     404:
-      $ref: "#/responses/404"
+      $ref: "../../responses/404.yaml"
     200:
-      $ref: "#/responses/BlockOperation"
+      $ref: "../../responses/BlockOperation.yaml"
 delete:
   summary: Cancel block operation
   operationId: cancelBlockOperation
@@ -70,10 +70,10 @@ delete:
     - Block
   responses:
     400:
-      $ref: "#/responses/400"
+      $ref: "../../responses/400.yaml"
     403:
-      $ref: "#/responses/403"
+      $ref: "../../responses/403.yaml"
     404:
-      $ref: "#/responses/404"
+      $ref: "../../responses/404.yaml"
     200:
-      $ref: "#/responses/BlockOperation"
+      $ref: "../../responses/BlockOperation.yaml"

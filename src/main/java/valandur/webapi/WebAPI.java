@@ -434,7 +434,7 @@ public class WebAPI {
             HttpConfiguration httpConfig = new HttpConfiguration();
             httpConfig.setOutputBufferSize(32768);
 
-            String tempUri = null;
+            String baseUri = null;
 
             // HTTP
             if (serverPortHttp >= 0) {
@@ -451,7 +451,7 @@ public class WebAPI {
                 httpConn.setIdleTimeout(30000);
                 server.addConnector(httpConn);
 
-                tempUri = "http://" + serverHost + ":" + serverPortHttp;
+                baseUri = "http://" + serverHost + ":" + serverPortHttp;
             }
 
             // HTTPS
@@ -497,10 +497,10 @@ public class WebAPI {
                 httpsConn.setIdleTimeout(30000);
                 server.addConnector(httpsConn);
 
-                tempUri = "https://" + serverHost + ":" + serverPortHttps;
+                baseUri = "https://" + serverHost + ":" + serverPortHttps;
             }
 
-            if (tempUri == null) {
+            if (baseUri == null) {
                 logger.error("You have disabled both HTTP and HTTPS - The WebAPI will be unreachable!");
             }
 
@@ -510,16 +510,14 @@ public class WebAPI {
             // Collection of all handlers
             List<Handler> mainHandlers = new LinkedList<>();
 
-            final String baseUri = tempUri;
-
             // Asset handlers
             mainHandlers.add(newContext("/docs", new AssetHandler("pages/redoc.html")));
             mainHandlers.add(newContext("/swagger", new AssetHandler("swagger", (path) -> {
-                if (!path.endsWith("/swagger/index.yaml"))
+                if (!path.endsWith("swagger/index.yaml"))
                     return null;
                 return (data) -> {
                     String text = new String(data);
-                    text = text.replaceFirst("<host>", baseUri);
+                    text = text.replaceFirst("<host>", serverHost + ":" + serverPortHttp);
                     text = text.replaceFirst("<version>", WebAPI.VERSION);
                     return text.getBytes();
                 };

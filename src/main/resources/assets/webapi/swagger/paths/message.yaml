@@ -1,5 +1,6 @@
 post:
   summary: Send an interactive message
+  operationId: sendMessage
   description: |
     Send an interactive message to a player. Make sure to have an event hook for "custom_message" to receive
     the response.
@@ -11,20 +12,21 @@ post:
       description: Details of the message sent to the player
       required: true
       schema:
-        $ref: "../definitions/MessageRequest.yaml"
+        $ref: "#/definitions/MessageRequest"
   tags:
     - Message
   responses:
     400:
-      $ref: "../responses/400.yaml"
+      $ref: "#/responses/400"
     403:
-      $ref: "../responses/403.yaml"
+      $ref: "#/responses/403"
     404:
-      $ref: "../responses/404.yaml"
+      $ref: "#/responses/404"
     200:
       description: Message sent
       schema:
+        title: MessageResponse
         type: object
         properties:
           ok:
-            $ref: "../definitions/ok.yaml"
+            $ref: "#/definitions/ok"

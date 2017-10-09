@@ -4,7 +4,7 @@ description: Describes something that has an id and a name.
 properties:
   id:
     type: string
-    decsription: The internal id used to identify this object.
+    description: The internal id used to identify this object.
   name:
     type: string
     description: The human readable name of this object.

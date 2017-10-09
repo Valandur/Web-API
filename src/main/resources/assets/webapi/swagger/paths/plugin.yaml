@@ -1,5 +1,6 @@
 get:
   summary: Plugin list
+  operationId: getPlugins
   description: |
     Get a list of all the plugins running on the server.
 
@@ -8,16 +9,17 @@ get:
     - Plugin
   responses:
     403:
-      $ref: "../responses/403.yaml"
+      $ref: "#/responses/403"
     200:
       description: List of plugins
       schema:
+        title: PluginsResponse
         type: object
         properties:
           ok:
-            $ref: "../definitions/ok.yaml"
+            $ref: "#/definitions/ok"
           plugins:
             type: array
             description: A list of plugins.
             items:
-              $ref: "../definitions/Plugin.yaml"
+              $ref: "#/definitions/Plugin"

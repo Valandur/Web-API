@@ -6,3 +6,8 @@
   $ref: "./404.yaml"
 405:
   $ref: "./405.yaml"
+
+BlockOperation:
+  $ref: "./BlockOperation.yaml"
+Entity:
+  $ref: "./Entity.yaml"

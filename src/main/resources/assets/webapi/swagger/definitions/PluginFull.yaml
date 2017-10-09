@@ -1,5 +1,5 @@
 allOf:
-  - $ref: "./Plugin.yaml"
+  - $ref: "#/definitions/Plugin"
   - title: PluginFull
     type: object
     properties:
@@ -20,7 +20,7 @@ example:
   name: Web-API
   version: 2.0.2-S6.0
   description: Access Minecraft through a Web API
-  url: https://github.com/Valandur/Web-API
+  url: https:/github.com/Valandur/Web-API
   authors:
   - Valandur
   link: "/api/plugin/webapi"

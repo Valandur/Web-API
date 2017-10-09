@@ -1,5 +1,6 @@
 get:
   summary: Loaded chunk list
+  operationId: getChunks
   description: |
     Gets a list of all the loaded chunks for the specified world.
 
@@ -15,20 +16,21 @@ get:
     - Chunk
   responses:
     400:
-      $ref: "../responses/400.yaml"
+      $ref: "#/responses/400"
     403:
-      $ref: "../responses/403.yaml"
+      $ref: "#/responses/403"
     404:
-      $ref: "../responses/404.yaml"
+      $ref: "#/responses/404"
     200:
       description: A list of all the loaded chunks.
       schema:
+        title: ChunksResponse
         type: object
         properties:
           ok:
-            $ref: "../definitions/ok.yaml"
+            $ref: "#/definitions/ok"
           chunks:
             type: array
             description: An array of loaded chunks.
             items:
-              $ref: "../definitions/Chunk.yaml"
+              $ref: "#/definitions/Chunk"

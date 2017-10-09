@@ -43,7 +43,7 @@ public class CachedLocation extends CachedObject<Location> {
 
     @Override
     public Optional<Location> getLive() {
-        Optional<?> w = world.getLive();
-        return w.map(o -> new Location<>((World) o, position));
+        Optional<World> optWorld = world.getLive();
+        return optWorld.map(w -> new Location<>(w, position));
     }
 }

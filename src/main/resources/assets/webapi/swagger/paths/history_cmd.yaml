@@ -1,5 +1,6 @@
 get:
   summary: Command History
+  operationId: getCommands
   description: |
     View a history of the server commands.
 
@@ -8,16 +9,17 @@ get:
     - History
   responses:
     403:
-      $ref: "../responses/403.yaml"
+      $ref: "#/responses/403"
     200:
       description: Command history
       schema:
+        title: CommandHistoryResponse
         type: object
         properties:
           ok:
-            $ref: "../definitions/ok.yaml"
+            $ref: "#/definitions/ok"
           messages:
             type: array
             description: A list of command calls.
             items:
-              $ref: "../definitions/CommandCall.yaml"
+              $ref: "#/definitions/CommandCall"

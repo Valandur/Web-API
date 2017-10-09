@@ -1,5 +1,6 @@
 get:
   summary: Command list
+  operationId: getCommands
   description: |
     Gets a list of all the commands available on the server.
 
@@ -8,21 +9,23 @@ get:
     - Command
   responses:
     403:
-      $ref: "../responses/403.yaml"
+      $ref: "#/responses/403"
     200:
       description: List of commands
       schema:
+        title: CommandsResponse
         type: object
         properties:
           ok:
-            $ref: "../definitions/ok.yaml"
+            $ref: "#/definitions/ok"
           commands:
             type: array
             description: A list of commands
             items:
-              $ref: "../definitions/Command.yaml"
+              $ref: "#/definitions/Command"
 post:
   summary: Execute command
+  operationId: executeCommand
   description: |
     Execute a command on the server. (Almost the same as running it from the console).
     Pass a list of commands to execute them in succession, if only passing one command the
@@ -38,22 +41,23 @@ post:
       schema:
         type: array
         items:
-          $ref: "../definitions/CommandRequest.yaml"
+          $ref: "#/definitions/CommandRequest"
   tags:
     - Command
   responses:
     403:
-      $ref: "../responses/403.yaml"
+      $ref: "#/responses/403"
     200:
       description: The command response(s)
       schema:
+        title: ExecuteCommandResponse
         type: object
         properties:
           ok:
-            $ref: "../definitions/ok.yaml"
+            $ref: "#/definitions/ok"
           result:
-            $ref: "../definitions/CommandResponse.yaml"
+            $ref: "#/definitions/CommandResponse"
           results:
             type: array
             items:
-              $ref: "../definitions/CommandResponse.yaml"
+              $ref: "#/definitions/CommandResponse"

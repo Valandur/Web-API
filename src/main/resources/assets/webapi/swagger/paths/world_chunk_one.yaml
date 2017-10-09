@@ -1,5 +1,6 @@
 get:
   summary: Detailed chunk info
+  operationId: getChunk
   description: |
     Get detailed information about a chunk
 
@@ -14,26 +15,29 @@ get:
       in: path
       type: string
       description: The x-coordinate of the chunk.
+      required: true
     - name: z
       in: path
       type: string
       description: The z-coordinate of the chunk.
+      required: true
   tags:
     - World
     - Chunk
   responses:
     400:
-      $ref: "../responses/400.yaml"
+      $ref: "#/responses/400"
     403:
-      $ref: "../responses/403.yaml"
+      $ref: "#/responses/403"
     404:
-      $ref: "../responses/404.yaml"
+      $ref: "#/responses/404"
     200:
       description: Detailed chunk info
       schema:
+        title: ChunkResponse
         type: object
         properties:
           ok:
-            $ref: "../definitions/ok.yaml"
+            $ref: "#/definitions/ok"
           chunk:
-            $ref: "../definitions/ChunkFull.yaml"
+            $ref: "#/definitions/ChunkFull"

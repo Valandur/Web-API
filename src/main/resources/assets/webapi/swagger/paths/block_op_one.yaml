@@ -1,5 +1,6 @@
 get:
   summary: Block operation details
+  operationId: getBlockOperation
   description: |
     Gets details about a specific block operation
 
@@ -14,18 +15,12 @@ get:
     - Block
   responses:
     403:
-      $ref: "../responses/403.yaml"
+      $ref: "#/responses/403"
     200:
-      description: Block operation
-      schema:
-        type: object
-        properties:
-          ok:
-            $ref: "../definitions/ok.yaml"
-          operation:
-            $ref: "../definitions/BlockOperationFull.yaml"
+      $ref: "#/responses/BlockOperation"
 put:
   summary: Modify block operation
+  operationId: changeBlockOperation
   description: |
     Modify an existing block operation to either pause or continue it.
 
@@ -43,29 +38,24 @@ put:
       schema:
         type: object
         properties:
-          pause:
-            type: boolean
-            description: True if the block operation should be paused, false otherwise.
+          ok:
+            $ref: "#/definitions/ok"
+          operation:
+            $ref: "#/definitions/BlockOperationFull"
   tags:
     - Block
   responses:
     400:
-      $ref: "../responses/400.yaml"
+      $ref: "#/responses/400"
     403:
-      $ref: "../responses/403.yaml"
+      $ref: "#/responses/403"
     404:
-      $ref: "../responses/404.yaml"
+      $ref: "#/responses/404"
     200:
-      description: Status change successful
-      schema:
-        type: object
-        properties:
-          ok:
-            $ref: "../definitions/ok.yaml"
-          operation:
-            $ref: "../definitions/BlockOperationFull.yaml"
+      $ref: "#/responses/BlockOperation"
 delete:
   summary: Cancel block operation
+  operationId: cancelBlockOperation
   description: |
     Cancel a pending or running block operation. **THIS DOES NOT UNDO THE BLOCK CHANGES**
 
@@ -80,17 +70,10 @@ delete:
     - Block
   responses:
     400:
-      $ref: "../responses/400.yaml"
+      $ref: "#/responses/400"
     403:
-      $ref: "../responses/403.yaml"
+      $ref: "#/responses/403"
     404:
-      $ref: "../responses/404.yaml"
+      $ref: "#/responses/404"
     200:
-      description: Cancel successful
-      schema:
-        type: object
-        properties:
-          ok:
-            $ref: "../definitions/ok.yaml"
-          operation:
-            $ref: "../definitions/BlockOperationFull.yaml"
+      $ref: "#/responses/BlockOperation"

@@ -1,5 +1,6 @@
 get:
   summary: Chat History
+  operationId: getChat
   description: |
     View a history of the server chat.
 
@@ -8,16 +9,17 @@ get:
     - History
   responses:
     403:
-      $ref: "../responses/403.yaml"
+      $ref: "#/responses/403"
     200:
       description: Chat history
       schema:
+        title: ChatHistoryResponse
         type: object
         properties:
           ok:
-            $ref: "../definitions/ok.yaml"
+            $ref: "#/definitions/ok"
           messages:
             type: array
             description: A list of chat messages.
             items:
-              $ref: "../definitions/ChatMessage.yaml"
+              $ref: "#/definitions/ChatMessage"

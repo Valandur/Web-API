@@ -1,11 +1,36 @@
-allOf:
-  - $ref: "./WorldRequest.yaml"
-  - title: UpdateWorldRequest
+title: WorldRequest
+type: object
+properties:
+  name:
+    type: string
+    description: The name of the world.
+  seed:
+    type: number
+    description: The seed number. A random seed is generated if not provided.
+  generator:
+    type: string
+    description: The id of the generator type to use. Check `/registry/org.spongepowered.api.world.GeneratorType`.
+  gameMode:
+    type: string
+    description: The id of the game mode to use. Check `/registry/org.spongepowered.api.entity.living.player.gamemode.GameMode`.
+  difficulty:
+    type: string
+    description: The id of the difficutly to use. Check `/registry/org.spongepowered.api.world.difficulty.Difficulty`.
+  loadOnStartup:
+    type: boolean
+    description: True if the world is loaded when the server starts, false otherwise.
+  keepSpawnLoaded:
+    type: boolean
+    description: True to keep the spawn area of the world loaded, even if it is empty.
+  allowCommands:
+    type: boolean
+    description: True if executing commands is allowed in the world.
+  usesMapFeatures:
+    type: boolean
+    description: True to use map features of the generator (such as villages).
+  loaded:
+    type: boolean
+    description: True to load the world, false to unload it.
+  gameRules:
     type: object
-    properties:
-      loaded:
-        type: boolean
-        description: True to load the world, false to unload it.
-      gameRules:
-        type: object
-        description: A map of keys to values for the game rules of the world.
+    description: A map of keys to values for the game rules of the world.

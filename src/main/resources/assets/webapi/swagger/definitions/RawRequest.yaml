@@ -12,4 +12,4 @@ properties:
     type: array
     description: The parameters passed to the method.
     items:
-      $ref: "./RawRequestParam.yaml"
+      $ref: "#/definitions/RawRequestParam"

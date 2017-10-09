@@ -1,12 +1,12 @@
 allOf:
-  - $ref: "./BlockOperation.yaml"
+  - $ref: "#/definitions/BlockOperation"
   - title: BlockOperationFull
     type: object
     properties:
       min:
-        $ref: "./Vector3.yaml"
+        $ref: "#/definitions/Vector3"
       max:
-        $ref: "./Vector3.yaml"
+        $ref: "#/definitions/Vector3"
       blocks:
         type: array
         description: |
@@ -17,7 +17,7 @@ allOf:
           items:
             type: array
             items:
-              $ref: "./BlockFull.yaml"
+              $ref: "#/definitions/BlockFull"
       error:
         type: string
         description: Any error that occured during execution.

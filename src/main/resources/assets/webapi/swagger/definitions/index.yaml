@@ -1,0 +1,86 @@
+BlockFull:
+  $ref: "./BlockFull.yaml"
+BlockOperation:
+  $ref: "./BlockOperation.yaml"
+BlockOperationFull:
+  $ref: "./BlockOperationFull.yaml"
+BlockOperationNew:
+  $ref: "./BlockOperationNew.yaml"
+CatalogType:
+  $ref: "./CatalogType.yaml"
+ChatMessage:
+  $ref: "./ChatMessage.yaml"
+Chunk:
+  $ref: "./Chunk.yaml"
+ChunkFull:
+  $ref: "./ChunkFull.yaml"
+Command:
+  $ref: "./Command.yaml"
+CommandCall:
+  $ref: "./CommandCall.yaml"
+CommandFull:
+  $ref: "./CommandFull.yaml"
+CommandRequest:
+  $ref: "./CommandRequest.yaml"
+CommandResponse:
+  $ref: "./CommandResponse.yaml"
+CommandResult:
+  $ref: "./CommandResult.yaml"
+CreateEntityRequest:
+  $ref: "./CreateEntityRequest.yaml"
+CreateWorldRequest:
+  $ref: "./CreateWorldRequest.yaml"
+Entity:
+  $ref: "./Entity.yaml"
+EntityFull:
+  $ref: "./EntityFull.yaml"
+Inventory:
+  $ref: "./Inventory.yaml"
+ItemStack:
+  $ref: "./ItemStack.yaml"
+Location:
+  $ref: "./Location.yaml"
+LoginRequest:
+  $ref: "./LoginRequest.yaml"
+MessageRequest:
+  $ref: "./MessageRequest.yaml"
+ok:
+  $ref: "./ok.yaml"
+Player:
+  $ref: "./Player.yaml"
+PlayerFull:
+  $ref: "./PlayerFull.yaml"
+Plugin:
+  $ref: "./Plugin.yaml"
+PluginFull:
+  $ref: "./PluginFull.yaml"
+RawRequest:
+  $ref: "./RawRequest.yaml"
+RawRequestParam:
+  $ref: "./RawRequestParam.yaml"
+RawResponse:
+  $ref: "./RawResponse.yaml"
+ServerInfo:
+  $ref: "./ServerInfo.yaml"
+ServerInfoDetail:
+  $ref: "./ServerInfoDetail.yaml"
+TileEntity:
+  $ref: "./TileEntity.yaml"
+TileEntityFull:
+  $ref: "./TileEntityFull.yaml"
+UpdateEntityRequest:
+  $ref: "./UpdateEntityRequest.yaml"
+UpdatePlayerRequest:
+  $ref: "./UpdatePlayerRequest.yaml"
+UpdateWorldRequest:
+  $ref: "./UpdateWorldRequest.yaml"
+User:
+  $ref: "./User.yaml"
+Vector3:
+  $ref: "./Vector3.yaml"
+World:
+  $ref: "./World.yaml"
+WorldFull:
+  $ref: "./WorldFull.yaml"
+WorldRequest:
+  $ref: "./WorldRequest.yaml"

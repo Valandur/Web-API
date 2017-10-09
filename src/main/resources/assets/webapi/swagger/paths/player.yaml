@@ -1,5 +1,6 @@
 get:
   summary: Player list
+  operationId: getPlayers
   description: |
     Get a list of all the players on the server.
 
@@ -8,16 +9,17 @@ get:
     - Player
   responses:
     403:
-      $ref: "../responses/403.yaml"
+      $ref: "#/responses/403"
     200:
       description: List of players
       schema:
+        title: PlayersList
         type: object
         properties:
           ok:
-            $ref: "../definitions/ok.yaml"
+            $ref: "#/definitions/ok"
           players:
             type: array
             description: A list of players.
             items:
-              $ref: "../definitions/Player.yaml"
+              $ref: "#/definitions/Player"

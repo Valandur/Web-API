@@ -1,5 +1,6 @@
 get:
   summary: Detailed world info
+  operationId: getWorld
   description: |
     Get detailed information about a world.
 
@@ -22,22 +23,16 @@ get:
     - World
   responses:
     400:
-      $ref: "../responses/400.yaml"
+      $ref: "#/responses/400"
     403:
-      $ref: "../responses/403.yaml"
+      $ref: "#/responses/403"
     404:
-      $ref: "../responses/404.yaml"
+      $ref: "#/responses/404"
     200:
-      description: Detailed world info
-      schema:
-        type: object
-        properties:
-          ok:
-            $ref: "../definitions/ok.yaml"
-          world:
-            $ref: "../definitions/WorldFull.yaml"
+      $ref: "#/responses/World"
 put:
   summary: Edit world
+  operationId: changeWorld
   description: |
     Update the properties of an existing world.
 
@@ -53,27 +48,21 @@ put:
       description: The new properties of the world
       required: true
       schema:
-        $ref: "../definitions/UpdateWorldRequest.yaml"
+        $ref: "#/definitions/UpdateWorldRequest"
   tags:
     - World
   responses:
     400:
-      $ref: "../responses/400.yaml"
+      $ref: "#/responses/400"
     403:
-      $ref: "../responses/403.yaml"
+      $ref: "#/responses/403"
     404:
-      $ref: "../responses/404.yaml"
+      $ref: "#/responses/404"
     200:
-      description: The changed world
-      schema:
-        type: object
-        properties:
-          ok:
-            $ref: "../definitions/ok.yaml"
-          world:
-            $ref: "../definitions/WorldFull.yaml"
+      $ref: "#/responses/World"
 post:
   summary: Execute world methods
+  operationId: executeWorldMethod
   description: |
     Provides direct access to the underlaying world object and can execute any method on it.
 
@@ -89,27 +78,31 @@ post:
       description: Information about which method to execute.
       required: true
       schema:
-        $ref: "../definitions/RawRequest.yaml"
+        $ref: "#/definitions/RawRequest"
   tags:
     - World
   responses:
     400:
-      $ref: "../responses/400.yaml"
+      $ref: "#/responses/400"
     403:
-      $ref: "../responses/403.yaml"
+      $ref: "#/responses/403"
     404:
-      $ref: "../responses/404.yaml"
+      $ref: "#/responses/404"
     200:
       description: Method return value
       schema:
-        ok:
-          $ref: "../definitions/ok.yaml"
-        world:
-          $ref: "../definitions/WorldFull.yaml"
-        result:
-          $ref: "../definitions/RawResponse.yaml"
+        title: ExecuteWorldMethodResponse
+        type: object
+        properties:
+          ok:
+            $ref: "#/definitions/ok"
+          world:
+            $ref: "#/definitions/WorldFull"
+          result:
+            $ref: "#/definitions/RawResponse"
 delete:
   summary: Delete a world
+  operationId: deleteWorld
   description: |
     Deletes an existing world. **The world must be unloaded before deleting it**
 
@@ -124,17 +117,10 @@ delete:
    - World
   responses:
     400:
-      $ref: "../responses/400.yaml"
+      $ref: "#/responses/400"
     403:
-      $ref: "../responses/403.yaml"
+      $ref: "#/responses/403"
     404:
-      $ref: "../responses/404.yaml"
+      $ref: "#/responses/404"
     200:
-      description: The deleted world
-      schema:
-        type: object
-        properties:
-          ok:
-            $ref: "../definitions/ok.yaml"
-          world:
-            $ref: "../definitions/WorldFull.yaml"
+      $ref: "#/responses/World"

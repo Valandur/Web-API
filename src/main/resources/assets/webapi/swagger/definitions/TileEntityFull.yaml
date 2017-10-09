@@ -1,5 +1,5 @@
 allOf:
-  - $ref: "./TileEntity.yaml"
+  - $ref: "#/definitions/TileEntity"
   - title: TileEntityFull
     type: object
 example:

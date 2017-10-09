@@ -1,14 +1,14 @@
 allOf:
-  - $ref: "./Chunk.yaml"
+  - $ref: "#/definitions/Chunk"
   - title: ChunkFull
     type: object
     properties:
       world:
-        $ref: "./World.yaml"
+        $ref: "#/definitions/World"
       blockMin:
-        $ref: "./Vector3.yaml"
+        $ref: "#/definitions/Vector3"
       blockMax:
-        $ref: "./Vector3.yaml"
+        $ref: "#/definitions/Vector3"
       isLoaded:
         type: boolean
         description: True if the chunk is currently loaded in the world, false otherwise.

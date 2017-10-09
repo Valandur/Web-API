@@ -1,5 +1,6 @@
 get:
   summary: List block operations
+  operationId: getBlockOperations
   description: |
     Returns a list of all the currently running block operations.
 
@@ -8,21 +9,23 @@ get:
     - Block
   responses:
     403:
-      $ref: "../responses/403.yaml"
+      $ref: "#/responses/403"
     200:
       description: List of block operations
       schema:
+        title: BlockOperationsList
         type: object
         properties:
           ok:
-           $ref: "../definitions/ok.yaml"
+           $ref: "#/definitions/ok"
           operations:
             type: array
             description: A list of block operations.
             items:
-              $ref: "../definitions/BlockOperation.yaml"
+              $ref: "#/definitions/BlockOperation"
 post:
   summary: Create block operation
+  operationId: startBlockOperation
   description: |
     Start a request to get or change blocks on the server.
 
@@ -36,24 +39,17 @@ post:
         title: BlockChangeList
         type: array
         items:
-          $ref: "../definitions/BlockOperationNew.yaml"
+          $ref: "#/definitions/BlockOperationNew"
   tags:
     - Block
   responses:
     400:
-      $ref: "../responses/400.yaml"
+      $ref: "#/responses/400"
     403:
-      $ref: "../responses/403.yaml"
+      $ref: "#/responses/403"
     404:
-      $ref: "../responses/404.yaml"
+      $ref: "#/responses/404"
     406:
-      $ref: "../responses/406.yaml"
+      $ref: "#/responses/406"
     200:
-      description: Block operation
-      schema:
-        type: object
-        properties:
-          ok:
-            $ref: "../definitions/ok.yaml"
-          operation:
-            $ref: "../definitions/BlockOperationFull.yaml"
+      $ref: "#/responses/BlockOperation"

@@ -8,7 +8,7 @@ properties:
     type: string
     description: The uuid of the entity.
   location:
-    $ref: "./Location.yaml"
+    $ref: "#/definitions/Location"
   link:
     type: string
     description: The API URL which contains detailed information about this entity.

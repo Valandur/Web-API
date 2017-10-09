@@ -5,13 +5,6 @@
 /block/op/{uuid}:
   $ref: "./block_op_one.yaml"
 
-/class:
-  $ref: "./class.yaml"
-/class/{classname}:
-  $ref: "./class_one.yaml"
-/class/{classname}/subclasses:
-  $ref: "./class_subclasses.yaml"
-
 /cmd:
   $ref: "./cmd.yaml"
 /cmd/{name}:

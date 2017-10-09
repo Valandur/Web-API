@@ -26,11 +26,11 @@ properties:
     type: string
     description: The minecraft version running on the server.
   game:
-    $ref: "./ServerInfoDetail.yaml"
+    $ref: "#/definitions/ServerInfoDetail"
   api:
-    $ref: "./ServerInfoDetail.yaml"
+    $ref: "#/definitions/ServerInfoDetail"
   implementation:
-    $ref: "./ServerInfoDetail.yaml"
+    $ref: "#/definitions/ServerInfoDetail"
 example:
   motd: A Minecraft Server
   players: 1

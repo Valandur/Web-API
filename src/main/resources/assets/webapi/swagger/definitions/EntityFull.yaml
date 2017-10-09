@@ -1,14 +1,14 @@
 allOf:
-  - $ref: "./Entity.yaml"
+  - $ref: "#/definitions/Entity"
   - title: EntityFull
     type: object
     properties:
       velocity:
-        $ref: "./Vector3.yaml"
+        $ref: "#/definitions/Vector3"
       rotation:
-        $ref: "./Vector3.yaml"
+        $ref: "#/definitions/Vector3"
       scale:
-        $ref: "./Vector3.yaml"
+        $ref: "#/definitions/Vector3"
 example:
   type: minecraft:sheep
   uuid: 8835e1b0-b385-416b-aebf-02446bbfa63f

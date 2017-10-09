@@ -1,5 +1,6 @@
 get:
   summary: Get one block
+  operationId: getBlock
   description: |
     Gets information about one block in the world.
 
@@ -29,19 +30,20 @@ get:
     - Block
   responses:
     400:
-      $ref: "../responses/400.yaml"
+      $ref: "#/responses/400"
     403:
-      $ref: "../responses/403.yaml"
+      $ref: "#/responses/403"
     404:
-      $ref: "../responses/404.yaml"
+      $ref: "#/responses/404"
     200:
       description: Single block
       schema:
+        title: SingleBlock
         type: object
         properties:
           ok:
-           $ref: "../definitions/ok.yaml"
+           $ref: "#/definitions/ok"
           location:
-            $ref: "../definitions/Location.yaml"
+            $ref: "#/definitions/Location"
           block:
-            $ref: "../definitions/BlockFull.yaml"
+            $ref: "#/definitions/BlockFull"

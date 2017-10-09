@@ -25,11 +25,11 @@ properties:
       The arrays should contain the blocks such that a block located at [min.X + x, min.Y + y, min.Z + z] can be accessed by `blocks[x][y][z]`,
       where `min` is the vecotor defined by the `min` property.
   min:
-    $ref: "../definitions/Vector3.yaml"
+    $ref: "#/definitions/Vector3"
   max:
-    $ref: "../definitions/Vector3.yaml"
+    $ref: "#/definitions/Vector3"
   block:
-    $ref: "../definitions/BlockFull.yaml"
+    $ref: "#/definitions/BlockFull"
   blocks:
     type: array
     items:
@@ -37,4 +37,4 @@ properties:
       items:
         type: array
         items:
-          $ref: "../definitions/BlockFull.yaml"
+          $ref: "#/definitions/BlockFull"

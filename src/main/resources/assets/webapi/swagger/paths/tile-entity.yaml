@@ -1,5 +1,6 @@
 get:
   summary: Tile entities list
+  operationId: getTileEntities
   description: |
     Get a list of all tile entities on the server (in all worlds, unless specified).
 
@@ -21,16 +22,17 @@ get:
       description: The maximum amount of tile entities to return.
   responses:
     403:
-      $ref: "../responses/403.yaml"
+      $ref: "#/responses/403"
     200:
       description: List of tile entities
       schema:
+        title: TileEntitiesResponse
         type: object
         properties:
           ok:
-            $ref: "../definitions/ok.yaml"
+            $ref: "#/definitions/ok"
           tileEntities:
             type: array
             description: A list of tile entities.
             items:
-              $ref: "../definitions/TileEntity.yaml"
+              $ref: "#/definitions/TileEntity"

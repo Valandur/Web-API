@@ -1,5 +1,6 @@
 get:
   summary: World list
+  operationId: getWorlds
   description: |
     Get a list of all the worlds on the server.
 
@@ -13,21 +14,23 @@ get:
     - World
   responses:
     403:
-      $ref: "../responses/403.yaml"
+      $ref: "#/responses/403"
     200:
       description: List of worlds
       schema:
+        title: WorldsResponse
         type: object
         properties:
           ok:
-            $ref: "../definitions/ok.yaml"
+            $ref: "#/definitions/ok"
           worlds:
             type: array
             description: A list of worlds.
             items:
-              $ref: "../definitions/World.yaml"
+              $ref: "#/definitions/World"
 post:
   summary: Create a world
+  operationId: createWorld
   description: |
     Creates a new world with the specified settings. This does not yet load the world.
 
@@ -35,23 +38,15 @@ post:
   parameters:
     - name: CreateWorldRequest
       in: body
-      type: object
       schema:
-        $ref: "../definitions/CreateWorldRequest.yaml"
+        $ref: "#/definitions/CreateWorldRequest"
       required: true
   tags:
     - World
   responses:
     400:
-      $ref: "../responses/400.yaml"
+      $ref: "#/responses/400"
     403:
-      $ref: "../responses/403.yaml"
+      $ref: "#/responses/403"
     200:
-      description: The new world
-      schema:
-        type: object
-        properties:
-          ok:
-            $ref: "../definitions/ok.yaml"
-          world:
-            $ref: "../definitions/WorldFull.yaml"
+      $ref: "#/responses/World"

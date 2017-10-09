@@ -1,5 +1,6 @@
 get:
   summary: Entities list
+  operationId: getEntities
   description: |
     Get a list of all entities on the server (in all worlds).
 
@@ -13,21 +14,23 @@ get:
     - Entity
   responses:
     403:
-      $ref: "../responses/403.yaml"
+      $ref: "#/responses/403"
     200:
       description: List of entities
       schema:
+        title: EntitiesList
         type: object
         properties:
           ok:
-            $ref: "../definitions/ok.yaml"
+            $ref: "#/definitions/ok"
           entities:
             type: array
             description: A list of entities.
             items:
-              $ref: "../definitions/Entity.yaml"
+              $ref: "#/definitions/Entity"
 post:
   summary: Create an entity
+  operationId: createEntity
   description: |
     Creates & Spawns a new entity with the specified properties.
 
@@ -35,23 +38,15 @@ post:
   parameters:
     - name: CreateEntityRequest
       in: body
-      type: object
       schema:
-        $ref: "../definitions/CreateEntityRequest.yaml"
+        $ref: "#/definitions/CreateEntityRequest"
       required: true
   tags:
     - Entity
   responses:
     400:
-      $ref: "../responses/400.yaml"
+      $ref: "#/responses/400"
     403:
-      $ref: "../responses/403.yaml"
+      $ref: "#/responses/403"
     200:
-      description: The new entity
-      schema:
-        type: object
-        properties:
-          ok:
-           $ref: "../definitions/ok.yaml"
-          world:
-            $ref: "../definitions/EntityFull.yaml"
+      $ref: "#/responses/Entity"

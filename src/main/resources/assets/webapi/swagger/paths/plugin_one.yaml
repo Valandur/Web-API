@@ -1,5 +1,6 @@
 get:
   summary: Detailed plugin info
+  operationId: getPlugin
   description: |
     Gets detailed information about a plugin.
 
@@ -14,15 +15,16 @@ get:
     - Plugin
   responses:
     403:
-      $ref: "../responses/403.yaml"
+      $ref: "#/responses/403"
     404:
-      $ref: "../responses/404.yaml"
+      $ref: "#/responses/404"
     200:
       description: Detailed plugin info
       schema:
+        title: PluginResponse
         type: object
         properties:
           ok:
-            $ref: "../definitions/ok.yaml"
+            $ref: "#/definitions/ok"
           plugin:
-            $ref: "../definitions/PluginFull.yaml"
+            $ref: "#/definitions/PluginFull"

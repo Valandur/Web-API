@@ -1,5 +1,6 @@
 get:
     summary: List catalog values
+    operationId: getCatalogValues
     description: |
       Lists all the catalog values of a specified CatalogType.
 
@@ -14,21 +15,22 @@ get:
       - Registry
     responses:
       400:
-        $ref: "../responses/400.yaml"
+        $ref: "#/responses/400"
       403:
-        $ref: "../responses/403.yaml"
+        $ref: "#/responses/403"
       404:
-        $ref: "../responses/404.yaml"
+        $ref: "#/responses/404"
       405:
-        $ref: "../responses/405.yaml"
+        $ref: "#/responses/405"
       200:
         description: List of all values in the CatalogType
         schema:
+          title: CatalogTypesResponse
           type: object
           properties:
             ok:
-              $ref: "../definitions/ok.yaml"
+              $ref: "#/definitions/ok"
             types:
               type: array
               items:
-                $ref: "../definitions/CatalogType.yaml"
+                $ref: "#/definitions/CatalogType"

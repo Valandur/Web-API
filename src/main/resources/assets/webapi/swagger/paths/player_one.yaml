@@ -1,5 +1,6 @@
 get:
   summary: Detailed player info
+  operationId: getPlayer
   description: |
     Get detailed information about a player.
 
@@ -22,22 +23,16 @@ get:
     - Player
   responses:
     400:
-      $ref: "../responses/400.yaml"
+      $ref: "#/responses/400"
     403:
-      $ref: "../responses/403.yaml"
+      $ref: "#/responses/403"
     404:
-      $ref: "../responses/404.yaml"
+      $ref: "#/responses/404"
     200:
-      description: Detailed player info
-      schema:
-        type: object
-        properties:
-          ok:
-            $ref: "../definitions/ok.yaml"
-          player:
-            $ref: "../definitions/PlayerFull.yaml"
+      $ref: "#/responses/Player"
 put:
   summary: Edit player
+  operationId: changePlayer
   description: |
     Update the properties of an existing player.
 
@@ -53,27 +48,21 @@ put:
       description: The new properties of the player
       required: true
       schema:
-        $ref: "../definitions/UpdatePlayerRequest.yaml"
+        $ref: "#/definitions/UpdatePlayerRequest"
   tags:
     - Player
   responses:
     400:
-      $ref: "../responses/400.yaml"
+      $ref: "#/responses/400"
     403:
-      $ref: "../responses/403.yaml"
+      $ref: "#/responses/403"
     404:
-      $ref: "../responses/404.yaml"
+      $ref: "#/responses/404"
     200:
-      description: The changed player
-      schema:
-        type: object
-        properties:
-          ok:
-            $ref: "../definitions/ok.yaml"
-          entity:
-            $ref: "../definitions/PlayerFull.yaml"
+      $ref: "#/responses/Player"
 post:
   summary: Execute player method
+  operationId: executePlayerMethod
   description: |
     Provides direct access to the underlaying player object and can execute any method on it.
 
@@ -89,22 +78,25 @@ post:
       description: Information about which method to execute.
       required: true
       schema:
-        $ref: "../definitions/RawRequest.yaml"
+        $ref: "#/definitions/RawRequest"
   tags:
     - Player
   responses:
     400:
-      $ref: "../responses/400.yaml"
+      $ref: "#/responses/400"
     403:
-      $ref: "../responses/403.yaml"
+      $ref: "#/responses/403"
     404:
-      $ref: "../responses/404.yaml"
+      $ref: "#/responses/404"
     200:
       description: Method return value
       schema:
+        title: ExecutePlayerMethodResponse
         type: object
         properties:
           ok:
-            $ref: "../definitions/ok.yaml"
+            $ref: "#/definitions/ok"
           player:
-            $ref: "../definitions/RawResponse.yaml"
+            $ref: "#/definitions/RawResponse"
+          result:
+            $ref: "#/definitions/RawResponse"

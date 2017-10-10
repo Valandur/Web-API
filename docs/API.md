@@ -10,8 +10,7 @@ other plugins to provide their own endpoints for data without much effort.
     1. [Example](#servlet-example)
 1. [Endpoints](#endpoints)
     1. [Example](#endpoint-example)
-1. [Requests](#requests)
-1. [Responses](#responses)
+1. [Serializing Data](#serializing)
 
 
 <a name="setup"></a>
@@ -52,10 +51,10 @@ that you specified.
 performs a reload (e.g. through `sponge plugins reload`), so any initialization that your routes
 require should be handled in your constructor.
 
-Your servlet class needs to extend `WebAPIBaseServlet`, which is the base servlet that provides
+Your servlet class needs to extend `BaseServlet`, which is the base servlet that provides
 some functionality for your servlet to use.
 
-You must also add the `@WebAPIServlet(basePath = "")` annotation to the class. This annotation
+You must also add the `@Servlet(basePath = "")` annotation to the class. This annotation
 tells the Web-API that your class is indeed a valid servlet, and which base route to use. 
 
 - The `basePath` specifies at which path your servlet will be available, and all the other 
@@ -66,8 +65,9 @@ when the servlet is registered. This is only done once, even if the user reloads
 on the server. This is the best place to register any custom serializers that your servlets uses:
 ```java
 public static void onRegister() {
-    JsonService json = WebAPI.getJsonService();
-    json.registerSerializer(MyData.class, MyDataSerializer.class);
+    WebAPIAPI.getJsonService().ifPresent(srv -> {
+        srv.registerSerializer(MyData.class, MyDataSerializer.class);
+    });
 }
 ```
 
@@ -76,10 +76,10 @@ public static void onRegister() {
 ### Example
 
 ```java
-import valandur.webapi.api.annotation.WebAPIServlet;
-import valandur.webapi.api.servlet.WebAPIBaseServlet;
+import valandur.webapi.api.servlet.BaseServlet;
+import valandur.webapi.api.servlet.Servlet;
 
-@WebAPIServlet(basePath = "my")
+@Servlet(basePath = "my")
 public class MyServlet extends WebAPIBaseServlet {
     
 }
@@ -97,7 +97,7 @@ Your routes must be methods/functions that return `void` and have at least one p
 `IServletData`. The name of the method is up to you, and should probably be something that 
 describes what the endpoint does.
 
-The methods must also be marked with the `@WebAPIEndpoint(method = HttpMethod, path = "", perm = "")`
+The methods must also be marked with the `@Endpoint(method = HttpMethod, path = "", perm = "")`
 annotation. This annotation tells the Web-API that the provided method is actually an endpoint,
 and what type of endpoint it is.
 
@@ -127,13 +127,16 @@ player's or world's **UUID**, and the Web-API tries to find the requested object
 ### Example
 
 ```java
-import valandur.webapi.api.annotation.WebAPIServlet;
-import valandur.webapi.api.servlet.WebAPIBaseServlet;
+import valandur.webapi.api.servlet.BaseServlet;
+import valandur.webapi.api.servlet.Endpoint;
+import valandur.webapi.api.servlet.IServletData;
+import valandur.webapi.api.servlet.Servlet;
+import valandur.webapi.api.cache.world.ICachedWorld;
 
-@WebAPIServlet(basePath = "my")
-public class MyServlet extends WebAPIBaseServlet {
+@Servlet(basePath = "my")
+public class MyServlet extends BaseServlet {
     
-    @WebAPIEndpoint(method = HttpMethod.GET, path = "/test/:world/:myInt", perm = "test")
+    @Endpoint(method = HttpMethod.GET, path = "/test/:world/:myInt", perm = "test")
     public void testRoute(IServletData data, ICachedWorld world) {
         // Get the path parameter we specified above. Note that when accessing the path
         // parameters like this they are not parsed but returned as a String, and it is
@@ -160,9 +163,101 @@ The permissions for this endpoint are handled in the `test` permissions node, un
 endpoint.
 
 
-<a name="requests"></a>
-## Requests
+<a name="serializing"></a>
+## Serializing Data
+
+The Web-API automatically turns java objects into json. Sometimes this can be a little
+overwhelming to do for a program, so you can help it by giving it hints as to what it should
+include, and how.
+
+There are two ways to define how your java objects are turned into json:
 
 
-<a name="responses"></a>
-## Responses
+## 1. Annotations  
+
+By default all **public fields** and **public methods that are getters** (begin with `get` and 
+have a return value and no arguments) are used for serialization. Also methods that return
+boolean values and begin with `is`.
+
+You can use the annotations of the jackson library to further specify how your data should be
+serialized. The most important annotations are:
+- `JsonProperty` with which you can define how your property should be serialized 
+  (name, default value, etc.)
+- `JsonIgnore` which you can use to ignore a field/method completely
+- `JsonDetails` which you can use to specify that a field should only be present when the user
+wishes to retrieve all of the object data. *This annotation is from the Web-API API itself, not
+from the jackson library.* 
+- `JsonAnyGetter` which can be used on a method that returns a map from string to object,
+which contains all/additional properties of the current object.
+- `JsonValue` which can be used on a field or method to serialize the whole object as the
+marked field or method.
+
+You can find more information about all the jackson annotations in their 
+[official documentation](https://github.com/FasterXML/jackson-annotations/wiki/Jackson-Annotations).
+
+Simply add these annotations to your java objects that you return in your endpoints, and Web-API
+will take care of serializing your data to json.
+
+
+## 2. Views
+
+Views are used when you don't have direct access to a certain class (for example when serialing
+sponge/minecraft objects), or annotations are too complicated to use.
+
+A view defines basically a "copy" of your data object, which contains only the data which will
+be serialized. This can also be used for caching means, if your data object is not thread safe.
+
+Views can also take advantage of all the annotations listed above, but should be built with
+json data already in mind, so should not need many of them.
+
+> The Web-API already provides views for most sponge related data objects, such as Worlds, 
+Players, Entities, Inventories, Blocks and more.
+
+Your view must extend the class `BaseView<T>` of the Web-API API, and provide the class for
+which you are providing a view as the type argument, and provide a matching constructor.
+
+Following is an example View for Sponge's `BlockState`:
+
+```java
+package valandur.webapi.json.view.block;
+
+import org.spongepowered.api.block.BlockState;
+import org.spongepowered.api.block.BlockType;
+import org.spongepowered.api.block.trait.BlockTrait;
+import valandur.webapi.api.json.JsonDetails;
+import valandur.webapi.api.json.BaseView;
+
+import java.util.HashMap;
+import java.util.Map;
+
+public class BlockStateView extends BaseView<BlockState> {
+
+    public BlockType type;
+
+
+    public BlockStateView(BlockState value) {
+        super(value);
+
+        this.type = value.getType();
+    }
+
+    @JsonDetails
+    public Map<String, Object> getData() {
+        HashMap<String, Object> data = new HashMap<>();
+        for (Map.Entry<BlockTrait<?>, ?> entry : value.getTraitMap().entrySet()) {
+            data.put(entry.getKey().getName(), entry.getValue());
+        }
+        return data;
+    }
+}
+```
+As you can see it has the sponge `BlockState` class as it's type argument, and provides a
+constructor that matches the type argument.
+
+Since `type` is a public field it will automatically get serialized
+(The Web-API already provides a view for Sponge's `CatalogType`).
+
+The `getData()` method will be serialized as well (since it starts with `get` and has no
+arguments and a return type other than void), but only if the details for the object are
+requested (since the method is annotated with `JsonDetails`). This prevents the system
+from going through all the traits of a block, unless they are actually required.

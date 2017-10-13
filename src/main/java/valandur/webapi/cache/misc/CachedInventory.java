@@ -3,42 +3,35 @@ package valandur.webapi.cache.misc;
 import org.spongepowered.api.item.inventory.Inventory;
 import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.item.inventory.Slot;
-import valandur.webapi.api.cache.misc.ICachedCatalogType;
-import valandur.webapi.api.cache.misc.ICachedInventory;
-import valandur.webapi.cache.CachedObject;
+import valandur.webapi.api.cache.CachedObject;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class CachedInventory extends CachedObject implements ICachedInventory {
+public class CachedInventory extends CachedObject<Inventory> {
 
     private String name;
-    @Override
     public String getName() {
         return name;
     }
 
-    private ICachedCatalogType type;
-    @Override
-    public ICachedCatalogType getType() {
+    private CachedCatalogType type;
+    public CachedCatalogType getType() {
         return type;
     }
 
     private int capacity;
-    @Override
     public int getCapacity() {
         return capacity;
     }
 
     private int totalItems;
-    @Override
     public int getTotalItems() {
         return totalItems;
     }
 
     private List<ItemStack> items;
-    @Override
     public List<ItemStack> getItems() {
         return items;
     }

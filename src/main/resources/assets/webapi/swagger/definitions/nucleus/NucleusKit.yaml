@@ -1,0 +1,20 @@
+title: Kit
+type: object
+properties:
+  name:
+    type: string
+    description: The name of the kit.
+  cost:
+    type: number
+    format: double
+    description: The cost to buy this kit.
+  cooldown:
+    type: number
+    format: long
+    description: The cooldown for this kit in milliseconds.
+  firstJoinKit:
+    type: boolean
+    description: True if players receive this kit when joining the server for the first time, false otherwise.
+  oneTime:
+    type: boolean
+    description: True if this kit can only be received one, false otherwise.

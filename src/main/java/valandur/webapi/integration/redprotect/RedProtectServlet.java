@@ -6,30 +6,30 @@ import org.eclipse.jetty.http.HttpMethod;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
-import valandur.webapi.WebAPI;
-import valandur.webapi.api.annotation.WebAPIEndpoint;
-import valandur.webapi.api.annotation.WebAPIServlet;
+import valandur.webapi.api.WebAPIAPI;
+import valandur.webapi.api.cache.world.CachedLocation;
 import valandur.webapi.api.cache.world.ICachedWorld;
-import valandur.webapi.api.servlet.WebAPIBaseServlet;
-import valandur.webapi.cache.misc.CachedLocation;
-import valandur.webapi.json.JsonService;
-import valandur.webapi.servlet.base.ServletData;
+import valandur.webapi.api.servlet.BaseServlet;
+import valandur.webapi.api.servlet.Endpoint;
+import valandur.webapi.api.servlet.IServletData;
+import valandur.webapi.api.servlet.Servlet;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.*;
 import java.util.stream.Collectors;
 
-@WebAPIServlet(basePath = "redprotect")
-public class RedProtectServlet extends WebAPIBaseServlet {
+@Servlet(basePath = "redprotect")
+public class RedProtectServlet extends BaseServlet {
 
     public static void onRegister() {
-        JsonService json = WebAPI.getJsonService();
-        json.registerSerializer(CachedRegion.class, CachedRegionSerializer.class);
+        WebAPIAPI.getJsonService().ifPresent(srv -> {
+            srv.registerCache(Region.class, CachedRegion.class);
+        });
     }
 
 
-    @WebAPIEndpoint(method = HttpMethod.GET, path = "region", perm = "list")
-    public void getRegions(ServletData data) {
+    @Endpoint(method = HttpMethod.GET, path = "region", perm = "list")
+    public void getRegions(IServletData data) {
         Optional<String> worldUuid = data.getQueryParam("world");
 
         Optional<Set<CachedRegion>> optRegions;
@@ -41,42 +41,42 @@ public class RedProtectServlet extends WebAPIBaseServlet {
             }
 
             ICachedWorld world = optWorld.get();
-            optRegions = WebAPI.runOnMain(() -> {
-                Optional<?> optLive = world.getLive();
+            optRegions = WebAPIAPI.runOnMain(() -> {
+                Optional<World> optLive = world.getLive();
                 if (!optLive.isPresent()) {
                     return null;
                 }
 
-                World live = (World)optLive.get();
+                World live = optLive.get();
                 return RedProtect.rm.getRegionsByWorld(live).stream()
                         .map(CachedRegion::new)
                         .collect(Collectors.toSet());
             });
         } else {
-            optRegions = WebAPI.runOnMain(() -> RedProtect.rm.getAllRegions().stream()
+            optRegions = WebAPIAPI.runOnMain(() -> RedProtect.rm.getAllRegions().stream()
                     .map(CachedRegion::new)
                     .collect(Collectors.toSet()));
         }
 
-        data.addJson("ok", optRegions.isPresent(), false);
-        data.addJson("regions", optRegions.orElse(null), data.getQueryParam("details").isPresent());
+        data.addData("ok", optRegions.isPresent(), false);
+        data.addData("regions", optRegions.orElse(null), data.getQueryParam("details").isPresent());
     }
 
-    @WebAPIEndpoint(method = HttpMethod.GET, path = "region/:id", perm = "one")
-    public void getRegion(ServletData data, String id) {
+    @Endpoint(method = HttpMethod.GET, path = "region/:id", perm = "one")
+    public void getRegion(IServletData data, String id) {
         if (!id.contains("@")) {
             data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid region id");
             return;
         }
 
-        Optional<CachedRegion> optRegion = WebAPI.runOnMain(() -> new CachedRegion(RedProtect.rm.getRegionById(id)));
+        Optional<CachedRegion> optRegion = WebAPIAPI.runOnMain(() -> new CachedRegion(RedProtect.rm.getRegionById(id)));
 
-        data.addJson("ok", optRegion.isPresent(), false);
-        data.addJson("region", optRegion.orElse(null), true);
+        data.addData("ok", optRegion.isPresent(), false);
+        data.addData("region", optRegion.orElse(null), true);
     }
 
-    @WebAPIEndpoint(method = HttpMethod.POST, path = "region", perm = "create")
-    public void createRegion(ServletData data) {
+    @Endpoint(method = HttpMethod.POST, path = "region", perm = "create")
+    public void createRegion(IServletData data) {
         Optional<CreateRegionRequest> optReq = data.getRequestBody(CreateRegionRequest.class);
         if (!optReq.isPresent()) {
             data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid region data: " + data.getLastParseError().getMessage());
@@ -85,7 +85,7 @@ public class RedProtectServlet extends WebAPIBaseServlet {
 
         CreateRegionRequest req = optReq.get();
 
-        Optional<CachedRegion> optRegion = WebAPI.runOnMain(() -> {
+        Optional<CachedRegion> optRegion = WebAPIAPI.runOnMain(() -> {
             String name = req.getName();
             if (name == null) {
                 return null;
@@ -96,12 +96,12 @@ public class RedProtectServlet extends WebAPIBaseServlet {
                 return null;
             }
 
-            Optional<?> optLive = optWorld.get().getLive();
+            Optional<World> optLive = optWorld.get().getLive();
             if (!optLive.isPresent()) {
                 return null;
             }
 
-            World world = (World)optLive.get();
+            World world = optLive.get();
 
             if (req.getMinLoc() == null) {
                 return null;
@@ -144,7 +144,7 @@ public class RedProtectServlet extends WebAPIBaseServlet {
             Location<World> tpPoint = null;
             Optional<CachedLocation> optTpPoint = req.getTpPos();
             if (optTpPoint.isPresent()) {
-                Optional<?> optLiveTpPoint = optTpPoint.get().getLive();
+                Optional<Location> optLiveTpPoint = optTpPoint.get().getLive();
                 if (!optLiveTpPoint.isPresent()) {
                     return null;
                 }
@@ -158,12 +158,12 @@ public class RedProtectServlet extends WebAPIBaseServlet {
             return new CachedRegion(region);
         });
 
-        data.addJson("ok", optRegion.isPresent(), false);
-        data.addJson("region", optRegion.orElse(null), true);
+        data.addData("ok", optRegion.isPresent(), false);
+        data.addData("region", optRegion.orElse(null), true);
     }
 
-    @WebAPIEndpoint(method = HttpMethod.PUT, path = "region/:id", perm = "change")
-    public void changeRegion(ServletData data, String id) {
+    @Endpoint(method = HttpMethod.PUT, path = "region/:id", perm = "change")
+    public void changeRegion(IServletData data, String id) {
         if (!id.contains("@")) {
             data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid region id");
             return;
@@ -177,7 +177,7 @@ public class RedProtectServlet extends WebAPIBaseServlet {
 
         BaseRegionRequest req = optReq.get();
 
-        Optional<CachedRegion> optRegion = WebAPI.runOnMain(() -> {
+        Optional<CachedRegion> optRegion = WebAPIAPI.runOnMain(() -> {
             Region region = RedProtect.rm.getRegionById(id);
             if (region == null) {
                 return null;
@@ -215,7 +215,7 @@ public class RedProtectServlet extends WebAPIBaseServlet {
 
             Optional<CachedLocation> optPos = req.getTpPos();
             if (optPos.isPresent()) {
-                Optional<?> optLoc = optPos.get().getLive();
+                Optional<Location> optLoc = optPos.get().getLive();
                 if (!optLoc.isPresent()) {
                     return null;
                 }
@@ -231,18 +231,18 @@ public class RedProtectServlet extends WebAPIBaseServlet {
             return new CachedRegion(region);
         });
 
-        data.addJson("ok", optRegion.isPresent(), false);
-        data.addJson("region", optRegion.orElse(null), true);
+        data.addData("ok", optRegion.isPresent(), false);
+        data.addData("region", optRegion.orElse(null), true);
     }
 
-    @WebAPIEndpoint(method = HttpMethod.DELETE, path = "region/:id", perm = "delete")
-    public void deleteRegion(ServletData data, String id) {
+    @Endpoint(method = HttpMethod.DELETE, path = "region/:id", perm = "delete")
+    public void deleteRegion(IServletData data, String id) {
         if (!id.contains("@")) {
             data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid region id");
             return;
         }
 
-        Optional<CachedRegion> optRegion = WebAPI.runOnMain(() -> {
+        Optional<CachedRegion> optRegion = WebAPIAPI.runOnMain(() -> {
             Region region = RedProtect.rm.getRegionById(id);
             if (region == null) {
                 return null;
@@ -254,7 +254,7 @@ public class RedProtectServlet extends WebAPIBaseServlet {
             return new CachedRegion(region);
         });
 
-        data.addJson("ok", optRegion.isPresent(), false);
-        data.addJson("region", optRegion.orElse(null), true);
+        data.addData("ok", optRegion.isPresent(), false);
+        data.addData("region", optRegion.orElse(null), true);
     }
 }

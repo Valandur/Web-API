@@ -3,14 +3,22 @@ package valandur.webapi.api.servlet;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.eclipse.jetty.http.HttpMethod;
-import valandur.webapi.api.annotation.WebAPIEndpoint;
 
+import javax.servlet.ServletOutputStream;
+import java.io.IOException;
 import java.util.Optional;
 
 /**
  * This class bundles the data that is received and sent from servlets when a client accesses an endpoint.
  */
 public interface IServletData {
+
+    /**
+     * Gets the output stream of the response, which can be written to directly to have more control over the response.
+     * @return The output stream of the respone object.
+     * @throws IOException Is thrown when the output stream cannot be acquired.
+     */
+    ServletOutputStream getOutputStream() throws IOException;
 
     /**
      * Returns the http method of the request.
@@ -20,7 +28,7 @@ public interface IServletData {
 
     /**
      * Gets the object node which is returned as the json response.
-     * If you want to add data to the response, please use the {@link #addJson(String, Object, boolean)} method
+     * If you want to add data to the response, please use the {@link #addData(String, Object, boolean)} method
      * @return The object node that will be transformed to json.
      */
     ObjectNode getNode();
@@ -77,16 +85,16 @@ public interface IServletData {
     void setContentType(String contentType);
 
     /**
-     * Adds an object to the json response data.
+     * Adds an object to the json/xml response data.
      * @param key The key under which the object is added.
      * @param value The object which is added to the response.
      * @param details True if details of the object should be included.
      */
-    void addJson(String key, Object value, boolean details);
+    void addData(String key, Object value, boolean details);
 
     /**
      * Gets the path parameter with the specified key. The path parameters are parsed according to the
-     * {@link WebAPIEndpoint} annotation.
+     * {@link Endpoint} annotation.
      * @param key The key of the parameter.
      * @return The path parameter, or null if the key is invalid.
      */
@@ -98,6 +106,12 @@ public interface IServletData {
      * @return An optional containing the property if it was present.
      */
     Optional<String> getQueryParam(String key);
+
+    /**
+     * Returns true if the response is expected to be xml, false otherwise (json)
+     * @return True if the response should be xml, false otherwise (json)
+     */
+    boolean responseIsXml();
 
     /**
      * Sends the specified error response code and message to the client. See

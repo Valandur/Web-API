@@ -57,11 +57,12 @@ import valandur.webapi.api.block.IBlockService;
 import valandur.webapi.api.cache.ICacheService;
 import valandur.webapi.api.extension.IExtensionService;
 import valandur.webapi.api.hook.IWebHookService;
-import valandur.webapi.api.json.IJsonService;
+import valandur.webapi.api.serialize.ISerializeService;
 import valandur.webapi.api.message.IMessageService;
 import valandur.webapi.api.permission.IPermissionService;
 import valandur.webapi.api.server.IServerService;
 import valandur.webapi.api.servlet.IServletService;
+import valandur.webapi.api.servlet.BaseServlet;
 import valandur.webapi.block.BlockOperation;
 import valandur.webapi.block.BlockOperationStatusChangeEvent;
 import valandur.webapi.block.BlockService;
@@ -80,7 +81,7 @@ import valandur.webapi.integration.nations.NationsServlet;
 import valandur.webapi.integration.nucleus.NucleusServlet;
 import valandur.webapi.integration.redprotect.RedProtectServlet;
 import valandur.webapi.integration.webbhooks.WebBookServlet;
-import valandur.webapi.json.JsonService;
+import valandur.webapi.serialize.SerializeService;
 import valandur.webapi.message.MessageService;
 import valandur.webapi.permission.PermissionService;
 import valandur.webapi.server.ServerService;
@@ -210,9 +211,9 @@ public class WebAPI {
         return WebAPI.getInstance().extensionService;
     }
 
-    private JsonService jsonService;
-    public static JsonService getJsonService() {
-        return WebAPI.getInstance().jsonService;
+    private SerializeService serializeService;
+    public static SerializeService getSerializeService() {
+        return WebAPI.getInstance().serializeService;
     }
 
     private MessageService messageService;
@@ -283,7 +284,7 @@ public class WebAPI {
         this.blockService = new BlockService();
         this.cacheService = new CacheService();
         this.extensionService = new ExtensionService();
-        this.jsonService = new JsonService();
+        this.serializeService = new SerializeService();
         this.messageService = new MessageService();
         this.permissionService = new PermissionService();
         this.serverService = new ServerService();
@@ -295,7 +296,7 @@ public class WebAPI {
         Sponge.getServiceManager().setProvider(this, IBlockService.class, blockService);
         Sponge.getServiceManager().setProvider(this, ICacheService.class, cacheService);
         Sponge.getServiceManager().setProvider(this, IExtensionService.class, extensionService);
-        Sponge.getServiceManager().setProvider(this, IJsonService.class, jsonService);
+        Sponge.getServiceManager().setProvider(this, ISerializeService.class, serializeService);
         Sponge.getServiceManager().setProvider(this, IMessageService.class, messageService);
         Sponge.getServiceManager().setProvider(this, IPermissionService.class, permissionService);
         Sponge.getServiceManager().setProvider(this, IServerService.class, serverService);
@@ -311,6 +312,9 @@ public class WebAPI {
 
         // Create permission handler
         authHandler = new AuthHandler();
+
+        // Main init function, that is also called when reloading the plugin
+        init(null);
 
         logger.info("Registering servlets...");
         servletService.registerServlet(BlockServlet.class);
@@ -366,9 +370,6 @@ public class WebAPI {
             servletService.registerServlet(RedProtectServlet.class);
         } catch (ClassNotFoundException ignored) { }
 
-        // Main init function, that is also called when reloading the plugin
-        init(null);
-
         logger.info(WebAPI.NAME + " ready");
     }
     @Listener(order = Order.POST)
@@ -409,7 +410,7 @@ public class WebAPI {
 
         webHookService.init();
 
-        jsonService.init();
+        serializeService.init();
 
         serverService.init();
 
@@ -433,7 +434,7 @@ public class WebAPI {
             HttpConfiguration httpConfig = new HttpConfiguration();
             httpConfig.setOutputBufferSize(32768);
 
-            String tempUri = null;
+            String baseUri = null;
 
             // HTTP
             if (serverPortHttp >= 0) {
@@ -450,7 +451,7 @@ public class WebAPI {
                 httpConn.setIdleTimeout(30000);
                 server.addConnector(httpConn);
 
-                tempUri = "http://" + serverHost + ":" + serverPortHttp;
+                baseUri = "http://" + serverHost + ":" + serverPortHttp;
             }
 
             // HTTPS
@@ -496,10 +497,10 @@ public class WebAPI {
                 httpsConn.setIdleTimeout(30000);
                 server.addConnector(httpsConn);
 
-                tempUri = "https://" + serverHost + ":" + serverPortHttps;
+                baseUri = "https://" + serverHost + ":" + serverPortHttps;
             }
 
-            if (tempUri == null) {
+            if (baseUri == null) {
                 logger.error("You have disabled both HTTP and HTTPS - The WebAPI will be unreachable!");
             }
 
@@ -509,16 +510,14 @@ public class WebAPI {
             // Collection of all handlers
             List<Handler> mainHandlers = new LinkedList<>();
 
-            final String baseUri = tempUri;
-
             // Asset handlers
             mainHandlers.add(newContext("/docs", new AssetHandler("pages/redoc.html")));
             mainHandlers.add(newContext("/swagger", new AssetHandler("swagger", (path) -> {
-                if (!path.endsWith("/swagger/index.yaml"))
+                if (!path.endsWith("swagger/index.yaml"))
                     return null;
                 return (data) -> {
                     String text = new String(data);
-                    text = text.replaceFirst("<host>", baseUri);
+                    text = text.replaceFirst("<host>", serverHost + ":" + serverPortHttp);
                     text = text.replaceFirst("<version>", WebAPI.VERSION);
                     return text.getBytes();
                 };
@@ -684,6 +683,14 @@ public class WebAPI {
             Map<String, Integer> map = new HashMap<>();
             map.put("HTTP", serverPortHttp >= 0 ? 1 : 0);
             map.put("HTTPS", serverPortHttps >= 0 ? 1 : 0);
+            return map;
+        }));
+        metrics.addCustomChart(new Metrics.SimpleBarChart("servlets", () -> {
+            Map<String, Integer> map = new HashMap<>();
+            Collection<Class<? extends BaseServlet>> servlets = servletService.getLoadedServlets().values();
+            for (Class<? extends BaseServlet> servlet : servlets) {
+                map.put(servlet.getClass().getName(), 1);
+            }
             return map;
         }));
 

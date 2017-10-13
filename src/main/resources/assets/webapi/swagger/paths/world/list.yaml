@@ -1,0 +1,52 @@
+get:
+  summary: World list
+  operationId: getWorlds
+  description: |
+    Get a list of all the worlds on the server.
+
+    > Required permission: world.list
+  parameters:
+    - name: details
+      in: query
+      type: string
+      description: Pass this parameter to receive the full details for each world.
+  tags:
+    - World
+  responses:
+    403:
+      $ref: "../../responses/403.yaml"
+    200:
+      description: List of worlds
+      schema:
+        title: WorldsResponse
+        type: object
+        properties:
+          ok:
+            $ref: "../../definitions/ok.yaml"
+          worlds:
+            type: array
+            description: A list of worlds.
+            items:
+              $ref: "../../definitions/world/World.yaml"
+post:
+  summary: Create a world
+  operationId: createWorld
+  description: |
+    Creates a new world with the specified settings. This does not yet load the world.
+
+    > Required permission: world.create
+  parameters:
+    - name: CreateWorldRequest
+      in: body
+      schema:
+        $ref: "../../definitions/world/CreateWorldRequest.yaml"
+      required: true
+  tags:
+    - World
+  responses:
+    400:
+      $ref: "../../responses/400.yaml"
+    403:
+      $ref: "../../responses/403.yaml"
+    200:
+      $ref: "../../responses/World.yaml"

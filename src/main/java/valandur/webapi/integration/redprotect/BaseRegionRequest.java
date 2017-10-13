@@ -2,9 +2,9 @@ package valandur.webapi.integration.redprotect;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import valandur.webapi.WebAPI;
+import valandur.webapi.api.WebAPIAPI;
+import valandur.webapi.api.cache.world.CachedLocation;
 import valandur.webapi.api.cache.world.ICachedWorld;
-import valandur.webapi.cache.misc.CachedLocation;
 
 import java.util.HashMap;
 import java.util.List;
@@ -52,7 +52,7 @@ public class BaseRegionRequest {
     @JsonDeserialize
     private String world;
     public Optional<ICachedWorld> getWorld() {
-        return WebAPI.getCacheService().getWorld(world);
+        return WebAPIAPI.getCacheService().flatMap(srv -> srv.getWorld(world));
     }
 
     @JsonDeserialize
@@ -62,7 +62,7 @@ public class BaseRegionRequest {
             return Optional.empty();
 
         String worldString = tpPoint.get("world").asText();
-        Optional<ICachedWorld> optWorld = WebAPI.getCacheService().getWorld(worldString);
+        Optional<ICachedWorld> optWorld = WebAPIAPI.getCacheService().flatMap(srv -> srv.getWorld(worldString));
         if (!optWorld.isPresent())
             return Optional.empty();
 

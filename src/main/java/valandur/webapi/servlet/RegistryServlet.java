@@ -4,9 +4,9 @@ import org.eclipse.jetty.http.HttpMethod;
 import org.spongepowered.api.CatalogType;
 import org.spongepowered.api.Sponge;
 import valandur.webapi.WebAPI;
-import valandur.webapi.api.annotation.WebAPIEndpoint;
-import valandur.webapi.api.annotation.WebAPIServlet;
-import valandur.webapi.api.servlet.WebAPIBaseServlet;
+import valandur.webapi.api.servlet.Endpoint;
+import valandur.webapi.api.servlet.Servlet;
+import valandur.webapi.api.servlet.BaseServlet;
 import valandur.webapi.servlet.base.ServletData;
 
 import javax.servlet.http.HttpServletResponse;
@@ -15,12 +15,12 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
-@WebAPIServlet(basePath = "registry")
-public class RegistryServlet extends WebAPIBaseServlet {
+@Servlet(basePath = "registry")
+public class RegistryServlet extends BaseServlet {
 
     private Map<Class<? extends CatalogType>, Collection<? extends CatalogType>> registryCache = new ConcurrentHashMap<>();
 
-    @WebAPIEndpoint(method = HttpMethod.GET, path = "/:class", perm = "one")
+    @Endpoint(method = HttpMethod.GET, path = "/:class", perm = "one")
     public void getRegistry(ServletData data, String className) {
         try {
             Class rawType = Class.forName(className);
@@ -31,16 +31,16 @@ public class RegistryServlet extends WebAPIBaseServlet {
             Class<? extends CatalogType> type = rawType;
 
             if (registryCache.containsKey(type)) {
-                data.addJson("ok", true, false);
-                data.addJson("types", registryCache.get(type), false);
+                data.addData("ok", true, false);
+                data.addData("types", registryCache.get(type), false);
                 return;
             }
 
             Optional<Collection<? extends CatalogType>> optTypes = WebAPI.runOnMain(() -> Sponge.getRegistry().getAllOf(type));
             optTypes.map(types -> registryCache.put(type, types));
 
-            data.addJson("ok", optTypes.isPresent(), false);
-            data.addJson("types", optTypes.orElse(null), false);
+            data.addData("ok", optTypes.isPresent(), false);
+            data.addData("types", optTypes.orElse(null), false);
         } catch (ClassNotFoundException e) {
             data.sendError(HttpServletResponse.SC_NOT_FOUND, "Class " + className + " could not be found");
         }

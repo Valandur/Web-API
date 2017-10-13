@@ -5,17 +5,15 @@ import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.item.inventory.ItemStack;
-import valandur.webapi.api.cache.misc.ICachedInventory;
-import valandur.webapi.api.cache.misc.ICachedLocation;
+import valandur.webapi.api.cache.CachedObject;
 import valandur.webapi.api.cache.player.ICachedPlayer;
-import valandur.webapi.cache.CachedObject;
 import valandur.webapi.cache.misc.CachedInventory;
-import valandur.webapi.cache.misc.CachedLocation;
+import valandur.webapi.api.cache.world.CachedLocation;
 
 import java.util.Optional;
 import java.util.UUID;
 
-public class CachedPlayer extends CachedObject implements ICachedPlayer {
+public class CachedPlayer extends CachedObject<Player> implements ICachedPlayer {
 
     protected UUID uuid;
     @Override
@@ -30,88 +28,78 @@ public class CachedPlayer extends CachedObject implements ICachedPlayer {
     }
 
     private boolean isOnline;
-    @Override
     public boolean isOnline() {
         return isOnline;
     }
 
     private String address;
-    @Override
     public String getAddress() {
         return address;
     }
 
     private int latency;
-    @Override
     public int getLatency() {
         return latency;
     }
 
-    private ICachedLocation location;
-    @Override
-    public ICachedLocation getLocation() {
+    private CachedLocation location;
+    public CachedLocation getLocation() {
         return location;
     }
 
     private Vector3d rotation;
-    @Override
     public Vector3d getRotation() {
         return rotation;
     }
 
     private Vector3d velocity;
-    @Override
     public Vector3d getVelocity() {
         return velocity;
     }
 
     private Vector3d scale;
-    @Override
     public Vector3d getScale() {
         return scale;
     }
 
     private ItemStack helmet;
-    @Override
     public ItemStack getHelmet() {
         return helmet;
     }
 
     private ItemStack chestplate;
-    @Override
     public ItemStack getChestplate() {
         return chestplate;
     }
 
     private ItemStack leggings;
-    @Override
     public ItemStack getLeggings() {
         return leggings;
     }
 
     private ItemStack boots;
-    @Override
     public ItemStack getBoots() {
         return boots;
     }
 
-    private ICachedInventory inventory;
-    @Override
-    public ICachedInventory getInventory() {
+    private CachedInventory inventory;
+    public CachedInventory getInventory() {
         return inventory;
     }
 
 
     public CachedPlayer(User user) {
-        super(user);
+        super(null);
 
         this.uuid = UUID.fromString(user.getUniqueId().toString());
         this.name = user.getName();
         this.isOnline = false;
     }
     public CachedPlayer(Player player) {
-        this((User)player);
+        super(player);
 
+        this.uuid = UUID.fromString(player.getUniqueId().toString());
+        this.name = player.getName();
         this.isOnline = true;
 
         this.location = new CachedLocation(player.getLocation());
@@ -131,7 +119,7 @@ public class CachedPlayer extends CachedObject implements ICachedPlayer {
     }
 
     @Override
-    public Optional<?> getLive() {
+    public Optional<Player> getLive() {
         return Sponge.getServer().getPlayer(uuid);
     }
 

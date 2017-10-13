@@ -1,5 +1,6 @@
 get:
     summary: List catalog values
+    operationId: getCatalogValues
     description: |
       Lists all the catalog values of a specified CatalogType.
 
@@ -24,6 +25,7 @@ get:
       200:
         description: List of all values in the CatalogType
         schema:
+          title: CatalogTypesResponse
           type: object
           properties:
             ok:

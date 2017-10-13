@@ -1,0 +1,139 @@
+allOf:
+  - $ref: "./World.yaml"
+  - title: WorldFull
+    type: object
+    properties:
+      border:
+        type: object
+        properties:
+          center:
+            $ref: "../Vector3.yaml"
+          diameter:
+            type: number
+            description: The diameter of the world border.
+          damageAmount:
+            type: number
+            description: The amount of damage done to the player when outside the world border.
+          damageThreshold:
+            type: number
+            description: The amount of time in seconds to wait before applying the damage.
+          newDiameter:
+            type: number
+            description: The new diameter the world border is going to change to.
+          timeRemaining:
+            type: number
+            description: The amount of time remaining before the world border reaches the new diameter.
+          warningDistance:
+            type: number
+            description: The distance at which a player is warned of the world border.
+          warningTime:
+            type: number
+            description: The amount of time in seconds before a contracting world border reaches a player that the player is warned.
+      difficulty:
+        type: string
+        description: The current difficulty of the world.
+      dimension:
+        type: object
+        properties:
+          type:
+            type: object
+            properties:
+              id:
+                type: string
+                description: The unique id of the dimension type.
+              name:
+                type: string
+                description: The name of the dimension type.
+              dimensionClass:
+                type: string
+                description: The classname of the dimension.
+          height:
+            type: number
+            description: The height of the dimension.
+          buildHeight:
+            type: number
+            description: The maximum allowed build height of the dimension.
+      gameMode:
+        type: string
+        description: The default game mode of the world.
+      generator:
+        type: object
+        properties:
+          id:
+            type: string
+            description: The unique id of the generator type.
+          name:
+            type: string
+            description: The name of the generator type.
+          settings:
+            type: string
+            description: A map of various generator settings to values.
+      seed:
+        type: number
+        description: The seed used to generate this world.
+      spawn:
+        $ref: "../Vector3.yaml"
+      time:
+        type: number
+        description: The current in game time.
+      weather:
+        type: string
+        description: The current weather of the world.
+example:
+  name: world
+  uuid: c574ab53-831b-4410-b3ad-955a2a504843
+  border:
+    center:
+      x: 0
+      y: 0
+      z: 0
+    diameter: 60000000
+    damageAmount: 0.2
+    damageThreshold: 5
+    newDiameter: 60000000
+    timeRemaining: 0
+    warningDistance: 5
+    warningTime: 15
+  difficulty: minecraft:peaceful
+  dimension:
+    type:
+      id: minecraft:overworld
+      name: Overworld
+      dimensionClass: net.minecraft.world.WorldProviderSurface
+    height: 256
+    buildHeight: 256
+  gameMode: minecraft:creative
+  gameRules:
+    commandBlockOutput: 'true'
+    disableElytraMovementCheck: 'false'
+    doDaylightCycle: 'true'
+    doEntityDrops: 'true'
+    doFireTick: 'true'
+    doMobLoot: 'true'
+    doMobSpawning: 'true'
+    doTileDrops: 'true'
+    doWeatherCycle: 'true'
+    keepInventory: 'false'
+    logAdminCommands: 'true'
+    maxEntityCramming: '24'
+    mobGriefing: 'true'
+    naturalRegeneration: 'true'
+    randomTickSpeed: '3'
+    reducedDebugInfo: 'false'
+    sendCommandFeedback: 'true'
+    showDeathMessages: 'true'
+    spawnRadius: '10'
+    spectatorsGenerateChunks: 'true'
+  generator:
+    id: minecraft:flat
+    name: flat
+    settings:
+      customSettings: 3;minecraft:bedrock,2*minecraft:dirt,minecraft:grass;1;village
+  seed: -8009412544287338000
+  spawn:
+    x: -1288
+    y: 4
+    z: -1066
+  time: 66110
+  weather: minecraft:clear
+  link: "/api/world/c574ab53-831b-4410-b3ad-955a2a504843"

@@ -1,23 +1,23 @@
 package valandur.webapi.servlet;
 
 import org.eclipse.jetty.http.HttpMethod;
-import valandur.webapi.api.annotation.WebAPIEndpoint;
-import valandur.webapi.api.annotation.WebAPIServlet;
-import valandur.webapi.api.servlet.WebAPIBaseServlet;
+import valandur.webapi.api.servlet.Endpoint;
+import valandur.webapi.api.servlet.Servlet;
+import valandur.webapi.api.servlet.BaseServlet;
 import valandur.webapi.servlet.base.ServletData;
 
-@WebAPIServlet(basePath = "history")
-public class HistoryServlet extends WebAPIBaseServlet {
+@Servlet(basePath = "history")
+public class HistoryServlet extends BaseServlet {
 
-    @WebAPIEndpoint(method = HttpMethod.GET, path = "/cmd", perm = "cmd")
+    @Endpoint(method = HttpMethod.GET, path = "/cmd", perm = "cmd")
     public void getCmds(ServletData data) {
-        data.addJson("ok", true, false);
-        data.addJson("calls", cacheService.getCommandCalls(), false);
+        data.addData("ok", true, false);
+        data.addData("calls", cacheService.getCommandCalls(), false);
     }
 
-    @WebAPIEndpoint(method = HttpMethod.GET, path = "/chat", perm = "chat")
+    @Endpoint(method = HttpMethod.GET, path = "/chat", perm = "chat")
     public void getChat(ServletData data) {
-        data.addJson("ok", true, false);
-        data.addJson("messages", cacheService.getChatMessages(), false);
+        data.addData("ok", true, false);
+        data.addData("messages", cacheService.getChatMessages(), false);
     }
 }

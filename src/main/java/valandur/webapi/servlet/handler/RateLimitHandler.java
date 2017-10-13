@@ -10,16 +10,29 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class RateLimitHandler extends AbstractHandler {
 
     private Map<String, Double> lastCall = new ConcurrentHashMap<>();
+    private static long start = System.nanoTime();
+    private static AtomicLong calls = new AtomicLong(0);
+
 
     public RateLimitHandler() {
+        calls = new AtomicLong(0);
+        start = System.nanoTime();
+    }
+
+    public static double getAverageCallsPerSecond() {
+        double timeDiff = (System.nanoTime() - start) / 1000000000d;
+        return calls.get() / timeDiff;
     }
 
     @Override
     public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+        calls.incrementAndGet();
+
         if (target.startsWith("/api/user")) {
             return;
         }

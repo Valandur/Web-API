@@ -5,12 +5,12 @@ import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 import org.spongepowered.api.block.BlockType;
 import org.spongepowered.api.event.block.TargetBlockEvent;
-import valandur.webapi.api.hook.WebAPIBaseFilter;
+import valandur.webapi.api.hook.BaseWebHookFilter;
 import valandur.webapi.hook.WebHook;
 
 import java.util.List;
 
-public class BlockTypeFilter extends WebAPIBaseFilter {
+public class BlockTypeFilter extends BaseWebHookFilter {
 
     public static String name = "WebAPI-BlockType";
 

@@ -12,19 +12,20 @@ import valandur.webapi.api.permission.IPermissionService;
 import valandur.webapi.util.Util;
 
 import java.io.IOException;
-import java.util.Collection;
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class Users {
     private static final String configFileName = "user.conf";
 
     private static ConfigurationLoader loader;
     private static ConfigurationNode config;
-    private static Map<String, UserPermission> users = new HashMap<>();
-    public static Collection<UserPermission> getUsers() {
-        return users.values();
+    private static Map<String, UserPermission> users = new ConcurrentHashMap<>();
+    public static List<UserPermission> getUsers() {
+        return new ArrayList<>(users.values());
     }
 
     public static void init() {

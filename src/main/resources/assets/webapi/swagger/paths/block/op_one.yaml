@@ -1,0 +1,79 @@
+get:
+  summary: Block operation details
+  operationId: getBlockOperation
+  description: |
+    Gets details about a specific block operation
+
+    > Required permission: block.op.one
+  parameters:
+    - name: uuid
+      in: path
+      type: string
+      description: The uuid of the block operation.
+      required: true
+  tags:
+    - Block
+  responses:
+    403:
+      $ref: "../../responses/403.yaml"
+    200:
+      $ref: "../../responses/BlockOperation.yaml"
+put:
+  summary: Modify block operation
+  operationId: changeBlockOperation
+  description: |
+    Modify an existing block operation to either pause or continue it.
+
+    > Required permission: block.op.change
+  parameters:
+    - name: uuid
+      in: path
+      type: string
+      description: The uuid of the block operation.
+      required: true
+    - name: data
+      in: body
+      required: true
+      description: The new data applied to the block operation.
+      schema:
+        type: object
+        properties:
+          ok:
+            $ref: "../../definitions/ok.yaml"
+          operation:
+            $ref: "../../definitions/block/BlockOperationFull.yaml"
+  tags:
+    - Block
+  responses:
+    400:
+      $ref: "../../responses/400.yaml"
+    403:
+      $ref: "../../responses/403.yaml"
+    404:
+      $ref: "../../responses/404.yaml"
+    200:
+      $ref: "../../responses/BlockOperation.yaml"
+delete:
+  summary: Cancel block operation
+  operationId: cancelBlockOperation
+  description: |
+    Cancel a pending or running block operation. **THIS DOES NOT UNDO THE BLOCK CHANGES**
+
+    > Required permission: block.op.delete
+  parameters:
+    - name: uuid
+      in: path
+      type: string
+      description: The uuid of the block operation.
+      required: true
+  tags:
+    - Block
+  responses:
+    400:
+      $ref: "../../responses/400.yaml"
+    403:
+      $ref: "../../responses/403.yaml"
+    404:
+      $ref: "../../responses/404.yaml"
+    200:
+      $ref: "../../responses/BlockOperation.yaml"

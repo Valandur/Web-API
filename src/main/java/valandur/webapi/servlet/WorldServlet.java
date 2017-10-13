@@ -9,14 +9,14 @@ import org.spongepowered.api.world.World;
 import org.spongepowered.api.world.WorldArchetype;
 import org.spongepowered.api.world.storage.WorldProperties;
 import valandur.webapi.WebAPI;
-import valandur.webapi.api.annotation.WebAPIEndpoint;
-import valandur.webapi.api.annotation.WebAPIServlet;
+import valandur.webapi.api.servlet.Endpoint;
+import valandur.webapi.api.servlet.Servlet;
 import valandur.webapi.api.cache.world.ICachedWorld;
-import valandur.webapi.api.servlet.WebAPIBaseServlet;
+import valandur.webapi.api.servlet.BaseServlet;
 import valandur.webapi.cache.world.CachedChunk;
 import valandur.webapi.cache.world.CachedWorld;
-import valandur.webapi.json.request.world.CreateWorldRequest;
-import valandur.webapi.json.request.world.UpdateWorldRequest;
+import valandur.webapi.servlet.request.world.CreateWorldRequest;
+import valandur.webapi.servlet.request.world.UpdateWorldRequest;
 import valandur.webapi.servlet.base.ServletData;
 import valandur.webapi.util.Util;
 
@@ -25,32 +25,32 @@ import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 
-@WebAPIServlet(basePath = "world")
-public class WorldServlet extends WebAPIBaseServlet {
+@Servlet(basePath = "world")
+public class WorldServlet extends BaseServlet {
 
-    @WebAPIEndpoint(method = HttpMethod.GET, path = "/", perm = "list")
+    @Endpoint(method = HttpMethod.GET, path = "/", perm = "list")
     public void getWorlds(ServletData data) {
-        data.addJson("ok", true, false);
-        data.addJson("worlds", cacheService.getWorlds(), data.getQueryParam("details").isPresent());
+        data.addData("ok", true, false);
+        data.addData("worlds", cacheService.getWorlds(), data.getQueryParam("details").isPresent());
     }
 
-    @WebAPIEndpoint(method = HttpMethod.GET, path = "/:world", perm = "one")
+    @Endpoint(method = HttpMethod.GET, path = "/:world", perm = "one")
     public void getWorld(ServletData data, CachedWorld world) {
         Optional<String> strFields = data.getQueryParam("fields");
         Optional<String> strMethods = data.getQueryParam("methods");
         if (strFields.isPresent() || strMethods.isPresent()) {
             String[] fields = strFields.map(s -> s.split(",")).orElse(new String[]{});
             String[] methods = strMethods.map(s -> s.split(",")).orElse(new String[]{});
-            Tuple extra = cacheService.getExtraData(world, fields, methods);
-            data.addJson("fields", extra.getFirst(), true);
-            data.addJson("methods", extra.getSecond(), true);
+            Tuple extra = cacheService.getExtraData(world, data.responseIsXml(), fields, methods);
+            data.addData("fields", extra.getFirst(), true);
+            data.addData("methods", extra.getSecond(), true);
         }
 
-        data.addJson("ok", true, false);
-        data.addJson("world", world, true);
+        data.addData("ok", true, false);
+        data.addData("world", world, true);
     }
 
-    @WebAPIEndpoint(method = HttpMethod.POST, path = "/", perm = "create")
+    @Endpoint(method = HttpMethod.POST, path = "/", perm = "create")
     public void createWorld(ServletData data) {
         WorldArchetype.Builder builder = WorldArchetype.builder();
 
@@ -98,8 +98,8 @@ public class WorldServlet extends WebAPIBaseServlet {
             try {
                 return Sponge.getServer().createWorldProperties(req.getName(), archType);
             } catch (IOException e) {
-                data.addJson("ok", false, false);
-                data.addJson("error", e, false);
+                data.addData("ok", false, false);
+                data.addData("error", e, false);
                 return null;
             }
         });
@@ -110,12 +110,13 @@ public class WorldServlet extends WebAPIBaseServlet {
         ICachedWorld world = cacheService.updateWorld(resProps.get());
 
         data.setStatus(HttpServletResponse.SC_CREATED);
-        data.addJson("ok", true, false);
-        data.addJson("world", world, true);
         data.setHeader("Location", world.getLink());
+
+        data.addData("ok", true, false);
+        data.addData("world", world, true);
     }
 
-    @WebAPIEndpoint(method = HttpMethod.POST, path = "/:world/method", perm = "method")
+    @Endpoint(method = HttpMethod.POST, path = "/:world/method", perm = "method")
     public void executeMethod(ServletData data, CachedWorld world) {
         JsonNode reqJson = data.getRequestBody();
         if (!reqJson.has("method")) {
@@ -137,12 +138,12 @@ public class WorldServlet extends WebAPIBaseServlet {
             return;
         }
 
-        data.addJson("ok", true, false);
-        data.addJson("world", world, true);
-        data.addJson("result", res.get(), true);
+        data.addData("ok", true, false);
+        data.addData("world", world, true);
+        data.addData("result", res.get(), true);
     }
 
-    @WebAPIEndpoint(method = HttpMethod.PUT, path = "/:world", perm = "change")
+    @Endpoint(method = HttpMethod.PUT, path = "/:world", perm = "change")
     public void updateWorld(ServletData data, CachedWorld world) {
         Optional<UpdateWorldRequest> optReq = data.getRequestBody(UpdateWorldRequest.class);
         if (!optReq.isPresent()) {
@@ -153,12 +154,13 @@ public class WorldServlet extends WebAPIBaseServlet {
         final UpdateWorldRequest req = optReq.get();
 
         Optional<ICachedWorld> resWorld = WebAPI.runOnMain(() -> {
-            Optional<?> optLive = world.getLive();
-            if (!optLive.isPresent())
+            Optional<World> optLive = world.getLive();
+            Optional<WorldProperties> optProps = world.getLiveProps();
+            if (!optProps.isPresent())
                 return null;
 
-            Object live = optLive.get();
-            WorldProperties props = live instanceof World ? ((World) live).getProperties() : (WorldProperties) live;
+            World live = optLive.orElse(null);
+            WorldProperties props = optProps.get();
 
             if (req.isLoaded() != null && req.isLoaded() != world.isLoaded()) {
                 if (req.isLoaded()) {
@@ -167,14 +169,17 @@ public class WorldServlet extends WebAPIBaseServlet {
                         live = newWorld.get();
                         props = newWorld.get().getProperties();
                     }
-                } else {
-                    Sponge.getServer().unloadWorld((World)live);
-                    Optional<WorldProperties> optProps = Sponge.getServer().getUnloadedWorlds()
+                } else if (live != null) {
+                    Sponge.getServer().unloadWorld(live);
+                    Optional<WorldProperties> newProps = Sponge.getServer().getUnloadedWorlds()
                             .stream().filter(w -> w.getUniqueId().equals(world.getUUID())).findAny();
-                    if (optProps.isPresent()) {
-                        live = optProps.get();
+                    if (newProps.isPresent()) {
+                        live = null;
                         props = optProps.get();
                     }
+                } else {
+                    WebAPI.getLogger().warn("World should be unloaded but isn't present");
+                    return null;
                 }
             }
 
@@ -204,26 +209,26 @@ public class WorldServlet extends WebAPIBaseServlet {
                 props.setMapFeaturesEnabled(req.doesUseMapFeatures());
             }
 
-            if (live instanceof World)
-                return cacheService.updateWorld((World) live);
+            if (live != null)
+                return cacheService.updateWorld(live);
             else
-                return cacheService.updateWorld((WorldProperties) live);
+                return cacheService.updateWorld(props);
         });
 
-        data.addJson("ok", resWorld.isPresent(), false);
-        data.addJson("world", resWorld.orElse(null), true);
+        data.addData("ok", resWorld.isPresent(), false);
+        data.addData("world", resWorld.orElse(null), true);
     }
 
-    @WebAPIEndpoint(method = HttpMethod.DELETE, path = "/:world", perm = "delete")
+    @Endpoint(method = HttpMethod.DELETE, path = "/:world", perm = "delete")
     public void deleteWorld(ServletData data, CachedWorld world) {
         Optional<Boolean> deleted = WebAPI.runOnMain(() -> {
-            Optional<?> live = world.getLive();
-            if (!live.isPresent())
+            Optional<WorldProperties> optLive = world.getLiveProps();
+            if (!optLive.isPresent())
                 return false;
 
-            WorldProperties w = (WorldProperties)live.get();
+            WorldProperties live = optLive.get();
             try {
-                return Sponge.getServer().deleteWorld(w).get();
+                return Sponge.getServer().deleteWorld(live).get();
             } catch (InterruptedException | ExecutionException e) {
                 e.printStackTrace();
                 if (WebAPI.reportErrors()) WebAPI.sentryCapture(e);
@@ -238,65 +243,64 @@ public class WorldServlet extends WebAPIBaseServlet {
 
         cacheService.removeWorld(world.getUUID());
 
-        data.addJson("ok", true, false);
-        data.addJson("world", world, true);
+        data.addData("ok", true, false);
+        data.addData("world", world, true);
     }
 
-    @WebAPIEndpoint(method = HttpMethod.GET, path = "/:world/chunk", perm = "chunk.list")
+    @Endpoint(method = HttpMethod.GET, path = "/:world/chunk", perm = "chunk.list")
     public void getChunks(ServletData data, CachedWorld world) {
-        Optional<?> optWorld = world.getLive();
-        if (!optWorld.isPresent()) {
-            data.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not get world");
-            return;
-        }
+        Optional<List<CachedChunk>> optChunks = WebAPI.runOnMain(() -> {
+            Optional<World> optWorld = world.getLive();
+            if (!optWorld.isPresent())
+                return null;
 
-        World w = (World)optWorld.get();
-        List<CachedChunk> chunks = new ArrayList<>();
+            World live = optWorld.get();
+            List<CachedChunk> chunks = new ArrayList<>();
 
-        Iterable<Chunk> iterable = w.getLoadedChunks();
-        iterable.forEach(c -> chunks.add(new CachedChunk(c)));
+            Iterable<Chunk> iterable = live.getLoadedChunks();
+            iterable.forEach(c -> chunks.add(new CachedChunk(c)));
 
-        data.addJson("ok", true, false);
-        data.addJson("chunks", chunks, data.getQueryParam("details").isPresent());
+            return chunks;
+        });
+
+        data.addData("ok", optChunks.isPresent(), false);
+        data.addData("chunks", optChunks.orElse(null), data.getQueryParam("details").isPresent());
     }
 
-    @WebAPIEndpoint(method = HttpMethod.GET, path = "/:world/chunk/:x/:z", perm = "chunk.one")
+    @Endpoint(method = HttpMethod.GET, path = "/:world/chunk/:x/:z", perm = "chunk.one")
     public void getChunkAt(ServletData data, CachedWorld world, int x, int z) {
-        Optional<Chunk> chunk = WebAPI.runOnMain(() -> {
-            Optional<?> optLive = world.getLive();
+        Optional<CachedChunk> optChunk = WebAPI.runOnMain(() -> {
+            Optional<World> optLive = world.getLive();
             if (!optLive.isPresent())
                 return null;
 
-            World live = (World)optLive.get();
-            return live.loadChunk(x, 0, z, false).orElse(null);
+            World live = optLive.get();
+            Optional<Chunk> chunk = live.loadChunk(x, 0, z, false);
+            return chunk.map(CachedChunk::new).orElse(null);
         });
 
-        if (!chunk.isPresent()) {
-            data.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not get chunk");
-            return;
-        }
-
-        data.addJson("ok", true, false);
-        data.addJson("chunk", chunk.map(CachedChunk::new), true);
+        data.addData("ok", optChunk.isPresent(), false);
+        data.addData("chunk", optChunk.orElse(null), true);
     }
 
-    @WebAPIEndpoint(method = HttpMethod.POST, path = "/:world/chunk/:x/:z", perm = "chunk.create")
+    @Endpoint(method = HttpMethod.POST, path = "/:world/chunk/:x/:z", perm = "chunk.create")
     public void createChunkAt(ServletData data, CachedWorld world, int x, int z) {
-        Optional<Chunk> chunk = WebAPI.runOnMain(() -> {
-            Optional<?> optLive = world.getLive();
+        Optional<CachedChunk> optChunk = WebAPI.runOnMain(() -> {
+            Optional<World> optLive = world.getLive();
             if (!optLive.isPresent())
                 return null;
 
-            World live = (World)optLive.get();
-            return live.loadChunk(x, 0, z, true).orElse(null);
+            World live = optLive.get();
+            Optional<Chunk> chunk = live.loadChunk(x, 0, z, true);
+            return chunk.map(CachedChunk::new).orElse(null);
         });
 
-        if (!chunk.isPresent()) {
-            data.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not generate chunk");
-            return;
+        if (optChunk.isPresent()) {
+            data.setStatus(HttpServletResponse.SC_CREATED);
+            data.setHeader("Location", optChunk.get().getLink());
         }
 
-        data.addJson("ok", true, false);
-        data.addJson("chunk", chunk.map(CachedChunk::new), true);
+        data.addData("ok", optChunk.isPresent(), false);
+        data.addData("chunk", optChunk.orElse(null), true);
     }
 }

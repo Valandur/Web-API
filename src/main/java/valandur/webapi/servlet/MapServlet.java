@@ -4,9 +4,9 @@ import com.flowpowered.math.vector.Vector3i;
 import ninja.leaping.configurate.ConfigurationNode;
 import org.eclipse.jetty.http.HttpMethod;
 import valandur.webapi.WebAPI;
-import valandur.webapi.api.annotation.WebAPIEndpoint;
-import valandur.webapi.api.annotation.WebAPIServlet;
-import valandur.webapi.api.servlet.WebAPIBaseServlet;
+import valandur.webapi.api.servlet.Endpoint;
+import valandur.webapi.api.servlet.Servlet;
+import valandur.webapi.api.servlet.BaseServlet;
 import valandur.webapi.cache.world.CachedWorld;
 import valandur.webapi.servlet.base.ServletData;
 import valandur.webapi.util.Util;
@@ -24,8 +24,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-@WebAPIServlet(basePath = "map")
-public class MapServlet extends WebAPIBaseServlet {
+@Servlet(basePath = "map")
+public class MapServlet extends BaseServlet {
 
     private static int TILE_SIZE = 512;
     private static int HALF_TILE_SIZE = TILE_SIZE / 2;
@@ -43,7 +43,7 @@ public class MapServlet extends WebAPIBaseServlet {
         }
     }
 
-    @WebAPIEndpoint(method = HttpMethod.GET, path = "/:world/:x/:z", perm = "map")
+    @Endpoint(method = HttpMethod.GET, path = "/:world/:x/:z", perm = "map")
     public void getMap(ServletData data, CachedWorld world, int x, int z) {
         int bX = TILE_SIZE * x;
         int bZ = TILE_SIZE * z;

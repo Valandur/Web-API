@@ -1,0 +1,9 @@
+description: Entity
+schema:
+  title: EntityResponse
+  type: object
+  properties:
+    ok:
+     $ref: "../definitions/ok.yaml"
+    world:
+      $ref: "../definitions/entity/EntityFull.yaml"

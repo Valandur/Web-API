@@ -1,6 +1,7 @@
 package valandur.webapi.api.message;
 
 import org.spongepowered.api.text.Text;
+import valandur.webapi.api.cache.ICachedObject;
 
 import java.util.List;
 import java.util.UUID;
@@ -8,7 +9,13 @@ import java.util.UUID;
 /**
  * Represents an interactive message which can be sent to players.
  */
-public interface IMessage {
+public interface IMessage extends ICachedObject<IMessage> {
+
+    /**
+     * Gets the unique id of the message. This is generated when the messages is created.
+     * @return The unique id of the message.
+     */
+    UUID getUUID();
 
     /**
      * The id of the message. Useful to identify it in the response.

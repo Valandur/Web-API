@@ -1,0 +1,9 @@
+description: World
+schema:
+  title: WorldResponse
+  type: object
+  properties:
+    ok:
+      $ref: "../definitions/ok.yaml"
+    world:
+      $ref: "../definitions/world/WorldFull.yaml"

@@ -1,0 +1,102 @@
+get:
+  summary: Detailed player info
+  operationId: getPlayer
+  description: |
+    Get detailed information about a player.
+
+    > Required permission: player.one
+  parameters:
+    - name: uuid
+      in: path
+      type: string
+      description: The uuid of the player to get detailed information about.
+      required: true
+    - name: fields
+      in: query
+      type: string
+      description: An optional list of additional fields to get.
+    - name: methods
+      in: query
+      type: string
+      description: An optional list of additional methods to get.
+  tags:
+    - Player
+  responses:
+    400:
+      $ref: "../../responses/400.yaml"
+    403:
+      $ref: "../../responses/403.yaml"
+    404:
+      $ref: "../../responses/404.yaml"
+    200:
+      $ref: "../../responses/Player.yaml"
+put:
+  summary: Edit player
+  operationId: changePlayer
+  description: |
+    Update the properties of an existing player.
+
+    > Required permission: player.change
+  parameters:
+    - name: uuid
+      in: path
+      type: string
+      description: The uuid of the player.
+      required: true
+    - name: UpdatePlayerRequest
+      in: body
+      description: The new properties of the player
+      required: true
+      schema:
+        $ref: "../../definitions/player/UpdatePlayerRequest.yaml"
+  tags:
+    - Player
+  responses:
+    400:
+      $ref: "../../responses/400.yaml"
+    403:
+      $ref: "../../responses/403.yaml"
+    404:
+      $ref: "../../responses/404.yaml"
+    200:
+      $ref: "../../responses/Player.yaml"
+post:
+  summary: Execute player method
+  operationId: executePlayerMethod
+  description: |
+    Provides direct access to the underlaying player object and can execute any method on it.
+
+    > Required permission: player.method
+  parameters:
+    - name: uuid
+      in: path
+      type: string
+      description: The uuid of the player.
+      required: true
+    - name: Request
+      in: body
+      description: Information about which method to execute.
+      required: true
+      schema:
+        $ref: "../../definitions/RawRequest.yaml"
+  tags:
+    - Player
+  responses:
+    400:
+      $ref: "../../responses/400.yaml"
+    403:
+      $ref: "../../responses/403.yaml"
+    404:
+      $ref: "../../responses/404.yaml"
+    200:
+      description: Method return value
+      schema:
+        title: ExecutePlayerMethodResponse
+        type: object
+        properties:
+          ok:
+            $ref: "../../definitions/ok.yaml"
+          player:
+            $ref: "../../definitions/player/PlayerFull.yaml"
+          result:
+            $ref: "../../definitions/RawResponse.yaml"

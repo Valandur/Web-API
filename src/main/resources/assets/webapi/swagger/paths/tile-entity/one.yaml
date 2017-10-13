@@ -1,0 +1,110 @@
+get:
+  summary: Detailed tile entity info
+  operationId: getTileEntity
+  description: |
+    Get detailed information about a tile entity.
+
+    > Required permission: tile-entity.one
+  parameters:
+    - name: worldUuid
+      in: path
+      type: string
+      description: The uuid of the world the tile entity is in.
+      required: true
+    - name: x
+      in: path
+      type: integer
+      description: The x-coordinate of the tile entity.
+      required: true
+    - name: y
+      in: path
+      type: integer
+      description: The y-coordinate of the tile entity.
+      required: true
+    - name: z
+      in: path
+      type: integer
+      description: The z-coordinate of the tile entity.
+      required: true
+    - name: fields
+      in: query
+      type: string
+      description: An optional list of additional fields to get.
+    - name: methods
+      in: query
+      type: string
+      description: An optional list of additional methods to get.
+  tags:
+    - Tile Entity
+  responses:
+    400:
+      $ref: "../../responses/400.yaml"
+    403:
+      $ref: "../../responses/403.yaml"
+    404:
+      $ref: "../../responses/404.yaml"
+    200:
+      description: Detailed tile entity info
+      schema:
+        title: TileEntityResponse
+        type: object
+        properties:
+          ok:
+            $ref: "../../definitions/ok.yaml"
+          tileEntity:
+            $ref: "../../definitions/tile-entity/TileEntityFull.yaml"
+post:
+  summary: Execute tile entity methods
+  operationId: executeTileEntityMethod
+  description: |
+    Provides direct access to the underlaying tile entity object and can execute any method on it.
+
+    > Required permission: tile-entity.method
+  parameters:
+    - name: worldUuid
+      in: path
+      type: string
+      description: The uuid of the world the tile entity is in.
+      required: true
+    - name: x
+      in: path
+      type: integer
+      description: The x-coordinate of the tile entity.
+      required: true
+    - name: y
+      in: path
+      type: integer
+      description: The y-coordinate of the tile entity.
+      required: true
+    - name: z
+      in: path
+      type: integer
+      description: The z-coordinate of the tile entity.
+      required: true
+    - name: Request
+      in: body
+      description: Information about which method to execute.
+      required: true
+      schema:
+        $ref: "../../definitions/RawRequest.yaml"
+  tags:
+    - Tile Entity
+  responses:
+    400:
+      $ref: "../../responses/400.yaml"
+    403:
+      $ref: "../../responses/403.yaml"
+    404:
+      $ref: "../../responses/404.yaml"
+    200:
+      description: Method return value
+      schema:
+        title: ExecuteTileEntityMethodResponse
+        type: object
+        properties:
+          ok:
+            $ref: "../../definitions/ok.yaml"
+          tileEntity:
+            $ref: "../../definitions/tile-entity/TileEntity.yaml"
+          result:
+            $ref: "../../definitions/RawResponse.yaml"

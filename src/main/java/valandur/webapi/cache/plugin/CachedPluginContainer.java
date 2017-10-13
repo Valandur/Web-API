@@ -3,12 +3,11 @@ package valandur.webapi.cache.plugin;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.plugin.PluginContainer;
 import valandur.webapi.api.cache.plugin.ICachedPluginContainer;
-import valandur.webapi.api.cache.plugin.ICachedPluginDependency;
-import valandur.webapi.cache.CachedObject;
+import valandur.webapi.api.cache.CachedObject;
 
 import java.util.*;
 
-public class CachedPluginContainer extends CachedObject implements ICachedPluginContainer {
+public class CachedPluginContainer extends CachedObject<PluginContainer> implements ICachedPluginContainer {
 
     private String id;
     @Override
@@ -41,14 +40,12 @@ public class CachedPluginContainer extends CachedObject implements ICachedPlugin
     }
 
     private List<String> authors;
-    @Override
     public List<String> getAuthors() {
         return authors;
     }
 
-    private Set<ICachedPluginDependency> dependencies = new HashSet<>();
-    @Override
-    public Set<ICachedPluginDependency> getDependencies() {
+    private Set<CachedPluginDependency> dependencies = new HashSet<>();
+    public Set<CachedPluginDependency> getDependencies() {
         return new HashSet<>(dependencies);
     }
 
@@ -66,7 +63,7 @@ public class CachedPluginContainer extends CachedObject implements ICachedPlugin
     }
 
     @Override
-    public Optional<?> getLive() {
+    public Optional<PluginContainer> getLive() {
         return Sponge.getPluginManager().getPlugin(id);
     }
 

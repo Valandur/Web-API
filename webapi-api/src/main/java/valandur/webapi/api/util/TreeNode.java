@@ -1,5 +1,7 @@
 package valandur.webapi.api.util;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.util.*;
 
 /**
@@ -36,6 +38,7 @@ public class TreeNode<K, V> {
      * Gets the parent node of this node, or null if this node has no parent.
      * @return The parent node of this node. Null if this node doesn't have a parent.
      */
+    @JsonIgnore
     public TreeNode<K, V> getParent() {
         return parent;
     }

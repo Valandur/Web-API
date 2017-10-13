@@ -120,7 +120,9 @@ public class AuthHandler extends AbstractHandler {
     }
 
     @Override
-    public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+    public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response)
+            throws IOException, ServletException {
+
         String addr = request.getRemoteAddr();
         if (useWhitelist && !whitelist.contains(addr)) {
             WebAPI.getLogger().warn(addr + " is not on whitelist: " + target);

@@ -1,0 +1,21 @@
+title: Rect
+type: object
+properties:
+  world:
+    $ref: "../world/World.yaml"
+  minX:
+    type: number
+    format: integer
+    description: The minimum x coordinate of this rect.
+  minY:
+    type: number
+    format: integer
+    description: The minimum y coordinate of this rect.
+  maxX:
+    type: number
+    format: integer
+    description: The maximum x coordinate of this rect.
+  maxY:
+    type: number
+    format: integer
+    description: The maximum y coordinate of this rect.

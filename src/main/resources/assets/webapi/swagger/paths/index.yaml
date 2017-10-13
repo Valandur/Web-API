@@ -1,47 +1,42 @@
 /block/{world}/{x}/{y}/{z}:
-  $ref: "./block_one.yaml"
+  $ref: "./block/one.yaml"
 /block/op:
-  $ref: "./block_op.yaml"
+  $ref: "./block/op_list.yaml"
 /block/op/{uuid}:
-  $ref: "./block_op_one.yaml"
-
-/class:
-  $ref: "./class.yaml"
-/class/{classname}:
-  $ref: "./class_one.yaml"
-/class/{classname}/subclasses:
-  $ref: "./class_subclasses.yaml"
+  $ref: "./block/op_one.yaml"
 
 /cmd:
-  $ref: "./cmd.yaml"
+  $ref: "./cmd/list.yaml"
 /cmd/{name}:
-  $ref: "./cmd_one.yaml"
+  $ref: "./cmd/one.yaml"
 
 /entity:
-  $ref: "./entity.yaml"
+  $ref: "./entity/list.yaml"
 /entity/{uuid}:
-  $ref: "./entity_one.yaml"
+  $ref: "./entity/one.yaml"
 
 /history/chat:
-  $ref: "./history_chat.yaml"
+  $ref: "./history/chat.yaml"
 /history/cmd:
-  $ref: "./history_cmd.yaml"
+  $ref: "./history/cmd.yaml"
 
 /info:
   $ref: "./info.yaml"
 
 /message:
-  $ref: "./message.yaml"
+  $ref: "./message/message.yaml"
+/message/{uuid}:
+  $ref: "./message/message_one.yaml"
 
 /player:
-  $ref: "./player.yaml"
+  $ref: "./player/list.yaml"
 /player/{uuid}:
-  $ref: "./player_one.yaml"
+  $ref: "./player/one.yaml"
 
 /plugin:
-  $ref: "./plugin.yaml"
+  $ref: "./plugin/list.yaml"
 /plugin/{id}:
-  $ref: "./plugin_one.yaml"
+  $ref: "./plugin/one.yaml"
 
 /registry/{className}:
   $ref: "./registry.yaml"
@@ -50,18 +45,43 @@
   $ref: "./servlet.yaml"
 
 /tile-entity:
-  $ref: "./tile-entity.yaml"
+  $ref: "./tile-entity/list.yaml"
 /tile-entity/{worldUuid}/{x}/{y}/{z}:
-  $ref: "./tile-entity_one.yaml"
+  $ref: "./tile-entity/one.yaml"
 
 /user:
   $ref: "./user.yaml"
 
 /world:
-  $ref: "./world.yaml"
+  $ref: "./world/list.yaml"
 /world/{uuid}:
-  $ref: "./world_one.yaml"
+  $ref: "./world/one.yaml"
 /world/{uuid}/chunk:
-  $ref: "./world_chunk_list.yaml"
+  $ref: "./world/chunk_list.yaml"
 /world/{uuid}/chunk/{x}/{z}:
-  $ref: "./world_chunk_one.yaml"
+  $ref: "./world/chunk_one.yaml"
+
+
+/husky/crate:
+  $ref: "./husky/crate_list.yaml"
+/husky/crate/{id}:
+  $ref: "./husky/crate_one.yaml"
+
+/mmctickets/ticket:
+  $ref: "./mmctickets/ticket_list.yaml"
+/mmctickets/ticket/{id}:
+  $ref: "./mmctickets/ticket_one.yaml"
+
+/nations/nation:
+  $ref: "./nations/nation_list.yaml"
+/nations/nation/{id}:
+  $ref: "./nations/nation_one.yaml"
+
+/nucleus/jail:
+  $ref: "./nucleus/jail_list.yaml"
+/nucleus/jail/{name}:
+  $ref: "./nucleus/jail_one.yaml"
+/nucleus/kit:
+  $ref: "./nucleus/kit_list.yaml"
+/nucleus/kit/{name}:
+  $ref: "./nucleus/kit_one.yaml"

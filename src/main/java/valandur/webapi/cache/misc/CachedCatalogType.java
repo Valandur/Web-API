@@ -1,19 +1,16 @@
 package valandur.webapi.cache.misc;
 
 import org.spongepowered.api.CatalogType;
-import valandur.webapi.api.cache.misc.ICachedCatalogType;
-import valandur.webapi.cache.CachedObject;
+import valandur.webapi.api.cache.CachedObject;
 
-public class CachedCatalogType extends CachedObject implements ICachedCatalogType {
+public class CachedCatalogType extends CachedObject<CatalogType> {
 
     private String id;
-    @Override
     public String getId() {
         return id;
     }
 
     private String name;
-    @Override
     public String getName() {
         return name;
     }

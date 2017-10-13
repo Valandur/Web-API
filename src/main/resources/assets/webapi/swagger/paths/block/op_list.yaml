@@ -1,0 +1,55 @@
+get:
+  summary: List block operations
+  operationId: getBlockOperations
+  description: |
+    Returns a list of all the currently running block operations.
+
+    > Required permission: block.op.list
+  tags:
+    - Block
+  responses:
+    403:
+      $ref: "../../responses/403.yaml"
+    200:
+      description: List of block operations
+      schema:
+        title: BlockOperationsList
+        type: object
+        properties:
+          ok:
+           $ref: "../../definitions/ok.yaml"
+          operations:
+            type: array
+            description: A list of block operations.
+            items:
+              $ref: "../../definitions/block/BlockOperation.yaml"
+post:
+  summary: Create block operation
+  operationId: startBlockOperation
+  description: |
+    Start a request to get or change blocks on the server.
+
+    > Required permission: block.op.create
+  parameters:
+    - name: Request
+      in: body
+      description: The requested changes to blocks
+      required: true
+      schema:
+        title: BlockChangeList
+        type: array
+        items:
+          $ref: "../../definitions/block/BlockOperationNew.yaml"
+  tags:
+    - Block
+  responses:
+    400:
+      $ref: "../../responses/400.yaml"
+    403:
+      $ref: "../../responses/403.yaml"
+    404:
+      $ref: "../../responses/404.yaml"
+    406:
+      $ref: "../../responses/406.yaml"
+    200:
+      $ref: "../../responses/BlockOperation.yaml"

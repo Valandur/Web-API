@@ -1,0 +1,9 @@
+description: Player
+schema:
+  title: PlayerResponse
+  type: object
+  properties:
+    ok:
+      $ref: "../definitions/ok.yaml"
+    player:
+      $ref: "../definitions/player/PlayerFull.yaml"

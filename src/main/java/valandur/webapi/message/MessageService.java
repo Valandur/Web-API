@@ -17,18 +17,24 @@ import java.util.concurrent.ConcurrentSkipListSet;
 
 public class MessageService implements IMessageService {
 
+    private Map<UUID, IMessage> messages = new ConcurrentHashMap<>();
     private Map<UUID, Set<String>> replied = new ConcurrentHashMap<>();
 
+    @Override
+    public List<IMessage> getMessages() {
+        return new ArrayList<>(messages.values());
+    }
+
+    @Override
     public boolean sendMessage(IMessage msg) {
         Text.Builder builder = Text.builder();
-        UUID uuid = UUID.randomUUID();
 
         if (msg.getMessage() != null) {
             builder.append(msg.getMessage());
         }
 
         if (msg.isOnce() != null && msg.isOnce()) {
-            replied.put(uuid, new ConcurrentSkipListSet<>());
+            replied.put(msg.getUUID(), new ConcurrentSkipListSet<>());
         }
 
         if (msg.hasOptions() && msg.getOptions().size() > 0) {
@@ -39,7 +45,7 @@ public class MessageService implements IMessageService {
 
                 Text opt = option.getValue().toBuilder().onClick(TextActions.executeCallback(source -> {
                     if (msg.isOnce()) {
-                        Collection<String> replies = replied.get(uuid);
+                        Collection<String> replies = replied.get(msg.getUUID());
                         if (replies.contains(source.getIdentifier())) {
                             source.sendMessage(Text
                                     .builder("You have already replied to this messsage")
@@ -69,6 +75,8 @@ public class MessageService implements IMessageService {
             msg.getTargets().forEach(u -> WebAPI.getCacheService().getPlayer(u).map(cachedPlayers::add));
         }
 
+        messages.put(msg.getUUID(), msg);
+
         return WebAPI.runOnMain(() -> {
             List<Player> players = new ArrayList<>();
             for (ICachedPlayer player : cachedPlayers) {
@@ -85,5 +93,11 @@ public class MessageService implements IMessageService {
 
             return true;
         }).orElse(false);
+    }
+
+    @Override
+    public Optional<IMessage> getMessage(UUID uuid) {
+        IMessage msg = messages.get(uuid);
+        return msg != null ? Optional.of(msg) : Optional.empty();
     }
 }

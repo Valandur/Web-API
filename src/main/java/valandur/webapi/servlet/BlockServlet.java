@@ -4,16 +4,16 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.flowpowered.math.vector.Vector3i;
 import org.eclipse.jetty.http.HttpMethod;
 import org.spongepowered.api.block.BlockState;
-import valandur.webapi.api.annotation.WebAPIEndpoint;
-import valandur.webapi.api.annotation.WebAPIServlet;
 import valandur.webapi.api.block.IBlockOperation;
-import valandur.webapi.api.servlet.WebAPIBaseServlet;
+import valandur.webapi.api.servlet.BaseServlet;
+import valandur.webapi.api.servlet.Endpoint;
+import valandur.webapi.api.servlet.Servlet;
 import valandur.webapi.block.BlockChangeOperation;
 import valandur.webapi.block.BlockGetOperation;
 import valandur.webapi.cache.world.CachedWorld;
-import valandur.webapi.json.request.block.CreateOperationRequest;
 import valandur.webapi.servlet.base.ServletData;
-import valandur.webapi.json.request.block.CreateOperationRequest.BlockOperationType;
+import valandur.webapi.servlet.request.block.CreateOperationRequest;
+import valandur.webapi.servlet.request.block.CreateOperationRequest.BlockOperationType;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.HashMap;
@@ -21,12 +21,12 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-import static valandur.webapi.json.request.block.CreateOperationRequest.BlockStateRequest;
+import static valandur.webapi.servlet.request.block.CreateOperationRequest.BlockStateRequest;
 
-@WebAPIServlet(basePath = "block")
-public class BlockServlet extends WebAPIBaseServlet {
+@Servlet(basePath = "block")
+public class BlockServlet extends BaseServlet {
 
-    @WebAPIEndpoint(method = HttpMethod.GET, path = "/:world/:x/:y/:z", perm = "one")
+    @Endpoint(method = HttpMethod.GET, path = "/:world/:x/:y/:z", perm = "one")
     public void getBlock(ServletData data, CachedWorld world, int x, int y, int z) {
         Vector3i pos = new Vector3i(x, y, z);
         Optional<BlockState> state = blockService.getBlockAt(world, pos);
@@ -35,18 +35,18 @@ public class BlockServlet extends WebAPIBaseServlet {
             return;
         }
 
-        data.addJson("ok", true, false);
-        data.addJson("position", pos, false);
-        data.addJson("block", state.get(), true);
+        data.addData("ok", true, false);
+        data.addData("position", pos, false);
+        data.addData("block", state.get(), true);
     }
 
-    @WebAPIEndpoint(method = HttpMethod.GET, path = "/op", perm = "op.list")
+    @Endpoint(method = HttpMethod.GET, path = "/op", perm = "op.list")
     public void getBlockOperations(ServletData data) {
-        data.addJson("ok", true, false);
-        data.addJson("operations", blockService.getBlockOperations(), data.getQueryParam("details").isPresent());
+        data.addData("ok", true, false);
+        data.addData("operations", blockService.getBlockOperations(), data.getQueryParam("details").isPresent());
     }
 
-    @WebAPIEndpoint(method = HttpMethod.POST, path = "/op", perm = "op.create")
+    @Endpoint(method = HttpMethod.POST, path = "/op", perm = "op.create")
     public void createBlockOperation(ServletData data) {
         Optional<CreateOperationRequest> optReq = data.getRequestBody(CreateOperationRequest.class);
         if (!optReq.isPresent()) {
@@ -82,7 +82,7 @@ public class BlockServlet extends WebAPIBaseServlet {
         Vector3i size = max.sub(min).add(1, 1, 1);
         int numBlocks = size.getX() * size.getY() * size.getZ();
 
-        IBlockOperation op = null;
+        IBlockOperation op;
         if (req.getType() == BlockOperationType.GET) {
             // Check volume size
             if (blockService.getMaxGetBlocks() > 0 && numBlocks > blockService.getMaxGetBlocks()) {
@@ -155,13 +155,19 @@ public class BlockServlet extends WebAPIBaseServlet {
             }
 
             op = blockService.startBlockOperation(new BlockChangeOperation(req.getWorld().get(), min, max, blocks));
+        } else {
+            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Unknown block operation type");
+            return;
         }
 
-        data.addJson("ok", true, false);
-        data.addJson("operation", op, false);
+        data.setStatus(HttpServletResponse.SC_CREATED);
+        data.setHeader("Location", op.getLink());
+
+        data.addData("ok", true, false);
+        data.addData("operation", op, false);
     }
 
-    @WebAPIEndpoint(method = HttpMethod.GET, path = "/op/:uuid", perm = "op.one")
+    @Endpoint(method = HttpMethod.GET, path = "/op/:uuid", perm = "op.one")
     public void getBlockOperation(ServletData data, UUID uuid) {
         // Check block update
         Optional<IBlockOperation> update = blockService.getBlockOperation(uuid);
@@ -170,11 +176,11 @@ public class BlockServlet extends WebAPIBaseServlet {
             return;
         }
 
-        data.addJson("ok", true, false);
-        data.addJson("operation", update.get(), true);
+        data.addData("ok", true, false);
+        data.addData("operation", update.get(), true);
     }
 
-    @WebAPIEndpoint(method = HttpMethod.PUT, path = "/op/:uuid", perm = "op.change")
+    @Endpoint(method = HttpMethod.PUT, path = "/op/:uuid", perm = "op.change")
     public void modifyBlockOperation(ServletData data, UUID uuid) {
         JsonNode reqJson = data.getRequestBody();
 
@@ -191,11 +197,11 @@ public class BlockServlet extends WebAPIBaseServlet {
             update.get().start();
         }
 
-        data.addJson("ok", true, false);
-        data.addJson("operation", update, true);
+        data.addData("ok", true, false);
+        data.addData("operation", update, true);
     }
 
-    @WebAPIEndpoint(method = HttpMethod.DELETE, path = "/op/:uuid", perm = "op.delete")
+    @Endpoint(method = HttpMethod.DELETE, path = "/op/:uuid", perm = "op.delete")
     public void deleteBlockOperation(ServletData data, UUID uuid) {
         // Check block update
         Optional<IBlockOperation> update = blockService.getBlockOperation(uuid);
@@ -206,7 +212,7 @@ public class BlockServlet extends WebAPIBaseServlet {
 
         update.get().stop("Cancelled by request");
 
-        data.addJson("ok", true, false);
-        data.addJson("operation", update.get(), true);
+        data.addData("ok", true, false);
+        data.addData("operation", update.get(), true);
     }
 }

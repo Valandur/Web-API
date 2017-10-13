@@ -1,0 +1,126 @@
+get:
+  summary: Detailed world info
+  operationId: getWorld
+  description: |
+    Get detailed information about a world.
+
+    > Required permission: world.one
+  parameters:
+    - name: uuid
+      in: path
+      type: string
+      description: The uuid of the world to get detailed information about.
+      required: true
+    - name: fields
+      in: query
+      type: string
+      description: An optional list of additional fields to get.
+    - name: methods
+      in: query
+      type: string
+      description: An optional list of additional methods to get.
+  tags:
+    - World
+  responses:
+    400:
+      $ref: "../../responses/400.yaml"
+    403:
+      $ref: "../../responses/403.yaml"
+    404:
+      $ref: "../../responses/404.yaml"
+    200:
+      $ref: "../../responses/World.yaml"
+put:
+  summary: Edit world
+  operationId: changeWorld
+  description: |
+    Update the properties of an existing world.
+
+    > Required permission: world.change
+  parameters:
+    - name: uuid
+      in: path
+      type: string
+      description: The uuid of the world.
+      required: true
+    - name: UpdateWorldRequest
+      in: body
+      description: The new properties of the world
+      required: true
+      schema:
+        $ref: "../../definitions/world/UpdateWorldRequest.yaml"
+  tags:
+    - World
+  responses:
+    400:
+      $ref: "../../responses/400.yaml"
+    403:
+      $ref: "../../responses/403.yaml"
+    404:
+      $ref: "../../responses/404.yaml"
+    200:
+      $ref: "../../responses/World.yaml"
+post:
+  summary: Execute world methods
+  operationId: executeWorldMethod
+  description: |
+    Provides direct access to the underlaying world object and can execute any method on it.
+
+    > Required permission: world.method
+  parameters:
+    - name: uuid
+      in: path
+      type: string
+      description: The uuid of the world.
+      required: true
+    - name: Request
+      in: body
+      description: Information about which method to execute.
+      required: true
+      schema:
+        $ref: "../../definitions/RawRequest.yaml"
+  tags:
+    - World
+  responses:
+    400:
+      $ref: "../../responses/400.yaml"
+    403:
+      $ref: "../../responses/403.yaml"
+    404:
+      $ref: "../../responses/404.yaml"
+    200:
+      description: Method return value
+      schema:
+        title: ExecuteWorldMethodResponse
+        type: object
+        properties:
+          ok:
+            $ref: "../../definitions/ok.yaml"
+          world:
+            $ref: "../../definitions/world/WorldFull.yaml"
+          result:
+            $ref: "../../definitions/RawResponse.yaml"
+delete:
+  summary: Delete a world
+  operationId: deleteWorld
+  description: |
+    Deletes an existing world. **The world must be unloaded before deleting it**
+
+    > Required permission: world.delete
+  parameters:
+    - name: uuid
+      in: path
+      type: string
+      description: The uuid of the world.
+      required: true
+  tags:
+   - World
+  responses:
+    400:
+      $ref: "../../responses/400.yaml"
+    403:
+      $ref: "../../responses/403.yaml"
+    404:
+      $ref: "../../responses/404.yaml"
+    200:
+      $ref: "../../responses/World.yaml"

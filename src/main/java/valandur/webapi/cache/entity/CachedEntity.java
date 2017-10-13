@@ -5,17 +5,16 @@ import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.item.inventory.Carrier;
 import org.spongepowered.api.world.World;
+import valandur.webapi.api.cache.CachedObject;
 import valandur.webapi.api.cache.entity.ICachedEntity;
-import valandur.webapi.api.cache.misc.ICachedInventory;
-import valandur.webapi.api.cache.misc.ICachedLocation;
-import valandur.webapi.cache.CachedObject;
+import valandur.webapi.api.serialize.JsonDetails;
 import valandur.webapi.cache.misc.CachedInventory;
-import valandur.webapi.cache.misc.CachedLocation;
+import valandur.webapi.api.cache.world.CachedLocation;
 
 import java.util.Optional;
 import java.util.UUID;
 
-public class CachedEntity extends CachedObject implements ICachedEntity {
+public class CachedEntity extends CachedObject<Entity> implements ICachedEntity {
 
     protected String type;
     @Override
@@ -29,33 +28,32 @@ public class CachedEntity extends CachedObject implements ICachedEntity {
         return uuid;
     }
 
-    private ICachedLocation location;
-    @Override
-    public ICachedLocation getLocation() {
+    private CachedLocation location;
+    public CachedLocation getLocation() {
         return location;
     }
 
     private Vector3d rotation;
-    @Override
+    @JsonDetails
     public Vector3d getRotation() {
         return rotation;
     }
 
     private Vector3d velocity;
-    @Override
+    @JsonDetails
     public Vector3d getVelocity() {
         return velocity;
     }
 
     private Vector3d scale;
-    @Override
+    @JsonDetails
     public Vector3d getScale() {
         return scale;
     }
 
-    private ICachedInventory inventory;
-    @Override
-    public ICachedInventory getInventory() {
+    private CachedInventory inventory;
+    @JsonDetails
+    public CachedInventory getInventory() {
         return inventory;
     }
 
@@ -79,7 +77,7 @@ public class CachedEntity extends CachedObject implements ICachedEntity {
     }
 
     @Override
-    public Optional<?> getLive() {
+    public Optional<Entity> getLive() {
         for (World w : Sponge.getServer().getWorlds()) {
             Optional<Entity> e = w.getEntity(uuid);
             if (e.isPresent())

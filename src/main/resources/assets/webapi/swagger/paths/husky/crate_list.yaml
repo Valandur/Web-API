@@ -1,0 +1,30 @@
+get:
+  summary: Crate list
+  operationId: getCrates
+  description: |
+    Get a list of all the crates on the server.
+
+    > Required permission: husky.crate.list
+  parameters:
+    - name: details
+      in: query
+      type: string
+      description: Pass this parameter to receive the full details for each crate.
+  tags:
+    - Husky Crates
+  responses:
+    403:
+      $ref: "../../responses/403.yaml"
+    200:
+      description: List of crates
+      schema:
+        title: HuskyCratesResponse
+        type: object
+        properties:
+          ok:
+            $ref: "../../definitions/ok.yaml"
+          crates:
+            type: array
+            description: A list of crates.
+            items:
+              $ref: "../../definitions/husky/HuskyCrate.yaml"

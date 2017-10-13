@@ -4,11 +4,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 import org.eclipse.jetty.http.HttpMethod;
 import org.spongepowered.api.block.tileentity.TileEntity;
 import org.spongepowered.api.util.Tuple;
-import valandur.webapi.api.annotation.WebAPIEndpoint;
-import valandur.webapi.api.annotation.WebAPIServlet;
+import valandur.webapi.api.servlet.Endpoint;
+import valandur.webapi.api.servlet.Servlet;
 import valandur.webapi.api.cache.tileentity.ICachedTileEntity;
 import valandur.webapi.api.cache.world.ICachedWorld;
-import valandur.webapi.api.servlet.WebAPIBaseServlet;
+import valandur.webapi.api.servlet.BaseServlet;
 import valandur.webapi.cache.world.CachedWorld;
 import valandur.webapi.servlet.base.ServletData;
 import valandur.webapi.util.Util;
@@ -18,10 +18,10 @@ import java.util.Collection;
 import java.util.Optional;
 import java.util.function.Predicate;
 
-@WebAPIServlet(basePath = "tile-entity")
-public class TileEntityServlet extends WebAPIBaseServlet {
+@Servlet(basePath = "tile-entity")
+public class TileEntityServlet extends BaseServlet {
 
-    @WebAPIEndpoint(method = HttpMethod.GET, path = "/", perm = "list")
+    @Endpoint(method = HttpMethod.GET, path = "/", perm = "list")
     public void getTileEntities(ServletData data) {
         Optional<String> worldUuid = data.getQueryParam("world");
         Optional<String> typeId = data.getQueryParam("type");
@@ -42,8 +42,8 @@ public class TileEntityServlet extends WebAPIBaseServlet {
                 return;
             }
 
-            data.addJson("ok", true, false);
-            data.addJson("tileEntities", tileEntities.get(), data.getQueryParam("details").isPresent());
+            data.addData("ok", true, false);
+            data.addData("tileEntities", tileEntities.get(), data.getQueryParam("details").isPresent());
             return;
         }
 
@@ -53,11 +53,11 @@ public class TileEntityServlet extends WebAPIBaseServlet {
             return;
         }
 
-        data.addJson("ok", true, false);
-        data.addJson("tileEntities", coll.get(), data.getQueryParam("details").isPresent());
+        data.addData("ok", true, false);
+        data.addData("tileEntities", coll.get(), data.getQueryParam("details").isPresent());
     }
 
-    @WebAPIEndpoint(method = HttpMethod.GET, path = "/:world/:x/:y/:z", perm = "one")
+    @Endpoint(method = HttpMethod.GET, path = "/:world/:x/:y/:z", perm = "one")
     public void getTileEntity(ServletData data, CachedWorld world, int x, int y, int z) {
         Optional<ICachedTileEntity> te = cacheService.getTileEntity(world, x, y, z);
 
@@ -71,16 +71,16 @@ public class TileEntityServlet extends WebAPIBaseServlet {
         if (strFields.isPresent() || strMethods.isPresent()) {
             String[] fields = strFields.map(s -> s.split(",")).orElse(new String[]{});
             String[] methods = strMethods.map(s -> s.split(",")).orElse(new String[]{});
-            Tuple extra = cacheService.getExtraData(te.get(), fields, methods);
-            data.addJson("fields", extra.getFirst(), true);
-            data.addJson("methods", extra.getSecond(), true);
+            Tuple extra = cacheService.getExtraData(te.get(), data.responseIsXml(), fields, methods);
+            data.addData("fields", extra.getFirst(), true);
+            data.addData("methods", extra.getSecond(), true);
         }
 
-        data.addJson("ok", true, false);
-        data.addJson("tileEntity", te.get(), true);
+        data.addData("ok", true, false);
+        data.addData("tileEntity", te.get(), true);
     }
 
-    @WebAPIEndpoint(method = HttpMethod.POST, path = "/:world/:x/:y/:z/method", perm = "method")
+    @Endpoint(method = HttpMethod.POST, path = "/:world/:x/:y/:z/method", perm = "method")
     public void executeMethod(ServletData data, CachedWorld world, int x, int y, int z) {
         Optional<ICachedTileEntity> te = cacheService.getTileEntity(world, x, y, z);
         if (!te.isPresent()) {
@@ -109,8 +109,8 @@ public class TileEntityServlet extends WebAPIBaseServlet {
             return;
         }
 
-        data.addJson("ok", true, false);
-        data.addJson("tileEntity", te.get(), true);
-        data.addJson("result", res.get(), true);
+        data.addData("ok", true, false);
+        data.addData("tileEntity", te.get(), true);
+        data.addData("result", res.get(), true);
     }
 }

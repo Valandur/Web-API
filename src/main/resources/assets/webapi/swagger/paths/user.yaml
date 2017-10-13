@@ -1,5 +1,6 @@
 get:
   summary: Check a user key
+  operationId: checkUser
   description: |
     Checks to see if the passed api key is still valid.
   tags:
@@ -8,6 +9,7 @@ get:
     200:
       description: Key validity
       schema:
+        title: UserResponse
         type: object
         properties:
           ok:
@@ -16,12 +18,12 @@ get:
             $ref: "../definitions/User.yaml"
 post:
   summary: Login
+  operationId: login
   description: |
     Tries to aquire an api key with the passed credentials.
   parameters:
     - name: LoginRequest
       in: body
-      type: object
       schema:
         $ref: "../definitions/LoginRequest.yaml"
       required: true
@@ -35,6 +37,7 @@ post:
     200:
       description: New API key
       schema:
+        title: LoginResponse
         type: object
         properties:
           ok:

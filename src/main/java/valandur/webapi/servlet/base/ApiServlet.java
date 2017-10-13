@@ -1,22 +1,20 @@
 package valandur.webapi.servlet.base;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.permission.IPermissionService;
 import valandur.webapi.api.util.TreeNode;
-import valandur.webapi.json.JsonService;
 import valandur.webapi.permission.PermissionService;
+import valandur.webapi.serialize.SerializeService;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Map;
@@ -26,20 +24,20 @@ public class ApiServlet extends HttpServlet {
 
     private ServletService servletService;
     private PermissionService permissionService;
-    private JsonService jsonService;
+    private SerializeService serializeService;
 
 
     public ApiServlet() {
         this.servletService = WebAPI.getServletService();
         this.permissionService = WebAPI.getPermissionService();
-        this.jsonService = WebAPI.getJsonService();
+        this.serializeService = WebAPI.getSerializeService();
     }
 
     private void handleVerb(String verb, HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         resp.setStatus(HttpServletResponse.SC_OK);
         resp.addHeader("Access-Control-Allow-Origin","*");
-        resp.addHeader("Access-Control-Allow-Methods","GET,PUT,POST,DELETE");
-        resp.addHeader("Access-Control-Allow-Headers","Origin, X-Requested-With, Content-Type, Accept");
+        resp.addHeader("Access-Control-Allow-Methods","GET,PUT,POST,DELETE,OPTIONS");
+        resp.addHeader("Access-Control-Allow-Headers","Origin, X-Requested-With, Content-Type, Accept, X-WEBAPI-KEY");
 
         WebAPI.sentryNewRequest(req);
 
@@ -58,6 +56,7 @@ public class ApiServlet extends HttpServlet {
         MatchedRoute match = optMatch.get();
 
         String specPerm = match.getRoute().perm();
+        TreeNode<String, Boolean> perms;
         if (!specPerm.isEmpty()) {
             specPerm = match.getServletSpec().basePath() + "." + specPerm;
             String[] reqPerms = specPerm.split("\\.");
@@ -76,10 +75,12 @@ public class ApiServlet extends HttpServlet {
                 return;
             }
 
-            req.setAttribute("dataPerms", methodPerms);
+            perms = methodPerms;
         } else {
-            req.setAttribute("dataPerms", IPermissionService.permitAllNode());
+            perms = IPermissionService.permitAllNode();
         }
+
+        req.setAttribute("dataPerms", perms);
 
         if (verb.equalsIgnoreCase("Post") || verb.equalsIgnoreCase("Put")) {
             try {
@@ -97,13 +98,19 @@ public class ApiServlet extends HttpServlet {
                     }
                     req.setAttribute("body", obj);
                 } else if (type.contains("application/json")) {
-                    JsonNode node = jsonService.toJson(req.getReader(), IPermissionService.permitAllNode());
+                    JsonNode node = serializeService.deserialize(req.getReader(), false, perms);
+                    req.setAttribute("body", node);
+
+                    WebAPI.sentryExtra("request_body", node != null ? node.toString() : "");
+                } else if (type.contains("application/xml")) {
+                    JsonNode node = serializeService.deserialize(req.getReader(), true, perms);
                     req.setAttribute("body", node);
 
                     WebAPI.sentryExtra("request_body", node != null ? node.toString() : "");
                 } else {
                     resp.sendError(HttpServletResponse.SC_BAD_REQUEST,
-                            "Unknown request body type. Use either application/json or application/x-www-form-urlencoded");
+                            "Unknown request body type. Use either application/json, " +
+                                    "application/xml or application/x-www-form-urlencoded");
                     return;
                 }
             } catch (Exception e) {
@@ -124,15 +131,12 @@ public class ApiServlet extends HttpServlet {
 
         try {
             match.getMethod().invoke(match.getServlet(), params.toArray());
+            resp.setContentType(data.getResponseContentType());
 
+            // If we didn't send an error or a response yet then automatically send it now
             if (!data.isDone() && !data.isErrorSent()) {
-                resp.setContentType("application/json; charset=utf-8");
-
                 try {
-                    PrintWriter out = data.getWriter();
-                    ObjectMapper om = new ObjectMapper();
-                    String res = om.writeValueAsString(data.getNode());
-                    out.write(res);
+                    data.writeResponse();
                 } catch(IllegalStateException ignored) {
                     // We already used the output buffer in stream mode, so getting it as a writer now doesn't work
                     // Just do nothing in this case, because we can assume the output was already handled by the servlet

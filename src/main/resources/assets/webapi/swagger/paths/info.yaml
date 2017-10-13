@@ -1,5 +1,6 @@
 get:
   summary: Server info
+  operationId: getInfo
   description: |
     Get general information about the minecraft server.
 
@@ -13,7 +14,9 @@ get:
       description: General info
       schema:
         type: object
-        properties:
-          allOf:
-            - $ref: "../definitions/ok.yaml"
-            - $ref: "../definitions/ServerInfo.yaml"
+        allOf:
+          - type: object
+            properties:
+              ok:
+                $ref: "../definitions/ok.yaml"
+          - $ref: "../definitions/server/ServerInfo.yaml"

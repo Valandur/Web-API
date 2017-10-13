@@ -24,15 +24,16 @@ allprojects {
 
     dependencies {
         compileOnly group: "org.spongepowered", name: "spongeapi", version: "${project.spongeVersion}.0-SNAPSHOT"
-        compile group: "io.sentry", name: "sentry", version: "1.5.3"
-        compile group: "org.bstats", name: "bstats-sponge", version: "1.2"
+
+        compile group: "com.fasterxml.jackson.core", name: "jackson-core", version: "2.9.0"
+        compile group: "com.fasterxml.jackson.core", name: "jackson-databind", version: "2.9.0"
+        compile group: "com.fasterxml.jackson.core", name: "jackson-annotations", version: "2.9.0"
+        compile group: "org.codehaus.woodstox", name: "woodstox-core-asl", version: "4.4.1"
+        compile group: "com.fasterxml.jackson.dataformat", name: "jackson-dataformat-xml", version: "2.9.0"
         compile group: "org.eclipse.jetty", name: "jetty-server", version: "9.4.6.v20170531"
         compile group: "org.eclipse.jetty", name: "jetty-servlet", version: "9.4.6.v20170531"
         compile group: "org.eclipse.jetty", name: "jetty-http", version: "9.4.6.v20170531"
         compile group: "org.eclipse.jetty", name: "jetty-rewrite", version: "9.4.6.v20170531"
-        compile group: "com.fasterxml.jackson.core", name: "jackson-core", version: "2.9.0"
-        compile group: "com.fasterxml.jackson.core", name: "jackson-databind", version: "2.9.0"
-        compile group: "com.fasterxml.jackson.core", name: "jackson-annotations", version: "2.9.0"
     }
 }
 
@@ -48,7 +49,9 @@ spongestart {
 
 dependencies {
     compile project(":webapi-api")
+    compile group: "io.sentry", name: "sentry", version: "1.5.3"
     compile group: "org.mindrot", name: "jbcrypt", version: "0.4"
+    compile group: "org.bstats", name: "bstats-sponge", version: "1.2"
 
     compileOnly files("lib/HuskyCrates-v1.7.2.jar")
     compileOnly files("lib/MMCTickets-1.4.0-API-5.2-7.X.jar")

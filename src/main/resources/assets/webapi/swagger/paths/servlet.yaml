@@ -1,5 +1,6 @@
 get:
   summary: Loaded servlets
+  operationId: getLoadedServlets
   description: |
     Get a map of all the servlets loaded on the server. The key is the path under which the servlet is
     available, and the value is the class name of the implementing class of the servlet.
@@ -13,6 +14,7 @@ get:
     200:
       description: Loaded servlets
       schema:
+        title: ServletsResponse
         type: object
         properties:
           ok:

@@ -11,10 +11,11 @@ import valandur.webapi.api.block.IBlockService;
 import valandur.webapi.api.cache.world.ICachedWorld;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 public class BlockService implements IBlockService {
-    private static Map<UUID, IBlockOperation> blockOps = new HashMap<>();
+    private static Map<UUID, IBlockOperation> blockOps = new ConcurrentHashMap<>();
 
     private static final String UNKOWN_BIOME_ID = "<unknown>";
     private static int MAX_BLOCK_GET_SIZE = 1000000;

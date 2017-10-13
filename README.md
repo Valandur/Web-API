@@ -44,14 +44,18 @@ Provides an AdminPanel to manage your minecraft server and a RESTful webserver w
 Go [here](docs/INDEX.md) to see a list of various documentations and tutorials
 
 ## Request / Response types
-This API uses JSON as requeset and response formats.
+The Web-API supports JSON and XML data formats for requests and responses.
+Specify the `Content-Type` header to explain what content type you are sending, and
+use the `accept` header to tell the Web-API what content type to return to you.
+> Yes, you can send XML and get JSON in response, or the other way around if you want.
 
 ## Routes
 When accessing the base site (by default http://localhost:8080/) a documentation of all the methods will show up.
 This can be used as a starting point to explore the supported routes. You can also find the same documentation
 [here](https://valandur.github.io/Web-API/redoc.html).
 
-## Contributors
+## Contributors & Special thanks
 
-- [johnfg10](https://github.com/johnfg10)
-- [r15ch13](https://github.com/r15ch13)
+- [johnfg10](https://github.com/johnfg10) (contributor)
+- [r15ch13](https://github.com/r15ch13) (contributor)
+- [Cat121](https://github.com/Cat121) (extended testing and ideas)

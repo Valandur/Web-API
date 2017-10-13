@@ -8,13 +8,7 @@ import java.util.Optional;
 /**
  * The base class for all cached objects.
  */
-public interface ICachedObject {
-
-    /**
-     * Gets the class of the original object.
-     * @return The class of the original object.
-     */
-    Class getObjectClass();
+public interface ICachedObject<T> {
 
     /**
      * Gets any data associated with the object if the original object was a {@link DataHolder}.
@@ -32,7 +26,7 @@ public interface ICachedObject {
      * Tries to get the live version this object is representing.
      * @return An optional containing the live version of this object if available, empty otherwise.
      */
-    Optional<?> getLive();
+    Optional<T> getLive();
 
     /**
      * Checks if this cached object has expired.

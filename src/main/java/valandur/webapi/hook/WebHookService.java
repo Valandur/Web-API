@@ -2,7 +2,6 @@ package valandur.webapi.hook;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.reflect.TypeToken;
-import io.sentry.Sentry;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
 import ninja.leaping.configurate.objectmapping.ObjectMappingException;
@@ -15,13 +14,14 @@ import org.spongepowered.api.event.EventListener;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.util.Tuple;
 import valandur.webapi.WebAPI;
-import valandur.webapi.api.hook.WebAPIBaseFilter;
+import valandur.webapi.api.hook.BaseWebHookFilter;
+import valandur.webapi.api.hook.IWebHook;
 import valandur.webapi.api.hook.IWebHookService;
 import valandur.webapi.api.hook.WebHookHeader;
 import valandur.webapi.hook.filter.BlockTypeFilter;
 import valandur.webapi.hook.filter.ItemTypeFilter;
 import valandur.webapi.hook.filter.PlayerFilter;
-import valandur.webapi.json.JsonService;
+import valandur.webapi.serialize.SerializeService;
 import valandur.webapi.extension.ExtensionService;
 import valandur.webapi.util.Util;
 
@@ -33,16 +33,16 @@ import java.util.stream.Collectors;
 
 public class WebHookService implements IWebHookService {
 
-    private String configFileName = "hooks.conf";
-    private String userAgent = WebAPI.NAME + "/" + WebAPI.VERSION;
+    private static final String configFileName = "hooks.conf";
+    private static String userAgent = WebAPI.NAME + "/" + WebAPI.VERSION;
 
-    private JsonService json;
+    private SerializeService json;
     private ExtensionService extensions;
 
     private Map<String, CommandWebHook> commandHooks = new HashMap<>();
     private Map<WebHookType, List<WebHook>> eventHooks = new HashMap<>();
     private Map<Class<? extends Event>, Tuple<List<WebHook>, EventListener>> customHooks = new HashMap<>();
-    private Map<String, Class<? extends WebAPIBaseFilter>> filters = new HashMap<>();
+    private Map<String, Class<? extends BaseWebHookFilter>> filters = new HashMap<>();
 
     public Map<String, CommandWebHook> getCommandHooks() {
         return commandHooks;
@@ -54,7 +54,7 @@ public class WebHookService implements IWebHookService {
 
         logger.info("Initializing web hooks...");
 
-        this.json = WebAPI.getJsonService();
+        this.json = WebAPI.getSerializeService();
         this.extensions = WebAPI.getExtensionService();
 
         // Remove existing listeners to prevent multiple subscriptions on config reload
@@ -84,7 +84,7 @@ public class WebHookService implements IWebHookService {
         filters.put(ItemTypeFilter.name, ItemTypeFilter.class);
 
         // Load custom filters
-        extensions.loadPlugins("filters", WebAPIBaseFilter.class, filterClass -> {
+        extensions.loadPlugins("filters", BaseWebHookFilter.class, filterClass -> {
             try {
                 String name = (String) filterClass.getField("name").get(null);
                 filterClass.getConstructor(WebHook.class, ConfigurationNode.class);
@@ -147,7 +147,7 @@ public class WebHookService implements IWebHookService {
         }
     }
 
-    public Optional<Class<? extends WebAPIBaseFilter>> getFilter(String name) {
+    public Optional<Class<? extends BaseWebHookFilter>> getFilter(String name) {
         return filters.containsKey(name) ? Optional.of(filters.get(name)) : Optional.empty();
     }
 
@@ -183,10 +183,11 @@ public class WebHookService implements IWebHookService {
 
         final String address = hook.getAddress();
 
-        String stringData = json.toString(data, hook.includeDetails(), hook.getPermissions());
+        String stringData = json.toString(data, hook.getDataType() == IWebHook.WebHookDataType.XML,
+                hook.includeDetails(), hook.getPermissions());
         if (data != null) {
             try {
-                stringData = hook.getDataType() == WebHook.WebHookDataType.JSON ? stringData : "body=" + URLEncoder.encode(stringData, "UTF-8");
+                stringData = hook.isForm() ? "body=" + URLEncoder.encode(stringData, "UTF-8") : stringData;
             } catch (Exception e) {
                 e.printStackTrace();
                 if (WebAPI.reportErrors()) WebAPI.sentryCapture(e);

@@ -3,12 +3,12 @@ package valandur.webapi.servlet.base;
 import org.slf4j.Logger;
 import org.spongepowered.api.util.Tuple;
 import valandur.webapi.WebAPI;
-import valandur.webapi.api.annotation.WebAPIEndpoint;
-import valandur.webapi.api.annotation.WebAPIEndpoints;
-import valandur.webapi.api.annotation.WebAPIServlet;
+import valandur.webapi.api.servlet.Endpoint;
+import valandur.webapi.api.servlet.Endpoints;
+import valandur.webapi.api.servlet.Servlet;
 import valandur.webapi.api.servlet.IServletData;
 import valandur.webapi.api.servlet.IServletService;
-import valandur.webapi.api.servlet.WebAPIBaseServlet;
+import valandur.webapi.api.servlet.BaseServlet;
 import valandur.webapi.util.Util;
 
 import java.lang.reflect.InvocationTargetException;
@@ -18,9 +18,9 @@ import java.util.stream.Collectors;
 
 public class ServletService implements IServletService {
 
-    private Map<String, Class<? extends WebAPIBaseServlet>> servletClasses = new HashMap<>();
-    private Map<String, WebAPIBaseServlet> servlets = new HashMap<>();
-    private Map<WebAPIBaseServlet, List<Tuple<WebAPIEndpoint, Method>>> servletMethods = new HashMap<>();
+    private Map<String, Class<? extends BaseServlet>> servletClasses = new HashMap<>();
+    private Map<String, BaseServlet> servlets = new HashMap<>();
+    private Map<BaseServlet, List<Tuple<Endpoint, Method>>> servletMethods = new HashMap<>();
 
 
     public void init() {
@@ -30,12 +30,12 @@ public class ServletService implements IServletService {
 
         logger.info("Initializing servlets...");
         servletClasses.values().forEach(this::initServlet);
-        WebAPI.getExtensionService().loadPlugins("servlets", WebAPIBaseServlet.class, this::initServlet);
+        WebAPI.getExtensionService().loadPlugins("servlets", BaseServlet.class, this::initServlet);
     }
-    private void initServlet(Class<? extends WebAPIBaseServlet> servletClass) {
+    private void initServlet(Class<? extends BaseServlet> servletClass) {
         Logger logger = WebAPI.getLogger();
 
-        String basePath = servletClass.getAnnotation(WebAPIServlet.class).basePath();
+        String basePath = servletClass.getAnnotation(Servlet.class).basePath();
         logger.info("  " + basePath + " -> " + servletClass.getName());
 
         if (basePath.contains("/")) {
@@ -45,19 +45,19 @@ public class ServletService implements IServletService {
 
         // Create a new instance
         try {
-            WebAPIBaseServlet serv = servletClass.newInstance();
+            BaseServlet serv = servletClass.newInstance();
             servlets.put(basePath, serv);
 
             // Get all methods that are correctly annotated
-            List<Tuple<WebAPIEndpoint[], Method>> methods = Arrays.stream(servletClass.getMethods())
-                    .filter(m -> m.isAnnotationPresent(WebAPIEndpoint.class) ||
-                            m.isAnnotationPresent(WebAPIEndpoints.class))
-                    .map(m -> new Tuple<>(m.getAnnotationsByType(WebAPIEndpoint.class), m))
+            List<Tuple<Endpoint[], Method>> methods = Arrays.stream(servletClass.getMethods())
+                    .filter(m -> m.isAnnotationPresent(Endpoint.class) ||
+                            m.isAnnotationPresent(Endpoints.class))
+                    .map(m -> new Tuple<>(m.getAnnotationsByType(Endpoint.class), m))
                     .collect(Collectors.toList());
-            List<Tuple<WebAPIEndpoint, Method>> newMethods = new ArrayList<>();
+            List<Tuple<Endpoint, Method>> newMethods = new ArrayList<>();
 
-            for (Tuple<WebAPIEndpoint[], Method> tuple : methods) {
-                WebAPIEndpoint[] routes = tuple.getFirst();
+            for (Tuple<Endpoint[], Method> tuple : methods) {
+                Endpoint[] routes = tuple.getFirst();
                 Method method = tuple.getSecond();
 
                 if (method.getParameterTypes()[0] != IServletData.class &&
@@ -67,7 +67,7 @@ public class ServletService implements IServletService {
                 }
 
                 method.setAccessible(true);
-                for (WebAPIEndpoint route : routes) {
+                for (Endpoint route : routes) {
                     logger.debug("    [" + route.method() + "] " + route.path() + " -> " + method.getName());
                     newMethods.add(new Tuple<>(route, method));
                 }
@@ -87,21 +87,21 @@ public class ServletService implements IServletService {
             return Optional.empty();
         }
 
-        WebAPIBaseServlet servlet = servlets.get(pathParts.get(0));
+        BaseServlet servlet = servlets.get(pathParts.get(0));
         if (servlet == null) {
             return Optional.empty();
         }
 
         // Then get the methods for that servlet
-        List<Tuple<WebAPIEndpoint, Method>> methods = servletMethods.get(servlet);
+        List<Tuple<Endpoint, Method>> methods = servletMethods.get(servlet);
 
         // Find the most suitable method according to the path
         LinkedHashMap<String, String> bestMatches = null;
-        Tuple<WebAPIEndpoint, Method> bestTuple = null;
+        Tuple<Endpoint, Method> bestTuple = null;
 
         pathParts = pathParts.subList(1, pathParts.size());
-        for (Tuple<WebAPIEndpoint, Method> tuple : methods) {
-            WebAPIEndpoint spec = tuple.getFirst();
+        for (Tuple<Endpoint, Method> tuple : methods) {
+            Endpoint spec = tuple.getFirst();
             List<String> specPathParts = Util.getPathParts(spec.path());
 
             // Skip methods that don't match the verb or route
@@ -138,15 +138,15 @@ public class ServletService implements IServletService {
         return Optional.of(new MatchedRoute(servlet, bestTuple.getFirst(), bestTuple.getSecond(), bestMatches));
     }
 
-    public void registerServlet(Class<? extends WebAPIBaseServlet> servlet) {
+    public void registerServlet(Class<? extends BaseServlet> servlet) {
         Logger logger = WebAPI.getLogger();
 
-        if (!servlet.isAnnotationPresent(WebAPIServlet.class)) {
+        if (!servlet.isAnnotationPresent(Servlet.class)) {
             logger.error("Servlet " + servlet.getName() + " is missing @WebAPIServlet annotation");
             return;
         }
 
-        WebAPIServlet info = servlet.getAnnotation(WebAPIServlet.class);
+        Servlet info = servlet.getAnnotation(Servlet.class);
         String basePath = info.basePath();
         if (basePath.endsWith("/"))
             basePath = basePath.substring(0, basePath.length() - 1);
@@ -172,7 +172,7 @@ public class ServletService implements IServletService {
     }
 
     @Override
-    public Map<String, Class<? extends WebAPIBaseServlet>> getLoadedServlets() {
+    public Map<String, Class<? extends BaseServlet>> getLoadedServlets() {
         return servlets.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().getClass()));
     }
 }

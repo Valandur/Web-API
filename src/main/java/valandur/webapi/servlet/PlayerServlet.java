@@ -13,13 +13,13 @@ import org.spongepowered.api.util.Tuple;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 import valandur.webapi.WebAPI;
-import valandur.webapi.api.annotation.WebAPIEndpoint;
-import valandur.webapi.api.annotation.WebAPIServlet;
+import valandur.webapi.api.servlet.Endpoint;
+import valandur.webapi.api.servlet.Servlet;
 import valandur.webapi.api.cache.player.ICachedPlayer;
-import valandur.webapi.api.servlet.WebAPIBaseServlet;
+import valandur.webapi.api.servlet.BaseServlet;
 import valandur.webapi.cache.player.CachedPlayer;
-import valandur.webapi.json.request.misc.DamageRequest;
-import valandur.webapi.json.request.player.UpdatePlayerRequest;
+import valandur.webapi.api.serialize.request.misc.DamageRequest;
+import valandur.webapi.servlet.request.player.UpdatePlayerRequest;
 import valandur.webapi.servlet.base.ServletData;
 import valandur.webapi.util.Util;
 
@@ -27,32 +27,32 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.Optional;
 import java.util.UUID;
 
-@WebAPIServlet(basePath = "player")
-public class PlayerServlet extends WebAPIBaseServlet {
+@Servlet(basePath = "player")
+public class PlayerServlet extends BaseServlet {
 
-    @WebAPIEndpoint(method = HttpMethod.GET, path = "/", perm = "list")
+    @Endpoint(method = HttpMethod.GET, path = "/", perm = "list")
     public void getPlayers(ServletData data) {
-        data.addJson("ok", true, false);
-        data.addJson("players", cacheService.getPlayers(), data.getQueryParam("details").isPresent());
+        data.addData("ok", true, false);
+        data.addData("players", cacheService.getPlayers(), data.getQueryParam("details").isPresent());
     }
 
-    @WebAPIEndpoint(method = HttpMethod.GET, path = "/:player", perm = "one")
+    @Endpoint(method = HttpMethod.GET, path = "/:player", perm = "one")
     public void getPlayer(ServletData data, CachedPlayer player) {
         Optional<String> strFields = data.getQueryParam("fields");
         Optional<String> strMethods = data.getQueryParam("methods");
         if (strFields.isPresent() || strMethods.isPresent()) {
             String[] fields = strFields.map(s -> s.split(",")).orElse(new String[]{});
             String[] methods = strMethods.map(s -> s.split(",")).orElse(new String[]{});
-            Tuple extra = cacheService.getExtraData(player, fields, methods);
-            data.addJson("fields", extra.getFirst(), true);
-            data.addJson("methods", extra.getSecond(), true);
+            Tuple extra = cacheService.getExtraData(player, data.responseIsXml(), fields, methods);
+            data.addData("fields", extra.getFirst(), true);
+            data.addData("methods", extra.getSecond(), true);
         }
 
-        data.addJson("ok", true, false);
-        data.addJson("player", player, true);
+        data.addData("ok", true, false);
+        data.addData("player", player, true);
     }
 
-    @WebAPIEndpoint(method = HttpMethod.PUT, path = "/:player", perm = "change")
+    @Endpoint(method = HttpMethod.PUT, path = "/:player", perm = "change")
     public void updatePlayer(ServletData data, CachedPlayer player) {
         Optional<UpdatePlayerRequest> optReq = data.getRequestBody(UpdatePlayerRequest.class);
         if (!optReq.isPresent()) {
@@ -63,24 +63,24 @@ public class PlayerServlet extends WebAPIBaseServlet {
         final UpdatePlayerRequest req = optReq.get();
 
         Optional<ICachedPlayer> resPlayer = WebAPI.runOnMain(() -> {
-            Optional<?> optLive = player.getLive();
+            Optional<Player> optLive = player.getLive();
             if (!optLive.isPresent())
                 return null;
 
-            Player live = (Player)optLive.get();
+            Player live = optLive.get();
 
             if (req.getWorld().isPresent()) {
-                Optional<?> optWorld = req.getWorld().get().getLive();
+                Optional<World> optWorld = req.getWorld().get().getLive();
                 if (!optWorld.isPresent())
                     return null;
 
                 if (req.getPosition() != null) {
-                    live.transferToWorld((World)optWorld.get(), req.getPosition());
+                    live.transferToWorld(optWorld.get(), req.getPosition());
                 } else {
-                    live.transferToWorld((World)optWorld.get());
+                    live.transferToWorld(optWorld.get());
                 }
             } else if (req.getPosition() != null) {
-                live.setLocation(new Location<World>(live.getWorld(), req.getPosition()));
+                live.setLocation(new Location<>(live.getWorld(), req.getPosition()));
             }
             if (req.getVelocity() != null) {
                 live.setVelocity(req.getVelocity());
@@ -144,11 +144,11 @@ public class PlayerServlet extends WebAPIBaseServlet {
             return cacheService.updatePlayer(live);
         });
 
-        data.addJson("ok", resPlayer.isPresent(), false);
-        data.addJson("player", resPlayer.orElse(null), true);
+        data.addData("ok", resPlayer.isPresent(), false);
+        data.addData("player", resPlayer.orElse(null), true);
     }
 
-    @WebAPIEndpoint(method = HttpMethod.POST, path = "/:player/method", perm = "method")
+    @Endpoint(method = HttpMethod.POST, path = "/:player/method", perm = "method")
     public void executeMethod(ServletData data) {
         String uuid = data.getPathParam("player");
         if (uuid.split("-").length != 5) {
@@ -182,8 +182,8 @@ public class PlayerServlet extends WebAPIBaseServlet {
             return;
         }
 
-        data.addJson("ok", true, false);
-        data.addJson("player", player.get(), true);
-        data.addJson("result", res.get(), true);
+        data.addData("ok", true, false);
+        data.addData("player", player.get(), true);
+        data.addData("result", res.get(), true);
     }
 }

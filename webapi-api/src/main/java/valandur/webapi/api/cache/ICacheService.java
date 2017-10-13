@@ -5,6 +5,7 @@ import org.spongepowered.api.block.tileentity.TileEntity;
 import org.spongepowered.api.command.CommandMapping;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.living.player.Player;
+import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.plugin.PluginContainer;
 import org.spongepowered.api.util.Tuple;
 import org.spongepowered.api.world.Location;
@@ -59,13 +60,6 @@ public interface ICacheService {
      * @return The commands run on the server.
      */
     List<ICachedCommandCall> getCommandCalls();
-
-    /**
-     * Gets all the cached classes.
-     *
-     * @return A map of cached classes to their json representation.
-     */
-    Map<Class, JsonNode> getClasses();
 
     /**
      * Gets the json representation of a specific class. If it is cached it will be returned from the cache,
@@ -164,11 +158,26 @@ public interface ICacheService {
     ICachedPlayer getPlayer(Player player);
 
     /**
+     * Gets the passed user as a cached object. This method first tries to get the user from the cache, and if
+     * it is not found uses the {@link #updatePlayer(User)} method to convert it into a cached object.
+     * @param user The user which is returned in it's cached form.
+     * @return The cached version of the specified user.
+     */
+    ICachedPlayer getPlayer(User user);
+
+    /**
      * Updates the internal representation of the passed player and returns it.
      * @param player The player which will be updated.
      * @return The updated cached player.
      */
     ICachedPlayer updatePlayer(Player player);
+
+    /**
+     * Updates the internal representation of the passed user and returns it.
+     * @param user The user which will be updated.
+     * @return The updated cached user.
+     */
+    ICachedPlayer updatePlayer(User user);
 
     /**
      * Removes a player from the cache.
@@ -315,7 +324,8 @@ public interface ICacheService {
      * @return A tuple containing the map of field names to values as the first argument, and a map of method names
      * to values as the second argument
      */
-    Tuple<Map<String, JsonNode>, Map<String, JsonNode>> getExtraData(ICachedObject cache, String[] reqFields, String[] reqMethods);
+    Tuple<Map<String, JsonNode>, Map<String, JsonNode>> getExtraData(ICachedObject cache, boolean xml,
+                                                                     String[] reqFields, String[] reqMethods);
 
     /**
      * Executes the specified method on the provided cached object.

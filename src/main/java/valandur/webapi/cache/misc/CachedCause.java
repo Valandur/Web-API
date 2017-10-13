@@ -2,17 +2,15 @@ package valandur.webapi.cache.misc;
 
 import org.spongepowered.api.event.cause.Cause;
 import valandur.webapi.WebAPI;
-import valandur.webapi.api.cache.misc.ICachedCause;
-import valandur.webapi.cache.CachedObject;
+import valandur.webapi.api.cache.CachedObject;
 import valandur.webapi.util.Util;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class CachedCause extends CachedObject implements ICachedCause {
+public class CachedCause extends CachedObject<Cause> {
 
     private Map<String, Object> causes = new HashMap<>();
-    @Override
     public Map<String, Object> getCauses() {
         return causes;
     }

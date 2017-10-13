@@ -1,5 +1,6 @@
 package valandur.webapi.user;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import valandur.webapi.api.util.TreeNode;
 import valandur.webapi.permission.PermissionStruct;
 
@@ -11,6 +12,7 @@ public class UserPermission {
     }
 
     private String password;
+    @JsonIgnore
     public String getPassword() {
         return password;
     }
@@ -21,6 +23,7 @@ public class UserPermission {
     }
 
     private PermissionStruct pStruct;
+    @JsonIgnore
     public PermissionStruct getPermissionStruct() {
         return pStruct;
     }

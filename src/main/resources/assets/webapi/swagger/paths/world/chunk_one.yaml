@@ -13,12 +13,12 @@ get:
       required: true
     - name: x
       in: path
-      type: string
+      type: integer
       description: The x-coordinate of the chunk.
       required: true
     - name: z
       in: path
-      type: string
+      type: integer
       description: The z-coordinate of the chunk.
       required: true
   tags:

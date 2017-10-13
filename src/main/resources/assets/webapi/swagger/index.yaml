@@ -32,9 +32,11 @@ basePath: /api
 
 consumes:
   - application/json
+  - application/xml
 
 produces:
   - application/json
+  - application/xml
 
 tags:
   - name: Block
@@ -51,18 +53,48 @@ tags:
     description: Provides access to the command and chat history.
   - name: Info
     description: Get misc information about the minecraft server
+  - name: Message
+    description: Send (interactive) messages to clients.
   - name: Player
     description: List all players and get detailed information about them.
   - name: Plugin
     description: List all plugins and get detailed information about them.
   - name: Registry
     description: Query Sponge registry values, such as DimensionTypes and EntityTypes.
+  - name: Servlet
+    description: Get information about the runnings servlets on the server.
   - name: Tile Entity
     description: List all tile entities and get detailed information about them.
   - name: User
     description: Authenticate and get user information.
   - name: World
     description: List all worlds and get detailed information about them.
+
+x-tagGroups:
+  - name: WebAPI
+    tags:
+      - Block
+      - Chunk
+      - Class
+      - Command
+      - Entity
+      - History
+      - Info
+      - Message
+      - Player
+      - Plugin
+      - Registry
+      - Servlet
+      - Tile Entity
+      - User
+      - World
+  - name: Integrations
+    tags:
+      - Husky Crates
+      - MMC Tickets
+      - Nations
+      - Nucleus
+      - Web Books
 
 securityDefinitions:
   headerKey:

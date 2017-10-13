@@ -8,10 +8,20 @@ permissions, and might not be able to access all the data. To pass a key proceed
 
 
 ## Table of Contents
+1. [Content-Type](#content-type)
 1. [Setup](#setup)
 1. [Server Info](#server-info)
 1. [World Info](#world-info)
 1. [Commands](#commands)
+
+
+<a name="content-type"></a>
+## Content-Type
+The Web-API **accepts** JSON or XML. Simply set the HTTP `content-type` header 
+to either `application/json` or `application/xml`.
+
+The Web-API **returns** JSON or XML. Simply set the HTTP `accept` header to either
+`application/json` or `application/xml`.
 
 
 <a name="setup"></a>

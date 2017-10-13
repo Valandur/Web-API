@@ -10,7 +10,8 @@ other plugins to provide their own endpoints for data without much effort.
     1. [Example](#servlet-example)
 1. [Endpoints](#endpoints)
     1. [Example](#endpoint-example)
-1. [Serializing Data](#serializing)
+1. [Serializing data](#serializing)
+1. [Returning data](#return)
 
 
 <a name="setup"></a>
@@ -27,11 +28,9 @@ with the WebAPI.
 public void onInitialization(GameInitializationEvent event) {
     ...
     
-    Optional<IServletService> optSrv = WebAPIAPI.getServletService();
-    if (optSrv.isPresent()) {
-        IServletService srv = optSrv.get();
+    WebAPIAPI.getServletService().ifPresent(srv -> {
         srv.registerServlet(MyServlet.class);
-    }
+    });
     
     ...
 }
@@ -44,7 +43,7 @@ public void onInitialization(GameInitializationEvent event) {
 ## Servlets
 Servlets are a collection of routes. This allows you to easily group all data that belongs together.
 
-At runtime the Web-API will create an instance of your servlet and use it to server the routes
+At runtime the Web-API will create an instance of your servlet and use it to serve the routes
 that you specified.
 
 > Note that your servlet is re-initialized (a new class instance is created) when the Web-API 
@@ -65,7 +64,7 @@ when the servlet is registered. This is only done once, even if the user reloads
 on the server. This is the best place to register any custom serializers that your servlets uses:
 ```java
 public static void onRegister() {
-    WebAPIAPI.getJsonService().ifPresent(srv -> {
+    WebAPIAPI.getSerializeService().ifPresent(srv -> {
         srv.registerSerializer(MyData.class, MyDataSerializer.class);
     });
 }
@@ -79,13 +78,13 @@ public static void onRegister() {
 import valandur.webapi.api.servlet.BaseServlet;
 import valandur.webapi.api.servlet.Servlet;
 
-@Servlet(basePath = "my")
+@Servlet(basePath = "my-servlet")
 public class MyServlet extends WebAPIBaseServlet {
     
 }
 ```
 
-This code sample creates a servlet that operate on the route `/api/my/*`, but does not yet
+This code sample creates a servlet that operates on the route `/api/my-servlet/*`, but does not yet
 contain any actual endpoints that do anything.
 
 
@@ -133,7 +132,7 @@ import valandur.webapi.api.servlet.IServletData;
 import valandur.webapi.api.servlet.Servlet;
 import valandur.webapi.api.cache.world.ICachedWorld;
 
-@Servlet(basePath = "my")
+@Servlet(basePath = "my-servlet")
 public class MyServlet extends BaseServlet {
     
     @Endpoint(method = HttpMethod.GET, path = "/test/:world/:myInt", perm = "test")
@@ -141,7 +140,7 @@ public class MyServlet extends BaseServlet {
         // Get the path parameter we specified above. Note that when accessing the path
         // parameters like this they are not parsed but returned as a String, and it is
         // up to you to do an pre-processing, like checking for valid numbers etc.
-        data.addJson("int", data.getPathParam("myInt"), false);
+        data.addData("int", data.getPathParam("myInt"), false);
         
         // Adding the path parameter to the argument list allows the Web-API to parse
         // the parameter to the according type. In case of players, entities and worlds
@@ -149,17 +148,17 @@ public class MyServlet extends BaseServlet {
         // is automatically returned to the user in case the player/entity/world is not 
         // found or the parameter is otherwise invalid. This means your method does not 
         // have to worry about invalid/missing parameters. 
-        data.addJson("world", world, true);
+        data.addData("world", world, true);
         
         // Everything is ok
-        data.addJson("ok", true, false);
+        data.addData("ok", true, false);
     }
 }
 ```
 
 This example reuses the servlet we defined above.  
-It adds the endpoint `testRoute`, which will be available at `/api/my/test/:world/:myInt`.
-The permissions for this endpoint are handled in the `test` permissions node, under the `my`
+It adds the endpoint `testRoute`, which will be available at `/api/my-servlet/test/:world/:myInt`.
+The permissions for this endpoint are handled in the `test` permissions node, under the `my-servlet`
 endpoint.
 
 
@@ -170,10 +169,13 @@ The Web-API automatically turns java objects into json. Sometimes this can be a 
 overwhelming to do for a program, so you can help it by giving it hints as to what it should
 include, and how.
 
+> Although a lot of this documentation refers to JSON, your data will automatically be converted
+to XML according to the same rules as JSON if the user requests an XML response.
+
 There are two ways to define how your java objects are turned into json:
 
 
-## 1. Annotations  
+### 1. Annotations  
 
 By default all **public fields** and **public methods that are getters** (begin with `get` and 
 have a return value and no arguments) are used for serialization. Also methods that return
@@ -199,12 +201,12 @@ Simply add these annotations to your java objects that you return in your endpoi
 will take care of serializing your data to json.
 
 
-## 2. Views
+### 2. Views
 
 Views are used when you don't have direct access to a certain class (for example when serialing
 sponge/minecraft objects), or annotations are too complicated to use.
 
-A view defines basically a "copy" of your data object, which contains only the data which will
+A view defines a "copy" of your data object, which contains only the data which will
 be serialized. This can also be used for caching means, if your data object is not thread safe.
 
 Views can also take advantage of all the annotations listed above, but should be built with
@@ -219,13 +221,13 @@ which you are providing a view as the type argument, and provide a matching cons
 Following is an example View for Sponge's `BlockState`:
 
 ```java
-package valandur.webapi.json.view.block;
+package valandur.webapi.serialize.view.block;
 
 import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.block.BlockType;
 import org.spongepowered.api.block.trait.BlockTrait;
-import valandur.webapi.api.json.JsonDetails;
-import valandur.webapi.api.json.BaseView;
+import valandur.webapi.api.serialize.JsonDetails;
+import valandur.webapi.api.serialize.BaseView;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -261,3 +263,19 @@ The `getData()` method will be serialized as well (since it starts with `get` an
 arguments and a return type other than void), but only if the details for the object are
 requested (since the method is annotated with `JsonDetails`). This prevents the system
 from going through all the traits of a block, unless they are actually required.
+
+
+<a name="return"></a>
+## Returning data
+The `IServletData` object which is part of all your method endpoints contains the method
+`addData(String key, Object data, boolean details)`, which adds data to the response object 
+which will be returned by the request.
+
+- The `key` (`String`) is the key of the returned data.
+
+- The `data` argument (`Object`) is the java object which will be returned. This will automatically
+be converted into JSON/XML according to the methods stated above.
+
+- The `details` argument (`boolean`) specifies if details should be included for the serialized
+objects. Excluding details makes your response smaller and faster, and makes sense if you are
+for example returning a list of objects.

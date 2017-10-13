@@ -110,9 +110,10 @@ public class WorldServlet extends BaseServlet {
         ICachedWorld world = cacheService.updateWorld(resProps.get());
 
         data.setStatus(HttpServletResponse.SC_CREATED);
+        data.setHeader("Location", world.getLink());
+
         data.addData("ok", true, false);
         data.addData("world", world, true);
-        data.setHeader("Location", world.getLink());
     }
 
     @Endpoint(method = HttpMethod.POST, path = "/:world/method", perm = "method")
@@ -293,6 +294,11 @@ public class WorldServlet extends BaseServlet {
             Optional<Chunk> chunk = live.loadChunk(x, 0, z, true);
             return chunk.map(CachedChunk::new).orElse(null);
         });
+
+        if (optChunk.isPresent()) {
+            data.setStatus(HttpServletResponse.SC_CREATED);
+            data.setHeader("Location", optChunk.get().getLink());
+        }
 
         data.addData("ok", optChunk.isPresent(), false);
         data.addData("chunk", optChunk.orElse(null), true);

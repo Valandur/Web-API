@@ -10,6 +10,7 @@ import org.spongepowered.api.world.World;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.block.IBlockOperation;
 import valandur.webapi.api.block.IBlockService;
+import valandur.webapi.api.cache.CachedObject;
 import valandur.webapi.api.cache.world.ICachedWorld;
 import valandur.webapi.api.serialize.JsonDetails;
 
@@ -17,7 +18,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-public abstract class BlockOperation implements IBlockOperation {
+public abstract class BlockOperation extends CachedObject<IBlockOperation> implements IBlockOperation {
 
     private IBlockService blockService;
     private final int totalBlocks;
@@ -75,6 +76,8 @@ public abstract class BlockOperation implements IBlockOperation {
 
 
     public BlockOperation(ICachedWorld world, Vector3i min, Vector3i max) {
+        super(null);
+
         this.blockService = WebAPI.getBlockService();
         this.uuid = UUID.randomUUID();
         this.world = world;
@@ -168,5 +171,15 @@ public abstract class BlockOperation implements IBlockOperation {
         this.error = error;
 
         Sponge.getEventManager().post(new BlockOperationStatusChangeEvent(this));
+    }
+
+    @Override
+    public String getLink() {
+        return "/api/block/op/" + uuid;
+    }
+
+    @Override
+    public Optional<IBlockOperation> getLive() {
+        return WebAPI.getBlockService().getBlockOperation(uuid);
     }
 }

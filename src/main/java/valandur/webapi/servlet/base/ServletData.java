@@ -94,6 +94,7 @@ public class ServletData implements IServletData {
     }
     public void writeResponse() throws IOException {
         ObjectMapper om = xml ? new XmlMapper() : new ObjectMapper();
+        if (xml) resp.getWriter().write("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>");
         resp.getWriter().write(om.writer().withRootName("response").writeValueAsString(node));
     }
 

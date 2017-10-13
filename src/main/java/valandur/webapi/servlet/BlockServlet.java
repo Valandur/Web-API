@@ -4,15 +4,15 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.flowpowered.math.vector.Vector3i;
 import org.eclipse.jetty.http.HttpMethod;
 import org.spongepowered.api.block.BlockState;
-import valandur.webapi.api.servlet.Endpoint;
-import valandur.webapi.api.servlet.Servlet;
 import valandur.webapi.api.block.IBlockOperation;
 import valandur.webapi.api.servlet.BaseServlet;
+import valandur.webapi.api.servlet.Endpoint;
+import valandur.webapi.api.servlet.Servlet;
 import valandur.webapi.block.BlockChangeOperation;
 import valandur.webapi.block.BlockGetOperation;
 import valandur.webapi.cache.world.CachedWorld;
-import valandur.webapi.servlet.request.block.CreateOperationRequest;
 import valandur.webapi.servlet.base.ServletData;
+import valandur.webapi.servlet.request.block.CreateOperationRequest;
 import valandur.webapi.servlet.request.block.CreateOperationRequest.BlockOperationType;
 
 import javax.servlet.http.HttpServletResponse;
@@ -82,7 +82,7 @@ public class BlockServlet extends BaseServlet {
         Vector3i size = max.sub(min).add(1, 1, 1);
         int numBlocks = size.getX() * size.getY() * size.getZ();
 
-        IBlockOperation op = null;
+        IBlockOperation op;
         if (req.getType() == BlockOperationType.GET) {
             // Check volume size
             if (blockService.getMaxGetBlocks() > 0 && numBlocks > blockService.getMaxGetBlocks()) {
@@ -155,7 +155,13 @@ public class BlockServlet extends BaseServlet {
             }
 
             op = blockService.startBlockOperation(new BlockChangeOperation(req.getWorld().get(), min, max, blocks));
+        } else {
+            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Unknown block operation type");
+            return;
         }
+
+        data.setStatus(HttpServletResponse.SC_CREATED);
+        data.setHeader("Location", op.getLink());
 
         data.addData("ok", true, false);
         data.addData("operation", op, false);

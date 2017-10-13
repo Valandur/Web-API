@@ -2,6 +2,7 @@ package valandur.webapi.api.block;
 
 import com.flowpowered.math.vector.Vector3i;
 import org.spongepowered.api.event.cause.Cause;
+import valandur.webapi.api.cache.ICachedObject;
 
 import java.util.UUID;
 
@@ -9,7 +10,7 @@ import java.util.UUID;
  * A block operation is a running operation on the world which performs a certain action to blocks. This operation is
  * throttled over time so that it does not slow down the minecraft server too much.
  */
-public interface IBlockOperation {
+public interface IBlockOperation extends ICachedObject<IBlockOperation> {
 
     /**
      * The current status of the update.

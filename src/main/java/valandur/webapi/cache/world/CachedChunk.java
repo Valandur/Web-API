@@ -6,7 +6,7 @@ import org.spongepowered.api.world.Chunk;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.cache.CachedObject;
 import valandur.webapi.api.cache.world.ICachedWorld;
-import valandur.webapi.api.json.JsonDetails;
+import valandur.webapi.api.serialize.JsonDetails;
 
 import java.util.Optional;
 import java.util.UUID;

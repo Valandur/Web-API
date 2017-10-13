@@ -57,7 +57,7 @@ import valandur.webapi.api.block.IBlockService;
 import valandur.webapi.api.cache.ICacheService;
 import valandur.webapi.api.extension.IExtensionService;
 import valandur.webapi.api.hook.IWebHookService;
-import valandur.webapi.api.json.IJsonService;
+import valandur.webapi.api.serialize.ISerializeService;
 import valandur.webapi.api.message.IMessageService;
 import valandur.webapi.api.permission.IPermissionService;
 import valandur.webapi.api.server.IServerService;
@@ -81,7 +81,7 @@ import valandur.webapi.integration.nations.NationsServlet;
 import valandur.webapi.integration.nucleus.NucleusServlet;
 import valandur.webapi.integration.redprotect.RedProtectServlet;
 import valandur.webapi.integration.webbhooks.WebBookServlet;
-import valandur.webapi.json.JsonService;
+import valandur.webapi.serialize.SerializeService;
 import valandur.webapi.message.MessageService;
 import valandur.webapi.permission.PermissionService;
 import valandur.webapi.server.ServerService;
@@ -211,9 +211,9 @@ public class WebAPI {
         return WebAPI.getInstance().extensionService;
     }
 
-    private JsonService jsonService;
-    public static JsonService getJsonService() {
-        return WebAPI.getInstance().jsonService;
+    private SerializeService serializeService;
+    public static SerializeService getSerializeService() {
+        return WebAPI.getInstance().serializeService;
     }
 
     private MessageService messageService;
@@ -284,7 +284,7 @@ public class WebAPI {
         this.blockService = new BlockService();
         this.cacheService = new CacheService();
         this.extensionService = new ExtensionService();
-        this.jsonService = new JsonService();
+        this.serializeService = new SerializeService();
         this.messageService = new MessageService();
         this.permissionService = new PermissionService();
         this.serverService = new ServerService();
@@ -296,7 +296,7 @@ public class WebAPI {
         Sponge.getServiceManager().setProvider(this, IBlockService.class, blockService);
         Sponge.getServiceManager().setProvider(this, ICacheService.class, cacheService);
         Sponge.getServiceManager().setProvider(this, IExtensionService.class, extensionService);
-        Sponge.getServiceManager().setProvider(this, IJsonService.class, jsonService);
+        Sponge.getServiceManager().setProvider(this, ISerializeService.class, serializeService);
         Sponge.getServiceManager().setProvider(this, IMessageService.class, messageService);
         Sponge.getServiceManager().setProvider(this, IPermissionService.class, permissionService);
         Sponge.getServiceManager().setProvider(this, IServerService.class, serverService);
@@ -410,7 +410,7 @@ public class WebAPI {
 
         webHookService.init();
 
-        jsonService.init();
+        serializeService.init();
 
         serverService.init();
 

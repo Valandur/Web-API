@@ -57,8 +57,8 @@ public class HuskyCratesServlet extends BaseServlet {
             return crates;
         });
 
-        data.addJson("ok", optList.isPresent(), false);
-        data.addJson("crates", optList.orElse(null), data.getQueryParam("details").isPresent());
+        data.addData("ok", optList.isPresent(), false);
+        data.addData("crates", optList.orElse(null), data.getQueryParam("details").isPresent());
     }
 
     @Endpoint(method = HttpMethod.GET, path = "crate/:id", perm = "crate.one")
@@ -76,7 +76,7 @@ public class HuskyCratesServlet extends BaseServlet {
             return new CachedVirtualCrate(crate);
         });
 
-        data.addJson("ok", optRes.isPresent(), false);
-        data.addJson("crate", optRes.orElse(null), true);
+        data.addData("ok", optRes.isPresent(), false);
+        data.addData("crate", optRes.orElse(null), true);
     }
 }

@@ -55,8 +55,8 @@ public class MMCTicketsServlet extends BaseServlet {
             return tickets;
         });
 
-        data.addJson("ok", optTickets.isPresent(), false);
-        data.addJson("tickets", optTickets.orElse(null), data.getQueryParam("details").isPresent());
+        data.addData("ok", optTickets.isPresent(), false);
+        data.addData("tickets", optTickets.orElse(null), data.getQueryParam("details").isPresent());
     }
 
     @Endpoint(method = HttpMethod.GET, path = "/ticket/:id", perm = "one")
@@ -74,8 +74,8 @@ public class MMCTicketsServlet extends BaseServlet {
             return new CachedTicketData(ticketData);
         });
 
-        data.addJson("ok", optTicket.isPresent(), false);
-        data.addJson("ticket", optTicket.orElse(null), true);
+        data.addData("ok", optTicket.isPresent(), false);
+        data.addData("ticket", optTicket.orElse(null), true);
     }
 
     @Endpoint(method = HttpMethod.PUT, path = "/ticket/:id", perm = "change")
@@ -111,7 +111,7 @@ public class MMCTicketsServlet extends BaseServlet {
             return new CachedTicketData(ticketData);
         });
 
-        data.addJson("ok", optTicket.isPresent(), false);
-        data.addJson("ticket", optTicket.orElse(null), true);
+        data.addData("ok", optTicket.isPresent(), false);
+        data.addData("ticket", optTicket.orElse(null), true);
     }
 }

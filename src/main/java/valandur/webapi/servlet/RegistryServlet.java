@@ -31,16 +31,16 @@ public class RegistryServlet extends BaseServlet {
             Class<? extends CatalogType> type = rawType;
 
             if (registryCache.containsKey(type)) {
-                data.addJson("ok", true, false);
-                data.addJson("types", registryCache.get(type), false);
+                data.addData("ok", true, false);
+                data.addData("types", registryCache.get(type), false);
                 return;
             }
 
             Optional<Collection<? extends CatalogType>> optTypes = WebAPI.runOnMain(() -> Sponge.getRegistry().getAllOf(type));
             optTypes.map(types -> registryCache.put(type, types));
 
-            data.addJson("ok", optTypes.isPresent(), false);
-            data.addJson("types", optTypes.orElse(null), false);
+            data.addData("ok", optTypes.isPresent(), false);
+            data.addData("types", optTypes.orElse(null), false);
         } catch (ClassNotFoundException e) {
             data.sendError(HttpServletResponse.SC_NOT_FOUND, "Class " + className + " could not be found");
         }

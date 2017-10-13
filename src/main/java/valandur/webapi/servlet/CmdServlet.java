@@ -23,8 +23,8 @@ public class CmdServlet extends BaseServlet {
 
     @Endpoint(method = HttpMethod.GET, path = "/", perm = "list")
     public void getCommands(ServletData data) {
-        data.addJson("ok", true, false);
-        data.addJson("commands", cacheService.getCommands(), data.getQueryParam("details").isPresent());
+        data.addData("ok", true, false);
+        data.addData("commands", cacheService.getCommands(), data.getQueryParam("details").isPresent());
     }
 
     @Endpoint(method = HttpMethod.GET, path = "/:cmd", perm = "one")
@@ -35,8 +35,8 @@ public class CmdServlet extends BaseServlet {
             return;
         }
 
-        data.addJson("ok", true, false);
-        data.addJson("command", cmd.get(), true);
+        data.addData("ok", true, false);
+        data.addData("command", cmd.get(), true);
     }
 
     @Endpoint(method = HttpMethod.POST, path = "/", perm = "run")
@@ -65,8 +65,8 @@ public class CmdServlet extends BaseServlet {
                 return;
             }
 
-            data.addJson("ok", true, false);
-            data.addJson("result", runCommand(req), true);
+            data.addData("ok", true, false);
+            data.addData("result", runCommand(req), true);
             return;
         }
 
@@ -89,8 +89,8 @@ public class CmdServlet extends BaseServlet {
             res.add(runCommand(req));
         }
 
-        data.addJson("ok", true, false);
-        data.addJson("results", res, true);
+        data.addData("ok", true, false);
+        data.addData("results", res, true);
     }
 
     private List<String> runCommand(ExecuteCommandRequest req) {

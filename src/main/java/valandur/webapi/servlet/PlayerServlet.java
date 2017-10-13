@@ -18,7 +18,7 @@ import valandur.webapi.api.servlet.Servlet;
 import valandur.webapi.api.cache.player.ICachedPlayer;
 import valandur.webapi.api.servlet.BaseServlet;
 import valandur.webapi.cache.player.CachedPlayer;
-import valandur.webapi.api.json.request.misc.DamageRequest;
+import valandur.webapi.api.serialize.request.misc.DamageRequest;
 import valandur.webapi.servlet.request.player.UpdatePlayerRequest;
 import valandur.webapi.servlet.base.ServletData;
 import valandur.webapi.util.Util;
@@ -32,8 +32,8 @@ public class PlayerServlet extends BaseServlet {
 
     @Endpoint(method = HttpMethod.GET, path = "/", perm = "list")
     public void getPlayers(ServletData data) {
-        data.addJson("ok", true, false);
-        data.addJson("players", cacheService.getPlayers(), data.getQueryParam("details").isPresent());
+        data.addData("ok", true, false);
+        data.addData("players", cacheService.getPlayers(), data.getQueryParam("details").isPresent());
     }
 
     @Endpoint(method = HttpMethod.GET, path = "/:player", perm = "one")
@@ -43,13 +43,13 @@ public class PlayerServlet extends BaseServlet {
         if (strFields.isPresent() || strMethods.isPresent()) {
             String[] fields = strFields.map(s -> s.split(",")).orElse(new String[]{});
             String[] methods = strMethods.map(s -> s.split(",")).orElse(new String[]{});
-            Tuple extra = cacheService.getExtraData(player, fields, methods);
-            data.addJson("fields", extra.getFirst(), true);
-            data.addJson("methods", extra.getSecond(), true);
+            Tuple extra = cacheService.getExtraData(player, data.responseIsXml(), fields, methods);
+            data.addData("fields", extra.getFirst(), true);
+            data.addData("methods", extra.getSecond(), true);
         }
 
-        data.addJson("ok", true, false);
-        data.addJson("player", player, true);
+        data.addData("ok", true, false);
+        data.addData("player", player, true);
     }
 
     @Endpoint(method = HttpMethod.PUT, path = "/:player", perm = "change")
@@ -144,8 +144,8 @@ public class PlayerServlet extends BaseServlet {
             return cacheService.updatePlayer(live);
         });
 
-        data.addJson("ok", resPlayer.isPresent(), false);
-        data.addJson("player", resPlayer.orElse(null), true);
+        data.addData("ok", resPlayer.isPresent(), false);
+        data.addData("player", resPlayer.orElse(null), true);
     }
 
     @Endpoint(method = HttpMethod.POST, path = "/:player/method", perm = "method")
@@ -182,8 +182,8 @@ public class PlayerServlet extends BaseServlet {
             return;
         }
 
-        data.addJson("ok", true, false);
-        data.addJson("player", player.get(), true);
-        data.addJson("result", res.get(), true);
+        data.addData("ok", true, false);
+        data.addData("player", player.get(), true);
+        data.addData("result", res.get(), true);
     }
 }

@@ -5,7 +5,7 @@ import net.moddedminecraft.mmctickets.data.ticketStatus;
 import valandur.webapi.api.cache.CachedObject;
 import valandur.webapi.api.cache.player.ICachedPlayer;
 import valandur.webapi.api.cache.world.CachedLocation;
-import valandur.webapi.api.json.JsonDetails;
+import valandur.webapi.api.serialize.JsonDetails;
 
 public class CachedTicketData extends CachedObject<TicketData> {
 

@@ -5,8 +5,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.spongepowered.api.data.DataHolder;
 import org.spongepowered.api.data.manipulator.DataManipulator;
 import valandur.webapi.api.WebAPIAPI;
-import valandur.webapi.api.json.IJsonService;
-import valandur.webapi.api.json.JsonDetails;
+import valandur.webapi.api.serialize.ISerializeService;
+import valandur.webapi.api.serialize.JsonDetails;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -17,7 +17,7 @@ public abstract class CachedObject<T> implements ICachedObject<T> {
     protected long cacheDuration = 0;
 
     protected ICacheService cacheService;
-    protected IJsonService jsonService;
+    protected ISerializeService jsonService;
     protected Class<?> clazz;
 
     protected Map<String, Object> data;

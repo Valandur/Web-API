@@ -15,7 +15,7 @@ public class ServletServlet extends BaseServlet {
     public void getServlets(ServletData data) {
         Map<String, Class<? extends BaseServlet>> servlets = servletService.getLoadedServlets();
 
-        data.addJson("ok", true, false);
-        data.addJson("servlets", servlets, false);
+        data.addData("ok", true, false);
+        data.addData("servlets", servlets, false);
     }
 }

@@ -35,15 +35,15 @@ public class BlockServlet extends BaseServlet {
             return;
         }
 
-        data.addJson("ok", true, false);
-        data.addJson("position", pos, false);
-        data.addJson("block", state.get(), true);
+        data.addData("ok", true, false);
+        data.addData("position", pos, false);
+        data.addData("block", state.get(), true);
     }
 
     @Endpoint(method = HttpMethod.GET, path = "/op", perm = "op.list")
     public void getBlockOperations(ServletData data) {
-        data.addJson("ok", true, false);
-        data.addJson("operations", blockService.getBlockOperations(), data.getQueryParam("details").isPresent());
+        data.addData("ok", true, false);
+        data.addData("operations", blockService.getBlockOperations(), data.getQueryParam("details").isPresent());
     }
 
     @Endpoint(method = HttpMethod.POST, path = "/op", perm = "op.create")
@@ -157,8 +157,8 @@ public class BlockServlet extends BaseServlet {
             op = blockService.startBlockOperation(new BlockChangeOperation(req.getWorld().get(), min, max, blocks));
         }
 
-        data.addJson("ok", true, false);
-        data.addJson("operation", op, false);
+        data.addData("ok", true, false);
+        data.addData("operation", op, false);
     }
 
     @Endpoint(method = HttpMethod.GET, path = "/op/:uuid", perm = "op.one")
@@ -170,8 +170,8 @@ public class BlockServlet extends BaseServlet {
             return;
         }
 
-        data.addJson("ok", true, false);
-        data.addJson("operation", update.get(), true);
+        data.addData("ok", true, false);
+        data.addData("operation", update.get(), true);
     }
 
     @Endpoint(method = HttpMethod.PUT, path = "/op/:uuid", perm = "op.change")
@@ -191,8 +191,8 @@ public class BlockServlet extends BaseServlet {
             update.get().start();
         }
 
-        data.addJson("ok", true, false);
-        data.addJson("operation", update, true);
+        data.addData("ok", true, false);
+        data.addData("operation", update, true);
     }
 
     @Endpoint(method = HttpMethod.DELETE, path = "/op/:uuid", perm = "op.delete")
@@ -206,7 +206,7 @@ public class BlockServlet extends BaseServlet {
 
         update.get().stop("Cancelled by request");
 
-        data.addJson("ok", true, false);
-        data.addJson("operation", update.get(), true);
+        data.addData("ok", true, false);
+        data.addData("operation", update.get(), true);
     }
 }

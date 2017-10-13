@@ -5,7 +5,7 @@ import valandur.webapi.api.cache.CachedObject;
 import valandur.webapi.api.cache.player.ICachedPlayer;
 import valandur.webapi.api.cache.world.CachedLocation;
 import valandur.webapi.api.cache.world.ICachedWorld;
-import valandur.webapi.api.json.JsonDetails;
+import valandur.webapi.api.serialize.JsonDetails;
 
 import java.util.*;
 

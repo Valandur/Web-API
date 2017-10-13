@@ -29,6 +29,6 @@ public class MessageServlet extends BaseServlet {
             return;
         }
 
-        data.addJson("ok", messageService.sendMessage(msg), false);
+        data.addData("ok", messageService.sendMessage(msg), false);
     }
 }

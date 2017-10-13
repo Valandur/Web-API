@@ -11,7 +11,7 @@ import valandur.webapi.WebAPI;
 import valandur.webapi.api.block.IBlockOperation;
 import valandur.webapi.api.block.IBlockService;
 import valandur.webapi.api.cache.world.ICachedWorld;
-import valandur.webapi.api.json.JsonDetails;
+import valandur.webapi.api.serialize.JsonDetails;
 
 import java.util.Optional;
 import java.util.UUID;

@@ -42,8 +42,8 @@ public class TileEntityServlet extends BaseServlet {
                 return;
             }
 
-            data.addJson("ok", true, false);
-            data.addJson("tileEntities", tileEntities.get(), data.getQueryParam("details").isPresent());
+            data.addData("ok", true, false);
+            data.addData("tileEntities", tileEntities.get(), data.getQueryParam("details").isPresent());
             return;
         }
 
@@ -53,8 +53,8 @@ public class TileEntityServlet extends BaseServlet {
             return;
         }
 
-        data.addJson("ok", true, false);
-        data.addJson("tileEntities", coll.get(), data.getQueryParam("details").isPresent());
+        data.addData("ok", true, false);
+        data.addData("tileEntities", coll.get(), data.getQueryParam("details").isPresent());
     }
 
     @Endpoint(method = HttpMethod.GET, path = "/:world/:x/:y/:z", perm = "one")
@@ -71,13 +71,13 @@ public class TileEntityServlet extends BaseServlet {
         if (strFields.isPresent() || strMethods.isPresent()) {
             String[] fields = strFields.map(s -> s.split(",")).orElse(new String[]{});
             String[] methods = strMethods.map(s -> s.split(",")).orElse(new String[]{});
-            Tuple extra = cacheService.getExtraData(te.get(), fields, methods);
-            data.addJson("fields", extra.getFirst(), true);
-            data.addJson("methods", extra.getSecond(), true);
+            Tuple extra = cacheService.getExtraData(te.get(), data.responseIsXml(), fields, methods);
+            data.addData("fields", extra.getFirst(), true);
+            data.addData("methods", extra.getSecond(), true);
         }
 
-        data.addJson("ok", true, false);
-        data.addJson("tileEntity", te.get(), true);
+        data.addData("ok", true, false);
+        data.addData("tileEntity", te.get(), true);
     }
 
     @Endpoint(method = HttpMethod.POST, path = "/:world/:x/:y/:z/method", perm = "method")
@@ -109,8 +109,8 @@ public class TileEntityServlet extends BaseServlet {
             return;
         }
 
-        data.addJson("ok", true, false);
-        data.addJson("tileEntity", te.get(), true);
-        data.addJson("result", res.get(), true);
+        data.addData("ok", true, false);
+        data.addData("tileEntity", te.get(), true);
+        data.addData("result", res.get(), true);
     }
 }

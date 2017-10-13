@@ -58,8 +58,8 @@ public class RedProtectServlet extends BaseServlet {
                     .collect(Collectors.toSet()));
         }
 
-        data.addJson("ok", optRegions.isPresent(), false);
-        data.addJson("regions", optRegions.orElse(null), data.getQueryParam("details").isPresent());
+        data.addData("ok", optRegions.isPresent(), false);
+        data.addData("regions", optRegions.orElse(null), data.getQueryParam("details").isPresent());
     }
 
     @Endpoint(method = HttpMethod.GET, path = "region/:id", perm = "one")
@@ -71,8 +71,8 @@ public class RedProtectServlet extends BaseServlet {
 
         Optional<CachedRegion> optRegion = WebAPIAPI.runOnMain(() -> new CachedRegion(RedProtect.rm.getRegionById(id)));
 
-        data.addJson("ok", optRegion.isPresent(), false);
-        data.addJson("region", optRegion.orElse(null), true);
+        data.addData("ok", optRegion.isPresent(), false);
+        data.addData("region", optRegion.orElse(null), true);
     }
 
     @Endpoint(method = HttpMethod.POST, path = "region", perm = "create")
@@ -158,8 +158,8 @@ public class RedProtectServlet extends BaseServlet {
             return new CachedRegion(region);
         });
 
-        data.addJson("ok", optRegion.isPresent(), false);
-        data.addJson("region", optRegion.orElse(null), true);
+        data.addData("ok", optRegion.isPresent(), false);
+        data.addData("region", optRegion.orElse(null), true);
     }
 
     @Endpoint(method = HttpMethod.PUT, path = "region/:id", perm = "change")
@@ -231,8 +231,8 @@ public class RedProtectServlet extends BaseServlet {
             return new CachedRegion(region);
         });
 
-        data.addJson("ok", optRegion.isPresent(), false);
-        data.addJson("region", optRegion.orElse(null), true);
+        data.addData("ok", optRegion.isPresent(), false);
+        data.addData("region", optRegion.orElse(null), true);
     }
 
     @Endpoint(method = HttpMethod.DELETE, path = "region/:id", perm = "delete")
@@ -254,7 +254,7 @@ public class RedProtectServlet extends BaseServlet {
             return new CachedRegion(region);
         });
 
-        data.addJson("ok", optRegion.isPresent(), false);
-        data.addJson("region", optRegion.orElse(null), true);
+        data.addData("ok", optRegion.isPresent(), false);
+        data.addData("region", optRegion.orElse(null), true);
     }
 }

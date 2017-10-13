@@ -5,8 +5,8 @@ import com.flowpowered.math.vector.Vector3d;
 import org.spongepowered.api.item.inventory.ItemStackSnapshot;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.cache.world.ICachedWorld;
-import valandur.webapi.api.json.request.item.ItemStackRequest;
-import valandur.webapi.api.json.request.misc.DamageRequest;
+import valandur.webapi.api.serialize.request.item.ItemStackRequest;
+import valandur.webapi.api.serialize.request.misc.DamageRequest;
 
 import java.util.ArrayList;
 import java.util.List;

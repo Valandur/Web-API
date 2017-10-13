@@ -7,7 +7,7 @@ import org.spongepowered.api.item.inventory.Carrier;
 import org.spongepowered.api.world.World;
 import valandur.webapi.api.cache.CachedObject;
 import valandur.webapi.api.cache.entity.ICachedEntity;
-import valandur.webapi.api.json.JsonDetails;
+import valandur.webapi.api.serialize.JsonDetails;
 import valandur.webapi.cache.misc.CachedInventory;
 import valandur.webapi.api.cache.world.CachedLocation;
 

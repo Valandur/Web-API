@@ -4,14 +4,21 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.eclipse.jetty.http.HttpMethod;
 
+import javax.servlet.ServletOutputStream;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.Optional;
 
 /**
  * This class bundles the data that is received and sent from servlets when a client accesses an endpoint.
  */
 public interface IServletData {
+
+    /**
+     * Gets the output stream of the response, which can be written to directly to have more control over the response.
+     * @return The output stream of the respone object.
+     * @throws IOException Is thrown when the output stream cannot be acquired.
+     */
+    ServletOutputStream getOutputStream() throws IOException;
 
     /**
      * Returns the http method of the request.
@@ -21,7 +28,7 @@ public interface IServletData {
 
     /**
      * Gets the object node which is returned as the json response.
-     * If you want to add data to the response, please use the {@link #addJson(String, Object, boolean)} method
+     * If you want to add data to the response, please use the {@link #addData(String, Object, boolean)} method
      * @return The object node that will be transformed to json.
      */
     ObjectNode getNode();
@@ -78,12 +85,12 @@ public interface IServletData {
     void setContentType(String contentType);
 
     /**
-     * Adds an object to the json response data.
+     * Adds an object to the json/xml response data.
      * @param key The key under which the object is added.
      * @param value The object which is added to the response.
      * @param details True if details of the object should be included.
      */
-    void addJson(String key, Object value, boolean details);
+    void addData(String key, Object value, boolean details);
 
     /**
      * Gets the path parameter with the specified key. The path parameters are parsed according to the
@@ -101,6 +108,12 @@ public interface IServletData {
     Optional<String> getQueryParam(String key);
 
     /**
+     * Returns true if the response is expected to be xml, false otherwise (json)
+     * @return True if the response should be xml, false otherwise (json)
+     */
+    boolean responseIsXml();
+
+    /**
      * Sends the specified error response code and message to the client. See
      * {@link javax.servlet.http.HttpServletResponse} for various response codes.
      * Note that after sending an error response further operations on this response will yield unexpected results.
@@ -114,11 +127,4 @@ public interface IServletData {
      * If this is not set then the Web-API will automatically serialize the attached json data and send it.
      */
     void setDone();
-
-    /**
-     * Gets the print writer used to write raw output to the stream.
-     * @return The PrintWriter used to write raw output to the stream.
-     * @throws IOException Thrown when the PrintWriter can't be retrieved.
-     */
-    PrintWriter getWriter() throws IOException;
 }

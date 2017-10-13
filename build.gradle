@@ -28,6 +28,8 @@ allprojects {
         compile group: "com.fasterxml.jackson.core", name: "jackson-core", version: "2.9.0"
         compile group: "com.fasterxml.jackson.core", name: "jackson-databind", version: "2.9.0"
         compile group: "com.fasterxml.jackson.core", name: "jackson-annotations", version: "2.9.0"
+        compile group: "org.codehaus.woodstox", name: "woodstox-core-asl", version: "4.4.1"
+        compile group: "com.fasterxml.jackson.dataformat", name: "jackson-dataformat-xml", version: "2.9.0"
         compile group: "org.eclipse.jetty", name: "jetty-server", version: "9.4.6.v20170531"
         compile group: "org.eclipse.jetty", name: "jetty-servlet", version: "9.4.6.v20170531"
         compile group: "org.eclipse.jetty", name: "jetty-http", version: "9.4.6.v20170531"

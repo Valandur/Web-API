@@ -1,8 +1,10 @@
 package valandur.webapi.servlet.base;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import org.eclipse.jetty.http.HttpMethod;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.permission.IPermissionService;
@@ -15,7 +17,6 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.Map;
 import java.util.Optional;
 
@@ -23,6 +24,7 @@ public class ServletData implements IServletData {
 
     private HttpServletRequest req;
     private HttpServletResponse resp;
+    private boolean xml = false;
     private boolean errorSent = false;
     private Map<String, String> pathParams;
     private Map<String, String> queryParams;
@@ -37,12 +39,9 @@ public class ServletData implements IServletData {
         return permissions;
     }
 
+    @Override
     public ServletOutputStream getOutputStream() throws IOException {
         return resp.getOutputStream();
-    }
-    @Override
-    public PrintWriter getWriter() throws IOException {
-        return resp.getWriter();
     }
 
     private ObjectNode node;
@@ -62,11 +61,19 @@ public class ServletData implements IServletData {
         return errorSent;
     }
 
+    @Override
+    public boolean responseIsXml() {
+        return xml;
+    }
 
     public ServletData(HttpServletRequest req, HttpServletResponse resp, Map<String, String> pathParams) {
         this.req = req;
         this.resp = resp;
         this.node = JsonNodeFactory.instance.objectNode();
+
+        if (req.getHeader("accept") != null && req.getHeader("accept").contains("application/xml")) {
+            xml = true;
+        }
 
         this.pathParams = pathParams;
         this.queryParams = Util.getQueryParams(req);
@@ -76,6 +83,18 @@ public class ServletData implements IServletData {
     @Override
     public HttpMethod getMethod() {
         return HttpMethod.fromString(req.getMethod());
+    }
+
+    public String getResponseContentType() {
+        if (!xml) {
+            return "application/json; charset=utf-8";
+        } else {
+            return "application/xml; charset=utf-8";
+        }
+    }
+    public void writeResponse() throws IOException {
+        ObjectMapper om = xml ? new XmlMapper() : new ObjectMapper();
+        resp.getWriter().write(om.writer().withRootName("response").writeValueAsString(node));
     }
 
     @Override
@@ -89,7 +108,7 @@ public class ServletData implements IServletData {
             return Optional.empty();
 
         try {
-            T data = WebAPI.getJsonService().toObject(json, clazz, IPermissionService.permitAllNode());
+            T data = WebAPI.getSerializeService().deserialize(json, clazz, IPermissionService.permitAllNode());
             return Optional.of(data);
         } catch (IOException e) {
             lastParseError = e;
@@ -114,8 +133,8 @@ public class ServletData implements IServletData {
         resp.setContentType(contentType);
     }
     @Override
-    public void addJson(String key, Object value, boolean details) {
-        node.replace(key, WebAPI.getJsonService().toJson(value, details, permissions));
+    public void addData(String key, Object value, boolean details) {
+        node.replace(key, WebAPI.getSerializeService().serialize(value, xml, details, permissions));
     }
 
     @Override

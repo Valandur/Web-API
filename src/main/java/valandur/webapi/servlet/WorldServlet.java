@@ -30,8 +30,8 @@ public class WorldServlet extends BaseServlet {
 
     @Endpoint(method = HttpMethod.GET, path = "/", perm = "list")
     public void getWorlds(ServletData data) {
-        data.addJson("ok", true, false);
-        data.addJson("worlds", cacheService.getWorlds(), data.getQueryParam("details").isPresent());
+        data.addData("ok", true, false);
+        data.addData("worlds", cacheService.getWorlds(), data.getQueryParam("details").isPresent());
     }
 
     @Endpoint(method = HttpMethod.GET, path = "/:world", perm = "one")
@@ -41,13 +41,13 @@ public class WorldServlet extends BaseServlet {
         if (strFields.isPresent() || strMethods.isPresent()) {
             String[] fields = strFields.map(s -> s.split(",")).orElse(new String[]{});
             String[] methods = strMethods.map(s -> s.split(",")).orElse(new String[]{});
-            Tuple extra = cacheService.getExtraData(world, fields, methods);
-            data.addJson("fields", extra.getFirst(), true);
-            data.addJson("methods", extra.getSecond(), true);
+            Tuple extra = cacheService.getExtraData(world, data.responseIsXml(), fields, methods);
+            data.addData("fields", extra.getFirst(), true);
+            data.addData("methods", extra.getSecond(), true);
         }
 
-        data.addJson("ok", true, false);
-        data.addJson("world", world, true);
+        data.addData("ok", true, false);
+        data.addData("world", world, true);
     }
 
     @Endpoint(method = HttpMethod.POST, path = "/", perm = "create")
@@ -98,8 +98,8 @@ public class WorldServlet extends BaseServlet {
             try {
                 return Sponge.getServer().createWorldProperties(req.getName(), archType);
             } catch (IOException e) {
-                data.addJson("ok", false, false);
-                data.addJson("error", e, false);
+                data.addData("ok", false, false);
+                data.addData("error", e, false);
                 return null;
             }
         });
@@ -110,8 +110,8 @@ public class WorldServlet extends BaseServlet {
         ICachedWorld world = cacheService.updateWorld(resProps.get());
 
         data.setStatus(HttpServletResponse.SC_CREATED);
-        data.addJson("ok", true, false);
-        data.addJson("world", world, true);
+        data.addData("ok", true, false);
+        data.addData("world", world, true);
         data.setHeader("Location", world.getLink());
     }
 
@@ -137,9 +137,9 @@ public class WorldServlet extends BaseServlet {
             return;
         }
 
-        data.addJson("ok", true, false);
-        data.addJson("world", world, true);
-        data.addJson("result", res.get(), true);
+        data.addData("ok", true, false);
+        data.addData("world", world, true);
+        data.addData("result", res.get(), true);
     }
 
     @Endpoint(method = HttpMethod.PUT, path = "/:world", perm = "change")
@@ -214,8 +214,8 @@ public class WorldServlet extends BaseServlet {
                 return cacheService.updateWorld(props);
         });
 
-        data.addJson("ok", resWorld.isPresent(), false);
-        data.addJson("world", resWorld.orElse(null), true);
+        data.addData("ok", resWorld.isPresent(), false);
+        data.addData("world", resWorld.orElse(null), true);
     }
 
     @Endpoint(method = HttpMethod.DELETE, path = "/:world", perm = "delete")
@@ -242,8 +242,8 @@ public class WorldServlet extends BaseServlet {
 
         cacheService.removeWorld(world.getUUID());
 
-        data.addJson("ok", true, false);
-        data.addJson("world", world, true);
+        data.addData("ok", true, false);
+        data.addData("world", world, true);
     }
 
     @Endpoint(method = HttpMethod.GET, path = "/:world/chunk", perm = "chunk.list")
@@ -262,8 +262,8 @@ public class WorldServlet extends BaseServlet {
             return chunks;
         });
 
-        data.addJson("ok", optChunks.isPresent(), false);
-        data.addJson("chunks", optChunks.orElse(null), data.getQueryParam("details").isPresent());
+        data.addData("ok", optChunks.isPresent(), false);
+        data.addData("chunks", optChunks.orElse(null), data.getQueryParam("details").isPresent());
     }
 
     @Endpoint(method = HttpMethod.GET, path = "/:world/chunk/:x/:z", perm = "chunk.one")
@@ -278,8 +278,8 @@ public class WorldServlet extends BaseServlet {
             return chunk.map(CachedChunk::new).orElse(null);
         });
 
-        data.addJson("ok", optChunk.isPresent(), false);
-        data.addJson("chunk", optChunk.orElse(null), true);
+        data.addData("ok", optChunk.isPresent(), false);
+        data.addData("chunk", optChunk.orElse(null), true);
     }
 
     @Endpoint(method = HttpMethod.POST, path = "/:world/chunk/:x/:z", perm = "chunk.create")
@@ -294,7 +294,7 @@ public class WorldServlet extends BaseServlet {
             return chunk.map(CachedChunk::new).orElse(null);
         });
 
-        data.addJson("ok", optChunk.isPresent(), false);
-        data.addJson("chunk", optChunk.orElse(null), true);
+        data.addData("ok", optChunk.isPresent(), false);
+        data.addData("chunk", optChunk.orElse(null), true);
     }
 }

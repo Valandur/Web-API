@@ -24,31 +24,31 @@ public class InfoServlet extends BaseServlet {
             Server server = Sponge.getServer();
             Platform platform = Sponge.getPlatform();
 
-            data.addJson("motd", server.getMotd().toPlain(), false);
-            data.addJson("players", server.getOnlinePlayers().size(), false);
-            data.addJson("maxPlayers", server.getMaxPlayers(), false);
-            data.addJson("address", server.getBoundAddress().map(Object::toString).orElse(null), false);
-            data.addJson("onlineMode", server.getOnlineMode(), false);
-            data.addJson("resourcePack", server.getDefaultResourcePack().orElse(null), false);
-            data.addJson("hasWhitelist", server.hasWhitelist(), false);
+            data.addData("motd", server.getMotd().toPlain(), false);
+            data.addData("players", server.getOnlinePlayers().size(), false);
+            data.addData("maxPlayers", server.getMaxPlayers(), false);
+            data.addData("address", server.getBoundAddress().map(Object::toString).orElse(null), false);
+            data.addData("onlineMode", server.getOnlineMode(), false);
+            data.addData("resourcePack", server.getDefaultResourcePack().orElse(null), false);
+            data.addData("hasWhitelist", server.hasWhitelist(), false);
 
-            data.addJson("uptimeTicks", server.getRunningTimeTicks(), false);
-            data.addJson("tps", server.getTicksPerSecond(), false);
-            data.addJson("minecraftVersion", platform.getMinecraftVersion().getName(), false);
+            data.addData("uptimeTicks", server.getRunningTimeTicks(), false);
+            data.addData("tps", server.getTicksPerSecond(), false);
+            data.addData("minecraftVersion", platform.getMinecraftVersion().getName(), false);
 
-            data.addJson("game", platform.getContainer(Platform.Component.GAME), true);
-            data.addJson("api", platform.getContainer(Platform.Component.API), true);
-            data.addJson("implementation", platform.getContainer(Platform.Component.IMPLEMENTATION), true);
+            data.addData("game", platform.getContainer(Platform.Component.GAME), true);
+            data.addData("api", platform.getContainer(Platform.Component.API), true);
+            data.addData("implementation", platform.getContainer(Platform.Component.IMPLEMENTATION), true);
             return true;
         });
 
-        data.addJson("ok", optRes.orElse(false), false);
+        data.addData("ok", optRes.orElse(false), false);
     }
 
     @Endpoint(method = HttpMethod.GET, path = "/properties", perm = "properties")
     public void getProperties(ServletData data) {
-        data.addJson("ok", true, false);
-        data.addJson("properties", serverService.getProperties(), true);
+        data.addData("ok", true, false);
+        data.addData("properties", serverService.getProperties(), true);
     }
 
     @Endpoint(method = HttpMethod.POST, path = "/properties", perm = "properties")
@@ -66,19 +66,19 @@ public class InfoServlet extends BaseServlet {
             serverService.setProperty(key, props.get(key).asText());
         }
 
-        data.addJson("ok", true, false);
-        data.addJson("properties", serverService.getProperties(), true);
+        data.addData("ok", true, false);
+        data.addData("properties", serverService.getProperties(), true);
     }
 
     @Endpoint(method = HttpMethod.GET, path="/tps", perm = "tps")
     public void getTps(ServletData data) {
-        data.addJson("ok", true, false);
-        data.addJson("tps", serverService.getAverageTps(), false);
+        data.addData("ok", true, false);
+        data.addData("tps", serverService.getAverageTps(), false);
     }
 
     @Endpoint(method = HttpMethod.GET, path="/player", perm = "players")
     public void getPlayers(ServletData data) {
-        data.addJson("ok", true, false);
-        data.addJson("players", serverService.getOnlinePlayers(), false);
+        data.addData("ok", true, false);
+        data.addData("players", serverService.getOnlinePlayers(), false);
     }
 }

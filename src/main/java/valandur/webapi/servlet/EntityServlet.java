@@ -15,7 +15,7 @@ import org.spongepowered.api.world.World;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.cache.entity.ICachedEntity;
 import valandur.webapi.api.cache.world.ICachedWorld;
-import valandur.webapi.api.json.request.misc.DamageRequest;
+import valandur.webapi.api.serialize.request.misc.DamageRequest;
 import valandur.webapi.api.servlet.BaseServlet;
 import valandur.webapi.api.servlet.Endpoint;
 import valandur.webapi.api.servlet.Servlet;
@@ -33,8 +33,8 @@ public class EntityServlet extends BaseServlet {
 
     @Endpoint(method = HttpMethod.GET, path = "/", perm = "list")
     public void getEntities(ServletData data) {
-        data.addJson("ok", true, false);
-        data.addJson("entities", cacheService.getEntities(), data.getQueryParam("details").isPresent());
+        data.addData("ok", true, false);
+        data.addData("entities", cacheService.getEntities(), data.getQueryParam("details").isPresent());
     }
 
     @Endpoint(method = HttpMethod.GET, path = "/:entity", perm = "one")
@@ -44,13 +44,13 @@ public class EntityServlet extends BaseServlet {
         if (strFields.isPresent() || strMethods.isPresent()) {
             String[] fields = strFields.map(s -> s.split(",")).orElse(new String[]{});
             String[] methods = strMethods.map(s -> s.split(",")).orElse(new String[]{});
-            Tuple extra = cacheService.getExtraData(entity, fields, methods);
-            data.addJson("fields", extra.getFirst(), true);
-            data.addJson("methods", extra.getSecond(), true);
+            Tuple extra = cacheService.getExtraData(entity, data.responseIsXml(), fields, methods);
+            data.addData("fields", extra.getFirst(), true);
+            data.addData("methods", extra.getSecond(), true);
         }
 
-        data.addJson("ok", true, false);
-        data.addJson("entity", entity, true);
+        data.addData("ok", true, false);
+        data.addData("entity", entity, true);
     }
 
     @Endpoint(method = HttpMethod.PUT, path = "/:entity", perm = "change")
@@ -123,8 +123,8 @@ public class EntityServlet extends BaseServlet {
             return cacheService.updateEntity(live);
         });
 
-        data.addJson("ok", resEntity.isPresent(), false);
-        data.addJson("entity", resEntity.orElse(null), true);
+        data.addData("ok", resEntity.isPresent(), false);
+        data.addData("entity", resEntity.orElse(null), true);
     }
 
     @Endpoint(method = HttpMethod.POST, path = "/", perm = "create")
@@ -171,7 +171,7 @@ public class EntityServlet extends BaseServlet {
         });
 
         if (!resEntity.isPresent()) {
-            data.addJson("ok", false, false);
+            data.addData("ok", false, false);
             return;
         }
 
@@ -179,8 +179,8 @@ public class EntityServlet extends BaseServlet {
 
         data.setStatus(HttpServletResponse.SC_CREATED);
         data.setHeader("Location", entity.getLink());
-        data.addJson("ok", true, false);
-        data.addJson("entity", entity, true);
+        data.addData("ok", true, false);
+        data.addData("entity", entity, true);
     }
 
     @Endpoint(method = HttpMethod.POST, path = "/:entity/method", perm = "method")
@@ -205,9 +205,9 @@ public class EntityServlet extends BaseServlet {
             return;
         }
 
-        data.addJson("ok", true, false);
-        data.addJson("entity", entity, true);
-        data.addJson("result", res.get(), true);
+        data.addData("ok", true, false);
+        data.addData("entity", entity, true);
+        data.addData("result", res.get(), true);
     }
 
     @Endpoint(method = HttpMethod.DELETE, path = "/:entity", perm = "delete")
@@ -228,7 +228,7 @@ public class EntityServlet extends BaseServlet {
 
         cacheService.removeEntity(entity.getUUID());
 
-        data.addJson("ok", true, false);
-        data.addJson("entity", entity, true);
+        data.addData("ok", true, false);
+        data.addData("entity", entity, true);
     }
 }

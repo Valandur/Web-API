@@ -13,6 +13,7 @@ import valandur.webapi.api.servlet.Servlet;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
@@ -36,7 +37,7 @@ public class WebBookServlet extends BaseServlet {
                 String content = new String(Files.readAllBytes(file.toPath()));
                 JavaType mapType = TypeFactory.defaultInstance()
                         .constructMapType(ConcurrentHashMap.class, String.class, WebBook.class);
-                books = jsonService.toObject(content, mapType, IPermissionService.permitAllNode());
+                books = serializeService.deserialize(content, false, mapType, IPermissionService.permitAllNode());
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -45,7 +46,7 @@ public class WebBookServlet extends BaseServlet {
 
     private void saveBooks() {
         File file = new File("webapi/data/webbooks.json");
-        String json = jsonService.toString(books, false, IPermissionService.permitAllNode());
+        String json = serializeService.toString(books, false, false, IPermissionService.permitAllNode());
 
         try {
             Files.write(file.toPath(), json.getBytes(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
@@ -56,8 +57,8 @@ public class WebBookServlet extends BaseServlet {
 
     @Endpoint(method = HttpMethod.GET, path = "/book", perm = "list")
     public void listWebBooks(IServletData data) {
-        data.addJson("ok", true, false);
-        data.addJson("books", books.values(), data.getQueryParam("details").isPresent());
+        data.addData("ok", true, false);
+        data.addData("books", books.values(), data.getQueryParam("details").isPresent());
     }
 
     @Endpoint(method = HttpMethod.GET, path = "/book/:id", perm = "one")
@@ -68,8 +69,8 @@ public class WebBookServlet extends BaseServlet {
             return;
         }
 
-        data.addJson("ok", true, false);
-        data.addJson("book", book, true);
+        data.addData("ok", true, false);
+        data.addData("book", book, true);
     }
 
     @Endpoint(method = HttpMethod.GET, path = "/book/:id/html")
@@ -83,7 +84,7 @@ public class WebBookServlet extends BaseServlet {
 
         try {
             data.setContentType("text/html; charset=utf-8");
-            data.getWriter().write(book.getHtml());
+            data.getOutputStream().write(book.getHtml().getBytes(Charset.forName("UTF-8")));
             data.setDone();
         } catch (IOException e) {
             e.printStackTrace();
@@ -126,8 +127,8 @@ public class WebBookServlet extends BaseServlet {
         books.put(id, book);
         saveBooks();
 
-        data.addJson("ok", true, false);
-        data.addJson("book", book, true);
+        data.addData("ok", true, false);
+        data.addData("book", book, true);
     }
 
     @Endpoint(method = HttpMethod.PUT, path = "/book/:id", perm = "change")
@@ -155,8 +156,8 @@ public class WebBookServlet extends BaseServlet {
         books.put(id, book);
         saveBooks();
 
-        data.addJson("ok", true, false);
-        data.addJson("book", book, true);
+        data.addData("ok", true, false);
+        data.addData("book", book, true);
     }
 
     @Endpoint(method = HttpMethod.DELETE, path = "/book/:id", perm = "delete")
@@ -170,7 +171,7 @@ public class WebBookServlet extends BaseServlet {
         books.remove(book.getId());
         saveBooks();
 
-        data.addJson("ok", true, false);
-        data.addJson("book", book, true);
+        data.addData("ok", true, false);
+        data.addData("book", book, true);
     }
 }

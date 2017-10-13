@@ -6,7 +6,7 @@ import org.spongepowered.api.Sponge;
 import org.spongepowered.api.world.World;
 import org.spongepowered.api.world.storage.WorldProperties;
 import valandur.webapi.api.cache.world.ICachedWorld;
-import valandur.webapi.api.json.JsonDetails;
+import valandur.webapi.api.serialize.JsonDetails;
 import valandur.webapi.api.cache.CachedObject;
 import valandur.webapi.cache.misc.CachedCatalogType;
 

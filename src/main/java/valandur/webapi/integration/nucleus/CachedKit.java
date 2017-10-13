@@ -4,7 +4,7 @@ import io.github.nucleuspowered.nucleus.api.nucleusdata.Kit;
 import org.spongepowered.api.data.value.ValueContainer;
 import org.spongepowered.api.item.inventory.ItemStackSnapshot;
 import valandur.webapi.api.cache.CachedObject;
-import valandur.webapi.api.json.JsonDetails;
+import valandur.webapi.api.serialize.JsonDetails;
 
 import java.time.Duration;
 import java.util.ArrayList;

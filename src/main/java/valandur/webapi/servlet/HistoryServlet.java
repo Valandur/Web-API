@@ -11,13 +11,13 @@ public class HistoryServlet extends BaseServlet {
 
     @Endpoint(method = HttpMethod.GET, path = "/cmd", perm = "cmd")
     public void getCmds(ServletData data) {
-        data.addJson("ok", true, false);
-        data.addJson("calls", cacheService.getCommandCalls(), false);
+        data.addData("ok", true, false);
+        data.addData("calls", cacheService.getCommandCalls(), false);
     }
 
     @Endpoint(method = HttpMethod.GET, path = "/chat", perm = "chat")
     public void getChat(ServletData data) {
-        data.addJson("ok", true, false);
-        data.addJson("messages", cacheService.getChatMessages(), false);
+        data.addData("ok", true, false);
+        data.addData("messages", cacheService.getChatMessages(), false);
     }
 }

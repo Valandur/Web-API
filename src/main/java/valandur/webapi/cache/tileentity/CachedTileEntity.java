@@ -5,7 +5,7 @@ import org.spongepowered.api.block.tileentity.carrier.TileEntityCarrier;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 import valandur.webapi.api.cache.tileentity.ICachedTileEntity;
-import valandur.webapi.api.json.JsonDetails;
+import valandur.webapi.api.serialize.JsonDetails;
 import valandur.webapi.api.cache.CachedObject;
 import valandur.webapi.cache.misc.CachedInventory;
 import valandur.webapi.api.cache.world.CachedLocation;

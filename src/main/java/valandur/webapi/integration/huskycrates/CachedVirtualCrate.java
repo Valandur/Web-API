@@ -3,7 +3,7 @@ package valandur.webapi.integration.huskycrates;
 import com.codehusky.huskycrates.crate.VirtualCrate;
 import com.codehusky.huskycrates.crate.config.CrateReward;
 import valandur.webapi.api.cache.CachedObject;
-import valandur.webapi.api.json.JsonDetails;
+import valandur.webapi.api.serialize.JsonDetails;
 
 import java.util.List;
 import java.util.Map;

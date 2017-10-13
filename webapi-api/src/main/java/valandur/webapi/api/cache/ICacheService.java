@@ -324,7 +324,8 @@ public interface ICacheService {
      * @return A tuple containing the map of field names to values as the first argument, and a map of method names
      * to values as the second argument
      */
-    Tuple<Map<String, JsonNode>, Map<String, JsonNode>> getExtraData(ICachedObject cache, String[] reqFields, String[] reqMethods);
+    Tuple<Map<String, JsonNode>, Map<String, JsonNode>> getExtraData(ICachedObject cache, boolean xml,
+                                                                     String[] reqFields, String[] reqMethods);
 
     /**
      * Executes the specified method on the provided cached object.

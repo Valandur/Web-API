@@ -11,7 +11,7 @@ public interface IWebHook {
     }
 
     enum WebHookDataType {
-        JSON, FORM
+        JSON, XML
     }
 
 
@@ -22,6 +22,8 @@ public interface IWebHook {
     WebHookMethod getMethod();
 
     WebHookDataType getDataType();
+
+    boolean isForm();
 
     String getDataTypeHeader();
 

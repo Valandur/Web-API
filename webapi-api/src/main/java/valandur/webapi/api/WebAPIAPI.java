@@ -11,7 +11,7 @@ import valandur.webapi.api.block.IBlockService;
 import valandur.webapi.api.cache.ICacheService;
 import valandur.webapi.api.extension.IExtensionService;
 import valandur.webapi.api.hook.IWebHookService;
-import valandur.webapi.api.json.IJsonService;
+import valandur.webapi.api.serialize.ISerializeService;
 import valandur.webapi.api.message.IMessageService;
 import valandur.webapi.api.permission.IPermissionService;
 import valandur.webapi.api.server.IServerService;
@@ -78,8 +78,8 @@ public class WebAPIAPI {
      * Gets the json service from the Web-API. Used to convert objects into json.
      * @return An optional containing the json service if it was loaded.
      */
-    public static Optional<IJsonService> getJsonService() {
-        return Sponge.getServiceManager().provide(IJsonService.class);
+    public static Optional<ISerializeService> getJsonService() {
+        return Sponge.getServiceManager().provide(ISerializeService.class);
     }
 
     /**

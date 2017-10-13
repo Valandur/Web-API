@@ -45,8 +45,8 @@ public class NucleusServlet extends BaseServlet {
                 () -> srv.getJails().values().stream().map(CachedNamedLocation::new).collect(Collectors.toList())
         );
 
-        data.addJson("ok", optRes.isPresent(), false);
-        data.addJson("jails", optRes.orElse(null), data.getQueryParam("details").isPresent());
+        data.addData("ok", optRes.isPresent(), false);
+        data.addData("jails", optRes.orElse(null), data.getQueryParam("details").isPresent());
     }
 
     @Endpoint(method = HttpMethod.GET, path = "jail/:name", perm = "jail.one")
@@ -69,8 +69,8 @@ public class NucleusServlet extends BaseServlet {
             return new CachedNamedLocation(optJail.get());
         });
 
-        data.addJson("ok", optRes.isPresent(), false);
-        data.addJson("jail", optRes.orElse(null), true);
+        data.addData("ok", optRes.isPresent(), false);
+        data.addData("jail", optRes.orElse(null), true);
     }
 
     @Endpoint(method = HttpMethod.POST, path = "jail", perm = "jail.create")
@@ -115,8 +115,8 @@ public class NucleusServlet extends BaseServlet {
         });
 
         data.setStatus(HttpServletResponse.SC_CREATED);
-        data.addJson("ok", optRes.isPresent(), false);
-        data.addJson("jail", optRes.orElse(null), true);
+        data.addData("ok", optRes.isPresent(), false);
+        data.addData("jail", optRes.orElse(null), true);
     }
 
     @Endpoint(method = HttpMethod.PUT, path = "jail/:name", perm = "jail.change")
@@ -146,8 +146,8 @@ public class NucleusServlet extends BaseServlet {
             return new CachedNamedLocation(optJail.get());
         });
 
-        data.addJson("ok", optRes.isPresent(), false);
-        data.addJson("jail", optRes.orElse(null), true);
+        data.addData("ok", optRes.isPresent(), false);
+        data.addData("jail", optRes.orElse(null), true);
     }
 
 
@@ -167,8 +167,8 @@ public class NucleusServlet extends BaseServlet {
                         .collect(Collectors.toList())
         );
 
-        data.addJson("ok", kits.isPresent(), false);
-        data.addJson("kits", kits.orElse(null), data.getQueryParam("details").isPresent());
+        data.addData("ok", kits.isPresent(), false);
+        data.addData("kits", kits.orElse(null), data.getQueryParam("details").isPresent());
     }
 
     @Endpoint(method = HttpMethod.GET, path = "kit/:name", perm = "kit.one")
@@ -191,8 +191,8 @@ public class NucleusServlet extends BaseServlet {
             return new CachedKit(optKit.get());
         });
 
-        data.addJson("ok", optRes.isPresent(), false);
-        data.addJson("kit", optRes.orElse(null), true);
+        data.addData("ok", optRes.isPresent(), false);
+        data.addData("kit", optRes.orElse(null), true);
     }
 
     @Endpoint(method = HttpMethod.POST, path = "kit", perm = "kit.create")
@@ -237,8 +237,8 @@ public class NucleusServlet extends BaseServlet {
             return new CachedKit(kit);
         });
 
-        data.addJson("ok", resKit.isPresent(), false);
-        data.addJson("kit", resKit.orElse(null), true);
+        data.addData("ok", resKit.isPresent(), false);
+        data.addData("kit", resKit.orElse(null), true);
     }
 
     @Endpoint(method = HttpMethod.PUT, path = "kit/:name", perm = "kit.change")
@@ -290,8 +290,8 @@ public class NucleusServlet extends BaseServlet {
             return new CachedKit(kit);
         });
 
-        data.addJson("ok", optRes.isPresent(), false);
-        data.addJson("kit", optRes.orElse(null), true);
+        data.addData("ok", optRes.isPresent(), false);
+        data.addData("kit", optRes.orElse(null), true);
     }
 
     @Endpoint(method = HttpMethod.DELETE, path = "kit/:name", perm = "kit.delete")
@@ -315,7 +315,7 @@ public class NucleusServlet extends BaseServlet {
             return new CachedKit(optKit.get());
         });
 
-        data.addJson("ok", optRes.isPresent(), false);
-        data.addJson("kit", optRes.orElse(null), true);
+        data.addData("ok", optRes.isPresent(), false);
+        data.addData("kit", optRes.orElse(null), true);
     }
 }

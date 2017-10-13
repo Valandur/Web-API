@@ -48,7 +48,7 @@ import valandur.webapi.cache.plugin.CachedPluginContainer;
 import valandur.webapi.cache.tileentity.CachedTileEntity;
 import valandur.webapi.cache.world.CachedChunk;
 import valandur.webapi.cache.world.CachedWorld;
-import valandur.webapi.json.JsonService;
+import valandur.webapi.serialize.SerializeService;
 import valandur.webapi.util.Util;
 
 import java.lang.reflect.Field;
@@ -63,7 +63,7 @@ public class CacheService implements ICacheService {
 
     private static final String configFileName = "cache.conf";
 
-    private JsonService json;
+    private SerializeService json;
 
     private Map<String, Long> cacheDurations = new HashMap<>();
     private int numChatMessages;
@@ -87,7 +87,7 @@ public class CacheService implements ICacheService {
 
 
     public void init() {
-        this.json = WebAPI.getJsonService();
+        this.json = WebAPI.getSerializeService();
 
         Tuple<ConfigurationLoader, ConfigurationNode> tup = Util.loadWithDefaults(configFileName, "defaults/" + configFileName);
         ConfigurationNode config = tup.getSecond();
@@ -557,7 +557,8 @@ public class CacheService implements ICacheService {
         });
     }
     @Override
-    public Tuple<Map<String, JsonNode>, Map<String, JsonNode>> getExtraData(ICachedObject cache, String[] reqFields, String[] reqMethods) {
+    public Tuple<Map<String, JsonNode>, Map<String, JsonNode>> getExtraData(ICachedObject cache, boolean xml,
+                                                                            String[] reqFields, String[] reqMethods) {
         return WebAPI.runOnMain(() -> {
             Map<String, JsonNode> fields = new HashMap<>();
             Map<String, JsonNode> methods = new HashMap<>();
@@ -581,7 +582,7 @@ public class CacheService implements ICacheService {
 
                 try {
                     Object res = field.get().get(obj);
-                    fields.put(fieldName, json.toJson(res, true, IPermissionService.permitAllNode()));
+                    fields.put(fieldName, json.serialize(res, xml, true, IPermissionService.permitAllNode()));
                 } catch (IllegalAccessException e) {
                     fields.put(fieldName, TextNode.valueOf("ERROR: " + e.toString()));
                 }
@@ -607,7 +608,7 @@ public class CacheService implements ICacheService {
 
                 try {
                     Object res = method.get().invoke(obj);
-                    methods.put(methodName, json.toJson(res, true, IPermissionService.permitAllNode()));
+                    methods.put(methodName, json.serialize(res, xml, true, IPermissionService.permitAllNode()));
                 } catch (IllegalAccessException | InvocationTargetException e) {
                     methods.put(methodName, TextNode.valueOf("ERROR: " + e.toString()));
                 }

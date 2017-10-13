@@ -2,7 +2,7 @@ package valandur.webapi.integration.nucleus;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import org.spongepowered.api.item.inventory.ItemStackSnapshot;
-import valandur.webapi.api.json.request.item.ItemStackRequest;
+import valandur.webapi.api.serialize.request.item.ItemStackRequest;
 
 import java.time.Duration;
 import java.util.ArrayList;

@@ -21,10 +21,10 @@ public class UserServlet extends BaseServlet {
     public void getUserDetails(ServletData data) {
         UserPermission user = data.getUser();
         if (user != null) {
-            data.addJson("ok", true, false);
-            data.addJson("user", user, true);
+            data.addData("ok", true, false);
+            data.addData("user", user, true);
         } else {
-            data.addJson("ok", false, false);
+            data.addData("ok", false, false);
         }
     }
 
@@ -49,8 +49,8 @@ public class UserServlet extends BaseServlet {
         String key = Util.generateUniqueId();
         WebAPI.getAuthHandler().addTempPerm(key, perm);
 
-        data.addJson("ok", true, false);
-        data.addJson("key", key, false);
-        data.addJson("user", perm, false);
+        data.addData("ok", true, false);
+        data.addData("key", key, false);
+        data.addData("user", perm, false);
     }
 }

@@ -34,15 +34,15 @@ public class NationsServlet extends BaseServlet {
                 () -> DataHandler.getNations().values().stream().map(CachedNation::new).collect(Collectors.toList())
         );
 
-        data.addJson("ok", optNations.isPresent(), false);
-        data.addJson("nations", optNations.orElse(null), data.getQueryParam("details").isPresent());
+        data.addData("ok", optNations.isPresent(), false);
+        data.addData("nations", optNations.orElse(null), data.getQueryParam("details").isPresent());
     }
 
     @Endpoint(method = HttpMethod.GET, path = "nation/:uuid", perm = "nation.one")
     public void getNation(IServletData data, UUID uuid) {
         Optional<CachedNation> optNation = WebAPIAPI.runOnMain(() -> new CachedNation(DataHandler.getNation(uuid)));
 
-        data.addJson("ok", optNation.isPresent(), false);
-        data.addJson("nation", optNation.orElse(null), true);
+        data.addData("ok", optNation.isPresent(), false);
+        data.addData("nation", optNation.orElse(null), true);
     }
 }

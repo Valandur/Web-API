@@ -22,8 +22,8 @@ public class PluginServlet extends BaseServlet {
 
     @Endpoint(method = HttpMethod.GET, path = "/", perm = "list")
     public void getPlugins(ServletData data) {
-        data.addJson("ok", true, false);
-        data.addJson("plugins", cacheService.getPlugins(), data.getQueryParam("details").isPresent());
+        data.addData("ok", true, false);
+        data.addData("plugins", cacheService.getPlugins(), data.getQueryParam("details").isPresent());
     }
 
     @Endpoint(method = HttpMethod.GET, path = "/:plugin", perm = "one")
@@ -34,8 +34,8 @@ public class PluginServlet extends BaseServlet {
             return;
         }
 
-        data.addJson("ok", true, false);
-        data.addJson("plugin", optPlugin.get(), true);
+        data.addData("ok", true, false);
+        data.addData("plugin", optPlugin.get(), true);
     }
 
     @Endpoint(method = HttpMethod.GET, path = "/:plugin/config", perm = "config")
@@ -67,8 +67,8 @@ public class PluginServlet extends BaseServlet {
             }
         }
 
-        data.addJson("ok", true, false);
-        data.addJson("configs", configs, true);
+        data.addData("ok", true, false);
+        data.addData("configs", configs, true);
     }
 
     private Object parseConfiguration(CommentedConfigurationNode config) {

@@ -1,0 +1,23 @@
+allOf:
+  - $ref: "./Message.yaml"
+  - title: MessageFull
+    type: object
+    properties:
+      target:
+        type: string
+        description: The UUID of the player this message is sent to.
+      message:
+        type: string
+        description: The message sent to the player. Text formatting can be applied with ampersand formatting.
+      once:
+        type: boolean
+        description: |
+          True if the target can only select one response for this message (further responses are not sent to the
+          webhook endpoint)
+      options:
+        type: array
+        description: |
+          These are the options the player can choose from. The key is sent back to the server,
+          the value is displayed to the player.
+        items:
+          $ref: "./MessageOption.yaml"

@@ -1,0 +1,24 @@
+get:
+  summary: Detailed message info
+  operationId: getMessage
+  description: |
+    Get detailed information about a message.
+
+    > Required permission: message.one
+  parameters:
+    - name: uuid
+      in: path
+      type: string
+      description: The uuid of the message to get detailed information about.
+      required: true
+  tags:
+    - Message
+  responses:
+    400:
+      $ref: "../../responses/400.yaml"
+    403:
+      $ref: "../../responses/403.yaml"
+    404:
+      $ref: "../../responses/404.yaml"
+    200:
+      $ref: "../../definitions/message/MessageFull.yaml"

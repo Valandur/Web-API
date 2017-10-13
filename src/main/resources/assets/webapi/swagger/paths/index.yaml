@@ -24,7 +24,9 @@
   $ref: "./info.yaml"
 
 /message:
-  $ref: "./message.yaml"
+  $ref: "./message/message.yaml"
+/message/{uuid}:
+  $ref: "./message/message_one.yaml"
 
 /player:
   $ref: "./player/list.yaml"

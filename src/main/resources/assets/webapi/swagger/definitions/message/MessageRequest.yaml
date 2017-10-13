@@ -16,7 +16,9 @@ properties:
       True if the target can only select one response for this message (further responses are not sent to the
       webhook endpoint)
   options:
-    type: object
+    type: array
     description: |
       These are the options the player can choose from. The key is sent back to the server,
       the value is displayed to the player.
+    items:
+      $ref: "./MessageOption.yaml"

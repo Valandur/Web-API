@@ -1,0 +1,62 @@
+get:
+  summary: Message list
+  operationId: getMessages
+  description: |
+    Get a list of all the messages that were sent through the message endpoint since the server started.
+
+    > Required permission: message.list
+  parameters:
+    - name: details
+      in: query
+      type: string
+      description: Pass this parameter to receive the full details for each message.
+  tags:
+    - Message
+  responses:
+    403:
+      $ref: "../../responses/403.yaml"
+    200:
+      description: List of messages
+      schema:
+        title: MessagesResponse
+        type: object
+        properties:
+          ok:
+            $ref: "../../definitions/ok.yaml"
+          messages:
+            type: array
+            description: A list of messages.
+            items:
+              $ref: "../../definitions/message/Message.yaml"
+post:
+  summary: Send an interactive message
+  operationId: sendMessage
+  description: |
+    Send an interactive message to a player. Make sure to have an event hook for "custom_message" to receive
+    the response.
+
+    > Required permission: message.create
+  parameters:
+    - name: Request
+      in: body
+      description: Details of the message sent to the player
+      required: true
+      schema:
+        $ref: "../../definitions/message/MessageRequest.yaml"
+  tags:
+    - Message
+  responses:
+    400:
+      $ref: "../../responses/400.yaml"
+    403:
+      $ref: "../../responses/403.yaml"
+    404:
+      $ref: "../../responses/404.yaml"
+    200:
+      description: Message sent
+      schema:
+        title: MessageResponse
+        type: object
+        properties:
+          ok:
+            $ref: "../../definitions/ok.yaml"

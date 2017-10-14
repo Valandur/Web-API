@@ -131,7 +131,7 @@ public class WebAPI {
     public static final String VERSION = "@version@";
     public static final String DESCRIPTION = "Access Minecraft through a Web API";
     public static final String URL = "https://github.com/Valandur/Web-API";
-    private static final String UPDATE_URL = "https://ore.spongepowered.org/api/projects/webapi/versions";
+    private static final String UPDATE_URL = "https://api.github.com/repos/Valandur/Web-API/releases/latest";
 
     private static WebAPI instance;
     public static WebAPI getInstance() {
@@ -641,7 +641,7 @@ public class WebAPI {
                 JsonNode resp = map.readTree(respString);
 
                 String version = container.getVersion().orElse("").split("-")[0];
-                String newVersion = resp.get(0).get("name").asText().split("-")[0];
+                String newVersion = resp.get("tag_name").asText().substring(1).split("-")[0];
 
                 if (newVersion.equalsIgnoreCase(version)) {
                     return;

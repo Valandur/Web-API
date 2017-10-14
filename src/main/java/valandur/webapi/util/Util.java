@@ -38,15 +38,17 @@ public class Util {
 
     public static Tuple<ConfigurationLoader, ConfigurationNode> loadWithDefaults(String path, String defaultPath) {
         try {
-            Path filePath = WebAPI.getConfigPath().resolve(path);
+            Path filePath = WebAPI.getConfigPath().resolve(path).normalize();
             Optional<Asset> optAsset = Sponge.getAssetManager().getAsset(WebAPI.getInstance(), defaultPath);
             if (!optAsset.isPresent()) {
                 throw new IOException("Could not find default asset " + defaultPath);
             }
             Asset asset = optAsset.get();
 
-            if (!Files.exists(filePath))
+            if (!Files.exists(filePath)) {
+                filePath.getParent().toFile().mkdirs();
                 asset.copyToDirectory(WebAPI.getConfigPath());
+            }
 
             ConfigurationLoader<CommentedConfigurationNode> loader = HoconConfigurationLoader.builder()
                     .setPath(filePath)

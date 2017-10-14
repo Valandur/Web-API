@@ -10,7 +10,7 @@ updating your config when new values are added. You should never have to change 
 The default config looks something like this:
 
 ```yaml
-# Set this to true when working on the WebAPI. This is NOT
+# Set this to true when working on the Web-API. This is NOT
 # detailed debug info, so don't turn on if not running the
 # Web-API from an IDE
 devMode = false

@@ -17,13 +17,13 @@ other plugins to provide their own endpoints for data without much effort.
 <a name="setup"></a>
 ## Setup
 
-> You have to register any servlets you create with the WebAPI
+> You have to register any servlets you create with the Web-API
 
-The easiest way to do this is to use `WebAPIAPI.getServletService()`, which will return an optional
-containing the ServletService. If the optional is empty than the WebAPI plugin is not present or 
-loaded on the server. If the ServletService is present you can use 
-`service.registerServlet(Class<? extends WebAPIBaseServlet> servlet)` to register your servlet class
-with the WebAPI.
+The easiest way to do this is to use `WebAPIAPI.getServletService()`, which will return an 
+optional containing the ServletService. If the optional is empty than the Web-API plugin is 
+not present or loaded on the server. If the ServletService is present you can use 
+`service.registerServlet(Class<? extends BaseServlet> servlet)` to register your servlet class
+with the Web-API.
 ```java
 public void onInitialization(GameInitializationEvent event) {
     ...
@@ -57,18 +57,22 @@ You must also add the `@Servlet(basePath = "")` annotation to the class. This an
 tells the Web-API that your class is indeed a valid servlet, and which base route to use. 
 
 - The `basePath` specifies at which path your servlet will be available, and all the other 
-routes in your servlet will be relative to this route.The `basePath` does **not** require any slashes `/` and may **not** contain any path parameters (see below).
+routes in your servlet will be relative to this route.The `basePath` does **not** require any 
+slashes `/` and may **not** contain any path parameters (see below).
 
-Servlets may define a `public static void onRegister()` method which will get called by the WebAPI
-when the servlet is registered. This is only done once, even if the user reloads the plugins
-on the server. This is the best place to register any custom serializers that your servlets uses:
+Servlets may define a `public static void onRegister()` method which will get called by the 
+Web-API when the servlet is registered. This is only done once, even if the user reloads the 
+plugins on the server. This is the best place to register any custom data classes/view 
+serializers that your servlet uses:
 ```java
 public static void onRegister() {
     WebAPIAPI.getSerializeService().ifPresent(srv -> {
-        srv.registerSerializer(MyData.class, MyDataSerializer.class);
+        srv.registerCache(MyData.class, MyCachedData.class);
+        srv.registerView(MyData.class, MyDataView.class);
     });
 }
 ```
+> You can read more about data serialization in the [section below](#serializing)
 
 
 <a name="servlet-example"></a>
@@ -79,7 +83,7 @@ import valandur.webapi.api.servlet.BaseServlet;
 import valandur.webapi.api.servlet.Servlet;
 
 @Servlet(basePath = "my-servlet")
-public class MyServlet extends WebAPIBaseServlet {
+public class MyServlet extends BaseServlet {
     
 }
 ```
@@ -218,6 +222,9 @@ Players, Entities, Inventories, Blocks and more.
 Your view must extend the class `BaseView<T>` of the Web-API API, and provide the class for
 which you are providing a view as the type argument, and provide a matching constructor.
 
+You must register your view with the Web-API. A good place to do this is in the 
+`public static void onRegister()` function of your servlet.
+
 Following is an example View for Sponge's `BlockState`:
 
 ```java
@@ -263,6 +270,15 @@ The `getData()` method will be serialized as well (since it starts with `get` an
 arguments and a return type other than void), but only if the details for the object are
 requested (since the method is annotated with `JsonDetails`). This prevents the system
 from going through all the traits of a block, unless they are actually required.
+
+And you would register this view the following way:
+```java
+public static void onRegister() {
+    WebAPIAPI.getSerializeService().ifPresent(srv -> {
+        srv.registerView(BlockState.class, BlockStateView.class);
+    });
+}
+```
 
 
 <a name="return"></a>

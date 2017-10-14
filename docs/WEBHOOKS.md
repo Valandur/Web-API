@@ -29,11 +29,16 @@ Each WebHook supports various configuration settings, which are described below.
      method=POST
      ```
 - The `dataType` defines how the data payload is sent to the server. This can be either *JSON* or
-    *FORM*. Please note that when using *FORM* the actual payload is still formatted as JSON,
-    but is wrapped into a form-property called *data*
+    *XML*.
     ```yaml
     dataType=JSON
     ```
+- The boolean `form` field can be used to send the data formatted as x-www-form-urlencoded 
+    to the server. Please note that when using `form=true` the actual payload is still formatted 
+    as JSON/XML, but is wrapped into a form-property called `data`.
+    ```yaml
+    form=true
+    ``` 
 - Setting `enabled` to false disabled the hook. This is useful when the hook isn't needed anymore
     but should be kept in the config in case it might have to be re-enabled later on.
     ```yaml
@@ -67,6 +72,7 @@ Here is an example of a hook:
     address="http://127.0.0.1:25000"
     method=POST
     dataType=JSON
+    form=false
     enabled=true
     details=false
     permissions="*"
@@ -94,14 +100,16 @@ Let's look at another example:
 {
     address="http://webapi.mydomain.com/hook.php"
     method=POST
-    dataType=FORM
+    dataType=XML
+    form=true
     enabled=true
     details=true
     permissions="*"
 }
 ```
 This hook would contact the script at `webapi.mydomain.com/hook.php` and send an HTTP POST request 
-to it. The data would be formatted as `application/x-www-form-urlencoded` and include all details.
+to it. The data would be formatted as XML, wrapped in a `application/x-www-form-urlencoded` 
+request and include all details.
 
 
 > The Web-API supports multiple hooks, which is why all the configuration nodes where you can put a 
@@ -263,7 +271,7 @@ WebHook filters can be used to filter out only certain events. Read more about t
 <a name="general"></a>
 ## Hook responses
 
-If the endpoint that the WebAPI contacts returns any other HTTP Code than 200 it will
+If the endpoint that the Web-API contacts returns any other HTTP Code than 200 it will
 be logged to the console.
 
 The endpoint may return a JSON object to instruct the Web-API to send messages to players. This can

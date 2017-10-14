@@ -77,12 +77,13 @@ public class WebHook implements IWebHook {
     }
 
 
-    public WebHook(String address, boolean enabled, WebHookMethod method, WebHookDataType dataType,
+    public WebHook(String address, boolean enabled, WebHookMethod method, WebHookDataType dataType, boolean form,
                    List<WebHookHeader> headers, boolean details, TreeNode<String, Boolean> permissions) {
         this.address = address;
         this.enabled = enabled;
         this.method = method;
         this.dataType = dataType;
+        this.form = form;
         this.headers = headers;
         this.details = details;
         this.permissions = permissions;

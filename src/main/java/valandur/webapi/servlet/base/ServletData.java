@@ -2,6 +2,7 @@ package valandur.webapi.servlet.base;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
@@ -71,7 +72,7 @@ public class ServletData implements IServletData {
         this.resp = resp;
         this.node = JsonNodeFactory.instance.objectNode();
 
-        if (req.getHeader("accept") != null && req.getHeader("accept").contains("application/xml")) {
+        if (req.getHeader("accept") != null && req.getHeader("accept").startsWith("application/xml")) {
             xml = true;
         }
 
@@ -95,7 +96,9 @@ public class ServletData implements IServletData {
     public void writeResponse() throws IOException {
         ObjectMapper om = xml ? new XmlMapper() : new ObjectMapper();
         if (xml) resp.getWriter().write("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>");
-        resp.getWriter().write(om.writer().withRootName("response").writeValueAsString(node));
+        ObjectWriter writer = om.writer();
+        if (xml) writer = writer.withRootName("response");
+        resp.getWriter().write(writer.writeValueAsString(node));
     }
 
     @Override

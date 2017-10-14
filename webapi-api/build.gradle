@@ -4,11 +4,26 @@ plugins {
 
 apply plugin: "com.github.johnrengelman.shadow"
 
+dependencies {
+    compile group: "com.fasterxml.jackson.core", name: "jackson-core", version: "2.9.0"
+    compile group: "com.fasterxml.jackson.core", name: "jackson-databind", version: "2.9.0"
+    compile group: "com.fasterxml.jackson.core", name: "jackson-annotations", version: "2.9.0"
+    compile group: "com.fasterxml.jackson.dataformat", name: "jackson-dataformat-xml", version: "2.9.0"
+    compile group: "org.codehaus.woodstox", name: "woodstox-core-asl", version: "4.4.1"
+    compile group: "org.eclipse.jetty", name: "jetty-server", version: "9.4.7.v20170914"
+    compile group: "org.eclipse.jetty", name: "jetty-servlet", version: "9.4.7.v20170914"
+    compile group: "org.eclipse.jetty", name: "jetty-http", version: "9.4.7.v20170914"
+    compile group: "org.eclipse.jetty", name: "jetty-rewrite", version: "9.4.7.v20170914"
+}
+
 shadowJar {
     configurations  = [project.configurations.compile]
 
+    relocate "com.ctc", "valandur.webapi.shadow.com.ctc"
     relocate "com.fasterxml", "valandur.webapi.shadow.com.fasterxml"
     relocate "javax.servlet", "valandur.webapi.shadow.javax.servlet"
+    relocate "javax.xml", "valandur.webapi.shadow.javax.xml"
+    relocate "org.codehaus", "valandur.webapi.shadow.org.codehaus"
     relocate "org.eclipse", "valandur.webapi.shadow.org.eclipse"
 
     exclude "/about.html"

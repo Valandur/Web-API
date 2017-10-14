@@ -1,19 +1,14 @@
 package valandur.webapi.api;
 
-import com.google.inject.Inject;
-import org.slf4j.Logger;
 import org.spongepowered.api.Sponge;
-import org.spongepowered.api.event.Listener;
-import org.spongepowered.api.event.game.state.GamePreInitializationEvent;
-import org.spongepowered.api.plugin.Plugin;
 import org.spongepowered.api.scheduler.SpongeExecutorService;
 import valandur.webapi.api.block.IBlockService;
 import valandur.webapi.api.cache.ICacheService;
 import valandur.webapi.api.extension.IExtensionService;
 import valandur.webapi.api.hook.IWebHookService;
-import valandur.webapi.api.serialize.ISerializeService;
 import valandur.webapi.api.message.IMessageService;
 import valandur.webapi.api.permission.IPermissionService;
+import valandur.webapi.api.serialize.ISerializeService;
 import valandur.webapi.api.server.IServerService;
 import valandur.webapi.api.servlet.IServletService;
 
@@ -22,33 +17,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Supplier;
 
-@Plugin(
-        id = WebAPIAPI.ID,
-        version = WebAPIAPI.VERSION,
-        name = WebAPIAPI.NAME,
-        url = WebAPIAPI.URL,
-        description = WebAPIAPI.DESCRIPTION,
-        authors = {
-                "Valandur"
-        }
-)
 public class WebAPIAPI {
-    public static final String ID = "webapi-api";
-    public static final String NAME = "Web-API API";
-    public static final String VERSION = "@version@";
-    public static final String DESCRIPTION = "API interface for the WebAPI";
-    public static final String URL = "https://github.com/Valandur/Web-API";
-
-    @Inject
-    private Logger logger;
-
-    @Listener
-    public void onPreInitialization(GamePreInitializationEvent event) {
-        logger.info(NAME + " v" + VERSION + " is loading...");
-
-        // Reusable sync executor to run code on main server thread
-        syncExecutor = Sponge.getScheduler().createSyncExecutor(this);
-    }
 
     /**
      * Gets the block service from the Web-API. Used to fetch and manipulate blocks.

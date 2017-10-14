@@ -30,6 +30,7 @@ public class WebHookSerializer implements TypeSerializer<WebHook> {
         boolean enabled = value.getNode("enabled").getBoolean();
         WebHook.WebHookMethod method = value.getNode("method").getValue(TypeToken.of(WebHook.WebHookMethod.class));
         WebHook.WebHookDataType dataType = value.getNode("dataType").getValue(TypeToken.of(WebHook.WebHookDataType.class));
+        boolean form = value.getNode("form").getBoolean();
         List<WebHookHeader> headers = value.getNode("headers").getList(TypeToken.of(WebHookHeader.class));
         boolean details = value.getNode("details").getBoolean();
 
@@ -63,7 +64,7 @@ public class WebHookSerializer implements TypeSerializer<WebHook> {
             }
         }
 
-        WebHook hook = new WebHook(address, enabled, method, dataType, headers, details, permissions);
+        WebHook hook = new WebHook(address, enabled, method, dataType, form, headers, details, permissions);
 
         if (enabled) {
             if (filterName != null) {
@@ -93,6 +94,7 @@ public class WebHookSerializer implements TypeSerializer<WebHook> {
         value.getNode("headers").setValue(obj.getHeaders());
         value.getNode("method").setValue(obj.getMethod());
         value.getNode("dataType").setValue(obj.getDataType());
+        value.getNode("form").setValue(obj.isForm());
         value.getNode("details").setValue(obj.includeDetails());
         WebAPI.getPermissionService().permissionTreeToConfig(value.getNode("permissions"), obj.getPermissions());
     }

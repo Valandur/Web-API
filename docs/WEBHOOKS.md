@@ -238,7 +238,9 @@ command = {
     }
 }
 ```
-This command hook is called `test`, and is therefor invoked by calling `/webapi notify test`. 
+This command hook is called `test`, and is therefor invoked by calling `/webapi notify test`.
+
+Its permission node is `webapi.notify.test`. Generally speaking, permission node for custom command is `webapi.notify.{command}`
 
 The property `enabled` can be set to false to disable the whole command hook, including registering
 the command with the command registry.

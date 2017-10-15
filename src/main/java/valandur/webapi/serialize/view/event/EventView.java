@@ -17,6 +17,7 @@ import org.spongepowered.api.event.world.TargetWorldEvent;
 import valandur.webapi.api.block.IBlockOperationEvent;
 import valandur.webapi.api.serialize.BaseView;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public class EventView extends BaseView<Event> {
@@ -24,7 +25,7 @@ public class EventView extends BaseView<Event> {
     @JsonProperty(value = "class")
     public String clazz;
 
-    private Map<String, Object> data;
+    private Map<String, Object> data = new HashMap<>();
     @JsonAnyGetter
     public Map<String, Object> getData() {
         return data;

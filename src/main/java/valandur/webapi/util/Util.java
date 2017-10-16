@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.math.BigInteger;
+import java.nio.file.AccessDeniedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.SecureRandom;
@@ -75,14 +76,17 @@ public class Util {
 
             return new Tuple<>(loader, config);
 
+        } catch(AccessDeniedException e) {
+            WebAPI.getLogger().error("Could not access config file: " + path);
         } catch (IOException | NoSuchElementException e) {
             e.printStackTrace();
             if (WebAPI.reportErrors()) {
                 WebAPI.sentryExtra("config", path);
                 WebAPI.sentryCapture(e);
             }
-            return null;
         }
+
+        return null;
     }
 
     /**

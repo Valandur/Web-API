@@ -1,4 +1,4 @@
-package valandur.webapi.api.serialize.request;
+package valandur.webapi.serialize.request.misc;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import org.spongepowered.api.Sponge;

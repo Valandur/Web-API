@@ -15,6 +15,8 @@ import org.spongepowered.api.event.cause.Cause;
 import org.spongepowered.api.event.command.SendCommandEvent;
 import org.spongepowered.api.event.message.MessageEvent;
 import org.spongepowered.api.item.inventory.Inventory;
+import org.spongepowered.api.item.inventory.ItemStack;
+import org.spongepowered.api.item.inventory.ItemStackSnapshot;
 import org.spongepowered.api.plugin.PluginContainer;
 import org.spongepowered.api.service.user.UserStorageService;
 import org.spongepowered.api.util.Tuple;
@@ -141,12 +143,19 @@ public class CacheService implements ICacheService {
         if (obj instanceof CommandMapping)
             return getCommand((CommandMapping)obj);
 
+        if (obj instanceof ItemStack)
+            return ((ItemStack)obj).copy();
+        if (obj instanceof ItemStackSnapshot)
+            return ((ItemStackSnapshot)obj).copy();
+
         if (obj instanceof Cause)
             return new CachedCause((Cause)obj);
         if (obj instanceof Location)
             return new CachedLocation((Location)obj);
         if (obj instanceof CatalogType)
             return new CachedCatalogType((CatalogType)obj);
+
+
 
         // If this is an unkown object type then we can't create a cached version of it, so we better not try
         // and save it because we don't know if it's thread safe or not.

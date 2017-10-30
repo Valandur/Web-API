@@ -1,4 +1,4 @@
-package valandur.webapi.servlet.request.auth;
+package valandur.webapi.serialize.request.auth;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 

@@ -16,8 +16,8 @@ import java.util.concurrent.TimeUnit;
 
 public class ServerService implements IServerService {
 
-    private Map<String, String> properties = new ConcurrentHashMap<>();
-    private Map<String, String> newProperties = new ConcurrentHashMap<>();
+    private Map<String, ServerProperty> properties = new ConcurrentHashMap<>();
+    private Map<String, ServerProperty> newProperties = new ConcurrentHashMap<>();
 
     // Record every 5 seconds. Max 17280 entries = 24 hours of tps
     public static int STATS_INTERVAL = 5;
@@ -41,7 +41,7 @@ public class ServerService implements IServerService {
                     continue;
                 }
 
-                properties.put(key, splits.length > 1 ? splits[1].trim() : "");
+                properties.put(key, new ServerProperty(key, splits.length > 1 ? splits[1].trim() : ""));
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -76,12 +76,10 @@ public class ServerService implements IServerService {
         return new ArrayList<>(onlinePlayers);
     }
 
-    @Override
-    public Map<String, String> getProperties() {
-        return newProperties;
+    public Collection<ServerProperty> getProperties() {
+        return newProperties.values();
     }
-    @Override
     public void setProperty(String key, String value) {
-        newProperties.put(key, value);
+        newProperties.put(key, new ServerProperty(key, value));
     }
 }

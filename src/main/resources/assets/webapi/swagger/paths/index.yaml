@@ -21,7 +21,9 @@
   $ref: "./history/cmd.yaml"
 
 /info:
-  $ref: "./info.yaml"
+  $ref: "./server/info.yaml"
+/info/properties:
+  $res: "./server/properties.yaml"
 
 /message:
   $ref: "./message/message.yaml"

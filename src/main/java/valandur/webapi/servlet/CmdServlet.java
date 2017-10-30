@@ -8,7 +8,7 @@ import valandur.webapi.api.servlet.Servlet;
 import valandur.webapi.api.cache.command.ICachedCommand;
 import valandur.webapi.api.servlet.BaseServlet;
 import valandur.webapi.command.CommandSource;
-import valandur.webapi.servlet.request.command.ExecuteCommandRequest;
+import valandur.webapi.serialize.request.command.ExecuteCommandRequest;
 import valandur.webapi.servlet.base.ServletData;
 
 import javax.servlet.http.HttpServletResponse;

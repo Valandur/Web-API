@@ -9,6 +9,7 @@ import valandur.webapi.WebAPI;
 import valandur.webapi.api.servlet.Endpoint;
 import valandur.webapi.api.servlet.Servlet;
 import valandur.webapi.api.servlet.BaseServlet;
+import valandur.webapi.server.ServerService;
 import valandur.webapi.servlet.base.ServletData;
 
 import javax.servlet.http.HttpServletResponse;
@@ -45,14 +46,18 @@ public class InfoServlet extends BaseServlet {
         data.addData("ok", optRes.orElse(false), false);
     }
 
-    @Endpoint(method = HttpMethod.GET, path = "/properties", perm = "properties")
+    @Endpoint(method = HttpMethod.GET, path = "/properties", perm = "properties.list")
     public void getProperties(ServletData data) {
+        ServerService srv = WebAPI.getServerService();
+
         data.addData("ok", true, false);
-        data.addData("properties", serverService.getProperties(), true);
+        data.addData("properties", srv.getProperties(), true);
     }
 
-    @Endpoint(method = HttpMethod.POST, path = "/properties", perm = "properties")
+    @Endpoint(method = HttpMethod.POST, path = "/properties", perm = "properties.set")
     public void setProperties(ServletData data) {
+        ServerService srv = WebAPI.getServerService();
+
         JsonNode body = data.getRequestBody();
         JsonNode props = body.get("properties");
 
@@ -63,11 +68,11 @@ public class InfoServlet extends BaseServlet {
 
         for (Iterator<String> it = props.fieldNames(); it.hasNext(); ) {
             String key = it.next();
-            serverService.setProperty(key, props.get(key).asText());
+            srv.setProperty(key, props.get(key).asText());
         }
 
         data.addData("ok", true, false);
-        data.addData("properties", serverService.getProperties(), true);
+        data.addData("properties", srv.getProperties(), true);
     }
 
     @Endpoint(method = HttpMethod.GET, path="/tps", perm = "tps")

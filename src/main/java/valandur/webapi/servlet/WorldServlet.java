@@ -15,8 +15,8 @@ import valandur.webapi.api.cache.world.ICachedWorld;
 import valandur.webapi.api.servlet.BaseServlet;
 import valandur.webapi.cache.world.CachedChunk;
 import valandur.webapi.cache.world.CachedWorld;
-import valandur.webapi.servlet.request.world.CreateWorldRequest;
-import valandur.webapi.servlet.request.world.UpdateWorldRequest;
+import valandur.webapi.serialize.request.world.CreateWorldRequest;
+import valandur.webapi.serialize.request.world.UpdateWorldRequest;
 import valandur.webapi.servlet.base.ServletData;
 import valandur.webapi.util.Util;
 

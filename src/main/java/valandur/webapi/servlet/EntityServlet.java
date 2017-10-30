@@ -8,21 +8,21 @@ import org.spongepowered.api.event.cause.Cause;
 import org.spongepowered.api.event.cause.entity.damage.source.DamageSource;
 import org.spongepowered.api.item.inventory.Carrier;
 import org.spongepowered.api.item.inventory.Inventory;
-import org.spongepowered.api.item.inventory.ItemStackSnapshot;
+import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.util.Tuple;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.cache.entity.ICachedEntity;
 import valandur.webapi.api.cache.world.ICachedWorld;
-import valandur.webapi.api.serialize.request.misc.DamageRequest;
+import valandur.webapi.serialize.request.misc.DamageRequest;
 import valandur.webapi.api.servlet.BaseServlet;
 import valandur.webapi.api.servlet.Endpoint;
 import valandur.webapi.api.servlet.Servlet;
 import valandur.webapi.cache.entity.CachedEntity;
 import valandur.webapi.servlet.base.ServletData;
-import valandur.webapi.servlet.request.entity.CreateEntityRequest;
-import valandur.webapi.servlet.request.entity.UpdateEntityRequest;
+import valandur.webapi.serialize.request.entity.CreateEntityRequest;
+import valandur.webapi.serialize.request.entity.UpdateEntityRequest;
 import valandur.webapi.util.Util;
 
 import javax.servlet.http.HttpServletResponse;
@@ -112,8 +112,8 @@ public class EntityServlet extends BaseServlet {
                 try {
                     Inventory inv = ((Carrier) live).getInventory();
                     inv.clear();
-                    for (ItemStackSnapshot stack : req.getInventory()) {
-                        inv.offer(stack.createStack());
+                    for (ItemStack stack : req.getInventory()) {
+                        inv.offer(stack);
                     }
                 } catch (Exception e) {
                     return null;

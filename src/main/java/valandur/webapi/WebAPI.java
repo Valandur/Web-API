@@ -180,8 +180,7 @@ public class WebAPI {
 
     private boolean reportErrors;
     public static boolean reportErrors() {
-        if (WebAPI.getInstance() == null) return true;
-        return WebAPI.getInstance().reportErrors;
+        return WebAPI.getInstance() == null || WebAPI.getInstance().reportErrors;
     }
 
     private static String serverHost;
@@ -397,7 +396,14 @@ public class WebAPI {
         CmdServlet.CMD_WAIT_TIME = config.getNode("cmdWaitTime").getInt();
 
         if (devMode) {
-            logger.warn("WebAPI IS RUNNING IN DEV MODE. USING NON-SHADOWED REFERENCES!");
+            logger.warn("Web-API IS RUNNING IN DEV MODE. USING NON-SHADOWED REFERENCES! ERROR REPORTING IS OFF!");
+            reportErrors = false;
+        }
+
+        //noinspection ConstantConditions
+        if (VERSION.equalsIgnoreCase("@version@")) {
+            logger.warn("Web-API VERSION SIGNALS DEV MODE. ERROR REPORTING IS OFF!");
+            reportErrors = false;
         }
 
         authHandler.init();
@@ -831,22 +837,26 @@ public class WebAPI {
 
     @Listener(order = Order.POST)
     public void onBlockUpdateStatusChange(BlockOperationStatusChangeEvent event) {
-        BlockOperation update = event.getBlockOperation();
-        switch (update.getStatus()) {
+        BlockOperation on = event.getBlockOperation();
+        switch (on.getStatus()) {
             case DONE:
-                logger.info("Block op " + update.getUUID() + " is done");
+                logger.info("Block op " + on.getUUID() + " is done");
                 break;
 
             case ERRORED:
-                logger.warn("Block op " + update.getUUID() + " failed: " + update.getError());
+                logger.warn("Block op " + on.getUUID() + " failed: " + on.getError());
+                break;
+
+            case CANCELED:
+                logger.info("Block op " + on.getUUID() + " was canceled");
                 break;
 
             case PAUSED:
-                logger.info("Block op " + update.getUUID() + " paused");
+                logger.info("Block op " + on.getUUID() + " paused");
                 break;
 
             case RUNNING:
-                logger.info("Block op " + update.getUUID() + " started");
+                logger.info("Block op " + on.getUUID() + " started");
                 break;
         }
 

@@ -131,10 +131,11 @@ public class ApiServlet extends HttpServlet {
 
         try {
             match.getMethod().invoke(match.getServlet(), params.toArray());
-            resp.setContentType(data.getResponseContentType());
 
             // If we didn't send an error or a response yet then automatically send it now
             if (!data.isDone() && !data.isErrorSent()) {
+                resp.setContentType(data.getResponseContentType());
+
                 try {
                     data.writeResponse();
                 } catch(IllegalStateException ignored) {

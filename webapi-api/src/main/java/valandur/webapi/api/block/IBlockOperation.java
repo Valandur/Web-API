@@ -13,17 +13,24 @@ import java.util.UUID;
 public interface IBlockOperation extends ICachedObject<IBlockOperation> {
 
     /**
+     * The type of block operation
+     */
+    enum BlockOperationType {
+        GET, CHANGE
+    }
+
+    /**
      * The current status of the update.
      */
     enum BlockOperationStatus {
-        INIT, RUNNING, PAUSED, DONE, ERRORED,
+        INIT, RUNNING, PAUSED, DONE, ERRORED, CANCELED,
     }
 
     /**
      * Gets the type of block operation.
      * @return The type of block operation.
      */
-    String getType();
+    BlockOperationType getType();
 
     /**
      * Gets the minimum block belonging to this operation.

@@ -15,16 +15,18 @@ import java.util.Optional;
 public class CmdBlockUpdatesPause implements CommandExecutor {
     @Override
     public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
-        Optional<BlockOperation> update = args.getOne("uuid");
-        if (!update.isPresent()) {
-            src.sendMessage(Text.builder("Invalid block update uuid!").color(TextColors.DARK_RED).build());
+        Optional<BlockOperation> op = args.getOne("uuid");
+        if (!op.isPresent()) {
+            src.sendMessage(Text.builder("Invalid block operation uuid!")
+                    .color(TextColors.DARK_RED)
+                    .build());
             return CommandResult.empty();
         }
 
-        if (update.get().getStatus() == IBlockOperation.BlockOperationStatus.RUNNING) {
-            update.get().pause();
+        if (op.get().getStatus() == IBlockOperation.BlockOperationStatus.RUNNING) {
+            op.get().pause();
         } else {
-            update.get().start();
+            op.get().start();
         }
 
         return CommandResult.success();

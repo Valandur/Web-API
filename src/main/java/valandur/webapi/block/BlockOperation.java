@@ -1,6 +1,8 @@
 package valandur.webapi.block;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.flowpowered.math.vector.Vector3i;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.event.cause.Cause;
@@ -18,6 +20,17 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
+@JsonTypeInfo(
+        use = JsonTypeInfo.Id.NAME,
+        include =  JsonTypeInfo.As.EXISTING_PROPERTY,
+        property = "type",
+        defaultImpl = BlockOperation.class,
+        visible = true
+)
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = BlockGetOperation.class, name = "GET"),
+        @JsonSubTypes.Type(value = BlockChangeOperation.class, name = "CHANGE"),
+})
 public abstract class BlockOperation extends CachedObject<IBlockOperation> implements IBlockOperation {
 
     private IBlockService blockService;
@@ -33,6 +46,7 @@ public abstract class BlockOperation extends CachedObject<IBlockOperation> imple
     protected final Vector3i min;
     protected final Vector3i max;
     protected final Vector3i size;
+
 
     @Override
     public UUID getUUID() {
@@ -167,7 +181,7 @@ public abstract class BlockOperation extends CachedObject<IBlockOperation> imple
         if (status != BlockOperationStatus.RUNNING && status != BlockOperationStatus.PAUSED) return;
 
         boolean res = task.cancel();
-        status = error == null ? BlockOperationStatus.DONE : BlockOperationStatus.ERRORED;
+        status = error == null || error.isEmpty() ? BlockOperationStatus.CANCELED : BlockOperationStatus.ERRORED;
         this.error = error;
 
         Sponge.getEventManager().post(new BlockOperationStatusChangeEvent(this));

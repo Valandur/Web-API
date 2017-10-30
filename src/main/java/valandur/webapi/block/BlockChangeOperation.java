@@ -13,8 +13,8 @@ public class BlockChangeOperation extends BlockOperation implements IBlockChange
     Map<Vector3i, BlockState> newStates;
 
     @Override
-    public String getType() {
-        return "Change";
+    public BlockOperationType getType() {
+        return BlockOperationType.CHANGE;
     }
 
     public BlockChangeOperation(ICachedWorld world, Vector3i min, Vector3i max, Map<Vector3i, BlockState> blocks) {

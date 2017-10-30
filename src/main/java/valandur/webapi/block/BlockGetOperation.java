@@ -5,17 +5,19 @@ import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.world.World;
 import valandur.webapi.api.block.IBlockGetOperation;
 import valandur.webapi.api.cache.world.ICachedWorld;
+import valandur.webapi.api.serialize.JsonDetails;
 
 public class BlockGetOperation extends BlockOperation implements IBlockGetOperation {
 
     private BlockState[][][] blockStates;
 
     @Override
-    public String getType() {
-        return "Get";
+    public BlockOperationType getType() {
+        return BlockOperationType.GET;
     }
 
     @Override
+    @JsonDetails
     public BlockState[][][] getBlocks() {
         return blockStates;
     }

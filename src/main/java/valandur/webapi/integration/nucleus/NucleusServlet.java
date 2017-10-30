@@ -6,6 +6,7 @@ import io.github.nucleuspowered.nucleus.api.nucleusdata.NamedLocation;
 import io.github.nucleuspowered.nucleus.api.service.NucleusJailService;
 import io.github.nucleuspowered.nucleus.api.service.NucleusKitService;
 import org.eclipse.jetty.http.HttpMethod;
+import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 import valandur.webapi.api.WebAPIAPI;
@@ -224,7 +225,7 @@ public class NucleusServlet extends BaseServlet {
             kit.setCooldown(req.getCooldown());
             if (req.hasStacks()) {
                 try {
-                    kit.setStacks(req.getStacks());
+                    kit.setStacks(req.getStacks().stream().map(ItemStack::createSnapshot).collect(Collectors.toList()));
                 } catch (Exception e) {
                     data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Could not process item stack: " + e.getMessage());
                     return null;
@@ -278,7 +279,7 @@ public class NucleusServlet extends BaseServlet {
             }
             if (req.hasStacks()) {
                 try {
-                    kit.setStacks(req.getStacks());
+                    kit.setStacks(req.getStacks().stream().map(ItemStack::createSnapshot).collect(Collectors.toList()));
                 } catch (Exception e) {
                     data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Could not process item stack: " + e.getMessage());
                     return null;

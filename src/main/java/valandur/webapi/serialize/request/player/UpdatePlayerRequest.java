@@ -1,7 +1,7 @@
-package valandur.webapi.servlet.request.player;
+package valandur.webapi.serialize.request.player;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import valandur.webapi.servlet.request.entity.UpdateEntityRequest;
+import valandur.webapi.serialize.request.entity.UpdateEntityRequest;
 
 @JsonDeserialize
 public class UpdatePlayerRequest extends UpdateEntityRequest {

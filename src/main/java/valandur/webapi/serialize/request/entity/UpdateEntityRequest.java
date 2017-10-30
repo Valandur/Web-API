@@ -1,11 +1,11 @@
-package valandur.webapi.servlet.request.entity;
+package valandur.webapi.serialize.request.entity;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.flowpowered.math.vector.Vector3d;
 import org.spongepowered.api.item.inventory.ItemStack;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.cache.world.ICachedWorld;
-import valandur.webapi.api.serialize.request.misc.DamageRequest;
+import valandur.webapi.serialize.request.misc.DamageRequest;
 
 import java.util.List;
 import java.util.Optional;

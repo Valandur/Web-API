@@ -1,4 +1,4 @@
-package valandur.webapi.servlet.request.world;
+package valandur.webapi.serialize.request.world;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 

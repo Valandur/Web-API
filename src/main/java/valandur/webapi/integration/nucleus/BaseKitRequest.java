@@ -1,11 +1,9 @@
 package valandur.webapi.integration.nucleus;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import org.spongepowered.api.item.inventory.ItemStackSnapshot;
-import valandur.webapi.api.serialize.request.item.ItemStackRequest;
+import org.spongepowered.api.item.inventory.ItemStack;
 
 import java.time.Duration;
-import java.util.ArrayList;
 import java.util.List;
 
 @JsonDeserialize
@@ -39,13 +37,9 @@ public class BaseKitRequest {
     }
 
     @JsonDeserialize
-    private List<ItemStackRequest> stacks;
-    public List<ItemStackSnapshot> getStacks() throws Exception {
-        List<ItemStackSnapshot> res = new ArrayList<>();
-        for (ItemStackRequest stack : stacks) {
-            res.add(stack.getStackSnapshot());
-        }
-        return res;
+    private List<ItemStack> stacks;
+    public List<ItemStack> getStacks() throws Exception {
+        return stacks;
     }
     public boolean hasStacks() {
         return stacks != null;

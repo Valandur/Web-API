@@ -30,6 +30,8 @@ allprojects {
 blossom {
     def locMain = "src/main/java/valandur/webapi/WebAPI.java"
     replaceToken "@version@", project.version, locMain
+    def locApi = "webapi-api/src/main/java/valandur/webapi/api/WebAPIAPI.java"
+    replaceToken "@version@", project.version, locApi
 }
 
 spongestart {
@@ -75,7 +77,6 @@ shadowJar {
 
     exclude "/about.html"
     exclude "/jetty-dir.css"
-    exclude "/valandur/webapi/api/WebAPIAPIMod.class"
 
     relocate "com.ctc", "valandur.webapi.shadow.com.ctc"
     relocate "com.fasterxml", "valandur.webapi.shadow.com.fasterxml"

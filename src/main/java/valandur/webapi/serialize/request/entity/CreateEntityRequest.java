@@ -1,4 +1,4 @@
-package valandur.webapi.servlet.request.entity;
+package valandur.webapi.serialize.request.entity;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.flowpowered.math.vector.Vector3d;

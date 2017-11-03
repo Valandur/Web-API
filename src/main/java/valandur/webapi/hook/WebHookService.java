@@ -18,11 +18,11 @@ import valandur.webapi.api.hook.BaseWebHookFilter;
 import valandur.webapi.api.hook.IWebHook;
 import valandur.webapi.api.hook.IWebHookService;
 import valandur.webapi.api.hook.WebHookHeader;
+import valandur.webapi.extension.ExtensionService;
 import valandur.webapi.hook.filter.BlockTypeFilter;
 import valandur.webapi.hook.filter.ItemTypeFilter;
 import valandur.webapi.hook.filter.PlayerFilter;
 import valandur.webapi.serialize.SerializeService;
-import valandur.webapi.extension.ExtensionService;
 import valandur.webapi.util.Util;
 
 import java.io.*;
@@ -130,18 +130,29 @@ public class WebHookService implements IWebHookService {
             // Add custom event hooks
             Map<Object, ? extends ConfigurationNode> customMap = config.getNode("custom").getChildrenMap();
             for (Map.Entry<Object, ? extends ConfigurationNode> entry : customMap.entrySet()) {
-                Class c = Class.forName(entry.getKey().toString());
-                if (!Event.class.isAssignableFrom(c))
-                    throw new ClassNotFoundException("Class " + c.toString() + " must be a subclass of " + Event.class.toString());
-                Class<? extends Event> clazz = (Class<? extends Event>)c;
+                String className = entry.getKey().toString();
 
-                WebHookEventListener listener = new WebHookEventListener(clazz);
-                List<WebHook> hooks = entry.getValue().getList(TypeToken.of(WebHook.class));
+                try {
+                    Class c = Class.forName(className);
+                    if (!Event.class.isAssignableFrom(c))
+                        throw new InvalidClassException("Class " + c.toString() + " must be a subclass of " + Event.class.toString() +
+                                " so that it can be used as a custom web hook");
+                    Class<? extends Event> clazz = (Class<? extends Event>) c;
 
-                Sponge.getEventManager().registerListener(WebAPI.getInstance(), clazz, listener);
-                customHooks.put(clazz, new Tuple<>(hooks.stream().filter(WebHook::isEnabled).collect(Collectors.toList()), listener));
+                    WebHookEventListener listener = new WebHookEventListener(clazz);
+                    List<WebHook> hooks = entry.getValue().getList(TypeToken.of(WebHook.class));
+
+                    Sponge.getEventManager().registerListener(WebAPI.getInstance(), clazz, listener);
+                    customHooks.put(clazz, new Tuple<>(hooks.stream().filter(WebHook::isEnabled).collect(Collectors.toList()), listener));
+                } catch (ClassNotFoundException e) {
+                    logger.error("Could not find class for custom web hook: " + className);
+                } catch (InvalidClassException e) {
+                    logger.error(e.getMessage());
+                } catch (ObjectMappingException e) {
+                    logger.error("Could not read custom web hook config: " + className);
+                }
             }
-        } catch (ObjectMappingException | ClassNotFoundException e) {
+        } catch (ObjectMappingException e) {
             e.printStackTrace();
             if (WebAPI.reportErrors()) WebAPI.sentryCapture(e);
         }

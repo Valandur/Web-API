@@ -1,4 +1,4 @@
-package valandur.webapi.servlet.request.command;
+package valandur.webapi.serialize.request.command;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import valandur.webapi.servlet.CmdServlet;

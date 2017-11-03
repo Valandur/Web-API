@@ -11,17 +11,14 @@ import valandur.webapi.api.servlet.Servlet;
 import valandur.webapi.block.BlockChangeOperation;
 import valandur.webapi.block.BlockGetOperation;
 import valandur.webapi.cache.world.CachedWorld;
+import valandur.webapi.serialize.request.block.CreateOperationRequest;
 import valandur.webapi.servlet.base.ServletData;
-import valandur.webapi.servlet.request.block.CreateOperationRequest;
-import valandur.webapi.servlet.request.block.CreateOperationRequest.BlockOperationType;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-
-import static valandur.webapi.servlet.request.block.CreateOperationRequest.BlockStateRequest;
 
 @Servlet(basePath = "block")
 public class BlockServlet extends BaseServlet {
@@ -83,7 +80,7 @@ public class BlockServlet extends BaseServlet {
         int numBlocks = size.getX() * size.getY() * size.getZ();
 
         IBlockOperation op;
-        if (req.getType() == BlockOperationType.GET) {
+        if (req.getType() == IBlockOperation.BlockOperationType.GET) {
             // Check volume size
             if (blockService.getMaxGetBlocks() > 0 && numBlocks > blockService.getMaxGetBlocks()) {
                 data.sendError(HttpServletResponse.SC_NOT_ACCEPTABLE, "Size is " + numBlocks +
@@ -92,7 +89,7 @@ public class BlockServlet extends BaseServlet {
             }
 
             op = blockService.startBlockOperation(new BlockGetOperation(req.getWorld().get(), min, max));
-        } else if (req.getType() == BlockOperationType.CHANGE) {
+        } else if (req.getType() == IBlockOperation.BlockOperationType.CHANGE) {
             // Check volume size
             if (blockService.getMaxUpdateBlocks() > 0 && numBlocks > blockService.getMaxUpdateBlocks()) {
                 data.sendError(HttpServletResponse.SC_NOT_ACCEPTABLE, "Area size is " + numBlocks +
@@ -105,7 +102,7 @@ public class BlockServlet extends BaseServlet {
 
             if (req.getBlock() != null) {
                 try {
-                    BlockState state = req.getBlock().getState();
+                    BlockState state = req.getBlock();
 
                     for (int x = min.getX(); x <= max.getX(); x++) {
                         for (int y = min.getY(); y <= max.getY(); y++) {
@@ -125,28 +122,28 @@ public class BlockServlet extends BaseServlet {
                 }
 
                 for (int x = 0; x < size.getX(); x++) {
-                    BlockStateRequest[][] xBlocks = req.getBlocks()[x];
+                    BlockState[][] xBlocks = req.getBlocks()[x];
 
                     if (xBlocks == null)
                         continue;
 
                     for (int y = 0; y < size.getY(); y++) {
-                        BlockStateRequest[] yBlocks = xBlocks[y];
+                        BlockState[] yBlocks = xBlocks[y];
 
                         if (yBlocks == null)
                             continue;
 
                         for (int z = 0; z < size.getZ(); z++) {
-                            BlockStateRequest block = yBlocks[z];
+                            BlockState block = yBlocks[z];
 
                             if (block == null)
                                 continue;
 
                             try {
-                                BlockState state = block.getState();
-                                blocks.put(new Vector3i(min.getX() + x, min.getY() + y, min.getZ() + z), state);
+                                blocks.put(new Vector3i(min.getX() + x, min.getY() + y, min.getZ() + z), block);
                             } catch (Exception e) {
-                                data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Could not process block state: " + e.getMessage());
+                                data.sendError(HttpServletResponse.SC_BAD_REQUEST,
+                                        "Could not process block state: " + e.getMessage());
                                 return;
                             }
                         }
@@ -169,50 +166,53 @@ public class BlockServlet extends BaseServlet {
 
     @Endpoint(method = HttpMethod.GET, path = "/op/:uuid", perm = "op.one")
     public void getBlockOperation(ServletData data, UUID uuid) {
-        // Check block update
-        Optional<IBlockOperation> update = blockService.getBlockOperation(uuid);
-        if (!update.isPresent()) {
-            data.sendError(HttpServletResponse.SC_NOT_FOUND, "Block update with UUID '" + uuid + "' could not be found");
+        // Check block op
+        Optional<IBlockOperation> op = blockService.getBlockOperation(uuid);
+        if (!op.isPresent()) {
+            data.sendError(HttpServletResponse.SC_NOT_FOUND, "Block operation with UUID '" +
+                    uuid + "' could not be found");
             return;
         }
 
         data.addData("ok", true, false);
-        data.addData("operation", update.get(), true);
+        data.addData("operation", op.get(), true);
     }
 
     @Endpoint(method = HttpMethod.PUT, path = "/op/:uuid", perm = "op.change")
     public void modifyBlockOperation(ServletData data, UUID uuid) {
         JsonNode reqJson = data.getRequestBody();
 
-        // Check block update
-        Optional<IBlockOperation> update = blockService.getBlockOperation(uuid);
-        if (!update.isPresent()) {
-            data.sendError(HttpServletResponse.SC_NOT_FOUND, "Block update with UUID '" + uuid + "' could not be found");
+        // Check block op
+        Optional<IBlockOperation> op = blockService.getBlockOperation(uuid);
+        if (!op.isPresent()) {
+            data.sendError(HttpServletResponse.SC_NOT_FOUND, "Block opeartion with UUID '" +
+                    uuid + "' could not be found");
             return;
         }
 
         if (reqJson.get("pause").asBoolean()) {
-            update.get().pause();
+            op.get().pause();
         } else {
-            update.get().start();
+            op.get().start();
         }
 
         data.addData("ok", true, false);
-        data.addData("operation", update, true);
+        data.addData("operation", op, true);
     }
 
     @Endpoint(method = HttpMethod.DELETE, path = "/op/:uuid", perm = "op.delete")
     public void deleteBlockOperation(ServletData data, UUID uuid) {
-        // Check block update
-        Optional<IBlockOperation> update = blockService.getBlockOperation(uuid);
-        if (!update.isPresent()) {
-            data.sendError(HttpServletResponse.SC_NOT_FOUND, "Block update with UUID '" + uuid + "' could not be found");
+        // Check block op
+        Optional<IBlockOperation> op = blockService.getBlockOperation(uuid);
+        if (!op.isPresent()) {
+            data.sendError(HttpServletResponse.SC_NOT_FOUND, "Block operation with UUID '" +
+                    uuid + "' could not be found");
             return;
         }
 
-        update.get().stop("Cancelled by request");
+        op.get().stop(null);
 
         data.addData("ok", true, false);
-        data.addData("operation", update.get(), true);
+        data.addData("operation", op.get(), true);
     }
 }

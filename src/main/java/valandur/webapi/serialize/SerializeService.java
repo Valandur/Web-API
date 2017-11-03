@@ -66,6 +66,8 @@ import valandur.webapi.cache.player.CachedPlayer;
 import valandur.webapi.cache.plugin.CachedPluginContainer;
 import valandur.webapi.cache.tileentity.CachedTileEntity;
 import valandur.webapi.cache.world.CachedWorld;
+import valandur.webapi.serialize.deserialize.BlockStateDeserializer;
+import valandur.webapi.serialize.deserialize.ItemStackDeserializer;
 import valandur.webapi.serialize.view.block.BlockSnapshotView;
 import valandur.webapi.serialize.view.block.BlockStateView;
 import valandur.webapi.serialize.view.entity.*;
@@ -333,27 +335,13 @@ public class SerializeService implements ISerializeService {
 
         ObjectMapper om = xml ? new XmlMapper() : new ObjectMapper();
         om.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-        /*om.enable(
-                SerializationFeature.USE_EQUALITY_FOR_OBJECT_ID
-        );
-        om.disable(
-                SerializationFeature.FAIL_ON_EMPTY_BEANS
-        );
-
-        om.enable(
-                MapperFeature.AUTO_DETECT_CREATORS,
-                MapperFeature.AUTO_DETECT_FIELDS
-        );
-        om.disable(
-                MapperFeature.AUTO_DETECT_SETTERS,
-                MapperFeature.AUTO_DETECT_GETTERS,
-                MapperFeature.AUTO_DETECT_IS_GETTERS
-        );*/
 
         SimpleModule mod = new SimpleModule();
         for (Map.Entry<Class, BaseSerializer> entry : serializers.entrySet()) {
             mod.addSerializer(entry.getKey(), entry.getValue());
         }
+        mod.addDeserializer(ItemStack.class, new ItemStackDeserializer());
+        mod.addDeserializer(BlockState.class, new BlockStateDeserializer());
         om.registerModule(mod);
 
         SimpleFilterProvider filterProvider = new SimpleFilterProvider();

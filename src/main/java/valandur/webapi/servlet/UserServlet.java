@@ -6,7 +6,7 @@ import valandur.webapi.api.servlet.Endpoint;
 import valandur.webapi.api.servlet.Servlet;
 import valandur.webapi.api.servlet.BaseServlet;
 import valandur.webapi.servlet.base.ServletData;
-import valandur.webapi.servlet.request.auth.AuthRequest;
+import valandur.webapi.serialize.request.auth.AuthRequest;
 import valandur.webapi.user.UserPermission;
 import valandur.webapi.user.Users;
 import valandur.webapi.util.Util;

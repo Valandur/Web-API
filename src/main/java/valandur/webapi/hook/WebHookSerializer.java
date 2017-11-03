@@ -25,6 +25,11 @@ public class WebHookSerializer implements TypeSerializer<WebHook> {
 
         String address = value.getNode("address").getString();
 
+        if (address == null) {
+            logger.error("No address specified for web hook!");
+            return null;
+        }
+
         logger.info("  - " + address);
 
         boolean enabled = value.getNode("enabled").getBoolean();

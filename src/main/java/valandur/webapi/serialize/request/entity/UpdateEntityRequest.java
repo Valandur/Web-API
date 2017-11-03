@@ -1,14 +1,12 @@
-package valandur.webapi.servlet.request.entity;
+package valandur.webapi.serialize.request.entity;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.flowpowered.math.vector.Vector3d;
-import org.spongepowered.api.item.inventory.ItemStackSnapshot;
+import org.spongepowered.api.item.inventory.ItemStack;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.cache.world.ICachedWorld;
-import valandur.webapi.api.serialize.request.item.ItemStackRequest;
-import valandur.webapi.api.serialize.request.misc.DamageRequest;
+import valandur.webapi.serialize.request.misc.DamageRequest;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -52,13 +50,9 @@ public class UpdateEntityRequest {
     }
 
     @JsonDeserialize
-    private List<ItemStackRequest> inventory;
-    public List<ItemStackSnapshot> getInventory() throws Exception {
-        List<ItemStackSnapshot> res = new ArrayList<>();
-        for (ItemStackRequest stack : inventory) {
-            res.add(stack.getStackSnapshot());
-        }
-        return res;
+    private List<ItemStack> inventory;
+    public List<ItemStack> getInventory() throws Exception {
+        return inventory;
     }
     public boolean hasInventory() {
         return inventory != null;

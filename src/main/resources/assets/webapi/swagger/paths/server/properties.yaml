@@ -9,7 +9,7 @@ get:
     - Server Properties
   responses:
     403:
-      $ref: "../responses/403.yaml"
+      $ref: "../../responses/403.yaml"
     200:
       description: List of server properties
       schema:

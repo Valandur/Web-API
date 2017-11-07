@@ -5,12 +5,13 @@ import org.spongepowered.api.data.manipulator.mutable.entity.StatisticData;
 import org.spongepowered.api.statistic.Statistic;
 import valandur.webapi.api.serialize.BaseView;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public class StatisticDataView extends BaseView<StatisticData> {
 
     @JsonValue
-    public Map<String, Long> data;
+    public Map<String, Long> data = new HashMap<>();
 
 
     public StatisticDataView(StatisticData value) {

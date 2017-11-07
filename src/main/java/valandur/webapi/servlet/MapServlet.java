@@ -97,9 +97,12 @@ public class MapServlet extends BaseServlet {
             }
         }
 
+        g2.dispose();
+
         try {
             ImageIO.write(img, "PNG", new File(filePath.toString()));
             ImageIO.write(img, "PNG", data.getOutputStream());
+            img.flush();
 
             data.setHeader("Cache-Control", "public, max-age=31536000");
             data.setContentType("image/png");

@@ -30,6 +30,9 @@ public abstract class CachedObject<T> implements ICachedObject<T> {
 
 
     public CachedObject(T value) {
+        this(value, true);
+    }
+    public CachedObject(T value, boolean serializeDataHolder) {
         this.cachedAt = System.nanoTime();
         this.cacheService = WebAPIAPI.getCacheService().orElse(null);
         this.jsonService = WebAPIAPI.getJsonService().orElse(null);
@@ -38,7 +41,7 @@ public abstract class CachedObject<T> implements ICachedObject<T> {
 
         if (value != null) this.clazz = value.getClass();
 
-        if (value instanceof DataHolder) {
+        if (serializeDataHolder && value instanceof DataHolder) {
             DataHolder holder = (DataHolder)value;
 
             this.data = new HashMap<>();

@@ -17,7 +17,7 @@ public class CachedCatalogType extends CachedObject<CatalogType> {
 
 
     public CachedCatalogType(CatalogType catalogType) {
-        super(catalogType);
+        super(catalogType, false);
 
         this.id = catalogType.getId();
         this.name = catalogType.getName();

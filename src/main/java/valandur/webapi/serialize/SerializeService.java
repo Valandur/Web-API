@@ -68,6 +68,8 @@ import valandur.webapi.cache.tileentity.CachedTileEntity;
 import valandur.webapi.cache.world.CachedWorld;
 import valandur.webapi.serialize.deserialize.BlockStateDeserializer;
 import valandur.webapi.serialize.deserialize.ItemStackDeserializer;
+import valandur.webapi.serialize.deserialize.ItemStackSnapshotDeserializer;
+import valandur.webapi.serialize.deserialize.LocationDeserializer;
 import valandur.webapi.serialize.view.block.BlockSnapshotView;
 import valandur.webapi.serialize.view.block.BlockStateView;
 import valandur.webapi.serialize.view.entity.*;
@@ -342,6 +344,8 @@ public class SerializeService implements ISerializeService {
         }
         mod.addDeserializer(ItemStack.class, new ItemStackDeserializer());
         mod.addDeserializer(BlockState.class, new BlockStateDeserializer());
+        mod.addDeserializer(ItemStackSnapshot.class, new ItemStackSnapshotDeserializer());
+        mod.addDeserializer(Location.class, new LocationDeserializer());
         om.registerModule(mod);
 
         SimpleFilterProvider filterProvider = new SimpleFilterProvider();

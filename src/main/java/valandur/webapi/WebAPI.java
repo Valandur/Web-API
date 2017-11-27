@@ -187,6 +187,8 @@ public class WebAPI {
     private static Integer serverPortHttp;
     private static Integer serverPortHttps;
     private String keyStoreLocation;
+    private String keyStorePassword;
+    private String keyStoreMgrPassword;
     private Server server;
 
     private AuthHandler authHandler;
@@ -393,6 +395,8 @@ public class WebAPI {
         serverPortHttps = config.getNode("https").getInt(-1);
         adminPanelEnabled = config.getNode("adminPanel").getBoolean();
         keyStoreLocation = config.getNode("customKeyStore").getString();
+        keyStorePassword = config.getNode("customKeyStorePassword").getString();
+        keyStoreMgrPassword = config.getNode("customKeyStoreManagerPassword").getString();
         CmdServlet.CMD_WAIT_TIME = config.getNode("cmdWaitTime").getInt();
 
         if (devMode) {
@@ -475,16 +479,20 @@ public class WebAPI {
                 httpConfig.setSecurePort(serverPortHttps);
 
                 String loc = keyStoreLocation;
+                String pw = keyStorePassword;
+                String mgrPw = keyStoreMgrPassword;
                 if (loc == null || loc.isEmpty()) {
                     loc = Sponge.getAssetManager().getAsset(WebAPI.getInstance(), "keystore.jks")
                             .map(a -> a.getUrl().toString()).orElse("");
+                    pw = "mX4z%&uJ2E6VN#5f";
+                    mgrPw = "mX4z%&uJ2E6VN#5f";
                 }
 
                 // SSL Factory
                 SslContextFactory sslFactory = new SslContextFactory();
                 sslFactory.setKeyStorePath(loc);
-                sslFactory.setKeyStorePassword("mX4z%&uJ2E6VN#5f");
-                sslFactory.setKeyManagerPassword("mX4z%&uJ2E6VN#5f");
+                sslFactory.setKeyStorePassword(pw);
+                sslFactory.setKeyManagerPassword(mgrPw);
 
                 // HTTPS config
                 HttpConfiguration httpsConfig = new HttpConfiguration(httpConfig);

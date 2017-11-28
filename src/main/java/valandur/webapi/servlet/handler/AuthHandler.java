@@ -1,5 +1,6 @@
 package valandur.webapi.servlet.handler;
 
+import com.google.common.net.HttpHeaders;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
 import org.eclipse.jetty.server.Request;
@@ -7,10 +8,10 @@ import org.eclipse.jetty.server.handler.AbstractHandler;
 import org.spongepowered.api.util.Tuple;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.util.TreeNode;
-import valandur.webapi.util.Util;
-import valandur.webapi.permission.PermissionStruct;
 import valandur.webapi.permission.PermissionService;
+import valandur.webapi.permission.PermissionStruct;
 import valandur.webapi.user.UserPermission;
+import valandur.webapi.util.Util;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -23,6 +24,7 @@ import java.util.Map;
 
 public class AuthHandler extends AbstractHandler {
 
+    public static final String API_KEY_HEADER = "X-WEBAPI-KEY";
     private static final String defaultKey = "__DEFAULT__";
     private static final String configFileName = "permissions.conf";
 
@@ -40,6 +42,8 @@ public class AuthHandler extends AbstractHandler {
 
     private boolean useBlacklist;
     private List<String> blacklist = new ArrayList<>();
+
+    private List<String> allowedProxies = new ArrayList<>();
 
 
     public AuthHandler() {
@@ -79,6 +83,10 @@ public class AuthHandler extends AbstractHandler {
         useBlacklist = config.getNode("useBlacklist").getBoolean();
         for (ConfigurationNode node : config.getNode("blacklist").getChildrenList()) {
             blacklist.add(node.getString());
+        }
+
+        for (ConfigurationNode node : config.getNode("allowedProxies").getChildrenList()) {
+            allowedProxies.add(node.getString());
         }
     }
 
@@ -124,6 +132,16 @@ public class AuthHandler extends AbstractHandler {
             throws IOException, ServletException {
 
         String addr = request.getRemoteAddr();
+        String forwardedFor = request.getHeader(HttpHeaders.X_FORWARDED_FOR);
+        if (forwardedFor != null) {
+            if (allowedProxies.contains(addr)) {
+                addr = forwardedFor;
+            } else {
+                WebAPI.getLogger().warn(addr + " sent " + HttpHeaders.X_FORWARDED_FOR +
+                        " header, but is not a proxy. Header will be ignored!");
+            }
+        }
+
         if (useWhitelist && !whitelist.contains(addr)) {
             WebAPI.getLogger().warn(addr + " is not on whitelist: " + target);
             response.sendError(HttpServletResponse.SC_FORBIDDEN);
@@ -136,7 +154,7 @@ public class AuthHandler extends AbstractHandler {
             return;
         }
 
-        String key = request.getHeader("x-webapi-key");
+        String key = request.getHeader(API_KEY_HEADER);
 
         if (key == null && request.getQueryString() != null) {
             Map<String, String> query = Util.getQueryParams(request);

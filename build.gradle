@@ -78,6 +78,9 @@ shadowJar {
     exclude "/about.html"
     exclude "/jetty-dir.css"
 
+    // We need to relocate these dependencies, even though they're excluded because
+    // we need the references in our code to be changed to the shadowed dependencies
+    // These dependencies are already included by WebAPI-API
     relocate "com.ctc", "valandur.webapi.shadow.com.ctc"
     relocate "com.fasterxml", "valandur.webapi.shadow.com.fasterxml"
     relocate "javax.servlet", "valandur.webapi.shadow.javax.servlet"
@@ -85,9 +88,9 @@ shadowJar {
     relocate "org.codehaus", "valandur.webapi.shadow.org.codehaus"
     relocate "org.eclipse", "valandur.webapi.shadow.org.eclipse"
 
+    // Exclude the dependencies already included by WebAPI-API
     dependencies {
         exclude(dependency("com.fasterxml.*:"))
-        exclude(dependency("com.ctc.*:"))
         exclude(dependency("javax.servlet:"))
         exclude(dependency("javax.xml.*:"))
         exclude(dependency("org.codehaus.*:"))

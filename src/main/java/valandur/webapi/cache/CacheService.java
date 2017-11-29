@@ -165,7 +165,7 @@ public class CacheService implements ICacheService {
     @Override
     public Long getCacheDurationFor(Class clazz) {
         Long dur = cacheDurations.get(clazz.getSimpleName());
-        return dur != null ? dur : Long.MAX_VALUE;
+        return dur != null ? dur : 0;
     }
 
     public Map<Class, JsonNode> getClasses() {

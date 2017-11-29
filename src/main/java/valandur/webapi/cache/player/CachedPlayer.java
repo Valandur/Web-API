@@ -7,6 +7,7 @@ import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.item.inventory.ItemStack;
 import valandur.webapi.api.cache.CachedObject;
 import valandur.webapi.api.cache.player.ICachedPlayer;
+import valandur.webapi.api.serialize.JsonDetails;
 import valandur.webapi.cache.misc.CachedInventory;
 import valandur.webapi.api.cache.world.CachedLocation;
 
@@ -33,11 +34,13 @@ public class CachedPlayer extends CachedObject<Player> implements ICachedPlayer 
     }
 
     private String address;
+    @JsonDetails
     public String getAddress() {
         return address;
     }
 
     private int latency;
+    @JsonDetails
     public int getLatency() {
         return latency;
     }
@@ -48,41 +51,49 @@ public class CachedPlayer extends CachedObject<Player> implements ICachedPlayer 
     }
 
     private Vector3d rotation;
+    @JsonDetails
     public Vector3d getRotation() {
         return rotation;
     }
 
     private Vector3d velocity;
+    @JsonDetails
     public Vector3d getVelocity() {
         return velocity;
     }
 
     private Vector3d scale;
+    @JsonDetails
     public Vector3d getScale() {
         return scale;
     }
 
     private ItemStack helmet;
+    @JsonDetails(simple = true)
     public ItemStack getHelmet() {
         return helmet;
     }
 
     private ItemStack chestplate;
+    @JsonDetails(simple = true)
     public ItemStack getChestplate() {
         return chestplate;
     }
 
     private ItemStack leggings;
+    @JsonDetails(simple = true)
     public ItemStack getLeggings() {
         return leggings;
     }
 
     private ItemStack boots;
+    @JsonDetails(simple = true)
     public ItemStack getBoots() {
         return boots;
     }
 
     private CachedInventory inventory;
+    @JsonDetails
     public CachedInventory getInventory() {
         return inventory;
     }

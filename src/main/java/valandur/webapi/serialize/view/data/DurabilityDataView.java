@@ -1,4 +1,4 @@
-package valandur.webapi.serialize.view.item;
+package valandur.webapi.serialize.view.data;
 
 import org.spongepowered.api.data.manipulator.mutable.item.DurabilityData;
 import valandur.webapi.api.serialize.BaseView;

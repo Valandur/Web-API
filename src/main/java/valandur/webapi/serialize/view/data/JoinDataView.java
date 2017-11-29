@@ -1,4 +1,4 @@
-package valandur.webapi.serialize.view.player;
+package valandur.webapi.serialize.view.data;
 
 import org.spongepowered.api.data.manipulator.mutable.entity.JoinData;
 import valandur.webapi.api.serialize.BaseView;

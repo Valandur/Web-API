@@ -1,4 +1,4 @@
-package valandur.webapi.serialize.view.entity;
+package valandur.webapi.serialize.view.data;
 
 import org.spongepowered.api.data.manipulator.mutable.entity.FoodData;
 import valandur.webapi.api.serialize.BaseView;

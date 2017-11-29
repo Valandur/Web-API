@@ -1,18 +1,20 @@
 package valandur.webapi.serialize.view.item;
 
-import org.spongepowered.api.data.Property;
+import org.spongepowered.api.data.manipulator.DataManipulator;
 import org.spongepowered.api.item.ItemType;
 import org.spongepowered.api.item.inventory.ItemStack;
+import valandur.webapi.WebAPI;
 import valandur.webapi.api.serialize.BaseView;
+import valandur.webapi.api.serialize.JsonDetails;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 public class ItemStackView extends BaseView<ItemStack> {
 
     public ItemType type;
     public int quantity;
-    public Map<String, Object> data;
 
 
     public ItemStackView(ItemStack value) {
@@ -20,12 +22,20 @@ public class ItemStackView extends BaseView<ItemStack> {
 
         this.type = value.getItem();
         this.quantity = value.getQuantity();
-        this.data = new HashMap<>();
-        for (Property<?, ?> property : value.getApplicableProperties()) {
-            String key = property.getKey().toString();
-            key = key.replace("Property", "");
-            key = Character.toLowerCase(key.charAt(0)) + key.substring(1);
-            data.put(key, property.getValue());
+    }
+
+    @JsonDetails
+    public Map<String, Object> getData() {
+        HashMap<String, Object> data = new HashMap<>();
+        Map<String, Class<? extends DataManipulator>> supData = WebAPI.getSerializeService().getSupportedData();
+        for (Map.Entry<String, Class<? extends DataManipulator>> entry : supData.entrySet()) {
+            Optional<?> m = value.get(entry.getValue());
+
+            if (!m.isPresent())
+                continue;
+
+            data.put(entry.getKey(), ((DataManipulator)m.get()).copy());
         }
+        return data;
     }
 }

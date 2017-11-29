@@ -1,4 +1,4 @@
-package valandur.webapi.serialize.view.entity;
+package valandur.webapi.serialize.view.misc;
 
 import org.spongepowered.api.data.type.DyeColor;
 import org.spongepowered.api.util.Color;

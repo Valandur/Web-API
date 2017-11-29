@@ -44,7 +44,7 @@ public class EventView extends BaseView<Event> {
         }
 
         if (value instanceof KickPlayerEvent) {
-            data.put("message", ((KickPlayerEvent)value).getMessage().toPlain());
+            data.put("message", ((KickPlayerEvent)value).getMessage());
         }
 
         if (value instanceof BanUserEvent) {

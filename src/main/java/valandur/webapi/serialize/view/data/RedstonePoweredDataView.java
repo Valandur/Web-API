@@ -1,4 +1,4 @@
-package valandur.webapi.serialize.view.tileentity;
+package valandur.webapi.serialize.view.data;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 import org.spongepowered.api.data.manipulator.mutable.block.RedstonePoweredData;

@@ -20,15 +20,15 @@ import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.block.tileentity.TileEntity;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.data.manipulator.DataManipulator;
-import org.spongepowered.api.data.manipulator.mutable.DyeableData;
-import org.spongepowered.api.data.manipulator.mutable.PotionEffectData;
-import org.spongepowered.api.data.manipulator.mutable.block.ConnectedDirectionData;
-import org.spongepowered.api.data.manipulator.mutable.block.PoweredData;
-import org.spongepowered.api.data.manipulator.mutable.block.RedstonePoweredData;
+import org.spongepowered.api.data.manipulator.mutable.*;
+import org.spongepowered.api.data.manipulator.mutable.block.*;
 import org.spongepowered.api.data.manipulator.mutable.entity.*;
-import org.spongepowered.api.data.manipulator.mutable.item.DurabilityData;
-import org.spongepowered.api.data.manipulator.mutable.item.SpawnableData;
+import org.spongepowered.api.data.manipulator.mutable.item.*;
+import org.spongepowered.api.data.manipulator.mutable.tileentity.BannerData;
+import org.spongepowered.api.data.manipulator.mutable.tileentity.BeaconData;
 import org.spongepowered.api.data.manipulator.mutable.tileentity.SignData;
+import org.spongepowered.api.data.meta.ItemEnchantment;
+import org.spongepowered.api.data.meta.PatternLayer;
 import org.spongepowered.api.data.type.Career;
 import org.spongepowered.api.data.type.DyeColor;
 import org.spongepowered.api.effect.potion.PotionEffect;
@@ -39,6 +39,10 @@ import org.spongepowered.api.entity.living.player.gamemode.GameMode;
 import org.spongepowered.api.event.Event;
 import org.spongepowered.api.event.cause.Cause;
 import org.spongepowered.api.event.cause.entity.damage.source.DamageSource;
+import org.spongepowered.api.extra.fluid.FluidStack;
+import org.spongepowered.api.extra.fluid.FluidStackSnapshot;
+import org.spongepowered.api.extra.fluid.data.manipulator.mutable.FluidTankData;
+import org.spongepowered.api.item.FireworkEffect;
 import org.spongepowered.api.item.ItemType;
 import org.spongepowered.api.item.inventory.Inventory;
 import org.spongepowered.api.item.inventory.ItemStack;
@@ -46,8 +50,12 @@ import org.spongepowered.api.item.inventory.ItemStackSnapshot;
 import org.spongepowered.api.item.merchant.TradeOffer;
 import org.spongepowered.api.plugin.PluginContainer;
 import org.spongepowered.api.profile.GameProfile;
+import org.spongepowered.api.statistic.Statistic;
 import org.spongepowered.api.statistic.achievement.Achievement;
+import org.spongepowered.api.text.Text;
 import org.spongepowered.api.util.Color;
+import org.spongepowered.api.util.Direction;
+import org.spongepowered.api.util.RespawnLocation;
 import org.spongepowered.api.util.ban.Ban;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
@@ -72,16 +80,17 @@ import valandur.webapi.serialize.deserialize.ItemStackSnapshotDeserializer;
 import valandur.webapi.serialize.deserialize.LocationDeserializer;
 import valandur.webapi.serialize.view.block.BlockSnapshotView;
 import valandur.webapi.serialize.view.block.BlockStateView;
-import valandur.webapi.serialize.view.entity.*;
+import valandur.webapi.serialize.view.data.*;
+import valandur.webapi.serialize.view.entity.CareerView;
+import valandur.webapi.serialize.view.entity.TradeOfferView;
 import valandur.webapi.serialize.view.event.DamageSourceView;
 import valandur.webapi.serialize.view.event.EventView;
+import valandur.webapi.serialize.view.fluid.FluidStackSnapshotView;
+import valandur.webapi.serialize.view.fluid.FluidStackView;
 import valandur.webapi.serialize.view.item.*;
 import valandur.webapi.serialize.view.misc.*;
 import valandur.webapi.serialize.view.player.*;
-import valandur.webapi.serialize.view.tileentity.ConnectedDirectionDataView;
-import valandur.webapi.serialize.view.tileentity.PoweredDataView;
-import valandur.webapi.serialize.view.tileentity.RedstonePoweredDataView;
-import valandur.webapi.serialize.view.tileentity.SignDataView;
+import valandur.webapi.serialize.view.tileentity.PatternLayerView;
 import valandur.webapi.util.Util;
 
 import java.io.IOException;
@@ -122,82 +131,140 @@ public class SerializeService implements ISerializeService {
         registerView(BlockSnapshot.class, BlockSnapshotView.class);
         registerView(BlockState.class, BlockStateView.class);
 
-        // Entity
+        // Data
+        registerView(AchievementData.class, AchievementDataView.class);
         registerView(AgeableData.class, AgeableDataView.class);
-        registerView(CareerData.class, CareerDataView.class);
-        registerView(Career.class, CareerView.class);
-        registerView(DyeableData.class, DyeableDataView.class);
-        registerView(DyeColor.class, DyeColorView.class);
+        registerView(BannerData.class, BannerDataView.class);
+        registerView(BeaconData.class, BeaconDataView.class);
+        registerView(BreathingData.class, BreathingDataView.class);
+        registerView(BreedableData.class, BreedableDataView.class);
+        registerView(ConnectedDirectionData.class, ConnectedDirectionDataView.class);
+        registerView(DurabilityData.class, DurabilityDataView.class);
+        registerView(ExperienceHolderData.class, ExperienceHolderDataView.class);
         registerView(FoodData.class, FoodDataView.class);
         registerView(HealthData.class, HealthDataView.class);
+        registerView(JoinData.class, JoinDataView.class);
+        registerView(ListData.class, ListDataView.class);
+        registerView(MappedData.class, MappedDataView.class);
+        registerView(PoweredData.class, PoweredDataView.class);
+        registerView(RedstonePoweredData.class, RedstonePoweredDataView.class);
         registerView(ShearedData.class, ShearedDataView.class);
         registerView(TameableData.class, TameableDataView.class);
-        registerView(TradeOfferData.class, TradeOfferDataView.class);
+        registerView(VariantData.class, VariantDataView.class);
+        registerView(WetData.class, WetDataView.class);
+
+        // Entity
+        registerView(Career.class, CareerView.class);
         registerView(TradeOffer.class, TradeOfferView.class);
 
         // Event
         registerView(DamageSource.class, DamageSourceView.class);
         registerView(Event.class, EventView.class);
 
+        // Fluid
+        registerView(FluidStackSnapshot.class, FluidStackSnapshotView.class);
+        registerView(FluidStack.class, FluidStackView.class);
+
         // Item
-        registerView(DurabilityData.class, DurabilityDataView.class);
+        registerView(FireworkEffect.class, FireworkEffectView.class);
+        registerView(ItemEnchantment.class, ItemEnchantmentView.class);
         registerView(ItemStackSnapshot.class, ItemStackSnapshotView.class);
         registerView(ItemStack.class, ItemStackView.class);
         registerView(ItemType.class, ItemTypeView.class);
-        registerView(PotionEffectData.class, PotionEffectDataView.class);
         registerView(PotionEffectType.class, PotionEffectTypeView.class);
         registerView(PotionEffect.class, PotionEffectView.class);
-        registerView(SpawnableData.class, SpawnableDataView.class);
 
         // Misc.
         registerView(Color.class, ColorView.class);
         registerView(CommandSource.class, CommandSourceView.class);
+        registerView(Direction.class, DirectionView.class);
+        registerView(DyeColor.class, DyeColorView.class);
         registerView(Explosion.class, ExplosionView.class);
         registerView(Instant.class, InstantView.class);
+        registerView(Statistic.class, StatisticView.class);
+        registerView(Text.class, TextView.class);
         registerView(Vector3d.class, Vector3dView.class);
         registerView(Vector3i.class, Vector3iView.class);
 
         // Player
-        registerView(AchievementData.class, AchievementDataView.class);
         registerView(Achievement.class, AchievementView.class);
         registerView(Ban.class, BanView.class);
-        registerView(ExperienceHolderData.class, ExperienceHolderDataView.class);
-        registerView(GameModeData.class, GameModeDataView.class);
         registerView(GameMode.class, GameModeView.class);
         registerView(GameProfile.class, GameProfileView.class);
-        registerView(JoinData.class, JoinDataView.class);
-        registerView(StatisticData.class, StatisticDataView.class);
+        registerView(RespawnLocation.class, RespawnLocationView.class);
 
         // Tile-Entity
-        registerView(ConnectedDirectionData.class, ConnectedDirectionDataView.class);
-        registerView(PoweredData.class, PoweredDataView.class);
-        registerView(RedstonePoweredData.class, RedstonePoweredDataView.class);
-        registerView(SignData.class, SignDataView.class);
-
+        registerView(PatternLayer.class, PatternLayerView.class);
 
         // Data
         supportedData = new ConcurrentHashMap<>();
 
         supportedData.put("achievements", AchievementData.class);
         supportedData.put("age", AgeableData.class);
-        supportedData.put("career", CareerData.class);
+        supportedData.put("art", ArtData.class);                                    // variant
+        supportedData.put("axis", AxisData.class);                                  // variant
+        supportedData.put("banner", BannerData.class);
+        supportedData.put("beacon", BeaconData.class);
+        supportedData.put("bigMushroom", BigMushroomData.class);                    // variant
+        supportedData.put("breathing", BreathingData.class);
+        supportedData.put("breedable", BreedableData.class);
+        supportedData.put("brick", BrickData.class);                                // variant
+        supportedData.put("career", CareerData.class);                              // variant
+        supportedData.put("coal", CoalData.class);                                  // variant
+        supportedData.put("comparator", ComparatorData.class);                      // variant
         supportedData.put("connectedDirection", ConnectedDirectionData.class);
+        supportedData.put("cookedFish", CookedFishData.class);                      // variant
+        supportedData.put("dirt", DirtData.class);                                  // variant
+        supportedData.put("disguisedBlock", DisguisedBlockData.class);              // variant
+        supportedData.put("dominantHand", DominantHandData.class);                  // variant
+        supportedData.put("doublePlant", DoublePlantData.class);                    // variant
         supportedData.put("durability", DurabilityData.class);
-        supportedData.put("dye", DyeableData.class);
+        supportedData.put("dye", DyeableData.class);                                // variant
+        supportedData.put("enchantments", EnchantmentData.class);                   // list
         supportedData.put("experience", ExperienceHolderData.class);
+        supportedData.put("fireworkEffects", FireworkEffectData.class);             // list
+        supportedData.put("fish", FishData.class);                                  // variant
+        supportedData.put("fluidTank", FluidTankData.class);                        // map
         supportedData.put("food", FoodData.class);
-        supportedData.put("gameMode", GameModeData.class);
+        supportedData.put("gameMode", GameModeData.class);                          // variant
+        supportedData.put("goldenApple", GoldenAppleData.class);                    // variant
         supportedData.put("health", HealthData.class);
+        supportedData.put("hinge", HingeData.class);                                // variant
         supportedData.put("joined", JoinData.class);
-        supportedData.put("potionEffects", PotionEffectData.class);
+        supportedData.put("logAxis", LogAxisData.class);                            // variant
+        supportedData.put("lore", LoreData.class);                                  // list
+        supportedData.put("ocelot", OcelotData.class);                              // variant
+        supportedData.put("pages", PagedData.class);                                // list
+        supportedData.put("passengers", PassengerData.class);                       // list
+        supportedData.put("pickupRule", PickupRuleData.class);                      // variant
+        supportedData.put("piston", PistonData.class);                              // variant
+        supportedData.put("plant", PlantData.class);                                // variant
+        supportedData.put("portion", PortionData.class);                            // variant
+        supportedData.put("potionEffects", PotionEffectData.class);                 // list
         supportedData.put("powered", PoweredData.class);
+        supportedData.put("prismarine", PrismarineData.class);                      // variant
+        supportedData.put("quartz", QuartzData.class);                              // variant
+        supportedData.put("rabbit", RabbitData.class);                              // variant
+        supportedData.put("railDirection", RailDirectionData.class);                // variant
         supportedData.put("redstonePower", RedstonePoweredData.class);
+        supportedData.put("respawnLocation", RespawnLocationData.class);            // map
+        supportedData.put("sand", SandData.class);                                  // variant
+        supportedData.put("sandStone", SandstoneData.class);                        // variant
         supportedData.put("sheared", ShearedData.class);
-        supportedData.put("sign", SignData.class);
-        supportedData.put("spawn", SpawnableData.class);
-        supportedData.put("statistics", StatisticData.class);
+        supportedData.put("shrub", ShrubData.class);                                // variant
+        supportedData.put("sign", SignData.class);                                  // list
+        supportedData.put("skull", SkullData.class);                                // variant
+        supportedData.put("slab", SlabData.class);                                  // variant
+        supportedData.put("spawn", SpawnableData.class);                            // variant
+        supportedData.put("stairShape", StairShapeData.class);                      // variant
+        supportedData.put("statistics", StatisticData.class);                       // map
+        supportedData.put("stone", StoneData.class);                                // variant
+        supportedData.put("storedEnchantments", StoredEnchantmentData.class);       // list
         supportedData.put("tamed", TameableData.class);
-        supportedData.put("trades", TradeOfferData.class);
+        supportedData.put("trades", TradeOfferData.class);                          // list
+        supportedData.put("tree", TreeData.class);                                  // variant
+        supportedData.put("wall", WallData.class);                                  // variant
+        supportedData.put("wet", WetData.class);
 
         logger.info("Done loading serializers");
     }

@@ -1,9 +1,8 @@
-package valandur.webapi.serialize.view.block;
+package valandur.webapi.serialize.view.fluid;
 
-import org.spongepowered.api.block.BlockState;
-import org.spongepowered.api.block.BlockType;
-import org.spongepowered.api.block.trait.BlockTrait;
 import org.spongepowered.api.data.manipulator.DataManipulator;
+import org.spongepowered.api.extra.fluid.FluidStack;
+import org.spongepowered.api.extra.fluid.FluidType;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.serialize.BaseView;
 import valandur.webapi.api.serialize.JsonDetails;
@@ -12,30 +11,25 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-public class BlockStateView extends BaseView<BlockState> {
+public class FluidStackView extends BaseView<FluidStack> {
 
-    public BlockType type;
+    public FluidType type;
+    public int volume;
 
 
-    public BlockStateView(BlockState value) {
+    public FluidStackView(FluidStack value) {
         super(value);
 
-        this.type = value.getType();
+        this.type = value.getFluid();
+        this.volume = value.getVolume();
     }
 
     @JsonDetails
     public Map<String, Object> getData() {
         HashMap<String, Object> data = new HashMap<>();
-        // Add traits
-        for (Map.Entry<BlockTrait<?>, ?> entry : value.getTraitMap().entrySet()) {
-            data.put(entry.getKey().getName(), entry.getValue());
-        }
-        // Add data
         Map<String, Class<? extends DataManipulator>> supData = WebAPI.getSerializeService().getSupportedData();
         for (Map.Entry<String, Class<? extends DataManipulator>> entry : supData.entrySet()) {
-            Optional<?> m = value.getManipulators().stream()
-                    .filter(i -> i.asMutable().getClass().equals(entry.getValue()))
-                    .findFirst();
+            Optional<?> m = value.get(entry.getValue());
 
             if (!m.isPresent())
                 continue;

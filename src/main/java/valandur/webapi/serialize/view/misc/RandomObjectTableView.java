@@ -11,7 +11,7 @@ import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 
-public class RandomObjectTableView extends BaseView<RandomObjectTable<Object>> {
+public class RandomObjectTableView extends BaseView<RandomObjectTable> {
 
     @JsonValue
     public Map<Double, Object> entries;

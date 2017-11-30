@@ -28,6 +28,9 @@ shadowJar {
 
     exclude "/about.html"
     exclude "/jetty-dir.css"
+    exclude "/META-INF/services/javax.xml.stream.XMLEventFactory"
+    exclude "/META-INF/services/javax.xml.stream.XMLInputFactory"
+    exclude "/META-INF/services/javax.xml.stream.XMLOutputFactory"
 
     archiveName = "webapi-api-${version}.jar"
 }

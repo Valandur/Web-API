@@ -37,7 +37,7 @@ public interface ISerializeService {
      * Gets all DataHolder types that are supported by the Web-API
      * @return A map from json key to DataHolder type
      */
-    Map<String, Class<? extends DataManipulator>> getSupportedData();
+    Map<String, Class<? extends DataManipulator<?, ?>>> getSupportedData();
 
     /**
      * Converts an object directly to a json string. Includes details if specified.

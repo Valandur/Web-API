@@ -45,8 +45,11 @@ public abstract class CachedObject<T> implements ICachedObject<T> {
             DataHolder holder = (DataHolder)value;
 
             this.data = new HashMap<>();
-            Map<String, Class<? extends DataManipulator>> supData = serializeService.getSupportedData();
-            for (Map.Entry<String, Class<? extends DataManipulator>> entry : supData.entrySet()) {
+            Map<String, Class<? extends DataManipulator<?, ?>>> supData = serializeService.getSupportedData();
+            for (Map.Entry<String, Class<? extends DataManipulator<?, ?>>> entry : supData.entrySet()) {
+                if (!holder.supports(entry.getValue()))
+                    continue;
+
                 Optional<?> m = holder.get(entry.getValue());
 
                 if (!m.isPresent())

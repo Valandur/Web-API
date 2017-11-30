@@ -111,7 +111,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class SerializeService implements ISerializeService {
 
     private Map<Class, BaseSerializer> serializers;
-    private Map<String, Class<? extends DataManipulator>> supportedData;
+    private Map<String, Class<? extends DataManipulator<?, ?>>> supportedData;
 
 
     public void init() {
@@ -456,7 +456,7 @@ public class SerializeService implements ISerializeService {
     }
 
     @Override
-    public Map<String, Class<? extends DataManipulator>> getSupportedData() {
+    public Map<String, Class<? extends DataManipulator<?, ?>>> getSupportedData() {
         return supportedData;
     }
 

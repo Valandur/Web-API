@@ -27,8 +27,11 @@ public class FluidStackView extends BaseView<FluidStack> {
     @JsonDetails
     public Map<String, Object> getData() {
         HashMap<String, Object> data = new HashMap<>();
-        Map<String, Class<? extends DataManipulator>> supData = WebAPI.getSerializeService().getSupportedData();
-        for (Map.Entry<String, Class<? extends DataManipulator>> entry : supData.entrySet()) {
+        Map<String, Class<? extends DataManipulator<?, ?>>> supData = WebAPI.getSerializeService().getSupportedData();
+        for (Map.Entry<String, Class<? extends DataManipulator<?, ?>>> entry : supData.entrySet()) {
+            if (!value.supports(entry.getValue()))
+                continue;
+
             Optional<?> m = value.get(entry.getValue());
 
             if (!m.isPresent())

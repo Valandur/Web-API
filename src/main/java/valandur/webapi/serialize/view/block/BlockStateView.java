@@ -31,8 +31,8 @@ public class BlockStateView extends BaseView<BlockState> {
             data.put(entry.getKey().getName(), entry.getValue());
         }
         // Add data
-        Map<String, Class<? extends DataManipulator>> supData = WebAPI.getSerializeService().getSupportedData();
-        for (Map.Entry<String, Class<? extends DataManipulator>> entry : supData.entrySet()) {
+        Map<String, Class<? extends DataManipulator<?, ?>>> supData = WebAPI.getSerializeService().getSupportedData();
+        for (Map.Entry<String, Class<? extends DataManipulator<?, ?>>> entry : supData.entrySet()) {
             Optional<?> m = value.getManipulators().stream()
                     .filter(i -> i.asMutable().getClass().equals(entry.getValue()))
                     .findFirst();

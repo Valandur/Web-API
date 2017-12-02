@@ -362,7 +362,7 @@ public class SerializeService implements ISerializeService {
         supportedData.put("generation", GenerationData.class);
         supportedData.put("glowing", GlowingData.class);
         supportedData.put("goldenApple", GoldenAppleData.class);                    // variant
-        supportedData.put("grief", GriefingData.class);
+        supportedData.put("griefs", GriefingData.class);
         supportedData.put("growth", GrowthData.class);
         supportedData.put("health", HealthData.class);
         supportedData.put("hide", HideData.class);

@@ -33,14 +33,17 @@ public class BlockStateView extends BaseView<BlockState> {
         // Add data
         Map<String, Class<? extends DataManipulator<?, ?>>> supData = WebAPI.getSerializeService().getSupportedData();
         for (Map.Entry<String, Class<? extends DataManipulator<?, ?>>> entry : supData.entrySet()) {
-            Optional<?> m = value.getManipulators().stream()
-                    .filter(i -> i.asMutable().getClass().equals(entry.getValue()))
-                    .findFirst();
+            try {
+                Optional<?> m = value.getManipulators().stream()
+                        .filter(i -> i.asMutable().getClass().equals(entry.getValue()))
+                        .findFirst();
 
-            if (!m.isPresent())
-                continue;
+                if (!m.isPresent())
+                    continue;
 
-            data.put(entry.getKey(), ((DataManipulator)m.get()).copy());
+                data.put(entry.getKey(), ((DataManipulator) m.get()).copy());
+            } catch (IllegalArgumentException | IllegalStateException ignored) {
+            }
         }
         return data;
     }

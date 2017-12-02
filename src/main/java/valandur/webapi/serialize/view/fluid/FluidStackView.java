@@ -29,15 +29,18 @@ public class FluidStackView extends BaseView<FluidStack> {
         HashMap<String, Object> data = new HashMap<>();
         Map<String, Class<? extends DataManipulator<?, ?>>> supData = WebAPI.getSerializeService().getSupportedData();
         for (Map.Entry<String, Class<? extends DataManipulator<?, ?>>> entry : supData.entrySet()) {
-            if (!value.supports(entry.getValue()))
-                continue;
+            try {
+                if (!value.supports(entry.getValue()))
+                    continue;
 
-            Optional<?> m = value.get(entry.getValue());
+                Optional<?> m = value.get(entry.getValue());
 
-            if (!m.isPresent())
-                continue;
+                if (!m.isPresent())
+                    continue;
 
-            data.put(entry.getKey(), ((DataManipulator)m.get()).copy());
+                data.put(entry.getKey(), ((DataManipulator) m.get()).copy());
+            } catch (IllegalArgumentException | IllegalStateException ignored) {
+            }
         }
         return data;
     }

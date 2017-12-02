@@ -47,15 +47,18 @@ public abstract class CachedObject<T> implements ICachedObject<T> {
             this.data = new HashMap<>();
             Map<String, Class<? extends DataManipulator<?, ?>>> supData = serializeService.getSupportedData();
             for (Map.Entry<String, Class<? extends DataManipulator<?, ?>>> entry : supData.entrySet()) {
-                if (!holder.supports(entry.getValue()))
-                    continue;
+                try {
+                    if (!holder.supports(entry.getValue()))
+                        continue;
 
-                Optional<?> m = holder.get(entry.getValue());
+                    Optional<?> m = holder.get(entry.getValue());
 
-                if (!m.isPresent())
-                    continue;
+                    if (!m.isPresent())
+                        continue;
 
-                data.put(entry.getKey(), ((DataManipulator)m.get()).copy());
+                    data.put(entry.getKey(), ((DataManipulator) m.get()).copy());
+                } catch (IllegalArgumentException | IllegalStateException ignored) {
+                }
             }
         }
     }

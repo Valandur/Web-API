@@ -22,7 +22,11 @@ public class CachedCatalogType extends CachedObject<CatalogType> {
 
         this.id = catalogType.getId();
         if (catalogType instanceof Translatable) {
-            this.name = ((Translatable)catalogType).getTranslation().get();
+            try {
+                this.name = ((Translatable) catalogType).getTranslation().get();
+            } catch (AbstractMethodError ignored) {
+                this.name = catalogType.getName();
+            }
         } else {
             this.name = catalogType.getName();
         }

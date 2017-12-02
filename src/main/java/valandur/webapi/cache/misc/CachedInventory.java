@@ -38,7 +38,7 @@ public class CachedInventory extends CachedObject<Inventory> {
 
 
     public CachedInventory(Inventory inv) {
-        super(inv);
+        super(inv, false);
 
         this.name = inv.getName().get();
         this.capacity = inv.capacity();

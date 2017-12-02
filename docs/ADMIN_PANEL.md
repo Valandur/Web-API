@@ -12,10 +12,10 @@ server without having to be online/in minceraft or connected to the server throu
 <a name="creating-users"></a>
 ## Creating users
 
-To create a new user for the admin panel enter `/webapi users create [name]` in your server console.
+To create a new user for the admin panel enter `/webapi users add [name]` in your server console.
 This will create a new user with the `[name]` specified and a random password. The password will 
 be shown in the server console. If you want to specify the password for the user you can use the
-command `/webapi users create [name] [password]`.
+command `/webapi users add [name] [password]`.
 
 > The permission required to create new users in Web-API is `webapi.users.add`
 

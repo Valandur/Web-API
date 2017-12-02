@@ -4,11 +4,14 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.net.HttpHeaders;
+import org.eclipse.jetty.http.HttpMethod;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.permission.IPermissionService;
 import valandur.webapi.api.util.TreeNode;
 import valandur.webapi.permission.PermissionService;
 import valandur.webapi.serialize.SerializeService;
+import valandur.webapi.servlet.handler.AuthHandler;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -22,6 +25,11 @@ import java.util.Optional;
 
 public class ApiServlet extends HttpServlet {
 
+    private static final String ACCESS_CONTROL_ORIGIN = "*";
+    private static final String ACCESS_CONTROL_METHODS = "GET,PUT,POST,DELETE,OPTIONS";
+    private static final String ACCESS_CONTROL_HEADERS = "Origin Content-Type,Accept,X-Forwarded-For," +
+            AuthHandler.API_KEY_HEADER;
+
     private ServletService servletService;
     private PermissionService permissionService;
     private SerializeService serializeService;
@@ -33,20 +41,22 @@ public class ApiServlet extends HttpServlet {
         this.serializeService = WebAPI.getSerializeService();
     }
 
-    private void handleVerb(String verb, HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    private void handleVerb(HttpMethod method, HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
+
         resp.setStatus(HttpServletResponse.SC_OK);
-        resp.addHeader("Access-Control-Allow-Origin","*");
-        resp.addHeader("Access-Control-Allow-Methods","GET,PUT,POST,DELETE,OPTIONS");
-        resp.addHeader("Access-Control-Allow-Headers","Origin, X-Requested-With, Content-Type, Accept, X-WEBAPI-KEY");
+        resp.addHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, ACCESS_CONTROL_ORIGIN);
+        resp.addHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, ACCESS_CONTROL_METHODS);
+        resp.addHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_HEADERS, ACCESS_CONTROL_HEADERS);
 
         WebAPI.sentryNewRequest(req);
 
         // Return early if OPTIONS
-        if (req.getMethod().equals("OPTIONS") ) {
+        if (method == HttpMethod.OPTIONS) {
             return;
         }
 
-        Optional<MatchedRoute> optMatch = servletService.getMethod(verb, req.getPathInfo());
+        Optional<MatchedRoute> optMatch = servletService.getMethod(method, req.getPathInfo());
         if (!optMatch.isPresent()) {
             // We couldn't find a method
             resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Unknown/Invalid request path");
@@ -82,7 +92,7 @@ public class ApiServlet extends HttpServlet {
 
         req.setAttribute("dataPerms", perms);
 
-        if (verb.equalsIgnoreCase("Post") || verb.equalsIgnoreCase("Put")) {
+        if (method == HttpMethod.POST || method == HttpMethod.PUT) {
             try {
                 String type = req.getContentType();
 
@@ -97,6 +107,8 @@ public class ApiServlet extends HttpServlet {
                         obj.set(entry.getKey(), arr);
                     }
                     req.setAttribute("body", obj);
+
+                    WebAPI.sentryExtra("request_body", obj != null ? obj.toString() : "");
                 } else if (type.contains("application/json")) {
                     JsonNode node = serializeService.deserialize(req.getReader(), false, perms);
                     req.setAttribute("body", node);
@@ -155,26 +167,26 @@ public class ApiServlet extends HttpServlet {
 
     @Override
     protected final void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        this.handleVerb("GET", req, resp);
+        this.handleVerb(HttpMethod.GET, req, resp);
     }
 
     @Override
     protected final void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        this.handleVerb("POST", req, resp);
+        this.handleVerb(HttpMethod.POST, req, resp);
     }
 
     @Override
     protected final void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        this.handleVerb("PUT", req, resp);
+        this.handleVerb(HttpMethod.PUT, req, resp);
     }
 
     @Override
     protected final void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        this.handleVerb("DELETE", req, resp);
+        this.handleVerb(HttpMethod.DELETE, req, resp);
     }
 
     @Override
     protected final void doOptions(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        this.handleVerb("OPTIONS", req, resp);
+        this.handleVerb(HttpMethod.OPTIONS, req, resp);
     }
 }

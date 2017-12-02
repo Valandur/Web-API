@@ -9,6 +9,7 @@ import org.spongepowered.api.Sponge;
 import org.spongepowered.api.block.tileentity.TileEntity;
 import org.spongepowered.api.command.CommandMapping;
 import org.spongepowered.api.entity.Entity;
+import org.spongepowered.api.entity.Transform;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.cause.Cause;
@@ -36,6 +37,7 @@ import valandur.webapi.api.cache.player.ICachedPlayer;
 import valandur.webapi.api.cache.plugin.ICachedPluginContainer;
 import valandur.webapi.api.cache.tileentity.ICachedTileEntity;
 import valandur.webapi.api.cache.world.CachedLocation;
+import valandur.webapi.api.cache.world.CachedTransform;
 import valandur.webapi.api.cache.world.ICachedWorld;
 import valandur.webapi.api.permission.IPermissionService;
 import valandur.webapi.cache.chat.CachedChatMessage;
@@ -152,10 +154,10 @@ public class CacheService implements ICacheService {
             return new CachedCause((Cause)obj);
         if (obj instanceof Location)
             return new CachedLocation((Location)obj);
+        if (obj instanceof Transform)
+            return new CachedTransform((Transform)obj);
         if (obj instanceof CatalogType)
             return new CachedCatalogType((CatalogType)obj);
-
-
 
         // If this is an unkown object type then we can't create a cached version of it, so we better not try
         // and save it because we don't know if it's thread safe or not.
@@ -165,7 +167,7 @@ public class CacheService implements ICacheService {
     @Override
     public Long getCacheDurationFor(Class clazz) {
         Long dur = cacheDurations.get(clazz.getSimpleName());
-        return dur != null ? dur : Long.MAX_VALUE;
+        return dur != null ? dur : 0;
     }
 
     public Map<Class, JsonNode> getClasses() {

@@ -11,8 +11,8 @@ public class BanView extends BaseView<Ban> {
 
     public Instant createdOn;
     public Instant expiresOn;
-    public String reason;
-    public String banSource;
+    public Text reason;
+    public Text banSource;
     public CommandSource commandSource;
 
 
@@ -21,8 +21,8 @@ public class BanView extends BaseView<Ban> {
 
         this.createdOn = value.getCreationDate();
         this.expiresOn = value.getExpirationDate().orElse(null);
-        this.reason = value.getReason().map(Text::toPlain).orElse(null);
-        this.banSource = value.getBanSource().map(Text::toPlain).orElse(null);
+        this.reason = value.getReason().orElse(null);
+        this.banSource = value.getBanSource().orElse(null);
         this.commandSource = value.getBanCommandSource().orElse(null);
     }
 }

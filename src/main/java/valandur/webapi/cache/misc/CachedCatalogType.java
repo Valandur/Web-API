@@ -1,6 +1,7 @@
 package valandur.webapi.cache.misc;
 
 import org.spongepowered.api.CatalogType;
+import org.spongepowered.api.text.translation.Translatable;
 import valandur.webapi.api.cache.CachedObject;
 
 public class CachedCatalogType extends CachedObject<CatalogType> {
@@ -17,9 +18,17 @@ public class CachedCatalogType extends CachedObject<CatalogType> {
 
 
     public CachedCatalogType(CatalogType catalogType) {
-        super(catalogType);
+        super(catalogType, false);
 
         this.id = catalogType.getId();
-        this.name = catalogType.getName();
+        if (catalogType instanceof Translatable) {
+            try {
+                this.name = ((Translatable) catalogType).getTranslation().get();
+            } catch (AbstractMethodError ignored) {
+                this.name = catalogType.getName();
+            }
+        } else {
+            this.name = catalogType.getName();
+        }
     }
 }

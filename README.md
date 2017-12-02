@@ -56,6 +56,8 @@ This can be used as a starting point to explore the supported routes. You can al
 
 ## Contributors & Special thanks
 
-- [johnfg10](https://github.com/johnfg10) (contributor)
-- [r15ch13](https://github.com/r15ch13) (contributor)
-- [Cat121](https://github.com/Cat121) (extended testing and ideas)
+- [johnfg10](https://github.com/johnfg10)
+- [r15ch13](https://github.com/r15ch13)
+- [Cat121](https://github.com/Cat121)
+- [Cat121](https://github.com/Cat121)
+- [Sherex](https://github.com/Sherex)

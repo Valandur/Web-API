@@ -18,162 +18,168 @@ me or submit a pull request.
 
 | State | Class |
 |:-----:| ----- |
+| + | AbsorptionData |
 | + | AchievementData |
 |   | AffectsSpawningData |
 | + | AgeableData |
-|   | AgentData |
-|   | AggressiveData |
-|   | AngerableData |
+| + | AgentData |
+| + | AggressiveData |
+| + | AngerableData |
 |   | AreaEffectCloudData |
-|   | ArmorStandData |
-|   | ArtData |
-|   | AttachedData |
-|   | AuthorData |
-|   | AxisData |
-|   | BannerData |
-|   | BeaconData |
-|   | BigMushroomData |
-|   | BlockItemData |
+| + | ArmorStandData |
+| + | ArtData |
+| + | AttachedData |
+| + | AuthorData |
+| + | AxisData |
+| + | BannerData |
+| + | BeaconData |
+| + | BigMushroomData |
+| + | BlockItemData |
 |   | BodyPartRotationalData |
 |   | BreakableData |
-|   | BreathingData |
-|   | BreedableData |
-|   | BrewingStandData |
+| + | BreathingData |
+| + | BreedableData |
+| + | BrewingStandData |
+| + | BrickData |
 | + | CareerData |
-|   | ChargedData |
-|   | CoalData |
-|   | ColoredData |
-|   | CommandData |
-|   | ComparatorData |
+| + | ChargedData |
+| + | CoalData |
+| + | ColoredData |
+| + | CommandData |
+| + | ComparatorData |
 | + | ConnectedDirectionData |
-|   | CookedFishData |
-|   | CooldownData |
-|   | CriticalHitData |
-|   | CustomNameVisibleData |
-|   | DamageableData |
-|   | DamagingData |
-|   | DecayableData |
-|   | DelayableData |
-|   | DespawnDelayData |
-|   | DirtData |
-|   | DisarmedData |
-|   | DisguisedBlockData |
-|   | DisplayNameData |
-|   | DominantHandData |
-|   | DoublePlantData |
-|   | DropData |
+| + | CookedFishData |
+| + | CooldownData |
+| + | CriticalHitData |
+| + | CustomNameVisibleData |
+| + | DamageableData |
+| + | DamagingData |
+| + | DecayableData |
+| + | DelayableData |
+| + | DespawnDelayData |
+| + | DirectionalData |
+| + | DirtData |
+| + | DisarmedData |
+| + | DisguisedBlockData |
+| + | DisplayNameData |
+| + | DominantHandData |
+| + | DoublePlantData |
+| + | DropData |
 | + | DurabilityData |
 | + | DyeableData |
 |   | ElderData |
-|   | EnchantmentData |
+| + | EnchantmentData |
+| + | EndGatewayData |
 | + | ExperienceHolderData |
-|   | ExpirableData |
-|   | ExplosionRadiusData |
-|   | ExpOrbData |
-|   | ExtendedData |
-|   | FallDistanceData |
-|   | FallingBlockData |
-|   | FilledData |
-|   | FireworkEffectData |
-|   | FireworkRocketData |
-|   | FishData |
-|   | FlammableData |
-|   | FluidItemData |
-|   | FluidLevelData |
-|   | FluidTankData |
-|   | FlyingAbilityData |
-|   | FlyingData |
+| + | ExpirableData |
+| + | ExplosionRadiusData |
+| + | ExpOrbData |
+| + | ExtendedData |
+| + | FallDistanceData |
+| + | FallingBlockData |
+| + | FilledData |
+| + | FireworkEffectData |
+| + | FireworkRocketData |
+| + | FishData |
+| + | FlammableData |
+| + | FluidItemData |
+| + | FluidLevelData |
+| + | FluidTankData |
+| + | FlyingAbilityData |
+| + | FlyingData |
 | + | FoodData |
-|   | FurnaceData |
-|   | FuseData |
+| + | FurnaceData |
+| + | FuseData |
 | + | GameModeData |
-|   | GenerationData |
-|   | GlowingData |
-|   | GoldenAppleData |
+| + | GenerationData |
+| + | GlowingData |
+| + | GoldenAppleData |
 |   | GravityData |
-|   | GriefingData |
-|   | GrowthData |
+| + | GriefingData |
+| + | GrowthData |
 | + | HealthData |
 |   | HealthScalingData |
-|   | HideData |
-|   | HingeData |
-|   | HorseData |
-|   | IgniteableData |
-|   | InventoryItemData |
-|   | InvisibilityData |
-|   | InvulnerabilityData |
-|   | InWallData |
+| + | HideData |
+| + | HingeData |
+| + | HorseData |
+| + | IgniteableData |
+| + | InventoryItemData |
+| + | InvisibilityData |
+| + | InvulnerabilityData |
+| + | InWallData |
 | + | JoinData |
-|   | KnockbackData |
-|   | LayeredData |
-|   | LeashData |
-|   | LockableData |
-|   | LogAxisData |
-|   | LoreData |
+| + | KnockbackData |
+| + | LayeredData |
+| + | LeashData |
+| + | LockableData |
+| + | LogAxisData |
+| + | LoreData |
 |   | MapItemData |
-|   | MinecartBlockData |
-|   | MobSpawnerData |
-|   | MoistureData |
+| + | MinecartBlockData |
+| + | MobSpawnerData |
+| + | MoistureData |
 |   | MovementSpeedData |
-|   | NoteData |
-|   | OccupiedData |
-|   | OcelotData |
-|   | OpenData |
-|   | PagedData |
-|   | PassengerData |
-|   | PersistingData |
-|   | PickupDelayData |
-|   | PickupRuleData |
-|   | PigSaddleData |
-|   | PistonData |
-|   | PlaceableData |
-|   | PlantData |
-|   | PlayerCreatedData |
-|   | PlayingData |
-|   | PortionData |
+| + | NoteData |
+| + | OccupiedData |
+| + | OcelotData |
+| + | OpenData |
+| + | PagedData |
+| + | PassengerData |
+| + | PersistingData |
+| + | PickupDelayData |
+| + | PickupRuleData |
+| + | PigSaddleData |
+| + | PistonData |
+| + | PlaceableData |
+| + | PlantData |
+| + | PlayerCreatedData |
+| + | PlayingData |
+| + | PortionData |
 | + | PotionEffectData |
 | + | PoweredData |
-|   | PrismarineData |
-|   | QuartzData |
-|   | RabbitData |
-|   | RailDirectionData |
+| + | PrismarineData |
+| + | QuartzData |
+| + | RabbitData |
+| + | RailDirectionData |
 | + | RedstonePoweredData |
-|   | RepresentedItemData |
-|   | RepresentedPlayerData |
-|   | RespawnLocationData |
-|   | SandData |
-|   | SandstoneData |
-|   | ScreamingData |
-|   | SeamlessData |
-|   | ShatteringData |
+| + | RepresentedItemData |
+| + | RepresentedPlayerData |
+| + | RespawnLocationData |
+|   | RotationalData |
+| + | SandData |
+| + | SandstoneData |
+| + | ScreamingData |
+| + | SeamlessData |
+| + | ShatteringData |
 | + | ShearedData |
-|   | ShrubData |
+| + | ShrubData |
 | + | SignData |
-|   | SilentData |
-|   | SittingData |
+| + | SilentData |
+| + | SittingData |
 |   | SizeData |
 |   | SkeletonData |
-|   | SkinData |
-|   | SkullData |
-|   | SlabData |
-|   | SleepingData |
-|   | SlimeData |
-|   | SneakingData |
-|   | SnowedData |
+| + | SkinData |
+| + | SkullData |
+| + | SlabData |
+| + | SleepingData |
+| + | SlimeData |
+| + | SneakingData |
+| + | SnowedData |
 | + | SpawnableData |
-|   | SprintData |
-|   | StairShapeData |
+| + | SprintData |
+| + | StairShapeData |
 | + | StatisticData |
-|   | StoneData |
-|   | StoredEnchantmentData |
-|   | StuckArrowsData |
+| + | StoneData |
+| + | StoredEnchantmentData |
+| + | StructureData |
+| + | StuckArrowsData |
 | + | TameableData |
-|   | TargetedLocationData |
+| + | TargetedLocationData |
 | + | TradeOfferData |
-|   | TreeData |
-|   | VehicleData |
-| + | VelocityData |
-|   | WetData |
-|   | WireAttachmentData |
+| + | TreeData |
+| + | VehicleData |
+|   | VelocityData |
+| + | WallData |
+| + | WetData |
+| + | WireAttachmentData |
 |   | ZombieData |
-|   | ZombiePigman |

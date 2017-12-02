@@ -1,5 +1,6 @@
 package valandur.webapi.servlet.base;
 
+import org.eclipse.jetty.http.HttpMethod;
 import org.slf4j.Logger;
 import org.spongepowered.api.util.Tuple;
 import valandur.webapi.WebAPI;
@@ -80,7 +81,7 @@ public class ServletService implements IServletService {
         }
     }
 
-    public Optional<MatchedRoute> getMethod(String verb, String path) {
+    public Optional<MatchedRoute> getMethod(HttpMethod method, String path) {
         // First get the correct servlet
         List<String> pathParts = Util.getPathParts(path);
         if (pathParts.size() == 0) {
@@ -105,7 +106,7 @@ public class ServletService implements IServletService {
             List<String> specPathParts = Util.getPathParts(spec.path());
 
             // Skip methods that don't match the verb or route
-            if (!spec.method().asString().equalsIgnoreCase(verb) || specPathParts.size() != pathParts.size())
+            if (spec.method() != method || specPathParts.size() != pathParts.size())
                 continue;
 
             boolean doesMatch = true;

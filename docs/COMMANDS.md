@@ -22,6 +22,7 @@ All commands begin with `/webapi`
 | users list | webapi.user.list | Lists all the users of the [AdminPanel](ADMIN_PANEL.md) |
 | users add \<user> [password] | webapi.user.add | Adds a new [AdminPanel](ADMIN_PANEL.md) user |
 | users pw \<user> <password> | webapi.user.changepw | Changes the password of an [AdminPanel](ADMIN_PANEL.md) user |
+| users remove \<user> | webapi.user.remove | Removes an existing [AdminPanel](ADMIN_PANEL.md) user |
 
 
 <a name="whitelist"></a>

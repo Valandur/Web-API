@@ -20,6 +20,7 @@ import valandur.webapi.command.hook.CmdNotifyHook;
 import valandur.webapi.command.user.CmdUserAdd;
 import valandur.webapi.command.user.CmdUserChangePassword;
 import valandur.webapi.command.user.CmdUserList;
+import valandur.webapi.command.user.CmdUserRemove;
 import valandur.webapi.hook.CommandWebHook;
 import valandur.webapi.hook.WebHookParam;
 import valandur.webapi.util.Util;
@@ -162,11 +163,20 @@ public class CommandRegistry {
                 )
                 .executor(new CmdUserChangePassword())
                 .build();
+        CommandSpec specUserRemove = CommandSpec.builder()
+                .description(Text.of("Remove an existing user from the admin panel"))
+                .permission("webapi.user.remove")
+                .arguments(
+                        GenericArguments.onlyOne(GenericArguments.string(Text.of("username")))
+                )
+                .executor(new CmdUserRemove())
+                .build();
         CommandSpec specUsers = CommandSpec.builder()
                 .description(Text.of("Manage the users of the admin panel"))
                 .permission("webapi.user")
                 .child(specUserList, "list")
-                .child(specUserAdd, "add")
+                .child(specUserAdd, "add", "new")
+                .child(specUserRemove, "remove", "delete", "del")
                 .child(specUserChangePw, "pw", "changepw", "password")
                 .build();
 

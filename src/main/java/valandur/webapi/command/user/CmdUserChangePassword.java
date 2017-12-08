@@ -41,6 +41,7 @@ public class CmdUserChangePassword implements CommandExecutor {
                 .append(Text.builder(username).color(TextColors.GOLD).build())
                 .build());
 
+        Users.save();
         return CommandResult.success();
     }
 }

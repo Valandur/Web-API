@@ -49,7 +49,7 @@ public class Users {
             e.printStackTrace();
         }
     }
-    private static void save() {
+    public static void save() {
         ConfigurationNode rootNode = config.getNode("users");
         for (UserPermission perm : users.values()) {
             try {
@@ -85,14 +85,22 @@ public class Users {
         }
     }
 
-    public static String hashPassword(String password) {
-        return BCrypt.hashpw(password, BCrypt.gensalt());
-    }
     public static boolean addUser(String username, String password) {
         if (users.containsKey(username))
             return false;
         users.put(username, new UserPermission(username, hashPassword(password), IPermissionService.permitAllNode()));
         save();
         return true;
+    }
+    public static boolean removeUser(String username) {
+        if (!users.containsKey(username))
+            return false;
+        users.remove(username);
+        save();
+        return true;
+    }
+
+    public static String hashPassword(String password) {
+        return BCrypt.hashpw(password, BCrypt.gensalt());
     }
 }

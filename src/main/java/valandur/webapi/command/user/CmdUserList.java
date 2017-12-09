@@ -28,7 +28,7 @@ public class CmdUserList implements CommandExecutor {
                             .onClick(TextActions.suggestCommand("/webapi users changepw " + u.getUsername() + " "))
                             .build();
 
-                    Text rmvUser = Text.builder("[Remove]")
+                    Text rmvUser = Text.builder(" [Remove]")
                             .color(TextColors.RED)
                             .onClick(TextActions.suggestCommand("/webapi users remove " + u.getUsername()))
                             .build();

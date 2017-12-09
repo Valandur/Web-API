@@ -27,7 +27,7 @@ public class ApiServlet extends HttpServlet {
 
     private static final String ACCESS_CONTROL_ORIGIN = "*";
     private static final String ACCESS_CONTROL_METHODS = "GET,PUT,POST,DELETE,OPTIONS";
-    private static final String ACCESS_CONTROL_HEADERS = "Origin Content-Type,Accept,X-Forwarded-For," +
+    private static final String ACCESS_CONTROL_HEADERS = "Origin,Content-Type,Accept,X-Forwarded-For," +
             AuthHandler.API_KEY_HEADER;
 
     private ServletService servletService;

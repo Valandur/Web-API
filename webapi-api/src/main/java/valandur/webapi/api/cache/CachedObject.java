@@ -20,7 +20,7 @@ public abstract class CachedObject<T> implements ICachedObject<T> {
     protected ISerializeService serializeService;
     protected Class<?> clazz;
 
-    protected Map<String, Object> data;
+    protected Map<String, Object> data = new HashMap<>();
     @Override
     @JsonDetails
     @JsonAnyGetter
@@ -44,7 +44,6 @@ public abstract class CachedObject<T> implements ICachedObject<T> {
         if (serializeDataHolder && value instanceof DataHolder) {
             DataHolder holder = (DataHolder)value;
 
-            this.data = new HashMap<>();
             Map<String, Class<? extends DataManipulator<?, ?>>> supData = serializeService.getSupportedData();
             for (Map.Entry<String, Class<? extends DataManipulator<?, ?>>> entry : supData.entrySet()) {
                 try {

@@ -43,6 +43,13 @@ Provides an AdminPanel to manage your minecraft server and a RESTful webserver w
 ## Tutorials & Documentation
 Go [here](docs/INDEX.md) to see a list of various documentations and tutorials
 
+To use the Web-API, you will most likely be writing some form of client or server that
+interacts with it. Client libraries for various languages are available at:
+- [C#](https://github.com/Valandur/webapi-client-csharp)
+- [Java](https://github.com/Valandur/webapi-client-java)
+- [PHP](https://github.com/Valandur/webapi-client-php)
+- [Python](https://github.com/Valandur/webapi-client-python) 
+
 ## Request / Response types
 The Web-API supports JSON and XML data formats for requests and responses.
 Specify the `Content-Type` header to explain what content type you are sending, and
@@ -61,3 +68,4 @@ This can be used as a starting point to explore the supported routes. You can al
 - [Cat121](https://github.com/Cat121)
 - [Cat121](https://github.com/Cat121)
 - [Sherex](https://github.com/Sherex)
+- [kawahara](https://github.com/kawahara)

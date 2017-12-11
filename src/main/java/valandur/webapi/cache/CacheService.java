@@ -69,6 +69,7 @@ public class CacheService implements ICacheService {
 
     private SerializeService json;
 
+    private List<String> censoredCommands = new ArrayList<>();
     private Map<String, Long> cacheDurations = new HashMap<>();
     private int numChatMessages;
     private int numCommandCalls;
@@ -99,6 +100,14 @@ public class CacheService implements ICacheService {
         ConfigurationNode amountNode = config.getNode("amount");
         numChatMessages = amountNode.getNode("chat").getInt();
         numCommandCalls = amountNode.getNode("command").getInt();
+
+        censoredCommands.clear();
+        for (ConfigurationNode node : config.getNode("censoredCommands").getChildrenList()) {
+            String cmd = node.getString();
+            if (!cmd.startsWith("/"))
+                cmd = "/" + cmd;
+            censoredCommands.add(cmd);
+        }
 
         cacheDurations.clear();
         ConfigurationNode durationNode = config.getNode("duration");
@@ -194,7 +203,7 @@ public class CacheService implements ICacheService {
         return cache;
     }
     public CachedCommandCall addCommandCall(SendCommandEvent event) {
-        CachedCommandCall cache = new CachedCommandCall(event);
+        CachedCommandCall cache = new CachedCommandCall(event, censoredCommands.contains(event.getCommand()));
         commandCalls.add(cache);
 
         while (commandCalls.size() > numCommandCalls) {

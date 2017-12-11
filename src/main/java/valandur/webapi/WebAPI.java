@@ -691,6 +691,17 @@ public class WebAPI {
         checkForUpdates();
 
         // Add custom bstats metrics
+        metrics.addCustomChart(new Metrics.DrilldownPie("plugin_version", () -> {
+            String[] vers = VERSION.split("-");
+
+            Map<String, Integer> entry = new HashMap<>();
+            entry.put(vers[1], 1);
+
+            Map<String, Map<String, Integer>> map = new HashMap<>();
+            map.put(vers[0], entry);
+
+            return map;
+        }));
         metrics.addCustomChart(new Metrics.SimplePie("report_errors", () -> reportErrors ? "Yes" : "No"));
         metrics.addCustomChart(new Metrics.SimplePie("admin_panel", () -> adminPanelEnabled ? "Yes" : "No"));
         metrics.addCustomChart(new Metrics.SimpleBarChart("protocols", () -> {

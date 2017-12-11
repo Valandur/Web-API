@@ -64,6 +64,7 @@ public class AuthHandler extends AbstractHandler {
         int defLimit = config.getNode("default", "rateLimit").getInt();
         defaultPerms = new PermissionStruct(defs, defLimit);
 
+        permMap.clear();
         for (ConfigurationNode node : config.getNode("keys").getChildrenList()) {
             String key = node.getNode("key").getString();
             if (key == null || key.isEmpty()) {
@@ -76,15 +77,18 @@ public class AuthHandler extends AbstractHandler {
         }
 
         useWhitelist = config.getNode("useWhitelist").getBoolean();
+        whitelist.clear();
         for (ConfigurationNode node : config.getNode("whitelist").getChildrenList()) {
             whitelist.add(node.getString());
         }
 
         useBlacklist = config.getNode("useBlacklist").getBoolean();
+        blacklist.clear();
         for (ConfigurationNode node : config.getNode("blacklist").getChildrenList()) {
             blacklist.add(node.getString());
         }
 
+        allowedProxies.clear();
         for (ConfigurationNode node : config.getNode("allowedProxies").getChildrenList()) {
             allowedProxies.add(node.getString());
         }

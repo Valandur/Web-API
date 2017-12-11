@@ -156,6 +156,14 @@ public class WebAPI {
     private static String spongeImpl;
     private static String pluginList;
 
+    private static String serverHost;
+    private static Integer serverPortHttp;
+    private static Integer serverPortHttps;
+    private String keyStoreLocation;
+    private String keyStorePassword;
+    private String keyStoreMgrPassword;
+    private Server server;
+
     @Inject
     private Metrics metrics;
 
@@ -182,14 +190,6 @@ public class WebAPI {
     public static boolean reportErrors() {
         return WebAPI.getInstance() == null || WebAPI.getInstance().reportErrors;
     }
-
-    private static String serverHost;
-    private static Integer serverPortHttp;
-    private static Integer serverPortHttps;
-    private String keyStoreLocation;
-    private String keyStorePassword;
-    private String keyStoreMgrPassword;
-    private Server server;
 
     private AuthHandler authHandler;
     public static AuthHandler getAuthHandler() {
@@ -850,7 +850,6 @@ public class WebAPI {
     @Listener(order = Order.POST)
     public void onCommand(SendCommandEvent event) {
         CachedCommandCall call = cacheService.addCommandCall(event);
-
         webHookService.notifyHooks(WebHookService.WebHookType.COMMAND, call);
     }
 

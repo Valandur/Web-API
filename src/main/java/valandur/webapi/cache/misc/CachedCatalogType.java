@@ -3,8 +3,9 @@ package valandur.webapi.cache.misc;
 import org.spongepowered.api.CatalogType;
 import org.spongepowered.api.text.translation.Translatable;
 import valandur.webapi.api.cache.CachedObject;
+import valandur.webapi.api.cache.misc.ICachedCatalogType;
 
-public class CachedCatalogType extends CachedObject<CatalogType> {
+public class CachedCatalogType extends CachedObject<CatalogType> implements ICachedCatalogType {
 
     private String id;
     public String getId() {

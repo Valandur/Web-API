@@ -1,9 +1,11 @@
 package valandur.webapi.servlet;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
 import org.eclipse.jetty.http.HttpMethod;
+import valandur.webapi.WebAPI;
 import valandur.webapi.api.servlet.Endpoint;
 import valandur.webapi.api.servlet.Servlet;
 import valandur.webapi.api.cache.plugin.ICachedPluginContainer;
@@ -11,6 +13,7 @@ import valandur.webapi.api.servlet.BaseServlet;
 import valandur.webapi.servlet.base.ServletData;
 
 import javax.servlet.http.HttpServletResponse;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -38,7 +41,7 @@ public class PluginServlet extends BaseServlet {
         data.addData("plugin", optPlugin.get(), true);
     }
 
-    @Endpoint(method = HttpMethod.GET, path = "/:plugin/config", perm = "config")
+    @Endpoint(method = HttpMethod.GET, path = "/:plugin/config", perm = "config.one")
     public void getPluginConfig(ServletData data, String pluginName) {
         Optional<ICachedPluginContainer> optPlugin = cacheService.getPlugin(pluginName);
         if (!optPlugin.isPresent()) {
@@ -46,13 +49,7 @@ public class PluginServlet extends BaseServlet {
             return;
         }
 
-        ICachedPluginContainer plugin = optPlugin.get();
-        List<Path> paths = new ArrayList<>();
-        paths.add(Paths.get("config/" + plugin.getId() + ".conf"));
-        try {
-            Files.walk(Paths.get("config/" + plugin.getId() + "/")).filter(Files::isRegularFile)
-                    .filter(p -> p.toString().endsWith(".conf")).forEach(paths::add);
-        } catch (IOException ignored) {}
+        List<Path> paths = getConfigFiles(optPlugin.get());
 
         Map<String, Object> configs = new HashMap<>();
         for (Path path : paths) {
@@ -71,9 +68,39 @@ public class PluginServlet extends BaseServlet {
         data.addData("configs", configs, true);
     }
 
+    @Endpoint(method = HttpMethod.POST, path = ":plugin/config", perm = "config.change")
+    public void changePluginConfig(ServletData data, String pluginName) {
+        Optional<ICachedPluginContainer> optPlugin = cacheService.getPlugin(pluginName);
+        if (!optPlugin.isPresent()) {
+            data.sendError(HttpServletResponse.SC_NOT_FOUND, "Plugin with id '" + pluginName + "' could not be found");
+            return;
+        }
+
+        JsonNode configs = data.getRequestBody();
+
+        List<Path> paths = getConfigFiles(optPlugin.get());
+        for (Path path : paths) {
+            JsonNode node = configs.get(path.getFileName().toString());
+            if (node == null) continue;
+
+            WebAPI.getLogger().info(node.toString());
+        }
+
+        data.addData("ok", true, false);
+        data.addData("configs", configs, true);
+    }
+
+    private List<Path> getConfigFiles(ICachedPluginContainer plugin) {
+        List<Path> paths = new ArrayList<>();
+        paths.add(Paths.get("config/" + plugin.getId() + ".conf"));
+        try {
+            Files.walk(Paths.get("config/" + plugin.getId() + "/")).filter(Files::isRegularFile)
+                    .filter(p -> p.toString().endsWith(".conf")).forEach(paths::add);
+        } catch (IOException ignored) {}
+        return paths;
+    }
+
     private Object parseConfiguration(CommentedConfigurationNode config) {
-
-
         if (config.hasListChildren()) {
             List<Object> cfg = new ArrayList<>();
             for (CommentedConfigurationNode node : config.getChildrenList()) {

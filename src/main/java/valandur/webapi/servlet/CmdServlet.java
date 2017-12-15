@@ -59,6 +59,11 @@ public class CmdServlet extends BaseServlet {
 
             ExecuteCommandRequest req = optReq.get();
 
+            if (req.getCommand() == null) {
+                data.sendError(HttpServletResponse.SC_BAD_REQUEST,"Command not specified");
+                return;
+            }
+
             String cmd = req.getCommand().split(" ")[0];
             if (!permissionService.permits(data.getPermissions(), new String[]{ cmd })) {
                 data.sendError(HttpServletResponse.SC_FORBIDDEN, "Access denied");

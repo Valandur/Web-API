@@ -1,0 +1,14 @@
+title: CreateWebBookRequest
+type: object
+properties:
+  id:
+    type: string
+    description: The unique id of the web book.
+  title:
+    type: string
+    description: The title of the web book.
+  lines:
+    type: array
+    description: The lines that make up the content of the book.
+    items:
+      type: string

@@ -105,6 +105,6 @@ post:
           ok:
             $ref: "../../definitions/ok.yaml"
           tileEntity:
-            $ref: "../../definitions/tile-entity/TileEntity.yaml"
+            $ref: "../../definitions/tile-entity/TileEntityFull.yaml"
           result:
             $ref: "../../definitions/RawResponse.yaml"

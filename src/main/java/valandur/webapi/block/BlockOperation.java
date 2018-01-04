@@ -181,8 +181,13 @@ public abstract class BlockOperation extends CachedObject<IBlockOperation> imple
         if (status != BlockOperationStatus.RUNNING && status != BlockOperationStatus.PAUSED) return;
 
         boolean res = task.cancel();
-        status = error == null || error.isEmpty() ? BlockOperationStatus.CANCELED : BlockOperationStatus.ERRORED;
-        this.error = error;
+        if (error == null || error.isEmpty()) {
+            this.status = currentBlock >= totalBlocks - 1 ? BlockOperationStatus.DONE : BlockOperationStatus.CANCELED;
+            this.error = null;
+        } else {
+            this.status = BlockOperationStatus.ERRORED;
+            this.error = error;
+        }
 
         Sponge.getEventManager().post(new BlockOperationStatusChangeEvent(this));
     }

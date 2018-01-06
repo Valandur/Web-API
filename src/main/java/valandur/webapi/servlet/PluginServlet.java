@@ -1,6 +1,8 @@
 package valandur.webapi.servlet;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
@@ -13,7 +15,6 @@ import valandur.webapi.api.servlet.BaseServlet;
 import valandur.webapi.servlet.base.ServletData;
 
 import javax.servlet.http.HttpServletResponse;
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -56,7 +57,8 @@ public class PluginServlet extends BaseServlet {
             String key = path.getFileName().toString();
 
             try {
-                ConfigurationLoader<CommentedConfigurationNode> loader = HoconConfigurationLoader.builder().setPath(path).build();
+                ConfigurationLoader<CommentedConfigurationNode> loader =
+                        HoconConfigurationLoader.builder().setPath(path).build();
                 CommentedConfigurationNode config = loader.load();
                 configs.put(key, parseConfiguration(config));
             } catch (IOException e) {
@@ -83,7 +85,19 @@ public class PluginServlet extends BaseServlet {
             JsonNode node = configs.get(path.getFileName().toString());
             if (node == null) continue;
 
-            WebAPI.getLogger().info(node.toString());
+            try {
+                Path newPath = path.getParent().resolve(path.getFileName().toString() + ".bck");
+                WebAPI.getLogger().info(newPath.toString());
+                if (!Files.exists(newPath)) {
+                    Files.copy(path, newPath);
+                }
+
+                ObjectMapper om = new ObjectMapper();
+                om.enable(SerializationFeature.INDENT_OUTPUT);
+                om.writeValue(path.toFile(), node);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
 
         data.addData("ok", true, false);

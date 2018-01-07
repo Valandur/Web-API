@@ -55,13 +55,13 @@ public class WebBookServlet extends BaseServlet {
         }
     }
 
-    @Endpoint(method = HttpMethod.GET, path = "/book", perm = "list")
+    @Endpoint(method = HttpMethod.GET, path = "/book", perm = "book.list")
     public void listWebBooks(IServletData data) {
         data.addData("ok", true, false);
         data.addData("books", books.values(), data.getQueryParam("details").isPresent());
     }
 
-    @Endpoint(method = HttpMethod.GET, path = "/book/:id", perm = "one")
+    @Endpoint(method = HttpMethod.GET, path = "/book/:id", perm = "book.one")
     public void getWebBook(IServletData data, String id) {
         WebBook book = books.get(id);
         if (book == null) {
@@ -92,7 +92,7 @@ public class WebBookServlet extends BaseServlet {
         }
     }
 
-    @Endpoint(method = HttpMethod.POST, path = "/book", perm = "create")
+    @Endpoint(method = HttpMethod.POST, path = "/book", perm = "book.create")
     public void createWebBook(IServletData data) {
         JsonNode body = data.getRequestBody();
 
@@ -131,7 +131,7 @@ public class WebBookServlet extends BaseServlet {
         data.addData("book", book, true);
     }
 
-    @Endpoint(method = HttpMethod.PUT, path = "/book/:id", perm = "change")
+    @Endpoint(method = HttpMethod.PUT, path = "/book/:id", perm = "book.change")
     public void changeWebBook(IServletData data, String id) {
         WebBook book = books.get(id);
         if (book == null) {
@@ -160,7 +160,7 @@ public class WebBookServlet extends BaseServlet {
         data.addData("book", book, true);
     }
 
-    @Endpoint(method = HttpMethod.DELETE, path = "/book/:id", perm = "delete")
+    @Endpoint(method = HttpMethod.DELETE, path = "/book/:id", perm = "book.delete")
     public void deleteWebBook(IServletData data, String id) {
         WebBook book = books.get(id);
         if (book == null) {

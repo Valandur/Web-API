@@ -87,3 +87,10 @@
   $ref: "./nucleus/kit_list.yaml"
 /nucleus/kit/{name}:
   $ref: "./nucleus/kit_one.yaml"
+
+/webbooks/book:
+  $ref: "./webbooks/book_list.yaml"
+/webbooks/book/{id}:
+  $ref: "./webbooks/book_one.yaml"
+/webbooks/book/{id}/html:
+  $ref: "./webbooks/book_html.yaml"

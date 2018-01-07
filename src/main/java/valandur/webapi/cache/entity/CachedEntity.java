@@ -7,7 +7,9 @@ import org.spongepowered.api.item.inventory.Carrier;
 import org.spongepowered.api.world.World;
 import valandur.webapi.api.cache.CachedObject;
 import valandur.webapi.api.cache.entity.ICachedEntity;
+import valandur.webapi.api.cache.misc.ICachedCatalogType;
 import valandur.webapi.api.serialize.JsonDetails;
+import valandur.webapi.cache.misc.CachedCatalogType;
 import valandur.webapi.cache.misc.CachedInventory;
 import valandur.webapi.api.cache.world.CachedLocation;
 
@@ -16,9 +18,9 @@ import java.util.UUID;
 
 public class CachedEntity extends CachedObject<Entity> implements ICachedEntity {
 
-    protected String type;
+    protected CachedCatalogType type;
     @Override
-    public String getType() {
+    public ICachedCatalogType getType() {
         return type;
     }
 
@@ -61,7 +63,7 @@ public class CachedEntity extends CachedObject<Entity> implements ICachedEntity 
     public CachedEntity(Entity entity) {
         super(entity);
 
-        this.type = entity.getType().getId();
+        this.type = new CachedCatalogType(entity.getType());
         this.uuid = UUID.fromString(entity.getUniqueId().toString());
         this.location = new CachedLocation(entity.getLocation());
 

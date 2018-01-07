@@ -1,0 +1,14 @@
+title: WebBook
+type: object
+properties:
+  id:
+    type: string
+    description: The id of the web books.
+  title:
+    type: string
+    description: The title of the web book.
+  lines:
+    type: array
+    description: The lines of text in the web book.
+    items:
+      type: string

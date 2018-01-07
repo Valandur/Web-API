@@ -86,7 +86,7 @@ public class HuskyCratesServlet extends BaseServlet {
         data.addData("crate", optRes.orElse(null), true);
     }
 
-    @Endpoint(method = HttpMethod.POST, path = "crate", perm = "create")
+    @Endpoint(method = HttpMethod.POST, path = "crate", perm = "crate.create")
     public void createCrate(IServletData data) {
         HuskyCrates plugin = getHuskyPlugin(data);
         if (plugin == null) return;

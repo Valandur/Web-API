@@ -5,6 +5,7 @@ import org.eclipse.jetty.http.HttpMethod;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.EntityType;
 import org.spongepowered.api.event.cause.Cause;
+import org.spongepowered.api.event.cause.EventContext;
 import org.spongepowered.api.event.cause.entity.damage.source.DamageSource;
 import org.spongepowered.api.item.inventory.Carrier;
 import org.spongepowered.api.item.inventory.Inventory;
@@ -154,7 +155,7 @@ public class EntityServlet extends BaseServlet {
             return;
         }
 
-        Optional<Entity> resEntity = WebAPI.runOnMain(() -> {
+        Optional<ICachedEntity> resEntity = WebAPI.runOnMain(() -> {
             Optional<World> optLive = optWorld.get().getLive();
             if (!optLive.isPresent())
                 return null;
@@ -162,8 +163,8 @@ public class EntityServlet extends BaseServlet {
             World w = optLive.get();
             Entity e = w.createEntity(optEntType.get(), req.getPosition());
 
-            if (w.spawnEntity(e, Cause.source(WebAPI.getContainer()).build())) {
-                return e;
+            if (w.spawnEntity(e)) {
+                return cacheService.updateEntity(e);
             } else {
                 e.remove();
                 return null;
@@ -175,12 +176,10 @@ public class EntityServlet extends BaseServlet {
             return;
         }
 
-        ICachedEntity entity = cacheService.updateEntity(resEntity.get());
-
         data.setStatus(HttpServletResponse.SC_CREATED);
-        data.setHeader("Location", entity.getLink());
+        data.setHeader("Location", resEntity.get().getLink());
         data.addData("ok", true, false);
-        data.addData("entity", entity, true);
+        data.addData("entity", resEntity.get(), true);
     }
 
     @Endpoint(method = HttpMethod.POST, path = "/:entity/method", perm = "method")

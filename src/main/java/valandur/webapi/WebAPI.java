@@ -437,167 +437,169 @@ public class WebAPI {
         // Start web server
         logger.info("Starting Web Server...");
 
-        try {
-            server = new Server();
+        asyncExecutor.execute(() -> {
+            try {
+                server = new Server();
 
-            // HTTP config
-            HttpConfiguration httpConfig = new HttpConfiguration();
-            httpConfig.setOutputBufferSize(32768);
+                // HTTP config
+                HttpConfiguration httpConfig = new HttpConfiguration();
+                httpConfig.setOutputBufferSize(32768);
 
-            String baseUri = null;
+                String baseUri = null;
 
-            // HTTP
-            if (serverPortHttp >= 0) {
-                if (serverPortHttp < 1024) {
-                    logger.warn("You are using an HTTP port < 1024 which is not recommended! \n" +
-                            "This might cause errors when not running the server as root/admin. \n" +
-                            "Running the server as root/admin is not recommended. " +
-                            "Please use a port above 1024 for HTTP."
-                    );
+                // HTTP
+                if (serverPortHttp >= 0) {
+                    if (serverPortHttp < 1024) {
+                        logger.warn("You are using an HTTP port < 1024 which is not recommended! \n" +
+                                "This might cause errors when not running the server as root/admin. \n" +
+                                "Running the server as root/admin is not recommended. " +
+                                "Please use a port above 1024 for HTTP."
+                        );
+                    }
+                    ServerConnector httpConn = new ServerConnector(server, new HttpConnectionFactory(httpConfig));
+                    httpConn.setHost(serverHost);
+                    httpConn.setPort(serverPortHttp);
+                    httpConn.setIdleTimeout(30000);
+                    server.addConnector(httpConn);
+
+                    baseUri = "http://" + serverHost + ":" + serverPortHttp;
                 }
-                ServerConnector httpConn = new ServerConnector(server, new HttpConnectionFactory(httpConfig));
-                httpConn.setHost(serverHost);
-                httpConn.setPort(serverPortHttp);
-                httpConn.setIdleTimeout(30000);
-                server.addConnector(httpConn);
 
-                baseUri = "http://" + serverHost + ":" + serverPortHttp;
+                // HTTPS
+                if (serverPortHttps >= 0) {
+                    if (serverPortHttps < 1024) {
+                        logger.warn("You are using an HTTPS port < 1024 which is not recommended! \n" +
+                                "This might cause errors when not running the server as root/admin. \n" +
+                                "Running the server as root/admin is not recommended. " +
+                                "Please use a port above 1024 for HTTPS."
+                        );
+                    }
+
+                    // Update http config
+                    httpConfig.setSecureScheme("https");
+                    httpConfig.setSecurePort(serverPortHttps);
+
+                    String loc = keyStoreLocation;
+                    String pw = keyStorePassword;
+                    String mgrPw = keyStoreMgrPassword;
+                    if (loc == null || loc.isEmpty()) {
+                        loc = Sponge.getAssetManager().getAsset(WebAPI.getInstance(), "keystore.jks")
+                                .map(a -> a.getUrl().toString()).orElse("");
+                        pw = "mX4z%&uJ2E6VN#5f";
+                        mgrPw = "mX4z%&uJ2E6VN#5f";
+                    }
+
+                    // SSL Factory
+                    SslContextFactory sslFactory = new SslContextFactory();
+                    sslFactory.setKeyStorePath(loc);
+                    sslFactory.setKeyStorePassword(pw);
+                    sslFactory.setKeyManagerPassword(mgrPw);
+
+                    // HTTPS config
+                    HttpConfiguration httpsConfig = new HttpConfiguration(httpConfig);
+                    SecureRequestCustomizer src = new SecureRequestCustomizer();
+                    src.setStsMaxAge(2000);
+                    src.setStsIncludeSubDomains(true);
+                    httpsConfig.addCustomizer(src);
+
+
+                    ServerConnector httpsConn = new ServerConnector(server,
+                            new SslConnectionFactory(sslFactory, HttpVersion.HTTP_1_1.asString()),
+                            new HttpConnectionFactory(httpsConfig)
+                    );
+                    httpsConn.setHost(serverHost);
+                    httpsConn.setPort(serverPortHttps);
+                    httpsConn.setIdleTimeout(30000);
+                    server.addConnector(httpsConn);
+
+                    baseUri = "https://" + serverHost + ":" + serverPortHttps;
+                }
+
+                if (baseUri == null) {
+                    logger.error("You have disabled both HTTP and HTTPS - The WebAPI will be unreachable!");
+                }
+
+                // Add error handler
+                server.addBean(new ErrorHandler(server));
+
+                // Collection of all handlers
+                List<Handler> mainHandlers = new LinkedList<>();
+
+                // Asset handlers
+                mainHandlers.add(newContext("/docs", new AssetHandler("pages/redoc.html")));
+                mainHandlers.add(newContext("/swagger", new AssetHandler("swagger", (path) -> {
+                    if (!path.endsWith("swagger/index.yaml"))
+                        return null;
+                    return (data) -> {
+                        String text = new String(data);
+                        text = text.replaceFirst("<host>", serverHost + ":" + serverPortHttp);
+                        text = text.replaceFirst("<version>", WebAPI.VERSION);
+                        return text.getBytes();
+                    };
+                })));
+
+                if (adminPanelEnabled) {
+                    // Rewrite handler
+                    RewriteHandler rewrite = new RewriteHandler();
+                    rewrite.setRewriteRequestURI(true);
+                    rewrite.setRewritePathInfo(true);
+
+                    RedirectPatternRule redirect = new RedirectPatternRule();
+                    redirect.setPattern("/*");
+                    redirect.setLocation("/admin");
+                    rewrite.addRule(redirect);
+                    mainHandlers.add(newContext("/", rewrite));
+
+                    mainHandlers.add(newContext("/admin", new AssetHandler("admin")));
+                }
+
+                // Setup all servlets
+                servletService.init();
+
+                // Main servlet context
+                ServletContextHandler servletsContext = new ServletContextHandler();
+                servletsContext.addServlet(ApiServlet.class, "/*");
+
+                // Use a list to make requests first go through the auth handler and rate-limit handler
+                HandlerList list = new HandlerList();
+                list.setHandlers(new Handler[]{ authHandler, new RateLimitHandler(), servletsContext });
+                mainHandlers.add(newContext("/api", list));
+
+                // Add collection of handlers to server
+                ContextHandlerCollection coll = new ContextHandlerCollection();
+                coll.setHandlers(mainHandlers.toArray(new Handler[mainHandlers.size()]));
+                server.setHandler(coll);
+
+                server.start();
+
+                logger.info("AdminPanel: " + baseUri + "/admin");
+                logger.info("API Docs: " + baseUri + "/docs");
+            } catch (SocketException e) {
+                logger.error("Web-API webserver could not start, probably because one of the ports needed for HTTP " +
+                        "and/or HTTPS are in use or not accessible (ports below 1024 are protected)");
+            } catch (MultiException e) {
+                e.getThrowables().forEach(t -> {
+                    if (t instanceof SocketException) {
+                        logger.error("Web-API webserver could not start, probably because one of the ports needed for HTTP " +
+                                "and/or HTTPS are in use or not accessible (ports below 1024 are protected)");
+                    } else {
+                        t.printStackTrace();
+                        WebAPI.sentryCapture(t);
+                    }
+                });
+            } catch (Exception e) {
+                e.printStackTrace();
+                WebAPI.sentryCapture(e);
             }
 
-            // HTTPS
-            if (serverPortHttps >= 0) {
-                if (serverPortHttps < 1024) {
-                    logger.warn("You are using an HTTPS port < 1024 which is not recommended! \n" +
-                            "This might cause errors when not running the server as root/admin. \n" +
-                            "Running the server as root/admin is not recommended. " +
-                            "Please use a port above 1024 for HTTPS."
-                    );
-                }
-
-                // Update http config
-                httpConfig.setSecureScheme("https");
-                httpConfig.setSecurePort(serverPortHttps);
-
-                String loc = keyStoreLocation;
-                String pw = keyStorePassword;
-                String mgrPw = keyStoreMgrPassword;
-                if (loc == null || loc.isEmpty()) {
-                    loc = Sponge.getAssetManager().getAsset(WebAPI.getInstance(), "keystore.jks")
-                            .map(a -> a.getUrl().toString()).orElse("");
-                    pw = "mX4z%&uJ2E6VN#5f";
-                    mgrPw = "mX4z%&uJ2E6VN#5f";
-                }
-
-                // SSL Factory
-                SslContextFactory sslFactory = new SslContextFactory();
-                sslFactory.setKeyStorePath(loc);
-                sslFactory.setKeyStorePassword(pw);
-                sslFactory.setKeyManagerPassword(mgrPw);
-
-                // HTTPS config
-                HttpConfiguration httpsConfig = new HttpConfiguration(httpConfig);
-                SecureRequestCustomizer src = new SecureRequestCustomizer();
-                src.setStsMaxAge(2000);
-                src.setStsIncludeSubDomains(true);
-                httpsConfig.addCustomizer(src);
-
-
-                ServerConnector httpsConn = new ServerConnector(server,
-                        new SslConnectionFactory(sslFactory, HttpVersion.HTTP_1_1.asString()),
-                        new HttpConnectionFactory(httpsConfig)
+            if (player != null) {
+                player.sendMessage(Text.builder()
+                        .color(TextColors.AQUA)
+                        .append(Text.of("[" + WebAPI.NAME + "] The web server has been restarted!"))
+                        .toText()
                 );
-                httpsConn.setHost(serverHost);
-                httpsConn.setPort(serverPortHttps);
-                httpsConn.setIdleTimeout(30000);
-                server.addConnector(httpsConn);
-
-                baseUri = "https://" + serverHost + ":" + serverPortHttps;
             }
-
-            if (baseUri == null) {
-                logger.error("You have disabled both HTTP and HTTPS - The WebAPI will be unreachable!");
-            }
-
-            // Add error handler
-            server.addBean(new ErrorHandler(server));
-
-            // Collection of all handlers
-            List<Handler> mainHandlers = new LinkedList<>();
-
-            // Asset handlers
-            mainHandlers.add(newContext("/docs", new AssetHandler("pages/redoc.html")));
-            mainHandlers.add(newContext("/swagger", new AssetHandler("swagger", (path) -> {
-                if (!path.endsWith("swagger/index.yaml"))
-                    return null;
-                return (data) -> {
-                    String text = new String(data);
-                    text = text.replaceFirst("<host>", serverHost + ":" + serverPortHttp);
-                    text = text.replaceFirst("<version>", WebAPI.VERSION);
-                    return text.getBytes();
-                };
-            })));
-
-            if (adminPanelEnabled) {
-                // Rewrite handler
-                RewriteHandler rewrite = new RewriteHandler();
-                rewrite.setRewriteRequestURI(true);
-                rewrite.setRewritePathInfo(true);
-
-                RedirectPatternRule redirect = new RedirectPatternRule();
-                redirect.setPattern("/*");
-                redirect.setLocation("/admin");
-                rewrite.addRule(redirect);
-                mainHandlers.add(newContext("/", rewrite));
-
-                mainHandlers.add(newContext("/admin", new AssetHandler("admin")));
-            }
-
-            // Setup all servlets
-            servletService.init();
-
-            // Main servlet context
-            ServletContextHandler servletsContext = new ServletContextHandler();
-            servletsContext.addServlet(ApiServlet.class, "/*");
-
-            // Use a list to make requests first go through the auth handler and rate-limit handler
-            HandlerList list = new HandlerList();
-            list.setHandlers(new Handler[]{ authHandler, new RateLimitHandler(), servletsContext });
-            mainHandlers.add(newContext("/api", list));
-
-            // Add collection of handlers to server
-            ContextHandlerCollection coll = new ContextHandlerCollection();
-            coll.setHandlers(mainHandlers.toArray(new Handler[mainHandlers.size()]));
-            server.setHandler(coll);
-
-            server.start();
-
-            logger.info("AdminPanel: " + baseUri + "/admin");
-            logger.info("API Docs: " + baseUri + "/docs");
-        } catch (SocketException e) {
-            logger.error("Web-API webserver could not start, probably because one of the ports needed for HTTP " +
-                    "and/or HTTPS are in use or not accessible (ports below 1024 are protected)");
-        } catch (MultiException e) {
-            e.getThrowables().forEach(t -> {
-                if (t instanceof SocketException) {
-                    logger.error("Web-API webserver could not start, probably because one of the ports needed for HTTP " +
-                            "and/or HTTPS are in use or not accessible (ports below 1024 are protected)");
-                } else {
-                    t.printStackTrace();
-                    WebAPI.sentryCapture(t);
-                }
-            });
-        } catch (Exception e) {
-            e.printStackTrace();
-            WebAPI.sentryCapture(e);
-        }
-
-        if (player != null) {
-            player.sendMessage(Text.builder()
-                    .color(TextColors.AQUA)
-                    .append(Text.of("[" + WebAPI.NAME + "] The web server has been restarted!"))
-                    .toText()
-            );
-        }
+        });
     }
     private void stopWebServer() {
         if (server != null) {

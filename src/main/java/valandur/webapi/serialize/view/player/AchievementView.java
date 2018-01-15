@@ -1,4 +1,4 @@
-/*package valandur.webapi.serialize.view.player;
+package valandur.webapi.serialize.view.player;
 
 import org.spongepowered.api.statistic.achievement.Achievement;
 import valandur.webapi.api.serialize.BaseView;
@@ -18,5 +18,3 @@ public class AchievementView extends BaseView<Achievement> {
         this.description = value.getDescription().get();
     }
 }
-
-*/

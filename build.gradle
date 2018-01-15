@@ -34,8 +34,8 @@ blossom {
 spongestart {
     eula true
     minecraft project.minecraftVersion
-    spongeForgeVersion "1.12.2-2555-7.1.0-BETA-2831"
-    spongeVanillaVersion "1.12.2-7.1.0-BETA-9"
+    //spongeForgeVersion "1.12.2-2555-7.1.0-BETA-2831"
+    //spongeVanillaVersion "1.12.2-7.1.0-BETA-9"
 }
 
 repositories {

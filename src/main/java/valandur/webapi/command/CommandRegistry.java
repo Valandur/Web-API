@@ -2,12 +2,11 @@ package valandur.webapi.command;
 
 import org.slf4j.Logger;
 import org.spongepowered.api.Sponge;
-import org.spongepowered.api.command.*;
-import org.spongepowered.api.command.CommandSource;
-import org.spongepowered.api.command.args.CommandContext;
+import org.spongepowered.api.command.CommandManager;
+import org.spongepowered.api.command.CommandMapping;
+import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.args.CommandElement;
 import org.spongepowered.api.command.args.GenericArguments;
-import org.spongepowered.api.command.spec.CommandExecutor;
 import org.spongepowered.api.command.spec.CommandSpec;
 import org.spongepowered.api.text.Text;
 import valandur.webapi.WebAPI;
@@ -28,7 +27,6 @@ import valandur.webapi.hook.WebHookParam;
 import valandur.webapi.util.Util;
 
 import java.util.*;
-import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 public class CommandRegistry {

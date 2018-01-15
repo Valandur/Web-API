@@ -6,7 +6,6 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.flowpowered.math.vector.Vector3i;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.event.cause.Cause;
-import org.spongepowered.api.event.cause.EventContext;
 import org.spongepowered.api.scheduler.Task;
 import org.spongepowered.api.world.Chunk;
 import org.spongepowered.api.world.World;
@@ -99,7 +98,7 @@ public abstract class BlockOperation extends CachedObject<IBlockOperation> imple
         this.min = min;
         this.max = max;
         this.size = max.sub(min).add(1, 1, 1);
-        this.cause = Cause.of(EventContext.empty(), WebAPI.getContainer());
+        this.cause = Cause.source(WebAPI.getContainer()).build();
         this.totalBlocks = size.getX() * size.getY() * size.getZ();
     }
 

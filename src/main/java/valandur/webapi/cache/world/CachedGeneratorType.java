@@ -9,7 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-public class CachedGeneratorType extends CachedCatalogType<GeneratorType> {
+public class CachedGeneratorType extends CachedCatalogType {
 
     protected Map<String, Object> settings = new HashMap<>();
 

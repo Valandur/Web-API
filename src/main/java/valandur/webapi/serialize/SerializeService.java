@@ -138,7 +138,7 @@ public class SerializeService implements ISerializeService {
         registerView(BlockState.class, BlockStateView.class);
 
         // Data
-        registerView(AbsorptionData.class, AbsorptionDataView.class);
+        //registerView(AbsorptionData.class, AbsorptionDataView.class);
         registerView(AchievementData.class, AchievementDataView.class);
         registerView(AgeableData.class, AgeableDataView.class);
         registerView(AgentData.class, AgentDataView.class);
@@ -170,7 +170,7 @@ public class SerializeService implements ISerializeService {
         registerView(DisplayNameData.class, DisplayNameDataView.class);
         registerView(DropData.class, DropDataView.class);
         registerView(DurabilityData.class, DurabilityDataView.class);
-        registerView(EndGatewayData.class, EndGatewayDataView.class);
+        //registerView(EndGatewayData.class, EndGatewayDataView.class);
         registerView(ExperienceHolderData.class, ExperienceHolderDataView.class);
         registerView(ExpirableData.class, ExpirableDataView.class);
         registerView(ExplosionRadiusData.class, ExplosionRadiusDataView.class);
@@ -234,7 +234,7 @@ public class SerializeService implements ISerializeService {
         registerView(SneakingData.class, SneakingDataView.class);
         registerView(SnowedData.class, SnowedDataView.class);
         registerView(SprintData.class, SprintDataView.class);
-        registerView(StructureData.class, StructureDataView.class);
+        //registerView(StructureData.class, StructureDataView.class);
         registerView(StuckArrowsData.class, StuckArrowsDataView.class);
         registerView(TameableData.class, TameableDataView.class);
         registerView(TargetedLocationData.class, TargetedLocationDataView.class);
@@ -291,7 +291,7 @@ public class SerializeService implements ISerializeService {
         // Data
         supportedData = new ConcurrentHashMap<>();
 
-        supportedData.put("absorption", AbsorptionData.class);
+        //supportedData.put("absorption", AbsorptionData.class);
         supportedData.put("achievements", AchievementData.class);
         supportedData.put("age", AgeableData.class);
         supportedData.put("aiEnabled", AgentData.class);
@@ -336,7 +336,7 @@ public class SerializeService implements ISerializeService {
         supportedData.put("drops", DropData.class);
         supportedData.put("durability", DurabilityData.class);
         supportedData.put("dye", DyeableData.class);                                // variant
-        supportedData.put("endGateway", EndGatewayData.class);
+        //supportedData.put("endGateway", EndGatewayData.class);
         supportedData.put("enchantments", EnchantmentData.class);                   // list
         supportedData.put("experience", ExperienceHolderData.class);
         supportedData.put("expireTicks", ExpirableData.class);
@@ -432,7 +432,7 @@ public class SerializeService implements ISerializeService {
         supportedData.put("statistics", StatisticData.class);                       // map
         supportedData.put("stone", StoneData.class);                                // variant
         supportedData.put("storedEnchantments", StoredEnchantmentData.class);       // list
-        supportedData.put("structure", StructureData.class);
+        //supportedData.put("structure", StructureData.class);
         supportedData.put("stuckArrows", StuckArrowsData.class);
         supportedData.put("tamed", TameableData.class);
         supportedData.put("target", TargetedLocationData.class);

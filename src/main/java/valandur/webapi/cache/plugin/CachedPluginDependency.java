@@ -1,4 +1,4 @@
-package valandur.webapi.cache.plugin;
+/*package valandur.webapi.cache.plugin;
 
 import org.spongepowered.plugin.meta.PluginDependency;
 import valandur.webapi.api.cache.CachedObject;
@@ -45,3 +45,4 @@ public class CachedPluginDependency extends CachedObject<PluginDependency> {
         return Optional.of(new PluginDependency(loadOrder, id, version, optional));
     }
 }
+*/

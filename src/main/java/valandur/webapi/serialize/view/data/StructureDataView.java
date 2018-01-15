@@ -1,4 +1,4 @@
-package valandur.webapi.serialize.view.data;
+/*package valandur.webapi.serialize.view.data;
 
 import com.flowpowered.math.vector.Vector3i;
 import org.spongepowered.api.data.manipulator.mutable.tileentity.StructureData;
@@ -34,3 +34,4 @@ public class StructureDataView extends BaseView<StructureData> {
         this.size = value.size().get();
     }
 }
+*/

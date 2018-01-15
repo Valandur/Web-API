@@ -1,4 +1,4 @@
-package valandur.webapi.serialize.view.data;
+/*package valandur.webapi.serialize.view.data;
 
 import com.flowpowered.math.vector.Vector3i;
 import org.spongepowered.api.data.manipulator.mutable.tileentity.EndGatewayData;
@@ -21,3 +21,4 @@ public class EndGatewayDataView extends BaseView<EndGatewayData> {
         this.teleportCooldown = value.teleportCooldown().get();
     }
 }
+*/

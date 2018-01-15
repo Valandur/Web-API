@@ -44,10 +44,10 @@ public class CachedPluginContainer extends CachedObject<PluginContainer> impleme
         return authors;
     }
 
-    private Set<CachedPluginDependency> dependencies = new HashSet<>();
+    /*private Set<CachedPluginDependency> dependencies = new HashSet<>();
     public Set<CachedPluginDependency> getDependencies() {
         return new HashSet<>(dependencies);
-    }
+    }*/
 
 
     public CachedPluginContainer(PluginContainer plugin) {
@@ -59,7 +59,7 @@ public class CachedPluginContainer extends CachedObject<PluginContainer> impleme
         this.version = plugin.getVersion().orElse(null);
         this.url = plugin.getUrl().orElse(null);
         this.authors = new ArrayList<>(plugin.getAuthors());
-        plugin.getDependencies().forEach(d -> dependencies.add(new CachedPluginDependency(d)));
+        //plugin.getDependencies().forEach(d -> dependencies.add(new CachedPluginDependency(d)));
     }
 
     @Override

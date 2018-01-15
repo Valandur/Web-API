@@ -2,6 +2,7 @@ package valandur.webapi.serialize.view.data;
 
 import org.spongepowered.api.data.manipulator.mutable.MobSpawnerData;
 import org.spongepowered.api.entity.EntityArchetype;
+import org.spongepowered.api.entity.EntitySnapshot;
 import org.spongepowered.api.util.weighted.WeightedTable;
 import valandur.webapi.api.serialize.BaseView;
 
@@ -10,8 +11,8 @@ public class MobSpawnerDataView extends BaseView<MobSpawnerData> {
     public short maximumNearbyEntities;
     public short maximumSpawnDelay;
     public short minimumSpawnDelay;
-    public EntityArchetype nextEntityToSpawn;
-    public WeightedTable<EntityArchetype> possibleEntitiesToSpawn;
+    public EntitySnapshot nextEntityToSpawn;
+    public WeightedTable<EntitySnapshot> possibleEntitiesToSpawn;
     public short remainingDelay;
     public short requiredPlayerRange;
     public short spawnCount;

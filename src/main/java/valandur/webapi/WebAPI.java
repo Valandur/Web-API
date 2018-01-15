@@ -663,10 +663,14 @@ public class WebAPI {
                     return;
                 }
 
-                logger.warn("------- Web-API update -------");
+                String[] changes = resp.get("body").asText().split("\n");
+
+                logger.warn("------- Web-API Update -------");
                 logger.warn("Latest: " + newVersion);
                 logger.warn("Current: " + version);
-                logger.warn("Get it from Sponge Ore or Github!");
+                logger.warn("---------- Changes -----------");
+                for (String change : changes)
+                    logger.warn(change);
                 logger.warn("------------------------------");
             } catch (IOException e) {
                 e.printStackTrace();

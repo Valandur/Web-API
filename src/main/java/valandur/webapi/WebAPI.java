@@ -96,6 +96,7 @@ import valandur.webapi.user.UserPermission;
 import valandur.webapi.user.UserPermissionConfigSerializer;
 import valandur.webapi.user.Users;
 import valandur.webapi.util.JettyLogger;
+import valandur.webapi.util.Timings;
 import valandur.webapi.util.Util;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -382,6 +383,8 @@ public class WebAPI {
     }
 
     private void init(Player triggeringPlayer) {
+        Timings.STARTUP.startTiming();
+
         logger.info("Loading configuration...");
 
         Tuple<ConfigurationLoader, ConfigurationNode> tup = Util.loadWithDefaults("config.conf", "defaults/config.conf");
@@ -432,6 +435,8 @@ public class WebAPI {
             triggeringPlayer.sendMessage(Text.builder().color(TextColors.AQUA)
                     .append(Text.of("[" + WebAPI.NAME + "] " + WebAPI.NAME + " has been reloaded!")).build());
         }
+
+        Timings.STARTUP.stopTiming();
     }
     private void startWebServer(Player player) {
         // Start web server
@@ -909,7 +914,9 @@ public class WebAPI {
     }
     public static <T> Optional<T> runOnMain(Supplier<T> supplier) {
         if (Sponge.getServer().isMainThread()) {
+            Timings.RUN_ON_MAIN.startTiming();
             T obj = supplier.get();
+            Timings.RUN_ON_MAIN.stopTiming();
             return obj == null ? Optional.empty() : Optional.of(obj);
         } else {
             CompletableFuture<T> future = CompletableFuture.supplyAsync(supplier, WebAPI.syncExecutor);
@@ -918,7 +925,9 @@ public class WebAPI {
                 if (obj == null)
                     return Optional.empty();
                 return Optional.of(obj);
-            } catch (InterruptedException | ExecutionException e) {
+            } catch (InterruptedException ignored) {
+                return Optional.empty();
+            } catch (ExecutionException e) {
                 e.printStackTrace();
                 if (WebAPI.reportErrors()) WebAPI.sentryCapture(e);
                 return Optional.empty();

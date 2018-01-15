@@ -17,9 +17,6 @@ allprojects {
         maven {
             url "https://repo.spongepowered.org/maven/"
         }
-        maven {
-            url "http://repo.bstats.org/content/repositories/releases/"
-        }
     }
 
     dependencies {
@@ -37,6 +34,17 @@ blossom {
 spongestart {
     eula true
     minecraft project.minecraftVersion
+    spongeForgeVersion "1.12.2-2555-7.1.0-BETA-2831"
+    spongeVanillaVersion "1.12.2-7.1.0-BETA-9"
+}
+
+repositories {
+    maven {
+        url "http://repo.bstats.org/content/repositories/releases/"
+    }
+    maven {
+        url = "http://repo.aikar.co/nexus/content/groups/aikar/"
+    }
 }
 
 dependencies {
@@ -44,6 +52,7 @@ dependencies {
     compile group: "io.sentry", name: "sentry", version: "1.5.3"
     compile group: "org.mindrot", name: "jbcrypt", version: "0.4"
     compile group: "org.bstats", name: "bstats-sponge", version: "1.2"
+    compile group: "co.aikar", name: "minecraft-timings", version: "1.0.4"
 
     compileOnly group: "com.fasterxml.jackson.core", name: "jackson-core", version: "2.9.0"
     compileOnly group: "com.fasterxml.jackson.core", name: "jackson-databind", version: "2.9.0"
@@ -67,6 +76,7 @@ shadowJar {
 
     duplicatesStrategy = DuplicatesStrategy.FAIL
 
+    relocate "co.aikar", "valandur.webapi.shadow.co.aikar"
     relocate "edu.umd", "valandur.webapi.shadow.edu.umd"
     relocate "io.sentry", "valandur.webapi.shadow.io.sentry"
     relocate "javassist", "valandur.webapi.shadow.javassist"

@@ -74,11 +74,6 @@
 /mmctickets/ticket/{id}:
   $ref: "./mmctickets/ticket_one.yaml"
 
-/nations/nation:
-  $ref: "./nations/nation_list.yaml"
-/nations/nation/{id}:
-  $ref: "./nations/nation_one.yaml"
-
 /nucleus/jail:
   $ref: "./nucleus/jail_list.yaml"
 /nucleus/jail/{name}:

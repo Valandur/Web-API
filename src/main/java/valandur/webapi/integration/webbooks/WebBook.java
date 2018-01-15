@@ -1,4 +1,4 @@
-package valandur.webapi.integration.webbhooks;
+package valandur.webapi.integration.webbooks;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;

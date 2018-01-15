@@ -80,7 +80,7 @@ import valandur.webapi.integration.mmctickets.MMCTicketsServlet;
 import valandur.webapi.integration.nations.NationsServlet;
 import valandur.webapi.integration.nucleus.NucleusServlet;
 import valandur.webapi.integration.redprotect.RedProtectServlet;
-import valandur.webapi.integration.webbhooks.WebBookServlet;
+import valandur.webapi.integration.webbooks.WebBookServlet;
 import valandur.webapi.serialize.SerializeService;
 import valandur.webapi.message.MessageService;
 import valandur.webapi.permission.PermissionService;

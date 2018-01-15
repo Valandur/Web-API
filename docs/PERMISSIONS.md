@@ -70,7 +70,7 @@ default {
             }
         }
     }
-
+    
     # The rate limit specifies how many operations per second a client with this key can execute
     rateLimit = 10
 }
@@ -91,10 +91,15 @@ endpoints and what data from those endpoints a client can access.
 ```yaml
 # This is an array of keys, defining which keys give access to which endpoints.
 keys = [{
-    key = ADMIN
+    # Use something secure and randomly generated for your key. Web-API will reject keys
+    # that are not at least 8 characters long, but longer is probably better!
+    key = "7S%M2FYp9NYT^Ozg"
 
     # The "*" stands for all permissions and data
     permissions="*"
+    
+    # Set to true to enable this key
+    enabled = false
 
     # No rate limit or zero = unlimited requests
     rateLimit = 0

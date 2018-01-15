@@ -77,9 +77,8 @@ import valandur.webapi.hook.WebHookSerializer;
 import valandur.webapi.hook.WebHookService;
 import valandur.webapi.integration.huskycrates.HuskyCratesServlet;
 import valandur.webapi.integration.mmctickets.MMCTicketsServlet;
-import valandur.webapi.integration.nations.NationsServlet;
 import valandur.webapi.integration.nucleus.NucleusServlet;
-import valandur.webapi.integration.redprotect.RedProtectServlet;
+import valandur.webapi.integration.universalmarket.UniversalMarketServlet;
 import valandur.webapi.integration.webbooks.WebBookServlet;
 import valandur.webapi.serialize.SerializeService;
 import valandur.webapi.message.MessageService;
@@ -361,6 +360,9 @@ public class WebAPI {
         } catch (ClassNotFoundException ignored) { }
 
         try {
+            Class.forName("com.xwaffle.universalmarket.UniversalMarket");
+            logger.info("  Integrating with UniversalMarket...");
+            servletService.registerServlet(UniversalMarketServlet.class);
         } catch (ClassNotFoundException ignored) { }
 
         logger.info(WebAPI.NAME + " ready");

@@ -349,12 +349,6 @@ public class WebAPI {
         } catch (ClassNotFoundException ignored) { }
 
         try {
-            Class.forName("com.arckenver.nations.NationsPlugin");
-            logger.info("  Integrating with Nations...");
-            servletService.registerServlet(NationsServlet.class);
-        } catch (ClassNotFoundException ignored) { }
-
-        try {
             Class.forName("io.github.nucleuspowered.nucleus.api.NucleusAPI");
             logger.info("  Integrating with Nucleus...");
             servletService.registerServlet(NucleusServlet.class);
@@ -367,9 +361,6 @@ public class WebAPI {
         } catch (ClassNotFoundException ignored) { }
 
         try {
-            Class.forName("br.net.fabiozumbi12.redprotect.RedProtect");
-            logger.info("  Integrating with RedProtect...");
-            servletService.registerServlet(RedProtectServlet.class);
         } catch (ClassNotFoundException ignored) { }
 
         logger.info(WebAPI.NAME + " ready");

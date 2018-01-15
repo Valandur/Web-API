@@ -23,9 +23,6 @@ import java.util.Optional;
 @Servlet(basePath = "husky")
 public class HuskyCratesServlet extends BaseServlet {
 
-    private static final int FORMAT_VERSION = 1;
-
-
     public static void onRegister() {
         WebAPIAPI.getJsonService().ifPresent(srv -> {
             srv.registerCache(VirtualCrate.class, CachedVirtualCrate.class);
@@ -203,7 +200,6 @@ public class HuskyCratesServlet extends BaseServlet {
             ConfigurationNode itemsNode = node.getNode("items");
             for (CachedCrateReward reward : crate.getRewards()) {
                 ConfigurationNode rewardNode = itemsNode.getAppendedNode();
-                rewardNode.getNode("formatversion").setValue(FORMAT_VERSION);
                 rewardNode.getNode("name").setValue(reward.getName());
                 if (reward.getDisplayItem() != null)
                     rewardNode.getNode("id").setValue(reward.getDisplayItem().getItem().getId());

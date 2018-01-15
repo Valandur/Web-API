@@ -275,7 +275,7 @@ public class WebAPI {
 
         // Reusable sync executor to run code on main server thread
         syncExecutor = Sponge.getScheduler().createSyncExecutor(this);
-        asyncExecutor = Sponge.getScheduler().createSyncExecutor(this);
+        asyncExecutor = Sponge.getScheduler().createAsyncExecutor(this);
 
         // Register custom serializers
         TypeSerializers.getDefaultSerializers().registerType(TypeToken.of(WebHook.class), new WebHookSerializer());

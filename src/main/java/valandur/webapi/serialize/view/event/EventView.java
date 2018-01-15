@@ -3,7 +3,7 @@ package valandur.webapi.serialize.view.event;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.spongepowered.api.event.Event;
-import org.spongepowered.api.event.achievement.GrantAchievementEvent;
+import org.spongepowered.api.event.advancement.AdvancementEvent;
 import org.spongepowered.api.event.block.TargetBlockEvent;
 import org.spongepowered.api.event.entity.TargetEntityEvent;
 import org.spongepowered.api.event.entity.living.humanoid.HandInteractEvent;
@@ -51,9 +51,12 @@ public class EventView extends BaseView<Event> {
             data.put("ban", ((BanUserEvent)value).getBan());
         }
 
-        if (value instanceof GrantAchievementEvent) {
-            data.put("achievement", ((GrantAchievementEvent)value).getAchievement());
+        if (value instanceof AdvancementEvent) {
+            data.put("advancement", ((AdvancementEvent)value).getAdvancement());
         }
+        /*if (value instanceof GrantAchievementEvent) {
+            data.put("achievement", ((GrantAchievementEvent)value).getAchievement());
+        }*/
 
         if (value instanceof InteractInventoryEvent) {
             data.put("inventory", ((InteractInventoryEvent)value).getTargetInventory());

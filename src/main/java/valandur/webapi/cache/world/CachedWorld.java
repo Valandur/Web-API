@@ -145,7 +145,7 @@ public class CachedWorld extends CachedObject<World> implements ICachedWorld {
         this.loaded = false;
 
         this.loadOnStartup = props.loadOnStartup();
-        this.keepSpawnLoaded = props.doesKeepSpawnLoaded();
+        //this.keepSpawnLoaded = props.doesKeepSpawnLoaded();
         this.allowCommands = props.areCommandsAllowed();
         this.generateBonusChests = props.doesGenerateBonusChest();
         this.mapFeaturesEnabled = props.usesMapFeatures();

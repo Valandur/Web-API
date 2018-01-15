@@ -32,7 +32,7 @@ import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.Order;
-import org.spongepowered.api.event.achievement.GrantAchievementEvent;
+import org.spongepowered.api.event.advancement.AdvancementEvent;
 import org.spongepowered.api.event.block.InteractBlockEvent;
 import org.spongepowered.api.event.command.SendCommandEvent;
 import org.spongepowered.api.event.entity.DestructEntityEvent;
@@ -837,7 +837,11 @@ public class WebAPI {
         webHookService.notifyHooks(WebHookService.WebHookType.INVENTORY_CLOSE, event);
     }
 
-    @Listener(order = Order.POST)
+    public void onPlayerAdvancement(AdvancementEvent.Grant event) {
+        Player player = event.getTargetEntity();
+        webHookService.notifyHooks(WebHookService.WebHookType.ADVANCEMENT, event);
+    }
+    /*@Listener(order = Order.POST)
     public void onPlayerAchievement(GrantAchievementEvent.TargetPlayer event) {
         Player player = event.getTargetEntity();
 
@@ -846,7 +850,7 @@ public class WebAPI {
             return;
 
         webHookService.notifyHooks(WebHookService.WebHookType.ACHIEVEMENT, event);
-    }
+    }*/
 
     @Listener(order = Order.POST)
     public void onGenerateChunk(GenerateChunkEvent event) {

@@ -2,11 +2,12 @@ package valandur.webapi.serialize.view.data;
 
 import org.spongepowered.api.data.manipulator.mutable.entity.DamageableData;
 import org.spongepowered.api.entity.Entity;
+import org.spongepowered.api.entity.EntitySnapshot;
 import valandur.webapi.api.serialize.BaseView;
 
 public class DamageableDataView extends BaseView<DamageableData> {
 
-    public Entity lastAttacker;
+    public EntitySnapshot lastAttacker;
     public Double lastDamage;
 
 

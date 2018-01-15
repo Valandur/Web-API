@@ -15,6 +15,7 @@ import com.flowpowered.math.vector.Vector3d;
 import com.flowpowered.math.vector.Vector3i;
 import org.slf4j.Logger;
 import org.spongepowered.api.CatalogType;
+import org.spongepowered.api.advancement.Advancement;
 import org.spongepowered.api.block.BlockSnapshot;
 import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.block.tileentity.TileEntity;
@@ -25,7 +26,6 @@ import org.spongepowered.api.data.manipulator.mutable.block.*;
 import org.spongepowered.api.data.manipulator.mutable.entity.*;
 import org.spongepowered.api.data.manipulator.mutable.item.*;
 import org.spongepowered.api.data.manipulator.mutable.tileentity.*;
-import org.spongepowered.api.data.meta.ItemEnchantment;
 import org.spongepowered.api.data.meta.PatternLayer;
 import org.spongepowered.api.data.type.Career;
 import org.spongepowered.api.data.type.DyeColor;
@@ -46,6 +46,7 @@ import org.spongepowered.api.extra.fluid.data.manipulator.mutable.FluidItemData;
 import org.spongepowered.api.extra.fluid.data.manipulator.mutable.FluidTankData;
 import org.spongepowered.api.item.FireworkEffect;
 import org.spongepowered.api.item.ItemType;
+import org.spongepowered.api.item.enchantment.Enchantment;
 import org.spongepowered.api.item.inventory.Inventory;
 import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.item.inventory.ItemStackSnapshot;
@@ -53,7 +54,6 @@ import org.spongepowered.api.item.merchant.TradeOffer;
 import org.spongepowered.api.plugin.PluginContainer;
 import org.spongepowered.api.profile.GameProfile;
 import org.spongepowered.api.statistic.Statistic;
-import org.spongepowered.api.statistic.achievement.Achievement;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.util.Color;
 import org.spongepowered.api.util.RespawnLocation;
@@ -125,7 +125,7 @@ public class SerializeService implements ISerializeService {
         registerCache(Entity.class, CachedEntity.class);
         registerCache(Cause.class, CachedCause.class);
         registerCache(Inventory.class, CachedInventory.class);
-        registerCache(CatalogType.class, CachedCatalogType.class);
+        _registerCache(CatalogType.class, CachedCatalogType.class);
         registerCache(Location.class, CachedLocation.class);
         registerCache(Player.class, CachedPlayer.class);
         registerCache(PluginContainer.class, CachedPluginContainer.class);
@@ -139,7 +139,7 @@ public class SerializeService implements ISerializeService {
 
         // Data
         registerView(AbsorptionData.class, AbsorptionDataView.class);
-        registerView(AchievementData.class, AchievementDataView.class);
+        //registerView(AchievementData.class, AchievementDataView.class);
         registerView(AgeableData.class, AgeableDataView.class);
         registerView(AgentData.class, AgentDataView.class);
         registerView(AggressiveData.class, AggressiveDataView.class);
@@ -259,7 +259,7 @@ public class SerializeService implements ISerializeService {
 
         // Item
         registerView(FireworkEffect.class, FireworkEffectView.class);
-        registerView(ItemEnchantment.class, ItemEnchantmentView.class);
+        registerView(Enchantment.class, EnchantmentView.class);
         registerView(ItemStackSnapshot.class, ItemStackSnapshotView.class);
         registerView(ItemStack.class, ItemStackView.class);
         registerView(ItemType.class, ItemTypeView.class);
@@ -279,7 +279,7 @@ public class SerializeService implements ISerializeService {
         registerView(Vector3i.class, Vector3iView.class);
 
         // Player
-        registerView(Achievement.class, AchievementView.class);
+        //registerView(Achievement.class, AchievementView.class);
         registerView(Ban.class, BanView.class);
         registerView(GameMode.class, GameModeView.class);
         registerView(GameProfile.class, GameProfileView.class);
@@ -292,7 +292,7 @@ public class SerializeService implements ISerializeService {
         supportedData = new ConcurrentHashMap<>();
 
         supportedData.put("absorption", AbsorptionData.class);
-        supportedData.put("achievements", AchievementData.class);
+        //supportedData.put("achievements", AchievementData.class);
         supportedData.put("age", AgeableData.class);
         supportedData.put("aiEnabled", AgentData.class);
         supportedData.put("aggressive", AggressiveData.class);
@@ -446,6 +446,9 @@ public class SerializeService implements ISerializeService {
         logger.info("Done loading serializers");
     }
 
+    private void _registerCache(Class handledClass, Class cacheClass) {
+        serializers.put(handledClass, new BaseSerializer<>(handledClass, cacheClass));
+    }
     @Override
     public <T> void registerCache(Class<? extends T> handledClass, Class<? extends ICachedObject<T>> cacheClass) {
         serializers.put(handledClass, new BaseSerializer<>(handledClass, cacheClass));

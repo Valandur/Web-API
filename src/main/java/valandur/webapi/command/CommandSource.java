@@ -4,6 +4,7 @@ import org.spongepowered.api.service.context.Context;
 import org.spongepowered.api.service.permission.Subject;
 import org.spongepowered.api.service.permission.SubjectCollection;
 import org.spongepowered.api.service.permission.SubjectData;
+import org.spongepowered.api.service.permission.SubjectReference;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.channel.MessageChannel;
 import org.spongepowered.api.util.Tristate;
@@ -47,6 +48,16 @@ public class CommandSource implements org.spongepowered.api.command.CommandSourc
     }
 
     @Override
+    public SubjectReference asSubjectReference() {
+        return null;
+    }
+
+    @Override
+    public boolean isSubjectDataPersisted() {
+        return false;
+    }
+
+    @Override
     public SubjectData getSubjectData() {
         return null;
     }
@@ -67,12 +78,12 @@ public class CommandSource implements org.spongepowered.api.command.CommandSourc
     }
 
     @Override
-    public boolean isChildOf(Set<Context> contexts, Subject parent) {
+    public boolean isChildOf(Set<Context> contexts, SubjectReference parent) {
         return false;
     }
 
     @Override
-    public List<Subject> getParents(Set<Context> contexts) {
+    public List<SubjectReference> getParents(Set<Context> contexts) {
         return null;
     }
 

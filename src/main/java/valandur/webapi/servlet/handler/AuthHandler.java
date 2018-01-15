@@ -5,6 +5,7 @@ import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.AbstractHandler;
+import org.slf4j.Logger;
 import org.spongepowered.api.util.Tuple;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.util.TreeNode;
@@ -55,6 +56,9 @@ public class AuthHandler extends AbstractHandler {
     }
 
     public void init() {
+        Logger logger = WebAPI.getLogger();
+        logger.info("Loading keys & permissions...");
+
         Tuple<ConfigurationLoader, ConfigurationNode> tup =
                 Util.loadWithDefaults(configFileName, "defaults/" + configFileName);
         loader = tup.getFirst();
@@ -67,8 +71,25 @@ public class AuthHandler extends AbstractHandler {
         permMap.clear();
         for (ConfigurationNode node : config.getNode("keys").getChildrenList()) {
             String key = node.getNode("key").getString();
+            if (!node.getNode("enabled").getBoolean()) {
+                logger.info("Skipping disabled key " + key);
+                continue;
+            }
             if (key == null || key.isEmpty()) {
-                WebAPI.getLogger().warn("SKIPPING KEY-PERMISSION MAPPING WITH INVALID KEY");
+                logger.error("SKIPPING KEY-PERMISSION MAPPING WITH INVALID KEY");
+                continue;
+            }
+            if (key.equalsIgnoreCase("ADMIN") || key.equalsIgnoreCase("USER") ||
+                    key.equalsIgnoreCase("7S%M2FYp9NYT^Ozg")) {
+                logger.error("YOU STILL HAVE SOME DEFAULT KEYS IN YOUR PERMSSIONS.CONF! " +
+                        "PLESAE CHANGE OR DEACTIVATE THEM IMMEDIATELY!");
+                logger.error("THE KEY '" + key + "' WILL BE SKIPPED!");
+                continue;
+            }
+            if (key.length() < 8) {
+                logger.error("YOU HAVE A KEY WITH LESS THAN 8 CHARACTERS! KEYS ARE RECOMMNDED TO BE AT " +
+                        "LEAST 16 CHARACTERS AND RANDOMLY GENERATED!");
+                logger.error("THE KEY '" + key + "' WILL BE SKIPPED!");
                 continue;
             }
             TreeNode<String, Boolean> perms = permissionService.permissionTreeFromConfig(node.getNode("permissions"));

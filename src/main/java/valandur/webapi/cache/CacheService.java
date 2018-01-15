@@ -53,6 +53,7 @@ import valandur.webapi.cache.tileentity.CachedTileEntity;
 import valandur.webapi.cache.world.CachedChunk;
 import valandur.webapi.cache.world.CachedWorld;
 import valandur.webapi.serialize.SerializeService;
+import valandur.webapi.util.Timings;
 import valandur.webapi.util.Util;
 
 import java.lang.reflect.Field;
@@ -264,14 +265,22 @@ public class CacheService implements ICacheService {
     }
     @Override
     public ICachedWorld updateWorld(World world) {
+        assert Sponge.getServer().isMainThread();
+
+        Timings.CACHE_WORLD.startTiming();
         CachedWorld w = new CachedWorld(world);
         worlds.put(world.getUniqueId(), w);
+        Timings.CACHE_WORLD.stopTiming();
         return w;
     }
     @Override
     public ICachedWorld updateWorld(WorldProperties world) {
+        assert Sponge.getServer().isMainThread();
+
+        Timings.CACHE_WORLD.startTiming();
         CachedWorld w = new CachedWorld(world);
         worlds.put(world.getUniqueId(), w);
+        Timings.CACHE_WORLD.stopTiming();
         return w;
     }
     @Override
@@ -339,14 +348,22 @@ public class CacheService implements ICacheService {
     }
     @Override
     public ICachedPlayer updatePlayer(Player player) {
+        assert Sponge.getServer().isMainThread();
+
+        Timings.CACHE_PLAYER.startTiming();
         CachedPlayer p = new CachedPlayer(player);
         players.put(p.getUUID(), p);
+        Timings.CACHE_PLAYER.stopTiming();
         return p;
     }
     @Override
     public ICachedPlayer updatePlayer(User user) {
+        assert Sponge.getServer().isMainThread();
+
+        Timings.CACHE_PLAYER.startTiming();
         CachedPlayer p = new CachedPlayer(user);
         players.put(p.getUUID(), p);
+        Timings.CACHE_PLAYER.stopTiming();
         return p;
     }
     @Override
@@ -388,8 +405,12 @@ public class CacheService implements ICacheService {
     }
     @Override
     public ICachedEntity updateEntity(Entity entity) {
+        assert Sponge.getServer().isMainThread();
+
+        Timings.CACHE_ENTITY.startTiming();
         CachedEntity e = new CachedEntity(entity);
         entities.put(e.getUUID(), e);
+        Timings.CACHE_ENTITY.stopTiming();
         return e;
     }
     @Override
@@ -398,6 +419,8 @@ public class CacheService implements ICacheService {
     }
 
     public void updatePlugins() {
+        assert Sponge.getServer().isMainThread();
+
         plugins.clear();
 
         Collection<PluginContainer> newPlugins = Sponge.getPluginManager().getPlugins();
@@ -430,6 +453,8 @@ public class CacheService implements ICacheService {
     }
 
     public void updateCommands() {
+        assert Sponge.getServer().isMainThread();
+
         commands.clear();
 
         Collection<CommandMapping> newCommands = Sponge.getCommandManager().getAll().values();

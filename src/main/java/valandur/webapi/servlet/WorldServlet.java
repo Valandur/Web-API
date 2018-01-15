@@ -94,9 +94,10 @@ public class WorldServlet extends BaseServlet {
         String archTypeName = UUID.randomUUID().toString();
         WorldArchetype archType = builder.enabled(true).build(archTypeName, archTypeName);
 
-        Optional<WorldProperties> resProps = WebAPI.runOnMain(() -> {
+        Optional<ICachedWorld> resWorld = WebAPI.runOnMain(() -> {
             try {
-                return Sponge.getServer().createWorldProperties(req.getName(), archType);
+                WorldProperties props = Sponge.getServer().createWorldProperties(req.getName(), archType);
+                return cacheService.updateWorld(props);
             } catch (IOException e) {
                 data.addData("ok", false, false);
                 data.addData("error", e, false);
@@ -104,16 +105,13 @@ public class WorldServlet extends BaseServlet {
             }
         });
 
-        if (!resProps.isPresent())
+        if (!resWorld.isPresent())
             return;
 
-        ICachedWorld world = cacheService.updateWorld(resProps.get());
-
         data.setStatus(HttpServletResponse.SC_CREATED);
-        data.setHeader("Location", world.getLink());
-
+        data.setHeader("Location", resWorld.get().getLink());
         data.addData("ok", true, false);
-        data.addData("world", world, true);
+        data.addData("world", resWorld.get(), true);
     }
 
     @Endpoint(method = HttpMethod.POST, path = "/:world/method", perm = "method")

@@ -1,5 +1,7 @@
 package valandur.webapi.servlet.base;
 
+import co.aikar.timings.Timing;
+import co.aikar.timings.Timings;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
@@ -64,6 +66,8 @@ public class ApiServlet extends HttpServlet {
         }
 
         MatchedRoute match = optMatch.get();
+
+        //Timing timing = Timings.of(WebAPI.getInstance(), match.getRoute().path()).startTiming();
 
         String specPerm = match.getRoute().perm();
         TreeNode<String, Boolean> perms;
@@ -163,6 +167,8 @@ public class ApiServlet extends HttpServlet {
 
             resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal server error");
         }
+
+        //timing.stopTiming();
     }
 
     @Override

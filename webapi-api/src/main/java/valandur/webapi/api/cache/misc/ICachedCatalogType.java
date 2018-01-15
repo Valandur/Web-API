@@ -3,7 +3,7 @@ package valandur.webapi.api.cache.misc;
 import org.spongepowered.api.CatalogType;
 import valandur.webapi.api.cache.ICachedObject;
 
-public interface ICachedCatalogType extends ICachedObject<CatalogType> {
+public interface ICachedCatalogType<T extends CatalogType> extends ICachedObject<T> {
 
     /***
      * Gets the unique id of the catalog type

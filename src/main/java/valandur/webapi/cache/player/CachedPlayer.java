@@ -2,17 +2,20 @@ package valandur.webapi.cache.player;
 
 import com.flowpowered.math.vector.Vector3d;
 import org.spongepowered.api.Sponge;
+import org.spongepowered.api.advancement.Advancement;
+import org.spongepowered.api.advancement.AdvancementProgress;
+import org.spongepowered.api.advancement.AdvancementTree;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.item.inventory.ItemStack;
+import valandur.webapi.WebAPI;
 import valandur.webapi.api.cache.CachedObject;
 import valandur.webapi.api.cache.player.ICachedPlayer;
 import valandur.webapi.api.serialize.JsonDetails;
 import valandur.webapi.cache.misc.CachedInventory;
 import valandur.webapi.api.cache.world.CachedLocation;
 
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 public class CachedPlayer extends CachedObject<Player> implements ICachedPlayer {
 
@@ -98,6 +101,12 @@ public class CachedPlayer extends CachedObject<Player> implements ICachedPlayer 
         return inventory;
     }
 
+    private List<CachedAdvancement> unlockedAdvancements = new ArrayList<>();
+    @JsonDetails
+    public List<CachedAdvancement> getUnlockedAdvancements() {
+        return unlockedAdvancements;
+    }
+
 
     public CachedPlayer(User user) {
         super(null);
@@ -121,12 +130,28 @@ public class CachedPlayer extends CachedObject<Player> implements ICachedPlayer 
         this.address = player.getConnection().getAddress().toString();
         this.latency = player.getConnection().getLatency();
 
+        // Collect unlocked advancements
+        for (AdvancementTree tree : player.getUnlockedAdvancementTrees()) {
+            addUnlockedAdvancements(player, tree.getRootAdvancement());
+        }
+
         // This will be moved to the other constructor once Sponge implements the offline inventory API
         this.helmet = player.getHelmet().map(ItemStack::copy).orElse(null);
         this.chestplate = player.getChestplate().map(ItemStack::copy).orElse(null);
         this.leggings = player.getLeggings().map(ItemStack::copy).orElse(null);
         this.boots = player.getBoots().map(ItemStack::copy).orElse(null);
         this.inventory = new CachedInventory(player.getInventory());
+    }
+
+    private void addUnlockedAdvancements(Player p, Advancement a) {
+        AdvancementProgress progress = p.getProgress(a);
+        if (progress.achieved()) {
+            unlockedAdvancements.add(new CachedAdvancement(a));
+        }
+
+        for (Advancement child : a.getChildren()) {
+            addUnlockedAdvancements(p, child);
+        }
     }
 
     @Override

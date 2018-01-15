@@ -5,7 +5,7 @@ import org.spongepowered.api.text.translation.Translatable;
 import valandur.webapi.api.cache.CachedObject;
 import valandur.webapi.api.cache.misc.ICachedCatalogType;
 
-public class CachedCatalogType extends CachedObject<CatalogType> implements ICachedCatalogType {
+public class CachedCatalogType<T extends CatalogType> extends CachedObject<T> implements ICachedCatalogType<T> {
 
     private String id;
     public String getId() {
@@ -18,18 +18,18 @@ public class CachedCatalogType extends CachedObject<CatalogType> implements ICac
     }
 
 
-    public CachedCatalogType(CatalogType catalogType) {
-        super(catalogType, false);
+    public CachedCatalogType(T value) {
+        super(value, false);
 
-        this.id = catalogType.getId();
-        if (catalogType instanceof Translatable) {
+        this.id = value.getId();
+        if (value instanceof Translatable) {
             try {
-                this.name = ((Translatable) catalogType).getTranslation().get();
+                this.name = ((Translatable) value).getTranslation().get();
             } catch (AbstractMethodError ignored) {
-                this.name = catalogType.getName();
+                this.name = value.getName();
             }
         } else {
-            this.name = catalogType.getName();
+            this.name = value.getName();
         }
     }
 }

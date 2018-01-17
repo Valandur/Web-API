@@ -5,6 +5,10 @@ import org.eclipse.jetty.http.HttpMethod;
 import org.spongepowered.api.Platform;
 import org.spongepowered.api.Server;
 import org.spongepowered.api.Sponge;
+import oshi.SystemInfo;
+import oshi.hardware.GlobalMemory;
+import oshi.hardware.HardwareAbstractionLayer;
+import oshi.software.os.OperatingSystem;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.servlet.Endpoint;
 import valandur.webapi.api.servlet.Servlet;
@@ -13,7 +17,11 @@ import valandur.webapi.server.ServerService;
 import valandur.webapi.servlet.base.ServletData;
 
 import javax.servlet.http.HttpServletResponse;
+import java.io.File;
+import java.lang.management.ManagementFactory;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Optional;
 
 @Servlet(basePath = "info")
@@ -75,15 +83,13 @@ public class InfoServlet extends BaseServlet {
         data.addData("properties", srv.getProperties(), true);
     }
 
-    @Endpoint(method = HttpMethod.GET, path="/tps", perm = "tps")
-    public void getTps(ServletData data) {
-        data.addData("ok", true, false);
+    @Endpoint(method = HttpMethod.GET, path = "/stats", perm = "stats")
+    public void getStats(ServletData data) {
+        data.addData("ok", true, true);
         data.addData("tps", serverService.getAverageTps(), false);
-    }
-
-    @Endpoint(method = HttpMethod.GET, path="/player", perm = "players")
-    public void getPlayers(ServletData data) {
-        data.addData("ok", true, false);
         data.addData("players", serverService.getOnlinePlayers(), false);
+        data.addData("cpu", serverService.getCpuLoad(), false);
+        data.addData("memory", serverService.getMemoryLoad(), false);
+        data.addData("disk", serverService.getDiskUsage(), false);
     }
 }

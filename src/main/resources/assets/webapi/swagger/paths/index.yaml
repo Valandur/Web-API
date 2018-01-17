@@ -22,8 +22,10 @@
 
 /info:
   $ref: "./server/info.yaml"
+/info/stats:
+  $ref: "./server/stats.yaml"
 /info/properties:
-  $res: "./server/properties.yaml"
+  $ref: "./server/properties.yaml"
 
 /message:
   $ref: "./message/message.yaml"

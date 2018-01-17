@@ -3,17 +3,23 @@ plugins {
 }
 
 apply plugin: "com.github.johnrengelman.shadow"
+apply plugin: "ninja.miserable.blossom"
 
 dependencies {
-    compile group: "com.fasterxml.jackson.core", name: "jackson-core", version: "2.9.0"
-    compile group: "com.fasterxml.jackson.core", name: "jackson-databind", version: "2.9.0"
-    compile group: "com.fasterxml.jackson.core", name: "jackson-annotations", version: "2.9.0"
-    compile group: "com.fasterxml.jackson.dataformat", name: "jackson-dataformat-xml", version: "2.9.0"
+    compile group: "com.fasterxml.jackson.core", name: "jackson-core", version: project.jacksonVersion
+    compile group: "com.fasterxml.jackson.core", name: "jackson-databind", version: project.jacksonVersion
+    compile group: "com.fasterxml.jackson.core", name: "jackson-annotations", version: project.jacksonVersion
+    compile group: "com.fasterxml.jackson.dataformat", name: "jackson-dataformat-xml", version: project.jacksonVersion
     compile group: "org.codehaus.woodstox", name: "woodstox-core-asl", version: "4.4.1"
-    compile group: "org.eclipse.jetty", name: "jetty-server", version: "9.4.7.v20170914"
-    compile group: "org.eclipse.jetty", name: "jetty-servlet", version: "9.4.7.v20170914"
-    compile group: "org.eclipse.jetty", name: "jetty-http", version: "9.4.7.v20170914"
-    compile group: "org.eclipse.jetty", name: "jetty-rewrite", version: "9.4.7.v20170914"
+    compile group: "org.eclipse.jetty", name: "jetty-server", version: project.jettyVersion
+    compile group: "org.eclipse.jetty", name: "jetty-servlet", version: project.jettyVersion
+    compile group: "org.eclipse.jetty", name: "jetty-http", version: project.jettyVersion
+    compile group: "org.eclipse.jetty", name: "jetty-rewrite", version: project.jettyVersion
+}
+
+blossom {
+    def locApi = "src/main/java/valandur/webapi/api/util/Constants.java"
+    replaceToken "@version@", project.version, locApi
 }
 
 shadowJar {
@@ -28,9 +34,6 @@ shadowJar {
 
     exclude "/about.html"
     exclude "/jetty-dir.css"
-    exclude "/META-INF/services/javax.xml.stream.XMLEventFactory"
-    exclude "/META-INF/services/javax.xml.stream.XMLInputFactory"
-    exclude "/META-INF/services/javax.xml.stream.XMLOutputFactory"
 
     archiveName = "webapi-api-${version}.jar"
 }

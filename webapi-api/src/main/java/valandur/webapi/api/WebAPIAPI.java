@@ -16,6 +16,7 @@ import valandur.webapi.api.permission.IPermissionService;
 import valandur.webapi.api.serialize.ISerializeService;
 import valandur.webapi.api.server.IServerService;
 import valandur.webapi.api.servlet.IServletService;
+import valandur.webapi.api.util.Constants;
 
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -23,29 +24,23 @@ import java.util.concurrent.ExecutionException;
 import java.util.function.Supplier;
 
 @Plugin(
-        id = WebAPIAPI.ID,
-        version = WebAPIAPI.VERSION,
-        name = WebAPIAPI.NAME,
-        url = WebAPIAPI.URL,
-        description = WebAPIAPI.DESCRIPTION,
+        id = Constants.ID,
+        version = Constants.VERSION,
+        name = Constants.NAME,
+        url = Constants.URL,
+        description = Constants.DESCRIPTION,
         authors = {
                 "Valandur"
         }
 )
 public class WebAPIAPI {
 
-    public static final String ID = "webapi-api";
-    public static final String NAME = "Web-API API";
-    public static final String VERSION = "@version@";
-    public static final String DESCRIPTION = "API interface for the Web-API";
-    public static final String URL = "https://github.com/Valandur/Web-API";
-
     @Inject
     private Logger logger;
 
     @Listener
     public void onPreInitialization(GamePreInitializationEvent event) {
-        logger.info(NAME + " v" + VERSION + " is loading...");
+        logger.info(Constants.NAME + " v" + Constants.VERSION + " is loading...");
 
         // Reusable sync executor to run code on main server thread
         syncExecutor = Sponge.getScheduler().createSyncExecutor(this);

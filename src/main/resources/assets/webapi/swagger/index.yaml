@@ -52,7 +52,7 @@ tags:
   - name: History
     description: Provides access to the command and chat history.
   - name: Info
-    description: Get misc information about the minecraft server
+    description: Get information about the minecraft server
   - name: Message
     description: Send (interactive) messages to clients.
   - name: Player
@@ -92,7 +92,6 @@ x-tagGroups:
     tags:
       - Husky Crates
       - MMC Tickets
-      - Nations
       - Nucleus
       - Web Books
 

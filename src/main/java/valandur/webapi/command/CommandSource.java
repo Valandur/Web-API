@@ -8,12 +8,13 @@ import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.channel.MessageChannel;
 import org.spongepowered.api.util.Tristate;
 import valandur.webapi.WebAPI;
+import valandur.webapi.util.Constants;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class CommandSource implements org.spongepowered.api.command.CommandSource {
-    private String name = WebAPI.NAME;
+    private String name = Constants.NAME;
     private int waitLines = 0;
     private Queue<String> lines = new ConcurrentLinkedQueue<>();
     private boolean hideInConsole = false;

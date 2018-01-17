@@ -1,5 +1,6 @@
 description: Unsupported method
 schema:
+  title: Error405
   type: object
   properties:
     error:

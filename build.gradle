@@ -27,8 +27,6 @@ allprojects {
 blossom {
     def locMain = "src/main/java/valandur/webapi/WebAPI.java"
     replaceToken "@version@", project.version, locMain
-    def locApi = "webapi-api/src/main/java/valandur/webapi/api/WebAPIAPI.java"
-    replaceToken "@version@", project.version, locApi
 }
 
 spongestart {
@@ -52,20 +50,21 @@ repositories {
 
 dependencies {
     compile project(":webapi-api")
-    compile group: "io.sentry", name: "sentry", version: "1.5.3"
+    compile group: "io.sentry", name: "sentry", version: "1.6.4"
     compile group: "org.mindrot", name: "jbcrypt", version: "0.4"
     compile group: "org.bstats", name: "bstats-sponge", version: "1.2"
     compile group: "co.aikar", name: "minecraft-timings", version: "1.0.4"
+    compile group: "com.github.oshi", name: "oshi-core", version: "3.4.4"
 
-    compileOnly group: "com.fasterxml.jackson.core", name: "jackson-core", version: "2.9.0"
-    compileOnly group: "com.fasterxml.jackson.core", name: "jackson-databind", version: "2.9.0"
-    compileOnly group: "com.fasterxml.jackson.core", name: "jackson-annotations", version: "2.9.0"
-    compileOnly group: "com.fasterxml.jackson.dataformat", name: "jackson-dataformat-xml", version: "2.9.0"
+    compileOnly group: "com.fasterxml.jackson.core", name: "jackson-core", version: project.jacksonVersion
+    compileOnly group: "com.fasterxml.jackson.core", name: "jackson-databind", version: project.jacksonVersion
+    compileOnly group: "com.fasterxml.jackson.core", name: "jackson-annotations", version: project.jacksonVersion
+    compileOnly group: "com.fasterxml.jackson.dataformat", name: "jackson-dataformat-xml", version: project.jacksonVersion
     compileOnly group: "org.codehaus.woodstox", name: "woodstox-core-asl", version: "4.4.1"
-    compileOnly group: "org.eclipse.jetty", name: "jetty-server", version: "9.4.7.v20170914"
-    compileOnly group: "org.eclipse.jetty", name: "jetty-servlet", version: "9.4.7.v20170914"
-    compileOnly group: "org.eclipse.jetty", name: "jetty-http", version: "9.4.7.v20170914"
-    compileOnly group: "org.eclipse.jetty", name: "jetty-rewrite", version: "9.4.7.v20170914"
+    compileOnly group: "org.eclipse.jetty", name: "jetty-server", version: project.jettyVersion
+    compileOnly group: "org.eclipse.jetty", name: "jetty-servlet", version: project.jettyVersion
+    compileOnly group: "org.eclipse.jetty", name: "jetty-http", version: project.jettyVersion
+    compileOnly group: "org.eclipse.jetty", name: "jetty-rewrite", version: project.jettyVersion
 
     compileOnly name: "griefprevention-1.12.2-4.3.0.511"
     compileOnly name: "HuskyCrates-v1.8.0PRE2-API7"
@@ -80,7 +79,10 @@ shadowJar {
 
     duplicatesStrategy = DuplicatesStrategy.FAIL
 
-    relocate "co.aikar", "valandur.webapi.shadow.co.aikar"
+    mergeServiceFiles()
+
+    //relocate "com.sun.jna", "valandur.webapi.shadow.com.sun.jna"
+    relocate "co.aikar.timings.lib", "valandur.webapi.shadow.co.aikar.timingslib"
     relocate "edu.umd", "valandur.webapi.shadow.edu.umd"
     relocate "io.sentry", "valandur.webapi.shadow.io.sentry"
     relocate "javassist", "valandur.webapi.shadow.javassist"
@@ -88,6 +90,10 @@ shadowJar {
     relocate "net.jcip", "valandur.webapi.shadow.net.jcip"
     relocate "org.bstats", "valandur.webapi.shadow.org.bstats"
     relocate "org.mindrot", "valandur.webapi.shadow.org.mindrot"
+    relocate "org.intellij", "valandur.webapi.shadow.org.intellij"
+    relocate "org.jetbrains", "valandur.webapi.shadow.org.jetbrains"
+    relocate "org.threeten", "valandur.webapi.shadow.org.threeten"
+    relocate "oshi", "valandur.webapi.shadow.oshi"
 
     exclude "/about.html"
     exclude "/jetty-dir.css"
@@ -104,11 +110,15 @@ shadowJar {
 
     // Exclude the dependencies already included by WebAPI-API
     dependencies {
+        exclude(dependency("com.ctc.*:"))
         exclude(dependency("com.fasterxml.*:"))
-        exclude(dependency("javax.servlet:"))
+        exclude(dependency("javax.servlet.*:"))
         exclude(dependency("javax.xml.*:"))
         exclude(dependency("org.codehaus.*:"))
-        exclude(dependency("org.eclipse.jetty:"))
+        exclude(dependency("org.eclipse.*:"))
+
+        // Provided by sponge/forge
+        exclude(dependency("org.slf4j.*:"))
     }
 
     archiveName = "webapi-${version}.jar"

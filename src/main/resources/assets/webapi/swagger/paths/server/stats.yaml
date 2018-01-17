@@ -13,6 +13,7 @@ get:
     200:
       description: Server Stats
       schema:
+        title: StatsResponse
         type: object
         properties:
           ok:

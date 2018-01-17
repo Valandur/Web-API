@@ -16,4 +16,6 @@ public class Timings {
             co.aikar.timings.Timings.of(WebAPI.getInstance(), "Cache entity");
     public static final Timing CACHE_TILE_ENTITY =
             co.aikar.timings.Timings.of(WebAPI.getInstance(), "Cache tile-entity");
+    public static final Timing WEBHOOK_NOTIFY =
+            co.aikar.timings.Timings.of(WebAPI.getInstance(), "WebHook notify");
 }

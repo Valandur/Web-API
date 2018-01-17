@@ -1,0 +1,45 @@
+get:
+  summary: Server stats
+  operationId: getStats
+  description: |
+    Get statistical information about the server, such as player count, cpu and memory usage over time.
+
+    > Required permission: info.stats
+  tags:
+    - Info
+  responses:
+    403:
+      $ref: "../../responses/403.yaml"
+    200:
+      description: Server Stats
+      schema:
+        title: StatsResponse
+        type: object
+        properties:
+          ok:
+            $ref: "../../definitions/ok.yaml"
+          tps:
+            type: array
+            description: Array of time and TPS values
+            items:
+              $ref: "../../definitions/server/Stat.yaml"
+          players:
+            type: array
+            description: Array of time and player count values
+            items:
+              $ref: "../../definitions/server/Stat.yaml"
+          cpu:
+            type: array
+            description: Array of time and CPU load values
+            items:
+              $ref: "../../definitions/server/Stat.yaml"
+          memory:
+            type: array
+            description: Array of time and memory load values
+            items:
+              $ref: "../../definitions/server/Stat.yaml"
+          disk:
+            type: array
+            description: Array of time and disk usage values
+            items:
+              $ref: "../../definitions/server/Stat.yaml"

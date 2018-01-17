@@ -1,5 +1,6 @@
 description: Too many blocks
 schema:
+  title: Error406
   type: object
   properties:
     error:

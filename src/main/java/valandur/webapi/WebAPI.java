@@ -256,6 +256,8 @@ public class WebAPI {
     public void onPreInitialization(GamePreInitializationEvent event) {
         WebAPI.instance = this;
 
+        Timings.STARTUP.startTiming();
+
         Platform platform = Sponge.getPlatform();
         spongeApi = platform.getContainer(Component.API).getVersion().orElse(null);
         spongeGame = platform.getContainer(Component.GAME).getVersion().orElse(null);
@@ -303,9 +305,13 @@ public class WebAPI {
         Sponge.getServiceManager().setProvider(this, IServerService.class, serverService);
         Sponge.getServiceManager().setProvider(this, IServletService.class, servletService);
         Sponge.getServiceManager().setProvider(this, IWebHookService.class, webHookService);
+
+        Timings.STARTUP.stopTiming();
     }
     @Listener
     public void onInitialization(GameInitializationEvent event) {
+        Timings.STARTUP.startTiming();
+
         logger.info(NAME + " v" + VERSION + " is starting...");
 
         logger.info("Setting up jetty logger...");
@@ -366,13 +372,19 @@ public class WebAPI {
         } catch (ClassNotFoundException ignored) { }
 
         logger.info(WebAPI.NAME + " ready");
+
+        Timings.STARTUP.stopTiming();
     }
     @Listener(order = Order.POST)
     public void onPostInitialization(GamePostInitializationEvent event) {
+        Timings.STARTUP.startTiming();
+
         // Load base data
         cacheService.updateWorlds();
         cacheService.updatePlugins();
         cacheService.updateCommands();
+
+        Timings.STARTUP.stopTiming();
     }
 
     private void init(Player triggeringPlayer) {

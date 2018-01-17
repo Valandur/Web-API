@@ -23,6 +23,7 @@ import valandur.webapi.hook.filter.BlockTypeFilter;
 import valandur.webapi.hook.filter.ItemTypeFilter;
 import valandur.webapi.hook.filter.PlayerFilter;
 import valandur.webapi.serialize.SerializeService;
+import valandur.webapi.util.Timings;
 import valandur.webapi.util.Util;
 
 import java.io.*;
@@ -164,6 +165,8 @@ public class WebHookService implements IWebHookService {
 
     @Override
     public void notifyHooks(WebHookType type, Object data) {
+        Timings.WEBHOOK_NOTIFY.startTiming();
+
         List<WebHook> notifyHooks = new ArrayList<>(eventHooks.get(type));
         if (type != WebHookType.CUSTOM_MESSAGE) {
             notifyHooks.addAll(eventHooks.get(WebHookType.ALL));
@@ -171,19 +174,29 @@ public class WebHookService implements IWebHookService {
         for (WebHook hook : notifyHooks) {
             notifyHook(hook, type, null, data);
         }
+
+        Timings.WEBHOOK_NOTIFY.stopTiming();
     }
     public void notifyHook(CommandWebHook cmdHook, String source, Map<String, Object> data) {
+        Timings.WEBHOOK_NOTIFY.startTiming();
+
         for (WebHook hook : cmdHook.getHooks()) {
             notifyHook(hook, WebHookType.CUSTOM_COMMAND, source, data);
         }
+
+        Timings.WEBHOOK_NOTIFY.stopTiming();
     }
 
     @Override
     public void notifyHooks(Class<? extends Event> clazz, Object data) {
+        Timings.WEBHOOK_NOTIFY.startTiming();
+
         List<WebHook> notifyHooks = new ArrayList<>(customHooks.get(clazz).getFirst());
         for (WebHook hook : notifyHooks) {
             notifyHook(hook, WebHookType.CUSTOM_EVENT, null, data);
         }
+
+        Timings.WEBHOOK_NOTIFY.stopTiming();
     }
 
     private void notifyHook(WebHook hook, WebHookType eventType, String source, Object data) {

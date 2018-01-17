@@ -1,5 +1,6 @@
 description: Not found
 schema:
+  title: Error404
   type: object
   properties:
     error:

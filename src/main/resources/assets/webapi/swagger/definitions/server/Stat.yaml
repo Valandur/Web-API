@@ -1,0 +1,10 @@
+title: Stat
+type: object
+properties:
+  timestamp:
+    type: number
+    format: long
+    description: The timestamp (epoch seconds) at which the value was recorded
+  value:
+    type: number
+    description: The recorded value for this metric.

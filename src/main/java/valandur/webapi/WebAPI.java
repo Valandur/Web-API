@@ -104,10 +104,14 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.SocketException;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.CodeSource;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -250,6 +254,29 @@ public class WebAPI {
         System.setProperty("sentry.stacktrace.app.packages", WebAPI.class.getPackage().getName());
 
         Sentry.init();
+
+        // Add our own jar to the system classloader classpath,
+        // because some external libraries don't work otherwise.
+        try {
+            CodeSource src = WebAPI.class.getProtectionDomain().getCodeSource();
+            if (src == null) {
+                throw new IOException("Could not get code source!");
+            }
+
+            URL jar = src.getLocation();
+            String str = jar.toString();
+            if (str.indexOf("!") > 0) {
+                jar = new URL(jar.toString().substring(0, str.indexOf("!") + 2));
+            }
+            URLClassLoader sysloader = (URLClassLoader) ClassLoader.getSystemClassLoader();
+            Class sysclass = URLClassLoader.class;
+
+            Method method = sysclass.getDeclaredMethod("addURL", URL.class);
+            method.setAccessible(true);
+            method.invoke(sysloader, jar);
+        } catch (IOException | NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
+            e.printStackTrace();
+        }
     }
 
     @Listener
@@ -412,6 +439,7 @@ public class WebAPI {
             reportErrors = false;
         }
 
+        logger.error("versions same: " + VERSION.equalsIgnoreCase("@version@"));
         //noinspection ConstantConditions
         if (VERSION.equalsIgnoreCase("@version@")) {
             logger.warn("Web-API VERSION SIGNALS DEV MODE. ERROR REPORTING IS OFF!");
@@ -842,20 +870,11 @@ public class WebAPI {
         webHookService.notifyHooks(WebHookService.WebHookType.INVENTORY_CLOSE, event);
     }
 
+    @Listener(order = Order.POST)
     public void onPlayerAdvancement(AdvancementEvent.Grant event) {
         Player player = event.getTargetEntity();
         webHookService.notifyHooks(WebHookService.WebHookType.ADVANCEMENT, event);
     }
-    /*@Listener(order = Order.POST)
-    public void onPlayerAchievement(GrantAchievementEvent.TargetPlayer event) {
-        Player player = event.getTargetEntity();
-
-        // Check if we already have the achievement
-        if (player.getAchievementData().achievements().get().stream().anyMatch(a -> a.getId().equals(event.getAchievement().getId())))
-            return;
-
-        webHookService.notifyHooks(WebHookService.WebHookType.ACHIEVEMENT, event);
-    }*/
 
     @Listener(order = Order.POST)
     public void onGenerateChunk(GenerateChunkEvent event) {

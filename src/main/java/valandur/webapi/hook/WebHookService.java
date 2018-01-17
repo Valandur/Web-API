@@ -23,6 +23,7 @@ import valandur.webapi.hook.filter.BlockTypeFilter;
 import valandur.webapi.hook.filter.ItemTypeFilter;
 import valandur.webapi.hook.filter.PlayerFilter;
 import valandur.webapi.serialize.SerializeService;
+import valandur.webapi.util.Constants;
 import valandur.webapi.util.Timings;
 import valandur.webapi.util.Util;
 
@@ -35,7 +36,7 @@ import java.util.stream.Collectors;
 public class WebHookService implements IWebHookService {
 
     private static final String configFileName = "hooks.conf";
-    private static String userAgent = WebAPI.NAME + "/" + WebAPI.VERSION;
+    private static String userAgent = Constants.NAME + "/" + Constants.VERSION;
 
     private SerializeService json;
     private ExtensionService extensions;
@@ -67,7 +68,10 @@ public class WebHookService implements IWebHookService {
         Platform platform = Sponge.getPlatform();
         String mc = platform.getContainer(Platform.Component.GAME).getVersion().orElse("?");
         String sponge = platform.getContainer(Platform.Component.IMPLEMENTATION).getVersion().orElse("?");
-        userAgent = WebAPI.NAME + "/" + WebAPI.VERSION + " Sponge/" + sponge + " Minecraft/" + mc + " Java/" + System.getProperty("java.version");
+        userAgent = Constants.NAME + "/" + Constants.VERSION +
+                " Sponge/" + sponge +
+                " Minecraft/" + mc +
+                " Java/" + System.getProperty("java.version");
 
         // Clear hooks
         commandHooks.clear();
@@ -231,7 +235,7 @@ public class WebHookService implements IWebHookService {
                     connection.setRequestProperty(header.getName(), header.getValue());
                 }
                 connection.setRequestProperty("User-Agent", userAgent);
-                connection.setRequestProperty("X-WebAPI-Version", WebAPI.VERSION);
+                connection.setRequestProperty("X-WebAPI-Version", Constants.VERSION);
                 connection.setRequestProperty("X-WebAPI-Event", eventType.toString());
                 if (source != null) connection.setRequestProperty("X-WebAPI-Source", source);
                 connection.setRequestProperty("accept", "application/json");

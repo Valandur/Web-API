@@ -94,6 +94,7 @@ import valandur.webapi.servlet.handler.RateLimitHandler;
 import valandur.webapi.user.UserPermission;
 import valandur.webapi.user.UserPermissionConfigSerializer;
 import valandur.webapi.user.Users;
+import valandur.webapi.util.Constants;
 import valandur.webapi.util.JettyLogger;
 import valandur.webapi.util.Timings;
 import valandur.webapi.util.Util;
@@ -119,23 +120,16 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 @Plugin(
-        id = WebAPI.ID,
-        version = WebAPI.VERSION,
-        name = WebAPI.NAME,
-        url = WebAPI.URL,
-        description = WebAPI.DESCRIPTION,
+        id = Constants.ID,
+        version = Constants.VERSION,
+        name = Constants.NAME,
+        url = Constants.URL,
+        description = Constants.DESCRIPTION,
         authors = {
                 "Valandur"
         }
 )
 public class WebAPI {
-
-    public static final String ID = "webapi";
-    public static final String NAME = "Web-API";
-    public static final String VERSION = "@version@";
-    public static final String DESCRIPTION = "Access Minecraft through a RESTful web server and an admin panel";
-    public static final String URL = "https://github.com/Valandur/Web-API";
-    private static final String UPDATE_URL = "https://api.github.com/repos/Valandur/Web-API/releases/latest";
 
     private static WebAPI instance;
     public static WebAPI getInstance() {
@@ -249,7 +243,7 @@ public class WebAPI {
 
     public WebAPI() {
         System.setProperty("sentry.dsn", "https://fb64795d2a5c4ff18f3c3e4117d7c245:53cf4ea85ae44608ab5b189f0c07b3f1@sentry.io/203545");
-        System.setProperty("sentry.release", WebAPI.VERSION.split("-")[0]);
+        System.setProperty("sentry.release", Constants.VERSION.split("-")[0]);
         System.setProperty("sentry.maxmessagelength", "2000");
         System.setProperty("sentry.stacktrace.app.packages", WebAPI.class.getPackage().getName());
 
@@ -339,7 +333,7 @@ public class WebAPI {
     public void onInitialization(GameInitializationEvent event) {
         Timings.STARTUP.startTiming();
 
-        logger.info(NAME + " v" + VERSION + " is starting...");
+        logger.info(Constants.NAME + " v" + Constants.VERSION + " is starting...");
 
         logger.info("Setting up jetty logger...");
         Log.setLog(new JettyLogger());
@@ -398,7 +392,7 @@ public class WebAPI {
             servletService.registerServlet(UniversalMarketServlet.class);
         } catch (ClassNotFoundException ignored) { }
 
-        logger.info(WebAPI.NAME + " ready");
+        logger.info(Constants.NAME + " ready");
 
         Timings.STARTUP.stopTiming();
     }
@@ -439,9 +433,8 @@ public class WebAPI {
             reportErrors = false;
         }
 
-        logger.error("versions same: " + VERSION.equalsIgnoreCase("@version@"));
-        //noinspection ConstantConditions
-        if (VERSION.equalsIgnoreCase("@version@")) {
+        // Use the container instead of VERSION so the compiler doesn't remove it because it's constant
+        if (this.container.getVersion().orElse("").equalsIgnoreCase("@version@")) {
             logger.warn("Web-API VERSION SIGNALS DEV MODE. ERROR REPORTING IS OFF!");
             reportErrors = false;
         }
@@ -466,7 +459,8 @@ public class WebAPI {
 
         if (triggeringPlayer != null) {
             triggeringPlayer.sendMessage(Text.builder().color(TextColors.AQUA)
-                    .append(Text.of("[" + WebAPI.NAME + "] " + WebAPI.NAME + " has been reloaded!")).build());
+                    .append(Text.of("[" + Constants.NAME + "] " + Constants.NAME + " has been reloaded!"))
+                    .build());
         }
 
         Timings.STARTUP.stopTiming();
@@ -571,7 +565,7 @@ public class WebAPI {
                     return (data) -> {
                         String text = new String(data);
                         text = text.replaceFirst("<host>", serverHost + ":" + serverPortHttp);
-                        text = text.replaceFirst("<version>", WebAPI.VERSION);
+                        text = text.replaceFirst("<version>", Constants.VERSION);
                         return text.getBytes();
                     };
                 })));
@@ -633,7 +627,7 @@ public class WebAPI {
             if (player != null) {
                 player.sendMessage(Text.builder()
                         .color(TextColors.AQUA)
-                        .append(Text.of("[" + WebAPI.NAME + "] The web server has been restarted!"))
+                        .append(Text.of("[" + Constants.NAME + "] The web server has been restarted!"))
                         .toText()
                 );
             }
@@ -660,7 +654,7 @@ public class WebAPI {
         asyncExecutor.execute(() -> {
             HttpsURLConnection connection = null;
             try {
-                java.net.URL url = new URL(UPDATE_URL);
+                java.net.URL url = new URL(Constants.UPDATE_URL);
                 connection = (HttpsURLConnection) url.openConnection();
                 connection.setRequestMethod("GET");
                 connection.setRequestProperty("User-Agent", "Web-API");
@@ -736,7 +730,7 @@ public class WebAPI {
 
         // Add custom bstats metrics
         metrics.addCustomChart(new Metrics.DrilldownPie("plugin_version", () -> {
-            String[] vers = VERSION.split("-");
+            String[] vers = Constants.VERSION.split("-");
 
             Map<String, Integer> entry = new HashMap<>();
             entry.put(vers[1], 1);
@@ -775,7 +769,7 @@ public class WebAPI {
     public void onReload(GameReloadEvent event) {
         Optional<Player> p = event.getCause().first(Player.class);
 
-        logger.info("Reloading " + WebAPI.NAME + " v" + WebAPI.VERSION + "...");
+        logger.info("Reloading " + Constants.NAME + " v" + Constants.VERSION + "...");
 
         cacheService.updatePlugins();
         cacheService.updateCommands();
@@ -788,7 +782,7 @@ public class WebAPI {
 
         checkForUpdates();
 
-        logger.info("Reloaded " + WebAPI.NAME);
+        logger.info("Reloaded " + Constants.NAME);
     }
 
     @Listener(order = Order.POST)
@@ -977,7 +971,7 @@ public class WebAPI {
 
     private static void addDefaultContext() {
         Context context = Sentry.getContext();
-        context.addTag("full_release", WebAPI.VERSION);
+        context.addTag("full_release", Constants.VERSION);
 
         context.addTag("java_version", System.getProperty("java.version"));
         context.addTag("os_name", System.getProperty("os.name"));

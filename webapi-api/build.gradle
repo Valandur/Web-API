@@ -18,7 +18,7 @@ dependencies {
 }
 
 blossom {
-    def locApi = "src/main/java/valandur/webapi/api/WebAPIAPI.java"
+    def locApi = "src/main/java/valandur/webapi/api/util/Constants.java"
     replaceToken "@version@", project.version, locApi
 }
 

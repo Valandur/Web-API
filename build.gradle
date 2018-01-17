@@ -25,7 +25,7 @@ allprojects {
 }
 
 blossom {
-    def locMain = "src/main/java/valandur/webapi/WebAPI.java"
+    def locMain = "src/main/java/valandur/webapi/util/Constants.java"
     replaceToken "@version@", project.version, locMain
 }
 

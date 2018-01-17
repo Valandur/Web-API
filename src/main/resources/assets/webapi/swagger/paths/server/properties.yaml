@@ -6,7 +6,7 @@ get:
 
     > Required permission: properties.list
   tags:
-    - Server Properties
+    - Info
   responses:
     403:
       $ref: "../../responses/403.yaml"

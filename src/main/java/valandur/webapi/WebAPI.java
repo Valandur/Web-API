@@ -604,7 +604,8 @@ public class WebAPI {
 
                 server.start();
 
-                logger.info("AdminPanel: " + baseUri + "/admin");
+                if (adminPanelEnabled)
+                    logger.info("AdminPanel: " + baseUri + "/admin");
                 logger.info("API Docs: " + baseUri + "/docs");
             } catch (SocketException e) {
                 logger.error("Web-API webserver could not start, probably because one of the ports needed for HTTP " +

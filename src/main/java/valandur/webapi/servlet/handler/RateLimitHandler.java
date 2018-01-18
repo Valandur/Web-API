@@ -1,5 +1,6 @@
 package valandur.webapi.servlet.handler;
 
+import org.eclipse.jetty.http.HttpMethod;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.AbstractHandler;
 import valandur.webapi.WebAPI;
@@ -30,7 +31,12 @@ public class RateLimitHandler extends AbstractHandler {
     }
 
     @Override
-    public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+    public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response)
+            throws IOException, ServletException {
+        // Don't count OPTIONS requests as actual requests
+        if (request.getMethod().equalsIgnoreCase(HttpMethod.OPTIONS.asString()))
+            return;
+
         calls.incrementAndGet();
 
         if (target.startsWith("/api/user")) {

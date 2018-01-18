@@ -29,6 +29,10 @@ public class AuthHandler extends AbstractHandler {
     private static final String defaultKey = "__DEFAULT__";
     private static final String configFileName = "permissions.conf";
 
+    private static String ACCESS_CONTROL_ORIGIN = "*";
+    private static final String ACCESS_CONTROL_METHODS = "GET,PUT,POST,DELETE,OPTIONS";
+    private static final String ACCESS_CONTROL_HEADERS = "Origin,Content-Type,Accept,X-Forwarded-For," + API_KEY_HEADER;
+
     private ConfigurationLoader loader;
     private ConfigurationNode config;
     private PermissionService permissionService;
@@ -113,6 +117,8 @@ public class AuthHandler extends AbstractHandler {
         for (ConfigurationNode node : config.getNode("allowedProxies").getChildrenList()) {
             allowedProxies.add(node.getString());
         }
+
+        ACCESS_CONTROL_ORIGIN = config.getNode("accessControlOrigin").getString(ACCESS_CONTROL_ORIGIN);
     }
 
     private void setAndSaveConfig(String node, Object value) {
@@ -204,5 +210,9 @@ public class AuthHandler extends AbstractHandler {
                 request.setAttribute("rate", defaultPerms.getRateLimit());
             }
         }
+
+        response.addHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, ACCESS_CONTROL_ORIGIN);
+        response.addHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, ACCESS_CONTROL_METHODS);
+        response.addHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_HEADERS, ACCESS_CONTROL_HEADERS);
     }
 }

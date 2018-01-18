@@ -1,7 +1,5 @@
 package valandur.webapi.servlet.base;
 
-import co.aikar.timings.Timing;
-import co.aikar.timings.Timings;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
@@ -13,7 +11,6 @@ import valandur.webapi.api.permission.IPermissionService;
 import valandur.webapi.api.util.TreeNode;
 import valandur.webapi.permission.PermissionService;
 import valandur.webapi.serialize.SerializeService;
-import valandur.webapi.servlet.handler.AuthHandler;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -26,11 +23,6 @@ import java.util.Map;
 import java.util.Optional;
 
 public class ApiServlet extends HttpServlet {
-
-    private static final String ACCESS_CONTROL_ORIGIN = "*";
-    private static final String ACCESS_CONTROL_METHODS = "GET,PUT,POST,DELETE,OPTIONS";
-    private static final String ACCESS_CONTROL_HEADERS = "Origin,Content-Type,Accept,X-Forwarded-For," +
-            AuthHandler.API_KEY_HEADER;
 
     private ServletService servletService;
     private PermissionService permissionService;
@@ -47,9 +39,6 @@ public class ApiServlet extends HttpServlet {
             throws ServletException, IOException {
 
         resp.setStatus(HttpServletResponse.SC_OK);
-        resp.addHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, ACCESS_CONTROL_ORIGIN);
-        resp.addHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, ACCESS_CONTROL_METHODS);
-        resp.addHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_HEADERS, ACCESS_CONTROL_HEADERS);
 
         WebAPI.sentryNewRequest(req);
 

@@ -2,11 +2,15 @@
 
 This is a collection of various documentations and tutorials for various sections of the Web-API.
 
-1. [AdminPanel](ADMIN_PANEL.md)  
-Short description of the AdminPanel and how to set it up.
+1. [AdminPanel](https://github.com/Valandur/admin-panel)  
+More information about the AdminPanel and how to set it up.
 
 1. [Commands (**and their permissions**)](COMMANDS.md)  
 Lists the various commands the Web-API provides, including their required player **permissions**.
+
+1. [Routes](https://valandur.github.io/Web-API/redoc.html)  
+Web-API automatically hosts the documentation at http://localhost:8080/docs (by default) 
+on your minecraft server for you to explore. You can find the same documentation [here](https://valandur.github.io/Web-API/redoc.html)
 
 1. [Consumer Tutorial](CONSUME.md)  
 This tutorial shows some basic examples of how to use/consume the Web-API. This will be helpfull

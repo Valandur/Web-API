@@ -39,6 +39,7 @@ Provides an AdminPanel to manage your minecraft server and a RESTful webserver w
 3. Start the server
 4. Configure the config files to your needs.
 5. Use `sponge plugins reload` to import your config changes to the server without restarting.
+(see the docs below for more information)
 
 ## Tutorials & Documentation
 Go [here](docs/INDEX.md) to see a list of various documentations and tutorials
@@ -57,12 +58,11 @@ use the `accept` header to tell the Web-API what content type to return to you.
 > Yes, you can send XML and get JSON in response, or the other way around if you want.
 
 ## Routes
-When accessing the base site (by default http://localhost:8080/) a documentation of all the methods will show up.
-This can be used as a starting point to explore the supported routes. You can also find the same documentation
-[here](https://valandur.github.io/Web-API/redoc.html).
+When accessing the docs site (by default http://localhost:8080/docs) a documentation of 
+all the methods will show up. This can be used as a starting point to explore the 
+supported routes. You can also find the same documentation [here](https://valandur.github.io/Web-API/redoc.html).
 
 ## Contributors & Special thanks
-
 - [johnfg10](https://github.com/johnfg10)
 - [r15ch13](https://github.com/r15ch13)
 - [Cat121](https://github.com/Cat121)

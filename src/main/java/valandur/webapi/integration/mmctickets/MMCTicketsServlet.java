@@ -83,13 +83,13 @@ public class MMCTicketsServlet extends BaseServlet {
         Main plugin = getMMCTicketsPlugin(data);
         if (plugin == null) return;
 
-        Optional<ChangeTicketRequest> optReq = data.getRequestBody(ChangeTicketRequest.class);
+        Optional<CachedTicketData> optReq = data.getRequestBody(CachedTicketData.class);
         if (!optReq.isPresent()) {
             data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid ticket data: " + data.getLastParseError().getMessage());
             return;
         }
 
-        ChangeTicketRequest req = optReq.get();
+        CachedTicketData req = optReq.get();
 
         Optional<CachedTicketData> optTicket = WebAPIAPI.runOnMain(() -> {
             TicketData ticketData = plugin.getTicket(id);

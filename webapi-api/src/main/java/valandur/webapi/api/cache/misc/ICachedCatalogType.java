@@ -1,6 +1,5 @@
 package valandur.webapi.api.cache.misc;
 
-import com.sun.org.apache.xml.internal.resolver.Catalog;
 import org.spongepowered.api.CatalogType;
 import valandur.webapi.api.cache.ICachedObject;
 

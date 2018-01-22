@@ -14,6 +14,7 @@ import valandur.webapi.api.serialize.JsonDetails;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@JsonDeserialize
 @ConfigSerializable
 public class CachedCrateReward extends CachedObject<CrateReward> {
 

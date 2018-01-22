@@ -321,7 +321,6 @@ public class CacheService implements ICacheService {
 
                 Optional<User> optUser = optSrv.get().get(uuid);
                 return optUser.<ICachedPlayer>map(CachedPlayer::new).orElse(null);
-
             });
         }
 
@@ -330,7 +329,6 @@ public class CacheService implements ICacheService {
             return WebAPI.runOnMain(() -> {
                 Optional<Player> player = Sponge.getServer().getPlayer(uuid);
                 return player.map(this::updatePlayer).orElse(null);
-
             });
         } else {
             return Optional.of(res);

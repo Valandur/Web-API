@@ -44,7 +44,7 @@ repositories {
         url = "http://repo.aikar.co/nexus/content/groups/aikar/"
     }
     flatDir {
-        dirs "lib/7"
+        dirs "lib"
     }
 }
 
@@ -66,10 +66,13 @@ dependencies {
     compileOnly group: "org.eclipse.jetty", name: "jetty-http", version: project.jettyVersion
     compileOnly group: "org.eclipse.jetty", name: "jetty-rewrite", version: project.jettyVersion
 
+    // Integrations
     compileOnly name: "griefprevention-1.12.2-4.3.0.511"
     compileOnly name: "HuskyCrates-v1.8.0PRE2-API7"
+    compileOnly name: "MMCRestrict-1.4.0-API-7"
     compileOnly name: "MMCTickets-1.4.1-API-7"
     compileOnly name: "Nucleus-1.2.2-S7.0-api"
+    compileOnly name: "RedProtect-7.3.0-b68-Universal"
     compileOnly name: "UniversalMarket-1.12.2-v1.1"
     compileOnly name: "WebBooks"
 }

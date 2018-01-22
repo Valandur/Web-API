@@ -1,5 +1,7 @@
 package valandur.webapi.integration.mmctickets;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import net.moddedminecraft.mmctickets.data.TicketData;
 import net.moddedminecraft.mmctickets.data.ticketStatus;
 import valandur.webapi.api.cache.CachedObject;
@@ -9,6 +11,7 @@ import valandur.webapi.api.serialize.JsonDetails;
 
 public class CachedTicketData extends CachedObject<TicketData> {
 
+    @JsonDeserialize
     private int id;
     public int getId() {
         return id;
@@ -31,27 +34,31 @@ public class CachedTicketData extends CachedObject<TicketData> {
         return message;
     }
 
+    @JsonDeserialize
     private String comment;
     @JsonDetails
     public String getComment() {
         return comment;
     }
 
+    @JsonDeserialize
     private ticketStatus status;
     @JsonDetails
     public ticketStatus getStatus() {
         return status;
     }
 
+    @JsonDeserialize
     private ICachedPlayer staff;
     @JsonDetails
     public ICachedPlayer getStaff() {
         return staff;
     }
 
-    private int notified;
+    @JsonDeserialize
+    private Integer notified;
     @JsonDetails
-    public int getNotified() {
+    public Integer getNotified() {
         return notified;
     }
 
@@ -62,6 +69,9 @@ public class CachedTicketData extends CachedObject<TicketData> {
     }
 
 
+    public CachedTicketData() {
+        super(null);
+    }
     public CachedTicketData(TicketData ticket) {
         super(ticket);
 

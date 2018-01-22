@@ -1,9 +1,11 @@
 package valandur.webapi.integration.huskycrates;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import ninja.leaping.configurate.ConfigurationNode;
 import org.spongepowered.api.item.inventory.ItemStack;
 import valandur.webapi.api.serialize.JsonDetails;
 
+@JsonDeserialize
 public class ItemCrateReward extends CrateRewardObject {
 
     @Override
@@ -11,6 +13,7 @@ public class ItemCrateReward extends CrateRewardObject {
         return CrateRewardObjecType.ITEM;
     }
 
+    @JsonDeserialize
     private ItemStack item;
     @JsonDetails(value = false, simple = true)
     public ItemStack getItem() {

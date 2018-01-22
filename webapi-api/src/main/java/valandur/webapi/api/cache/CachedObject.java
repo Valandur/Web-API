@@ -18,7 +18,7 @@ public abstract class CachedObject<T> implements ICachedObject<T> {
 
     protected ICacheService cacheService;
     protected ISerializeService serializeService;
-    protected Class<?> clazz;
+    protected Class<? extends T> clazz;
 
     protected Map<String, Object> data = new HashMap<>();
     @Override
@@ -39,7 +39,7 @@ public abstract class CachedObject<T> implements ICachedObject<T> {
 
         this.cacheDuration = cacheService.getCacheDurationFor(this.getClass());
 
-        if (value != null) this.clazz = value.getClass();
+        if (value != null) this.clazz = (Class<? extends T>) value.getClass();
 
         if (serializeDataHolder && value instanceof DataHolder) {
             DataHolder holder = (DataHolder)value;

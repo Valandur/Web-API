@@ -1,7 +1,10 @@
 package valandur.webapi.api.cache.misc;
 
+import com.sun.org.apache.xml.internal.resolver.Catalog;
 import org.spongepowered.api.CatalogType;
 import valandur.webapi.api.cache.ICachedObject;
+
+import java.util.Optional;
 
 public interface ICachedCatalogType<T extends CatalogType> extends ICachedObject<T> {
 
@@ -16,4 +19,11 @@ public interface ICachedCatalogType<T extends CatalogType> extends ICachedObject
      * @return The readable name of the catalog type
      */
     String getName();
+
+    /**
+     * Gets the live version of this CachedCatalogType.
+     * @param clazz The class of the CatalogType.
+     * @return The live CatalogType.
+     */
+    Optional<T> getLive(Class<T> clazz);
 }

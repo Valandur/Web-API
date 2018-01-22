@@ -85,7 +85,7 @@ public interface IServletData {
     void setContentType(String contentType);
 
     /**
-     * Adds an object to the json/xml response data.
+     * Adds an object to the json/xml response data. Does nothing if an error was already sent.
      * @param key The key under which the object is added.
      * @param value The object which is added to the response.
      * @param details True if details of the object should be included.

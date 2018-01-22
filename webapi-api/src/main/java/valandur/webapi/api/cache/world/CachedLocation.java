@@ -1,5 +1,6 @@
 package valandur.webapi.api.cache.world;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.flowpowered.math.vector.Vector3d;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
@@ -8,6 +9,7 @@ import valandur.webapi.api.serialize.JsonDetails;
 
 import java.util.Optional;
 
+@JsonDeserialize
 public class CachedLocation extends CachedObject<Location> {
 
     private ICachedWorld world;

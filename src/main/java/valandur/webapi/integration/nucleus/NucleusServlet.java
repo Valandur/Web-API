@@ -1,5 +1,6 @@
 package valandur.webapi.integration.nucleus;
 
+import com.flowpowered.math.vector.Vector3d;
 import io.github.nucleuspowered.nucleus.api.NucleusAPI;
 import io.github.nucleuspowered.nucleus.api.nucleusdata.Kit;
 import io.github.nucleuspowered.nucleus.api.nucleusdata.NamedLocation;
@@ -17,6 +18,7 @@ import valandur.webapi.api.servlet.IServletData;
 import valandur.webapi.api.servlet.Servlet;
 
 import javax.servlet.http.HttpServletResponse;
+import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -84,33 +86,27 @@ public class NucleusServlet extends BaseServlet {
 
         NucleusJailService srv = optSrv.get();
 
-        Optional<CreateJailRequest> optReq = data.getRequestBody(CreateJailRequest.class);
+        Optional<CachedNamedLocation> optReq = data.getRequestBody(CachedNamedLocation.class);
         if (!optReq.isPresent()) {
-            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid jail data: " + data.getLastParseError().getMessage());
+            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid jail data: " +
+                    data.getLastParseError().getMessage());
             return;
         }
 
-        CreateJailRequest req = optReq.get();
-
-        if (!req.getWorld().isPresent()) {
-            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "No valid world provided");
-            return;
-        }
-
-        ICachedWorld world = req.getWorld().get();
-
-        if (req.getPosition() == null) {
-            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "No valid position provided");
+        CachedNamedLocation req = optReq.get();
+        if (req.getLocation() == null) {
+            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "A location is required");
             return;
         }
 
         Optional<CachedNamedLocation> optRes = WebAPIAPI.runOnMain(() -> {
-            Optional<World> optWorld = world.getLive();
-            if (!optWorld.isPresent())
+            Optional<Location> optLive = req.getLocation().getLive();
+            if (!optLive.isPresent()) {
+                data.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not get live location");
                 return null;
-
-            World w = optWorld.get();
-            srv.setJail(req.getName(), new Location<>(w, req.getPosition()), req.getRotation());
+            }
+            Vector3d rot = req.getRotation() == null ? Vector3d.FORWARD : req.getRotation();
+            srv.setJail(req.getName(), optLive.get(), rot);
             Optional<NamedLocation> optJail = srv.getJail(req.getName());
             return optJail.map(CachedNamedLocation::new).orElse(null);
         });
@@ -206,13 +202,13 @@ public class NucleusServlet extends BaseServlet {
 
         NucleusKitService srv = optSrv.get();
 
-        Optional<CreateKitRequest> optReq = data.getRequestBody(CreateKitRequest.class);
+        Optional<CachedKit> optReq = data.getRequestBody(CachedKit.class);
         if (!optReq.isPresent()) {
             data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid kit data: " + data.getLastParseError().getMessage());
             return;
         }
 
-        CreateKitRequest req = optReq.get();
+        CachedKit req = optReq.get();
 
         if (req.getName().isEmpty()) {
             data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid kit name");
@@ -222,16 +218,16 @@ public class NucleusServlet extends BaseServlet {
         Optional<CachedKit> resKit = WebAPIAPI.runOnMain(() -> {
             Kit kit = srv.createKit(req.getName());
             kit.setCost(req.getCost());
-            kit.setCooldown(req.getCooldown());
-            if (req.hasStacks()) {
+            kit.setCooldown(Duration.ofMillis(req.getCooldown()));
+            if (req.getStacks() != null) {
                 try {
-                    kit.setStacks(req.getStacks().stream().map(ItemStack::createSnapshot).collect(Collectors.toList()));
+                    kit.setStacks(req.getStacks());
                 } catch (Exception e) {
                     data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Could not process item stack: " + e.getMessage());
                     return null;
                 }
             }
-            if (req.hasCommands()) {
+            if (req.getCommands() != null) {
                 kit.setCommands(req.getCommands());
             }
             srv.saveKit(kit);
@@ -252,13 +248,13 @@ public class NucleusServlet extends BaseServlet {
 
         NucleusKitService srv = optSrv.get();
 
-        Optional<BaseKitRequest> optReq = data.getRequestBody(BaseKitRequest.class);
+        Optional<CachedKit> optReq = data.getRequestBody(CachedKit.class);
         if (!optReq.isPresent()) {
             data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid kit data: " + data.getLastParseError().getMessage());
             return;
         }
 
-        BaseKitRequest req = optReq.get();
+        CachedKit req = optReq.get();
 
         Optional<CachedKit> optRes = WebAPIAPI.runOnMain(() -> {
             Optional<Kit> optKit = srv.getKit(name);
@@ -268,18 +264,18 @@ public class NucleusServlet extends BaseServlet {
             }
 
             Kit kit = optKit.get();
-            if (req.hasCost()) {
+            if (req.getCost() != null) {
                 kit.setCost(req.getCost());
             }
-            if (req.hasCooldown()) {
-                kit.setCooldown(req.getCooldown());
+            if (req.getCooldown() != null) {
+                kit.setCooldown(Duration.ofMillis(req.getCooldown()));
             }
-            if (req.hasCommands()) {
+            if (req.getCommands() != null) {
                 kit.setCommands(req.getCommands());
             }
-            if (req.hasStacks()) {
+            if (req.getStacks() != null) {
                 try {
-                    kit.setStacks(req.getStacks().stream().map(ItemStack::createSnapshot).collect(Collectors.toList()));
+                    kit.setStacks(req.getStacks());
                 } catch (Exception e) {
                     data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Could not process item stack: " + e.getMessage());
                     return null;

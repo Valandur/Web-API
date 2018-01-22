@@ -7,7 +7,6 @@ import valandur.webapi.api.serialize.JsonDetails;
 import java.util.List;
 
 @JsonDeserialize
-@JsonIgnoreProperties(ignoreUnknown = true)
 public class WebBook {
 
     @JsonDeserialize

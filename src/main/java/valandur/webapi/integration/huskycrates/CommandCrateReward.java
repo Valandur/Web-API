@@ -3,6 +3,7 @@ package valandur.webapi.integration.huskycrates;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import ninja.leaping.configurate.ConfigurationNode;
 
+@JsonDeserialize
 public class CommandCrateReward extends CrateRewardObject {
 
     @Override

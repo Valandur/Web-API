@@ -114,7 +114,7 @@ public class ServletData implements IServletData {
         try {
             T data = WebAPI.getSerializeService().deserialize(json, clazz, IPermissionService.permitAllNode());
             return Optional.of(data);
-        } catch (IOException e) {
+        } catch (Exception e) {
             lastParseError = e;
             return Optional.empty();
         }
@@ -138,6 +138,7 @@ public class ServletData implements IServletData {
     }
     @Override
     public void addData(String key, Object value, boolean details) {
+        if (errorSent) return;
         node.replace(key, WebAPI.getSerializeService().serialize(value, xml, details, permissions));
     }
 

@@ -64,8 +64,10 @@ import org.spongepowered.api.world.World;
 import org.spongepowered.api.world.explosion.Explosion;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.cache.ICachedObject;
+import valandur.webapi.api.cache.player.ICachedPlayer;
 import valandur.webapi.api.cache.world.CachedLocation;
 import valandur.webapi.api.cache.world.CachedTransform;
+import valandur.webapi.api.cache.world.ICachedWorld;
 import valandur.webapi.api.serialize.BaseView;
 import valandur.webapi.api.serialize.ISerializeService;
 import valandur.webapi.api.util.TreeNode;
@@ -77,10 +79,7 @@ import valandur.webapi.cache.player.CachedPlayer;
 import valandur.webapi.cache.plugin.CachedPluginContainer;
 import valandur.webapi.cache.tileentity.CachedTileEntity;
 import valandur.webapi.cache.world.CachedWorld;
-import valandur.webapi.serialize.deserialize.BlockStateDeserializer;
-import valandur.webapi.serialize.deserialize.ItemStackDeserializer;
-import valandur.webapi.serialize.deserialize.ItemStackSnapshotDeserializer;
-import valandur.webapi.serialize.deserialize.LocationDeserializer;
+import valandur.webapi.serialize.deserialize.*;
 import valandur.webapi.serialize.view.block.BlockSnapshotView;
 import valandur.webapi.serialize.view.block.BlockStateView;
 import valandur.webapi.serialize.view.data.*;
@@ -125,7 +124,7 @@ public class SerializeService implements ISerializeService {
         registerCache(Entity.class, CachedEntity.class);
         registerCache(Cause.class, CachedCause.class);
         registerCache(Inventory.class, CachedInventory.class);
-        registerCache(CatalogType.class, CachedCatalogType.class);
+        _registerCache(CatalogType.class, CachedCatalogType.class);
         registerCache(Location.class, CachedLocation.class);
         registerCache(Player.class, CachedPlayer.class);
         registerCache(PluginContainer.class, CachedPluginContainer.class);
@@ -446,6 +445,9 @@ public class SerializeService implements ISerializeService {
         logger.info("Done loading serializers");
     }
 
+    private void _registerCache(Class handledClass, Class cacheClass) {
+        serializers.put(handledClass, new BaseSerializer<>(handledClass, cacheClass));
+    }
     @Override
     public <T> void registerCache(Class<? extends T> handledClass, Class<? extends ICachedObject<T>> cacheClass) {
         serializers.put(handledClass, new BaseSerializer<>(handledClass, cacheClass));
@@ -589,7 +591,10 @@ public class SerializeService implements ISerializeService {
         mod.addDeserializer(ItemStack.class, new ItemStackDeserializer());
         mod.addDeserializer(BlockState.class, new BlockStateDeserializer());
         mod.addDeserializer(ItemStackSnapshot.class, new ItemStackSnapshotDeserializer());
-        mod.addDeserializer(Location.class, new LocationDeserializer());
+        mod.addDeserializer(CachedLocation.class, new CachedLocationDeserializer());
+        mod.addDeserializer(ICachedPlayer.class, new CachedPlayerDeserializer());
+        mod.addDeserializer(ICachedWorld.class, new CachedWorldDeserializer());
+        mod.addDeserializer(CachedCatalogType.class, new CachedCatalogTypeDeserializer<>(CatalogType.class));
         om.registerModule(mod);
 
         SimpleFilterProvider filterProvider = new SimpleFilterProvider();

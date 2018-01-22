@@ -76,8 +76,10 @@ import valandur.webapi.hook.WebHook;
 import valandur.webapi.hook.WebHookSerializer;
 import valandur.webapi.hook.WebHookService;
 import valandur.webapi.integration.huskycrates.HuskyCratesServlet;
+import valandur.webapi.integration.mmcrestrict.MMCRestrictServlet;
 import valandur.webapi.integration.mmctickets.MMCTicketsServlet;
 import valandur.webapi.integration.nucleus.NucleusServlet;
+import valandur.webapi.integration.redprotect.RedProtectServlet;
 import valandur.webapi.integration.universalmarket.UniversalMarketServlet;
 import valandur.webapi.integration.webbooks.WebBookServlet;
 import valandur.webapi.serialize.SerializeService;
@@ -369,6 +371,12 @@ public class WebAPI {
         } catch (ClassNotFoundException ignored) { }
 
         try {
+            Class.forName("net.moddedminecraft.mmcrestrict.Main");
+            logger.info("  Integrating with MMCRestrict...");
+            servletService.registerServlet(MMCRestrictServlet.class);
+        } catch (ClassNotFoundException ignored) { }
+
+        try {
             Class.forName("net.moddedminecraft.mmctickets.Main");
             logger.info("  Integrating with MMCTickets...");
             servletService.registerServlet(MMCTicketsServlet.class);
@@ -381,15 +389,21 @@ public class WebAPI {
         } catch (ClassNotFoundException ignored) { }
 
         try {
-            Class.forName("de.dosmike.sponge.WebBooks.WebBooks");
-            logger.info("  Integrating with WebBooks...");
-            servletService.registerServlet(WebBookServlet.class);
+            Class.forName("br.net.fabiozumbi12.RedProtect.Sponge.RedProtect");
+            logger.info("  Integrating with RedProtect...");
+            servletService.registerServlet(RedProtectServlet.class);
         } catch (ClassNotFoundException ignored) { }
 
         try {
             Class.forName("com.xwaffle.universalmarket.UniversalMarket");
             logger.info("  Integrating with UniversalMarket...");
             servletService.registerServlet(UniversalMarketServlet.class);
+        } catch (ClassNotFoundException ignored) { }
+
+        try {
+            Class.forName("de.dosmike.sponge.WebBooks.WebBooks");
+            logger.info("  Integrating with WebBooks...");
+            servletService.registerServlet(WebBookServlet.class);
         } catch (ClassNotFoundException ignored) { }
 
         logger.info(Constants.NAME + " ready");

@@ -90,7 +90,8 @@ public class HuskyCratesServlet extends BaseServlet {
 
         Optional<CachedVirtualCrate> optReq = data.getRequestBody(CachedVirtualCrate.class);
         if (!optReq.isPresent()) {
-            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid crate data: " + data.getLastParseError().getMessage());
+            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid crate data: " +
+                    data.getLastParseError().getMessage());
             return;
         }
 
@@ -102,11 +103,15 @@ public class HuskyCratesServlet extends BaseServlet {
                 plugin.crateUtilities.generateVirtualCrates(plugin.crateConfig);
 
                 VirtualCrate crate = plugin.crateUtilities.getVirtualCrate(req.getId());
-                if (crate == null)
+                if (crate == null) {
+                    data.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+                            "Could not get crate after creating it");
                     return null;
+                }
 
                 return new CachedVirtualCrate(crate);
             } catch (IOException e) {
+                data.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
                 return null;
             }
         });
@@ -141,12 +146,16 @@ public class HuskyCratesServlet extends BaseServlet {
                 plugin.crateUtilities.generateVirtualCrates(plugin.crateConfig);
 
                 VirtualCrate crate = plugin.crateUtilities.getVirtualCrate(req.getId());
-                if (crate == null)
+
+                if (crate == null) {
+                    data.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+                            "Could not get crate after modifying it");
                     return null;
+                }
 
                 return new CachedVirtualCrate(crate);
             } catch (IOException e) {
-                e.printStackTrace();
+                data.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
                 return null;
             }
         });
@@ -176,6 +185,7 @@ public class HuskyCratesServlet extends BaseServlet {
 
                 return new CachedVirtualCrate(crate);
             } catch (IOException e) {
+                data.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
                 return null;
             }
         });

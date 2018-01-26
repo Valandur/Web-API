@@ -14,13 +14,13 @@ import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.cache.player.ICachedPlayer;
-import valandur.webapi.serialize.request.misc.DamageRequest;
 import valandur.webapi.api.servlet.BaseServlet;
 import valandur.webapi.api.servlet.Endpoint;
 import valandur.webapi.api.servlet.Servlet;
 import valandur.webapi.cache.player.CachedPlayer;
-import valandur.webapi.servlet.base.ServletData;
+import valandur.webapi.serialize.request.misc.DamageRequest;
 import valandur.webapi.serialize.request.player.UpdatePlayerRequest;
+import valandur.webapi.servlet.base.ServletData;
 import valandur.webapi.util.Util;
 
 import javax.servlet.http.HttpServletResponse;

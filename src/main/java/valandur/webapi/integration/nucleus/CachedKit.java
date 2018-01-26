@@ -1,7 +1,6 @@
 package valandur.webapi.integration.nucleus;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import io.github.nucleuspowered.nucleus.api.nucleusdata.Kit;
 import org.spongepowered.api.data.value.ValueContainer;
 import org.spongepowered.api.item.inventory.ItemStackSnapshot;

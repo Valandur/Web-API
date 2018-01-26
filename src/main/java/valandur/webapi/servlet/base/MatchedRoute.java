@@ -1,12 +1,12 @@
 package valandur.webapi.servlet.base;
 
 import valandur.webapi.WebAPI;
-import valandur.webapi.api.servlet.Endpoint;
-import valandur.webapi.api.servlet.Servlet;
 import valandur.webapi.api.cache.entity.ICachedEntity;
 import valandur.webapi.api.cache.player.ICachedPlayer;
 import valandur.webapi.api.cache.world.ICachedWorld;
 import valandur.webapi.api.servlet.BaseServlet;
+import valandur.webapi.api.servlet.Endpoint;
+import valandur.webapi.api.servlet.Servlet;
 import valandur.webapi.cache.entity.CachedEntity;
 import valandur.webapi.cache.player.CachedPlayer;
 import valandur.webapi.cache.world.CachedWorld;

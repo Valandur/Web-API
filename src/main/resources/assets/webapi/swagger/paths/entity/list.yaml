@@ -6,6 +6,18 @@ get:
 
     > Required permission: entity.list
   parameters:
+    - name: world
+      in: query
+      type: string
+      description: The uuid of the world to filter entities by.
+    - name: type
+      in: query
+      type: string
+      description: The EntityType id to filter the entities by.
+    - name: limit
+      in: query
+      type: string
+      description: The maximum amount of entities to return.
     - name: details
       in: query
       type: string

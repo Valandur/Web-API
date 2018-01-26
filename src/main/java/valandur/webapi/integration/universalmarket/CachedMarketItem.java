@@ -2,7 +2,6 @@ package valandur.webapi.integration.universalmarket;
 
 import com.xwaffle.universalmarket.market.MarketItem;
 import org.spongepowered.api.item.inventory.ItemStack;
-import org.spongepowered.api.item.inventory.ItemStackSnapshot;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.cache.CachedObject;
 import valandur.webapi.api.cache.player.ICachedPlayer;

@@ -4,8 +4,8 @@ import com.google.common.reflect.TypeToken;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 import org.spongepowered.api.event.entity.living.humanoid.player.TargetPlayerEvent;
-import valandur.webapi.hook.WebHook;
 import valandur.webapi.api.hook.BaseWebHookFilter;
+import valandur.webapi.hook.WebHook;
 
 import java.util.List;
 

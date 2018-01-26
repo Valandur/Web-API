@@ -4,12 +4,7 @@ import org.eclipse.jetty.http.HttpMethod;
 import org.slf4j.Logger;
 import org.spongepowered.api.util.Tuple;
 import valandur.webapi.WebAPI;
-import valandur.webapi.api.servlet.Endpoint;
-import valandur.webapi.api.servlet.Endpoints;
-import valandur.webapi.api.servlet.Servlet;
-import valandur.webapi.api.servlet.IServletData;
-import valandur.webapi.api.servlet.IServletService;
-import valandur.webapi.api.servlet.BaseServlet;
+import valandur.webapi.api.servlet.*;
 import valandur.webapi.util.Util;
 
 import java.lang.reflect.InvocationTargetException;

@@ -6,8 +6,8 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.PropertyWriter;
 import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
 import valandur.webapi.WebAPI;
-import valandur.webapi.api.serialize.JsonDetails;
 import valandur.webapi.api.permission.IPermissionService;
+import valandur.webapi.api.serialize.JsonDetails;
 import valandur.webapi.api.util.TreeNode;
 import valandur.webapi.permission.PermissionService;
 
@@ -38,10 +38,13 @@ public class BaseFilter extends SimpleBeanPropertyFilter {
     }
 
     @Override
-    public void serializeAsField(Object pojo, JsonGenerator jgen, SerializerProvider provider, PropertyWriter writer) throws Exception {
+    public void serializeAsField(Object pojo, JsonGenerator jgen, SerializerProvider provider, PropertyWriter writer)
+            throws Exception {
         String key = writer.getName();
         boolean prevDetails = details;
 
+        // Check if we have to skip the field because it is marked as "details" and details is set to false
+        // or if we have to turn details off temporarily in case the field is marked as "simple"
         JsonDetails det = writer.getAnnotation(JsonDetails.class);
         if (det != null) {
             if (!details && det.value()) {
@@ -53,15 +56,17 @@ public class BaseFilter extends SimpleBeanPropertyFilter {
             }
         }
 
+        // Add our object to the path
         path.add(key);
 
-        if (!permissionService.permits(perms, path)) {
-            path.remove(key);
-            return;
+        // Check if the permission service allows access to our path
+        // If yes then we want to serialize the rest of our object
+        if (permissionService.permits(perms, path)) {
+            super.serializeAsField(pojo, jgen, provider, writer);
         }
 
-        super.serializeAsField(pojo, jgen, provider, writer);
-
+        // Reset path and details after our object is done
+        path.remove(key);
         details = prevDetails;
     }
 }

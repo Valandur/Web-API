@@ -57,12 +57,12 @@ import valandur.webapi.api.block.IBlockService;
 import valandur.webapi.api.cache.ICacheService;
 import valandur.webapi.api.extension.IExtensionService;
 import valandur.webapi.api.hook.IWebHookService;
-import valandur.webapi.api.serialize.ISerializeService;
 import valandur.webapi.api.message.IMessageService;
 import valandur.webapi.api.permission.IPermissionService;
+import valandur.webapi.api.serialize.ISerializeService;
 import valandur.webapi.api.server.IServerService;
-import valandur.webapi.api.servlet.IServletService;
 import valandur.webapi.api.servlet.BaseServlet;
+import valandur.webapi.api.servlet.IServletService;
 import valandur.webapi.block.BlockOperation;
 import valandur.webapi.block.BlockOperationStatusChangeEvent;
 import valandur.webapi.block.BlockService;
@@ -82,9 +82,9 @@ import valandur.webapi.integration.nucleus.NucleusServlet;
 import valandur.webapi.integration.redprotect.RedProtectServlet;
 import valandur.webapi.integration.universalmarket.UniversalMarketServlet;
 import valandur.webapi.integration.webbooks.WebBookServlet;
-import valandur.webapi.serialize.SerializeService;
 import valandur.webapi.message.MessageService;
 import valandur.webapi.permission.PermissionService;
+import valandur.webapi.serialize.SerializeService;
 import valandur.webapi.server.ServerService;
 import valandur.webapi.servlet.*;
 import valandur.webapi.servlet.base.ApiServlet;
@@ -842,22 +842,20 @@ public class WebAPI {
 
     @Listener(order = Order.POST)
     public void onEntitySpawn(SpawnEntityEvent event) {
-        for (Entity entity : event.getEntities()) {
-            cacheService.updateEntity(entity);
-        }
+        webHookService.notifyHooks(WebHookService.WebHookType.ENTITY_SPAWN, event);
     }
     @Listener(order = Order.POST)
     public void onEntityDespawn(DestructEntityEvent event) {
-        cacheService.removeEntity(event.getTargetEntity().getUniqueId());
-
         Entity ent = event.getTargetEntity();
         if (ent instanceof Player) {
             webHookService.notifyHooks(WebHookService.WebHookType.PLAYER_DEATH, event);
+        } else {
+            webHookService.notifyHooks(WebHookService.WebHookType.ENTITY_DESPAWN, event);
         }
     }
     @Listener(order = Order.POST)
     public void onEntityExpire(ExpireEntityEvent event) {
-        cacheService.removeEntity(event.getTargetEntity().getUniqueId());
+        webHookService.notifyHooks(WebHookService.WebHookType.ENTITY_EXPIRE, event);
     }
 
     @Listener(order = Order.POST)

@@ -187,10 +187,21 @@ public interface ICacheService {
     ICachedPlayer removePlayer(UUID uuid);
 
     /**
-     * Gets a collection of all the entities on the server.
-     * @return A collection of all the entities.
+     * Tries to get a collection of all the entities on the server.
+     * @param predicate The predicate to filter entities by.
+     * @param limit The maximum amount of entities to return.
+     * @return An optional of all the entities on the server if the operation was successful, empty otherwise.
      */
-    Collection<ICachedEntity> getEntities();
+    Optional<Collection<ICachedEntity>> getEntities(Predicate<Entity> predicate, int limit);
+
+    /**
+     * Tries to get a collection of all the entities in the specified world.
+     * @param world The world for which all entities are retrieved.
+     * @param predicate The predicate to filter entities by.
+     * @param limit The maximum amount of entities to return.
+     * @return An optional containing the entities if the operation was successful, empty otherwise.
+     */
+    Optional<Collection<ICachedEntity>> getEntities(ICachedWorld world, Predicate<Entity> predicate, int limit);
 
     /**
      * Gets a specific entity by UUID.
@@ -198,28 +209,6 @@ public interface ICacheService {
      * @return An optional containing the cached entity if found, or empty otherwise.
      */
     Optional<ICachedEntity> getEntity(UUID uuid);
-
-    /**
-     * Gets the passed entity as a cached object. This method first tries to get the entity from the cache, and if
-     * it is not found uses the {@link #updateEntity(Entity)} method to convert it into a cached object.
-     * @param entity The entity which is returned in it's cached form.
-     * @return The cached version of the specified entity.
-     */
-    ICachedEntity getEntity(Entity entity);
-
-    /**
-     * Updates the internal representation of the passed entity and returns it.
-     * @param entity The entity which will be updated.
-     * @return The updated cached entity.
-     */
-    ICachedEntity updateEntity(Entity entity);
-
-    /**
-     * Removes an entity from the cache.
-     * @param uuid The UUID of the entity to remove.
-     * @return The removed entity representation.
-     */
-    ICachedEntity removeEntity(UUID uuid);
 
     /**
      * Gets a collection of all the plugins installed on the server.

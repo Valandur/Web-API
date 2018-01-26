@@ -4,8 +4,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import org.eclipse.jetty.http.HttpMethod;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.EntityType;
-import org.spongepowered.api.event.cause.Cause;
-import org.spongepowered.api.event.cause.EventContext;
 import org.spongepowered.api.event.cause.entity.damage.source.DamageSource;
 import org.spongepowered.api.item.inventory.Carrier;
 import org.spongepowered.api.item.inventory.Inventory;
@@ -16,26 +14,58 @@ import org.spongepowered.api.world.World;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.cache.entity.ICachedEntity;
 import valandur.webapi.api.cache.world.ICachedWorld;
-import valandur.webapi.serialize.request.misc.DamageRequest;
 import valandur.webapi.api.servlet.BaseServlet;
 import valandur.webapi.api.servlet.Endpoint;
 import valandur.webapi.api.servlet.Servlet;
 import valandur.webapi.cache.entity.CachedEntity;
-import valandur.webapi.servlet.base.ServletData;
 import valandur.webapi.serialize.request.entity.CreateEntityRequest;
 import valandur.webapi.serialize.request.entity.UpdateEntityRequest;
+import valandur.webapi.serialize.request.misc.DamageRequest;
+import valandur.webapi.servlet.base.ServletData;
 import valandur.webapi.util.Util;
 
 import javax.servlet.http.HttpServletResponse;
+import java.util.Collection;
 import java.util.Optional;
+import java.util.function.Predicate;
 
 @Servlet(basePath = "entity")
 public class EntityServlet extends BaseServlet {
 
     @Endpoint(method = HttpMethod.GET, path = "/", perm = "list")
     public void getEntities(ServletData data) {
+        Optional<String> worldUuid = data.getQueryParam("world");
+        Optional<String> typeId = data.getQueryParam("type");
+        Optional<String> limitString = data.getQueryParam("limit");
+        Predicate<Entity> filter = e -> !typeId.isPresent() || e.getType().getId().equalsIgnoreCase(typeId.get());
+        int limit = Integer.parseInt(limitString.orElse("0"));
+
+        if (worldUuid.isPresent()) {
+            Optional<ICachedWorld> world = cacheService.getWorld(worldUuid.get());
+            if (!world.isPresent()) {
+                data.sendError(HttpServletResponse.SC_BAD_REQUEST, "World with UUID '" + worldUuid + "' could not be found");
+                return;
+            }
+
+            Optional<Collection<ICachedEntity>> entities = cacheService.getEntities(world.get(), filter, limit);
+            if (!entities.isPresent()) {
+                data.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not get entities");
+                return;
+            }
+
+            data.addData("ok", true, false);
+            data.addData("entities", entities.get(), data.getQueryParam("details").isPresent());
+            return;
+        }
+
+        Optional<Collection<ICachedEntity>> coll = cacheService.getEntities(filter, limit);
+        if (!coll.isPresent()) {
+            data.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not get entities");
+            return;
+        }
+
         data.addData("ok", true, false);
-        data.addData("entities", cacheService.getEntities(), data.getQueryParam("details").isPresent());
+        data.addData("entities", coll.get(), data.getQueryParam("details").isPresent());
     }
 
     @Endpoint(method = HttpMethod.GET, path = "/:entity", perm = "one")
@@ -121,7 +151,7 @@ public class EntityServlet extends BaseServlet {
                 }
             }
 
-            return cacheService.updateEntity(live);
+            return new CachedEntity(live);
         });
 
         data.addData("ok", resEntity.isPresent(), false);
@@ -164,7 +194,7 @@ public class EntityServlet extends BaseServlet {
             Entity e = w.createEntity(optEntType.get(), req.getPosition());
 
             if (w.spawnEntity(e)) {
-                return cacheService.updateEntity(e);
+                return new CachedEntity(e);
             } else {
                 e.remove();
                 return null;
@@ -224,8 +254,6 @@ public class EntityServlet extends BaseServlet {
             data.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not delete entity " + entity.getUUID());
             return;
         }
-
-        cacheService.removeEntity(entity.getUUID());
 
         data.addData("ok", true, false);
         data.addData("entity", entity, true);

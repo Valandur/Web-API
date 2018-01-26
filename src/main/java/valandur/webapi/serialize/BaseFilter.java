@@ -6,8 +6,8 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.PropertyWriter;
 import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
 import valandur.webapi.WebAPI;
-import valandur.webapi.api.serialize.JsonDetails;
 import valandur.webapi.api.permission.IPermissionService;
+import valandur.webapi.api.serialize.JsonDetails;
 import valandur.webapi.api.util.TreeNode;
 import valandur.webapi.permission.PermissionService;
 

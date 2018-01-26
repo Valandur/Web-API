@@ -7,14 +7,11 @@ import org.spongepowered.api.Sponge;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 import valandur.webapi.api.WebAPIAPI;
-import valandur.webapi.api.cache.player.ICachedPlayer;
-import valandur.webapi.api.cache.world.CachedLocation;
 import valandur.webapi.api.cache.world.ICachedWorld;
 import valandur.webapi.api.servlet.BaseServlet;
 import valandur.webapi.api.servlet.Endpoint;
 import valandur.webapi.api.servlet.IServletData;
 import valandur.webapi.api.servlet.Servlet;
-import valandur.webapi.cache.player.CachedPlayer;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.*;

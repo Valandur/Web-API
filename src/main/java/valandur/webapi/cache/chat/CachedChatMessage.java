@@ -3,9 +3,9 @@ package valandur.webapi.cache.chat;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.message.MessageEvent;
 import valandur.webapi.WebAPI;
+import valandur.webapi.api.cache.CachedObject;
 import valandur.webapi.api.cache.chat.ICachedChatMessage;
 import valandur.webapi.api.cache.player.ICachedPlayer;
-import valandur.webapi.api.cache.CachedObject;
 
 import java.util.Date;
 

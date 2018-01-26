@@ -1,8 +1,8 @@
 package valandur.webapi.cache.command;
 
 import org.spongepowered.api.event.command.SendCommandEvent;
-import valandur.webapi.api.cache.command.ICachedCommandCall;
 import valandur.webapi.api.cache.CachedObject;
+import valandur.webapi.api.cache.command.ICachedCommandCall;
 import valandur.webapi.cache.misc.CachedCause;
 
 import java.util.Date;

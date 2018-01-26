@@ -2,8 +2,8 @@ package valandur.webapi.cache.plugin;
 
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.plugin.PluginContainer;
-import valandur.webapi.api.cache.plugin.ICachedPluginContainer;
 import valandur.webapi.api.cache.CachedObject;
+import valandur.webapi.api.cache.plugin.ICachedPluginContainer;
 
 import java.util.*;
 

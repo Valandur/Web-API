@@ -5,9 +5,9 @@ import com.flowpowered.math.vector.Vector3i;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.world.World;
 import org.spongepowered.api.world.storage.WorldProperties;
+import valandur.webapi.api.cache.CachedObject;
 import valandur.webapi.api.cache.world.ICachedWorld;
 import valandur.webapi.api.serialize.JsonDetails;
-import valandur.webapi.api.cache.CachedObject;
 import valandur.webapi.cache.misc.CachedCatalogType;
 
 import java.util.HashMap;

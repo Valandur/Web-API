@@ -2,7 +2,10 @@ package valandur.webapi.api.util;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 
 /**
  * Represents a tree structure where each node as a key and a value.

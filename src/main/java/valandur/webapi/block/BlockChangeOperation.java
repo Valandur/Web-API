@@ -2,7 +2,6 @@ package valandur.webapi.block;
 
 import com.flowpowered.math.vector.Vector3i;
 import org.spongepowered.api.block.BlockState;
-import org.spongepowered.api.world.BlockChangeFlag;
 import org.spongepowered.api.world.BlockChangeFlags;
 import org.spongepowered.api.world.World;
 import valandur.webapi.api.block.IBlockChangeOperation;

@@ -5,9 +5,9 @@ import valandur.webapi.api.block.IBlockService;
 import valandur.webapi.api.cache.ICacheService;
 import valandur.webapi.api.extension.IExtensionService;
 import valandur.webapi.api.hook.IWebHookService;
-import valandur.webapi.api.serialize.ISerializeService;
 import valandur.webapi.api.message.IMessageService;
 import valandur.webapi.api.permission.IPermissionService;
+import valandur.webapi.api.serialize.ISerializeService;
 import valandur.webapi.api.server.IServerService;
 
 public abstract class BaseServlet {

@@ -81,7 +81,6 @@ public class CacheService implements ICacheService {
     private Map<String, CachedPluginContainer> plugins = new ConcurrentHashMap<>();
     private Map<UUID, CachedWorld> worlds = new ConcurrentHashMap<>();
     private Map<UUID, CachedPlayer> players = new ConcurrentHashMap<>();
-    private Map<UUID, CachedEntity> entities = new ConcurrentHashMap<>();
     private Map<Class, JsonNode> classes = new ConcurrentHashMap<>();
 
     public List<ICachedChatMessage> getChatMessages() {
@@ -140,10 +139,10 @@ public class CacheService implements ICacheService {
         // If the object is of a type that we have a cached version for, then create one of those
         if (obj instanceof Player)
             return getPlayer((Player)obj);
-        if (obj instanceof Entity)
-            return getEntity((Entity)obj);
         if (obj instanceof World)
             return getWorld((World)obj);
+        if (obj instanceof Entity)
+            return new CachedEntity((Entity)obj);
         if (obj instanceof Chunk)
             return new CachedChunk((Chunk)obj);
         if (obj instanceof TileEntity)
@@ -370,50 +369,64 @@ public class CacheService implements ICacheService {
     }
 
     @Override
-    public Collection<ICachedEntity> getEntities() {
-        return new ArrayList<>(entities.values());
+    public Optional<Collection<ICachedEntity>> getEntities(Predicate<Entity> predicate, int limit) {
+        return WebAPI.runOnMain(() -> {
+            Collection<ICachedEntity> entities = new LinkedList<>();
+
+            int i = 0;
+            Collection<World> worlds = Sponge.getServer().getWorlds();
+            for (World world : worlds) {
+                Collection<Entity> ents = world.getEntities(predicate);
+                for (Entity e : ents) {
+                    if (e.isRemoved()) continue;
+                    entities.add(new CachedEntity(e));
+
+                    i++;
+                    if (limit > 0 && i >= limit)
+                        break;
+                }
+
+                if (limit > 0 && i >= limit)
+                    break;
+            }
+
+            return entities;
+        });
+    }
+    @Override
+    public Optional<Collection<ICachedEntity>> getEntities(ICachedWorld world, Predicate<Entity> predicate, int limit) {
+        return WebAPI.runOnMain(() -> {
+            Optional<?> w = world.getLive();
+            if (!w.isPresent())
+                return null;
+
+            int i = 0;
+            Collection<ICachedEntity> entities = new LinkedList<>();
+            Collection<Entity> ents = ((World)w.get()).getEntities(predicate);
+            for (Entity e : ents) {
+                if (e.isRemoved()) continue;
+                entities.add(new CachedEntity(e));
+
+                i++;
+                if (limit > 0 && i >= limit)
+                    break;
+            }
+
+            return entities;
+        });
     }
     @Override
     public Optional<ICachedEntity> getEntity(UUID uuid) {
-        if (!entities.containsKey(uuid)) {
-            return Optional.empty();
-        }
-
-        final CachedEntity res = entities.get(uuid);
-        if (res.isExpired()) {
-            return WebAPI.runOnMain(() -> {
-                Optional<Entity> entity = Optional.empty();
-                for (World world : Sponge.getServer().getWorlds()) {
-                    Optional<Entity> ent = world.getEntity(uuid);
-                    if (ent.isPresent()) {
-                        entity = ent;
-                        break;
-                    }
+        return WebAPI.runOnMain(() -> {
+            Collection<World> worlds = Sponge.getServer().getWorlds();
+            for (World world : worlds) {
+                Optional<Entity> optEnt = world.getEntity(uuid);
+                if (optEnt.isPresent()) {
+                    return new CachedEntity(optEnt.get());
                 }
-                return entity.map(this::updateEntity).orElse(null);
-            });
-        } else {
-            return Optional.of(res);
-        }
-    }
-    @Override
-    public ICachedEntity getEntity(Entity entity) {
-        Optional<ICachedEntity> e = getEntity(entity.getUniqueId());
-        return e.orElseGet(() -> updateEntity(entity));
-    }
-    @Override
-    public ICachedEntity updateEntity(Entity entity) {
-        assert Sponge.getServer().isMainThread();
-
-        Timings.CACHE_ENTITY.startTiming();
-        CachedEntity e = new CachedEntity(entity);
-        entities.put(e.getUUID(), e);
-        Timings.CACHE_ENTITY.stopTiming();
-        return e;
-    }
-    @Override
-    public ICachedEntity removeEntity(UUID uuid) {
-        return entities.remove(uuid);
+            }
+            return null;
+        });
     }
 
     public void updatePlugins() {

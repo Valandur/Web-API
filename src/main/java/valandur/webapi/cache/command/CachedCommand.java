@@ -2,8 +2,8 @@ package valandur.webapi.cache.command;
 
 import org.spongepowered.api.command.CommandMapping;
 import org.spongepowered.api.text.Text;
-import valandur.webapi.api.cache.command.ICachedCommand;
 import valandur.webapi.api.cache.CachedObject;
+import valandur.webapi.api.cache.command.ICachedCommand;
 
 import static valandur.webapi.command.CommandSource.instance;
 

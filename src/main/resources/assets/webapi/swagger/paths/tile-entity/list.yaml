@@ -11,7 +11,7 @@ get:
     - name: world
       in: query
       type: string
-      description: The uuid of the world to filter entities by.
+      description: The uuid of the world to filter tile entities by.
     - name: type
       in: query
       type: string
@@ -20,6 +20,10 @@ get:
       in: query
       type: string
       description: The maximum amount of tile entities to return.
+    - name: details
+      in: query
+      type: string
+      description: Pass this parameter to receive the full details for each tile entity.
   responses:
     403:
       $ref: "../../responses/403.yaml"

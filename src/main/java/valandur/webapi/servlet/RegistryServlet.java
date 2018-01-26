@@ -4,9 +4,9 @@ import org.eclipse.jetty.http.HttpMethod;
 import org.spongepowered.api.CatalogType;
 import org.spongepowered.api.Sponge;
 import valandur.webapi.WebAPI;
+import valandur.webapi.api.servlet.BaseServlet;
 import valandur.webapi.api.servlet.Endpoint;
 import valandur.webapi.api.servlet.Servlet;
-import valandur.webapi.api.servlet.BaseServlet;
 import valandur.webapi.servlet.base.ServletData;
 
 import javax.servlet.http.HttpServletResponse;

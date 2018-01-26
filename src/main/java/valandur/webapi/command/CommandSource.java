@@ -7,7 +7,6 @@ import org.spongepowered.api.service.permission.SubjectData;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.channel.MessageChannel;
 import org.spongepowered.api.util.Tristate;
-import valandur.webapi.WebAPI;
 import valandur.webapi.util.Constants;
 
 import java.util.*;

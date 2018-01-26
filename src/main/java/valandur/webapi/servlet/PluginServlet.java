@@ -8,10 +8,10 @@ import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
 import org.eclipse.jetty.http.HttpMethod;
 import valandur.webapi.WebAPI;
-import valandur.webapi.api.servlet.Endpoint;
-import valandur.webapi.api.servlet.Servlet;
 import valandur.webapi.api.cache.plugin.ICachedPluginContainer;
 import valandur.webapi.api.servlet.BaseServlet;
+import valandur.webapi.api.servlet.Endpoint;
+import valandur.webapi.api.servlet.Servlet;
 import valandur.webapi.servlet.base.ServletData;
 
 import javax.servlet.http.HttpServletResponse;

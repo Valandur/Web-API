@@ -3,11 +3,8 @@ package valandur.webapi.integration.nucleus;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.flowpowered.math.vector.Vector3d;
 import io.github.nucleuspowered.nucleus.api.nucleusdata.NamedLocation;
-import org.spongepowered.api.world.Location;
 import valandur.webapi.api.cache.CachedObject;
 import valandur.webapi.api.cache.world.CachedLocation;
-
-import java.util.Optional;
 
 @JsonDeserialize
 public class CachedNamedLocation extends CachedObject<NamedLocation> {

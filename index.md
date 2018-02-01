@@ -42,18 +42,34 @@ Provides an AdminPanel to manage your minecraft server and a RESTful webserver w
 3. Start the server
 4. Configure the config files to your needs.
 5. Use `sponge plugins reload` to import your config changes to the server without restarting.
+(see the docs below for more information)
 
 ## Tutorials & Documentation
-Go [here](https://github.com/Valandur/Web-API/blob/master/docs/INDEX.md) to see a list of various documentations and tutorials
+Go [here](docs/INDEX.md) to see a list of various documentations and tutorials
+
+To use the Web-API, you will most likely be writing some form of client or server that
+interacts with it. Client libraries for various languages are available at:
+- [C#](https://github.com/Valandur/webapi-client-csharp)
+- [Java](https://github.com/Valandur/webapi-client-java)
+- [PHP](https://github.com/Valandur/webapi-client-php)
+- [Python](https://github.com/Valandur/webapi-client-python) 
 
 ## Request / Response types
-This API uses JSON as requeset and response formats.
+The Web-API supports JSON and XML data formats for requests and responses.
+Specify the `Content-Type` header to explain what content type you are sending, and
+use the `accept` header to tell the Web-API what content type to return to you.
+> Yes, you can send XML and get JSON in response, or the other way around if you want.
 
 ## Routes
-When accessing the base site (by default http://localhost:8080/) a documentation of all the methods will show up.
-This can be used as a starting point to explore the supported routes. You can also find the same documentation
-[here](https://valandur.github.io/Web-API/redoc.html).
+When accessing the docs site (by default http://localhost:8080/docs) a documentation of 
+all the methods will show up. This can be used as a starting point to explore the 
+supported routes. You can also find the same documentation [here](https://valandur.github.io/Web-API/redoc.html).
 
-## Contributors
+## Contributors & Special thanks
 - [johnfg10](https://github.com/johnfg10)
 - [r15ch13](https://github.com/r15ch13)
+- [Cat121](https://github.com/Cat121)
+- [Cat121](https://github.com/Cat121)
+- [Sherex](https://github.com/Sherex)
+- [kawahara](https://github.com/kawahara)
+- [Lantcoder](https://github.com/Lantcoder)

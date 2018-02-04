@@ -1,0 +1,18 @@
+title: MMCTicketsChangeTicketRequest
+type: object
+properties:
+  comment:
+    type: string
+    description: The comment added by staff.
+  status:
+    type: string
+    description: The current state of the ticket.
+    enum:
+     - Open
+     - Claimed
+     - Held
+     - Closed
+  notified:
+    type: number
+    format: integer
+    description: 0 if the assigned member has not been notified yet, 1 otherwise.

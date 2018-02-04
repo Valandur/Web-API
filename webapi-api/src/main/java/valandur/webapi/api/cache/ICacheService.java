@@ -1,13 +1,11 @@
 package valandur.webapi.api.cache;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import org.spongepowered.api.block.tileentity.TileEntity;
 import org.spongepowered.api.command.CommandMapping;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.plugin.PluginContainer;
-import org.spongepowered.api.util.Tuple;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 import org.spongepowered.api.world.storage.WorldProperties;
@@ -20,7 +18,10 @@ import valandur.webapi.api.cache.plugin.ICachedPluginContainer;
 import valandur.webapi.api.cache.tileentity.ICachedTileEntity;
 import valandur.webapi.api.cache.world.ICachedWorld;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.function.Predicate;
 
 /**
@@ -60,15 +61,6 @@ public interface ICacheService {
      * @return The commands run on the server.
      */
     List<ICachedCommandCall> getCommandCalls();
-
-    /**
-     * Gets the json representation of a specific class. If it is cached it will be returned from the cache,
-     * otherwise the json is computed and then saved in the cache for future use.
-     *
-     * @param type The class to get the json representation for.
-     * @return The json which represents the class.
-     */
-    JsonNode getClass(Class type);
 
     /**
      * Gets a collection of all the worlds on the server (loaded and unloaded).
@@ -187,21 +179,21 @@ public interface ICacheService {
     ICachedPlayer removePlayer(UUID uuid);
 
     /**
-     * Tries to get a collection of all the entities on the server.
+     * Gets a collection of all the entities on the server.
      * @param predicate The predicate to filter entities by.
      * @param limit The maximum amount of entities to return.
-     * @return An optional of all the entities on the server if the operation was successful, empty otherwise.
+     * @return All the entities on the server.
      */
-    Optional<Collection<ICachedEntity>> getEntities(Predicate<Entity> predicate, int limit);
+    Collection<ICachedEntity> getEntities(Predicate<Entity> predicate, int limit);
 
     /**
-     * Tries to get a collection of all the entities in the specified world.
+     * Gets a collection of all the entities in the specified world.
      * @param world The world for which all entities are retrieved.
      * @param predicate The predicate to filter entities by.
      * @param limit The maximum amount of entities to return.
-     * @return An optional containing the entities if the operation was successful, empty otherwise.
+     * @return All the entities in the specified world.
      */
-    Optional<Collection<ICachedEntity>> getEntities(ICachedWorld world, Predicate<Entity> predicate, int limit);
+    Collection<ICachedEntity> getEntities(ICachedWorld world, Predicate<Entity> predicate, int limit);
 
     /**
      * Gets a specific entity by UUID.
@@ -269,21 +261,21 @@ public interface ICacheService {
     ICachedCommand updateCommand(CommandMapping command);
 
     /**
-     * Tries to get a collection of all the tile entities on the server.
+     * Gets a collection of all the tile entities on the server.
      * @param predicate The predicate to filter tile entities by.
      * @param limit The maximum amount of tile entities to return.
-     * @return An optional of all the tile entities on the server if the operation was successful, empty otherwise.
+     * @return A list of all tile entities on the server.
      */
-    Optional<Collection<ICachedTileEntity>> getTileEntities(Predicate<TileEntity> predicate, int limit);
+    Collection<ICachedTileEntity> getTileEntities(Predicate<TileEntity> predicate, int limit);
 
     /**
-     * Tries to get a collection of all the tile entities in the specified world.
+     * Gets a collection of all the tile entities in the specified world.
      * @param world The world for which all tile entities are retrieved.
      * @param predicate The predicate to filter tile entities by.
      * @param limit The maximum amount of tile entities to return.
-     * @return An optional containing the tile entities if the operation was successful, empty otherwise.
+     * @return A list of all the tile entities in the specified world.
      */
-    Optional<Collection<ICachedTileEntity>> getTileEntities(ICachedWorld world, Predicate<TileEntity> predicate, int limit);
+    Collection<ICachedTileEntity> getTileEntities(ICachedWorld world, Predicate<TileEntity> predicate, int limit);
 
     /**
      * Tries to get a tile entity at the specified location.
@@ -303,28 +295,14 @@ public interface ICacheService {
     Optional<ICachedTileEntity> getTileEntity(ICachedWorld world, int x, int y, int z);
 
     /**
-     * This method provides a convenient access to get arbitrary properties from a cached object in one call. The
-     * {@code reqFields} parameter contains the names of all the fields to get, and {@code reqMethods} contains all
-     * the names of methods with no parameters and a return value to get.
-     * @param cache The cached object for which the data is requested.
-     * @param reqFields An array containing all the names of fields to get for the cached object.
-     * @param reqMethods An array containing all the names of the methods to get for the cached object.
-     *                   The methods must not have any parameters, and must return a value.
-     * @return A tuple containing the map of field names to values as the first argument, and a map of method names
-     * to values as the second argument
-     */
-    Tuple<Map<String, JsonNode>, Map<String, JsonNode>> getExtraData(ICachedObject cache, boolean xml,
-                                                                     String[] reqFields, String[] reqMethods);
-
-    /**
      * Executes the specified method on the provided cached object.
      * @param cache The cached object on which the method is executed.
      * @param methodName The method to execute.
      * @param paramTypes An array containing the types of the parameters of the method (used to distinguish similar
      *                   methods)
      * @param paramValues The parameter values that are passed to the method.
-     * @return An optional containing the result of the method, or empty otherwise. Methods that return void will
-     * return {@link Boolean} {@code true} here.
+     * @return The result of the method, or empty otherwise. Methods that return void will return
+     * {@link Boolean} {@code true} here.
      */
-    Optional<Object> executeMethod(ICachedObject cache, String methodName, Class[] paramTypes, Object[] paramValues);
+    Object executeMethod(ICachedObject cache, String methodName, Class[] paramTypes, Object[] paramValues);
 }

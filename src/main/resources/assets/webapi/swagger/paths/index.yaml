@@ -66,15 +66,20 @@
   $ref: "./world/chunk_one.yaml"
 
 
-/husky/crate:
-  $ref: "./husky/crate_list.yaml"
-/husky/crate/{id}:
-  $ref: "./husky/crate_one.yaml"
+/husky-crates/crate:
+  $ref: "./husky-crates/crate_list.yaml"
+/husky-crates/crate/{id}:
+  $ref: "./husky-crates/crate_one.yaml"
 
-/mmctickets/ticket:
-  $ref: "./mmctickets/ticket_list.yaml"
-/mmctickets/ticket/{id}:
-  $ref: "./mmctickets/ticket_one.yaml"
+/mmc-restrict/item:
+  $ref: "./mmc-restrict/item_list.yaml"
+/mmc-restrict/item/{id}:
+  $ref: "./mmc-restrict/item_one.yaml"
+
+/mmc-tickets/ticket:
+  $ref: "./mmc-tickets/ticket_list.yaml"
+/mmc-tickets/ticket/{id}:
+  $ref: "./mmc-tickets/ticket_one.yaml"
 
 /nucleus/jail:
   $ref: "./nucleus/jail_list.yaml"
@@ -85,9 +90,9 @@
 /nucleus/kit/{name}:
   $ref: "./nucleus/kit_one.yaml"
 
-/webbooks/book:
-  $ref: "./webbooks/book_list.yaml"
-/webbooks/book/{id}:
-  $ref: "./webbooks/book_one.yaml"
-/webbooks/book/{id}/html:
-  $ref: "./webbooks/book_html.yaml"
+/web-books/book:
+  $ref: "./web-books/book_list.yaml"
+/web-books/book/{id}:
+  $ref: "./web-books/book_one.yaml"
+/web-books/book/{id}/html:
+  $ref: "./web-books/book_html.yaml"

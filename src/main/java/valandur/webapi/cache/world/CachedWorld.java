@@ -3,8 +3,13 @@ package valandur.webapi.cache.world;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.flowpowered.math.vector.Vector3i;
 import org.spongepowered.api.Sponge;
+import org.spongepowered.api.entity.living.player.gamemode.GameMode;
+import org.spongepowered.api.world.DimensionType;
+import org.spongepowered.api.world.GeneratorType;
 import org.spongepowered.api.world.World;
+import org.spongepowered.api.world.difficulty.Difficulty;
 import org.spongepowered.api.world.storage.WorldProperties;
+import org.spongepowered.api.world.weather.Weather;
 import valandur.webapi.api.cache.CachedObject;
 import valandur.webapi.api.cache.world.ICachedWorld;
 import valandur.webapi.api.serialize.JsonDetails;
@@ -71,21 +76,21 @@ public class CachedWorld extends CachedObject<World> implements ICachedWorld {
         return border;
     }
 
-    public CachedCatalogType getDifficulty() {
+    public CachedCatalogType<Difficulty> getDifficulty() {
         return difficulty;
     }
     @JsonDetails
-    private CachedCatalogType difficulty;
+    private CachedCatalogType<Difficulty> difficulty;
 
-    private CachedCatalogType dimensionType;
+    private CachedCatalogType<DimensionType> dimensionType;
     @JsonDetails
-    public CachedCatalogType getDimensionType() {
+    public CachedCatalogType<DimensionType> getDimensionType() {
         return dimensionType;
     }
 
-    private CachedCatalogType gameMode;
+    private CachedCatalogType<GameMode> gameMode;
     @JsonDetails
-    public CachedCatalogType getGameMode() {
+    public CachedCatalogType<GameMode> getGameMode() {
         return gameMode;
     }
 
@@ -95,9 +100,9 @@ public class CachedWorld extends CachedObject<World> implements ICachedWorld {
         return gameRules;
     }
 
-    private CachedGeneratorType generatorType;
+    private CachedCatalogType<GeneratorType> generatorType;
     @JsonDetails
-    public CachedGeneratorType getGeneratorType() {
+    public CachedCatalogType<GeneratorType> getGeneratorType() {
         return generatorType;
     }
 
@@ -119,9 +124,9 @@ public class CachedWorld extends CachedObject<World> implements ICachedWorld {
         return time;
     }
 
-    private CachedCatalogType weather;
+    private CachedCatalogType<Weather> weather;
     @JsonDetails
-    public CachedCatalogType getWeather() {
+    public CachedCatalogType<Weather> getWeather() {
         return weather;
     }
 
@@ -132,7 +137,7 @@ public class CachedWorld extends CachedObject<World> implements ICachedWorld {
         saveWorldProperties(world.getProperties());
 
         this.loaded = world.isLoaded();
-        this.weather = new CachedCatalogType(world.getWeather());
+        this.weather = new CachedCatalogType<>(world.getWeather());
     }
     public CachedWorld(WorldProperties world) {
         super(null);
@@ -145,16 +150,16 @@ public class CachedWorld extends CachedObject<World> implements ICachedWorld {
         this.loaded = false;
 
         this.loadOnStartup = props.loadOnStartup();
-        //this.keepSpawnLoaded = props.doesKeepSpawnLoaded();
+        this.keepSpawnLoaded = props.doesKeepSpawnLoaded();
         this.allowCommands = props.areCommandsAllowed();
         this.generateBonusChests = props.doesGenerateBonusChest();
         this.mapFeaturesEnabled = props.usesMapFeatures();
         this.border = new CachedWorldBorder(props);
-        this.difficulty = new CachedCatalogType(props.getDifficulty());
-        this.dimensionType = new CachedCatalogType(props.getDimensionType());
-        this.gameMode = new CachedCatalogType(props.getGameMode());
+        this.difficulty = new CachedCatalogType<>(props.getDifficulty());
+        this.dimensionType = new CachedCatalogType<>(props.getDimensionType());
+        this.gameMode = new CachedCatalogType<>(props.getGameMode());
         this.gameRules = new HashMap<>(props.getGameRules());
-        this.generatorType = new CachedGeneratorType(props.getGeneratorType());
+        this.generatorType = new CachedCatalogType<>(props.getGeneratorType());
         this.seed = props.getSeed();
         this.spawn = props.getSpawnPosition();
         this.time = props.getWorldTime();
@@ -165,6 +170,7 @@ public class CachedWorld extends CachedObject<World> implements ICachedWorld {
         return Sponge.getServer().getWorld(uuid);
     }
     @JsonIgnore
+    @Override
     public Optional<WorldProperties> getLiveProps() {
         return Sponge.getServer().getWorldProperties(uuid);
     }

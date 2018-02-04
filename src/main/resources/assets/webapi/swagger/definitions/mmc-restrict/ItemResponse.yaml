@@ -1,0 +1,9 @@
+description: Item
+schema:
+  title: MMCRestrictItemResponse
+  type: object
+  properties:
+    ok:
+      $ref: "../ok.yaml"
+    crate:
+      $ref: "./ItemFull.yaml"

@@ -1,116 +1,96 @@
 package valandur.webapi.servlet;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import org.eclipse.jetty.http.HttpMethod;
+import io.swagger.annotations.*;
 import org.spongepowered.api.block.tileentity.TileEntity;
 import org.spongepowered.api.util.Tuple;
 import valandur.webapi.api.cache.tileentity.ICachedTileEntity;
 import valandur.webapi.api.cache.world.ICachedWorld;
 import valandur.webapi.api.servlet.BaseServlet;
-import valandur.webapi.api.servlet.Endpoint;
-import valandur.webapi.api.servlet.Servlet;
-import valandur.webapi.cache.world.CachedWorld;
-import valandur.webapi.servlet.base.ServletData;
+import valandur.webapi.api.servlet.ExplicitDetails;
+import valandur.webapi.api.servlet.Permission;
+import valandur.webapi.serialize.deserialize.ExecuteMethodRequest;
 import valandur.webapi.util.Util;
 
-import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.function.Predicate;
 
-@Servlet(basePath = "tile-entity")
+@Path("tile-entity")
+@Api(value = "tile-entity", tags = { "Tile Entity" })
+@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+@Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 public class TileEntityServlet extends BaseServlet {
 
-    @Endpoint(method = HttpMethod.GET, path = "/", perm = "list")
-    public void getTileEntities(ServletData data) {
-        Optional<String> worldUuid = data.getQueryParam("world");
-        Optional<String> typeId = data.getQueryParam("type");
-        Optional<String> limitString = data.getQueryParam("limit");
-        Predicate<TileEntity> filter = te -> !typeId.isPresent() || te.getType().getId().equalsIgnoreCase(typeId.get());
-        int limit = Integer.parseInt(limitString.orElse("0"));
+    @GET
+    @ExplicitDetails
+    @Permission("list")
+    @ApiOperation(value = "List tile entities", notes =
+            "Get a list of all tile entities on the server (in all worlds, unless specified).")
+    public Collection<ICachedTileEntity> getTileEntities(
+            @QueryParam("world") @ApiParam("The world to filter tile entities by") ICachedWorld world,
+            @QueryParam("type") @ApiParam("The type if of tile entities to filter by") String typeId,
+            @QueryParam("limit") @ApiParam("The maximum amount of tile entities returned") int limit) {
 
-        if (worldUuid.isPresent()) {
-            Optional<ICachedWorld> world = cacheService.getWorld(worldUuid.get());
-            if (!world.isPresent()) {
-                data.sendError(HttpServletResponse.SC_BAD_REQUEST, "World with UUID '" + worldUuid + "' could not be found");
-                return;
-            }
+        Predicate<TileEntity> filter = te -> typeId == null || te.getType().getId().equalsIgnoreCase(typeId);
 
-            Optional<Collection<ICachedTileEntity>> tileEntities = cacheService.getTileEntities(world.get(), filter, limit);
-            if (!tileEntities.isPresent()) {
-                data.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not get tile entities");
-                return;
-            }
-
-            data.addData("ok", true, false);
-            data.addData("tileEntities", tileEntities.get(), data.getQueryParam("details").isPresent());
-            return;
+        if (world != null) {
+            return cacheService.getTileEntities(world, filter, limit);
         }
 
-        Optional<Collection<ICachedTileEntity>> coll = cacheService.getTileEntities(filter, limit);
-        if (!coll.isPresent()) {
-            data.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not get tile entities");
-            return;
-        }
-
-        data.addData("ok", true, false);
-        data.addData("tileEntities", coll.get(), data.getQueryParam("details").isPresent());
+        return cacheService.getTileEntities(filter, limit);
     }
 
-    @Endpoint(method = HttpMethod.GET, path = "/:world/:x/:y/:z", perm = "one")
-    public void getTileEntity(ServletData data, CachedWorld world, int x, int y, int z) {
-        Optional<ICachedTileEntity> te = cacheService.getTileEntity(world, x, y, z);
+    @GET
+    @Path("/{world}/{x}/{y}/{z}")
+    @Permission("one")
+    @ApiOperation(value = "Get tile entity", notes = "Get detailed information about a tile entity.")
+    public ICachedTileEntity getTileEntity(
+            @PathParam("world") @ApiParam("The world the tile entity is in") ICachedWorld world,
+            @PathParam("x") @ApiParam("The x-coordinate of the tile-entity") Integer x,
+            @PathParam("y") @ApiParam("The y-coordinate of the tile-entity") Integer y,
+            @PathParam("z") @ApiParam("The z-coordinate of the tile-entity") Integer z)
+            throws NotFoundException {
+        Optional<ICachedTileEntity> optTe = cacheService.getTileEntity(world, x, y, z);
 
-        if (!te.isPresent()) {
-            data.sendError(HttpServletResponse.SC_NOT_FOUND, "Tile entity in world '" + world.getName() + "' at [" + x + "," + y + "," + z + "] could not be found");
-            return;
+        if (!optTe.isPresent()) {
+            throw new NotFoundException("Tile entity in world '" + world.getName() +
+                    "' at [" + x + "," + y + "," + z + "] could not be found");
         }
 
-        Optional<String> strFields = data.getQueryParam("fields");
-        Optional<String> strMethods = data.getQueryParam("methods");
-        if (strFields.isPresent() || strMethods.isPresent()) {
-            String[] fields = strFields.map(s -> s.split(",")).orElse(new String[]{});
-            String[] methods = strMethods.map(s -> s.split(",")).orElse(new String[]{});
-            Tuple extra = cacheService.getExtraData(te.get(), data.responseIsXml(), fields, methods);
-            data.addData("fields", extra.getFirst(), true);
-            data.addData("methods", extra.getSecond(), true);
-        }
-
-        data.addData("ok", true, false);
-        data.addData("tileEntity", te.get(), true);
+        return optTe.get();
     }
 
-    @Endpoint(method = HttpMethod.POST, path = "/:world/:x/:y/:z/method", perm = "method")
-    public void executeMethod(ServletData data, CachedWorld world, int x, int y, int z) {
+    @POST
+    @Path("/{world}/{x}/{y}/{z}/method")
+    @Permission("method")
+    @ApiOperation(value = "Execute a method", notes =
+            "Provides direct access to the underlaying tile entity object and can execute any method on it.")
+    public Object executeMethod(
+            @PathParam("world") @ApiParam("The world the tile entity is in") ICachedWorld world,
+            @PathParam("x") @ApiParam("The x-coordinate of the tile-entity") Integer x,
+            @PathParam("y") @ApiParam("The x-coordinate of the tile-entity") Integer y,
+            @PathParam("z") @ApiParam("The x-coordinate of the tile-entity") Integer z,
+            ExecuteMethodRequest req)
+            throws BadRequestException, NotFoundException {
+        if (req.getMethod() == null || req.getMethod().isEmpty()) {
+            throw new BadRequestException("Method must be specified");
+        }
+
         Optional<ICachedTileEntity> te = cacheService.getTileEntity(world, x, y, z);
         if (!te.isPresent()) {
-            data.sendError(HttpServletResponse.SC_NOT_FOUND, "Tile entity in world '" + world.getName() + "' at [" + x + "," + y + "," + z + "] could not be found");
-            return;
+            throw new NotFoundException("Tile entity in world '" + world.getName() +
+                    "' at [" + x + "," + y + "," + z + "] could not be found");
         }
 
-        final JsonNode reqJson = data.getRequestBody();
-
-        if (!reqJson.has("method")) {
-            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Request must define the 'method' property");
-            return;
-        }
-
-        String mName = reqJson.get("method").asText();
-        Optional<Tuple<Class[], Object[]>> params = Util.parseParams(reqJson.get("params"));
+        String mName = req.getMethod();
+        Optional<Tuple<Class[], Object[]>> params = Util.parseParams(req.getParameters());
 
         if (!params.isPresent()) {
-            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid parameters");
-            return;
+            throw new BadRequestException("Invalid parameters");
         }
 
-        Optional<Object> res = cacheService.executeMethod(te.get(), mName, params.get().getFirst(), params.get().getSecond());
-        if (!res.isPresent()) {
-            data.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not get tile entity");
-            return;
-        }
-
-        data.addData("ok", true, false);
-        data.addData("tileEntity", te.get(), true);
-        data.addData("result", res.get(), true);
+        return cacheService.executeMethod(te.get(), mName, params.get().getFirst(), params.get().getSecond());
     }
 }

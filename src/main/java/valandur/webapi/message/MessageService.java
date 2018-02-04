@@ -11,6 +11,8 @@ import valandur.webapi.api.message.IMessageOption;
 import valandur.webapi.api.message.IMessageService;
 import valandur.webapi.hook.WebHookService;
 
+import javax.ws.rs.InternalServerErrorException;
+import javax.ws.rs.NotFoundException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
@@ -26,7 +28,7 @@ public class MessageService implements IMessageService {
     }
 
     @Override
-    public boolean sendMessage(IMessage msg) {
+    public void sendMessage(IMessage msg) {
         Text.Builder builder = Text.builder();
 
         if (msg.getMessage() != null) {
@@ -77,12 +79,12 @@ public class MessageService implements IMessageService {
 
         messages.put(msg.getUUID(), msg);
 
-        return WebAPI.runOnMain(() -> {
+        WebAPI.runOnMain(() -> {
             List<Player> players = new ArrayList<>();
             for (ICachedPlayer player : cachedPlayers) {
                 Optional<?> p = player.getLive();
                 if (!p.isPresent())
-                    return false;
+                    throw new InternalServerErrorException("Could not get live player");
 
                 players.add((Player)p.get());
             }
@@ -90,9 +92,7 @@ public class MessageService implements IMessageService {
             for (Player player : players) {
                 player.sendMessage(text);
             }
-
-            return true;
-        }).orElse(false);
+        });
     }
 
     @Override

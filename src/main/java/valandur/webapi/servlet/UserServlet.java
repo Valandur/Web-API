@@ -1,56 +1,72 @@
 package valandur.webapi.servlet;
 
-import org.eclipse.jetty.http.HttpMethod;
-import valandur.webapi.WebAPI;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+import io.swagger.annotations.ApiOperation;
 import valandur.webapi.api.servlet.BaseServlet;
-import valandur.webapi.api.servlet.Endpoint;
-import valandur.webapi.api.servlet.Servlet;
-import valandur.webapi.serialize.request.auth.AuthRequest;
-import valandur.webapi.servlet.base.ServletData;
-import valandur.webapi.user.UserPermission;
+import valandur.webapi.security.AuthenticationProvider;
+import valandur.webapi.security.PermissionStruct;
+import valandur.webapi.security.SecurityContext;
+import valandur.webapi.user.UserPermissionStruct;
 import valandur.webapi.user.Users;
 import valandur.webapi.util.Util;
 
-import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import java.security.AuthProvider;
 import java.util.Optional;
 
-@Servlet(basePath = "user")
+@Path("user")
+@Api(value = "user", tags = { "User" })
+@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+@Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 public class UserServlet extends BaseServlet {
 
-    @Endpoint(method = HttpMethod.GET, path = "/")
-    public void getUserDetails(ServletData data) {
-        UserPermission user = data.getUser();
-        if (user != null) {
-            data.addData("ok", true, false);
-            data.addData("user", user, true);
-        } else {
-            data.addData("ok", false, false);
-        }
+    @Context
+    HttpServletRequest request;
+
+    @GET
+    @ApiOperation(value = "Check info", notes = "Checks to see if the passed api key is still valid and retrieves " +
+            "the user info and permissions associated with this key")
+    public PermissionStruct getUserDetails() {
+        SecurityContext context = (SecurityContext)request.getAttribute("security");
+        return context.getPermissionStruct();
     }
 
-    @Endpoint(method = HttpMethod.POST, path = "/")
-    public void authUser(ServletData data) {
-        Optional<AuthRequest> optReq = data.getRequestBody(AuthRequest.class);
-        if (!optReq.isPresent()) {
-            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid auth data: " + data.getLastParseError().getMessage());
-            return;
-        }
-
-        AuthRequest req = optReq.get();
-
-        Optional<UserPermission> optPerm = Users.getUser(req.getUsername(), req.getPassword());
+    @POST
+    @ApiOperation(value = "Login", notes = "Tries to aquire an api key with the passed credentials.")
+    public PermissionStruct authUser(AuthRequest req)
+            throws ForbiddenException {
+        Optional<UserPermissionStruct> optPerm = Users.getUser(req.getUsername(), req.getPassword());
         if (!optPerm.isPresent()) {
-            data.sendError(HttpServletResponse.SC_FORBIDDEN, "Invalid username / password");
-            return;
+            throw new ForbiddenException("Invalid username / password");
         }
 
-        UserPermission perm = optPerm.get();
-
+        UserPermissionStruct perm = optPerm.get();
         String key = Util.generateUniqueId();
-        WebAPI.getAuthHandler().addTempPerm(key, perm);
 
-        data.addData("ok", true, false);
-        data.addData("key", key, false);
-        data.addData("user", perm, false);
+        AuthenticationProvider.addTempPerm(key, perm);
+
+        return perm.withKey(key);
+    }
+
+
+    @ApiModel("Authentication Request")
+    public static class AuthRequest {
+
+        private String username;
+        @ApiModelProperty(value = "The username of the user", required = true)
+        public String getUsername() {
+            return username;
+        }
+
+        private String password;
+        @ApiModelProperty(value = "The password of the user", required = true)
+        public String getPassword() {
+            return password;
+        }
     }
 }

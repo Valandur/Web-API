@@ -1,0 +1,9 @@
+description: Ticket
+schema:
+  title: MMCTicketsTicketResponse
+  type: object
+  properties:
+    ok:
+      $ref: "../ok.yaml"
+    crate:
+      $ref: "./TicketFull.yaml"

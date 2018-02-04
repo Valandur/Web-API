@@ -27,4 +27,26 @@ get:
             type: array
             description: A list of jails.
             items:
-              $ref: "../../definitions/nucleus/NucleusJailFull.yaml"
+              $ref: "../../definitions/nucleus/JailFull.yaml"
+post:
+  summary: Create a jail
+  operationId: createJail
+  description: |
+    Creates a new jail.
+
+    > Required permission: nucleus.jail.create
+  parameters:
+    - name: CreateJailRequest
+      in: body
+      schema:
+        $ref: "../../definitions/nucleus/CreateJailRequest.yaml"
+      required: true
+  tags:
+    - Nucleus
+  responses:
+    400:
+      $ref: "../../responses/400.yaml"
+    403:
+      $ref: "../../responses/403.yaml"
+    200:
+      $ref: "../../definitions/nucleus/JailResponse.yaml"

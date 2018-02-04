@@ -1,6 +1,10 @@
 package valandur.webapi.api.util;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonValue;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -35,6 +39,20 @@ public class TreeNode<K, V> {
      */
     public V getValue() {
         return value;
+    }
+
+
+    @JsonValue
+    public Object anyGetter() {
+        if (this.children.size() == 0) {
+            return this.value;
+        } else {
+            Map<String, Object> map = new HashMap<>();
+            for (Map.Entry<K, TreeNode<K, V>> entry : children.entrySet()) {
+                map.put(entry.getKey().toString(), entry.getValue());
+            }
+            return map;
+        }
     }
 
     /**

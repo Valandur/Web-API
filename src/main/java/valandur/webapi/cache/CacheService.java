@@ -1,7 +1,5 @@
 package valandur.webapi.cache;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.TextNode;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
 import org.spongepowered.api.CatalogType;
@@ -39,7 +37,6 @@ import valandur.webapi.api.cache.tileentity.ICachedTileEntity;
 import valandur.webapi.api.cache.world.CachedLocation;
 import valandur.webapi.api.cache.world.CachedTransform;
 import valandur.webapi.api.cache.world.ICachedWorld;
-import valandur.webapi.api.permission.IPermissionService;
 import valandur.webapi.cache.chat.CachedChatMessage;
 import valandur.webapi.cache.command.CachedCommand;
 import valandur.webapi.cache.command.CachedCommandCall;
@@ -56,8 +53,9 @@ import valandur.webapi.serialize.SerializeService;
 import valandur.webapi.util.Timings;
 import valandur.webapi.util.Util;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
+import javax.ws.rs.BadRequestException;
+import javax.ws.rs.InternalServerErrorException;
+import javax.ws.rs.NotFoundException;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -81,7 +79,6 @@ public class CacheService implements ICacheService {
     private Map<String, CachedPluginContainer> plugins = new ConcurrentHashMap<>();
     private Map<UUID, CachedWorld> worlds = new ConcurrentHashMap<>();
     private Map<UUID, CachedPlayer> players = new ConcurrentHashMap<>();
-    private Map<Class, JsonNode> classes = new ConcurrentHashMap<>();
 
     public List<ICachedChatMessage> getChatMessages() {
         return Arrays.asList(chatMessages.toArray(new ICachedChatMessage[0]));
@@ -179,19 +176,6 @@ public class CacheService implements ICacheService {
         return dur != null ? dur : 0;
     }
 
-    public Map<Class, JsonNode> getClasses() {
-        return classes;
-    }
-    @Override
-    public JsonNode getClass(Class type) {
-        if (classes.containsKey(type))
-            return classes.get(type);
-
-        JsonNode e = json.classToJson(type);
-        classes.put(type, e);
-        return e;
-    }
-
     public CachedChatMessage addChatMessage(Player sender, MessageEvent event) {
         CachedChatMessage cache = new CachedChatMessage(sender, event);
         chatMessages.add(cache);
@@ -246,13 +230,15 @@ public class CacheService implements ICacheService {
 
         final CachedWorld res = worlds.get(uuid);
         if (res.isExpired()) {
-            return WebAPI.runOnMain(() -> {
+            return Optional.of(WebAPI.runOnMain(() -> {
                 Optional<World> world = Sponge.getServer().getWorld(uuid);
                 if (world.isPresent())
                     return updateWorld(world.get());
                 Optional<WorldProperties> props = Sponge.getServer().getWorldProperties(uuid);
-                return props.map(this::updateWorld).orElse(null);
-            });
+                if (!props.isPresent())
+                    throw new InternalServerErrorException("Could not get world properties");
+                return updateWorld(props.get());
+            }));
         } else {
             return Optional.of(res);
         }
@@ -304,10 +290,10 @@ public class CacheService implements ICacheService {
         return WebAPI.runOnMain(() -> {
             Optional<UserStorageService> optSrv = Sponge.getServiceManager().provide(UserStorageService.class);
             if (!optSrv.isPresent())
-                return null;
+                throw new InternalServerErrorException("User storage service is not available");
 
             Optional<User> optUser = optSrv.get().get(nameOrUuid);
-            return optUser.<ICachedPlayer>map(CachedPlayer::new).orElse(null);
+            return optUser.<ICachedPlayer>map(CachedPlayer::new);
         });
     }
     @Override
@@ -316,10 +302,10 @@ public class CacheService implements ICacheService {
             return WebAPI.runOnMain(() -> {
                 Optional<UserStorageService> optSrv = Sponge.getServiceManager().provide(UserStorageService.class);
                 if (!optSrv.isPresent())
-                    return null;
+                    throw new InternalServerErrorException("User storage service is not available");
 
                 Optional<User> optUser = optSrv.get().get(uuid);
-                return optUser.<ICachedPlayer>map(CachedPlayer::new).orElse(null);
+                return optUser.<ICachedPlayer>map(CachedPlayer::new);
             });
         }
 
@@ -327,7 +313,7 @@ public class CacheService implements ICacheService {
         if (res.isExpired()) {
             return WebAPI.runOnMain(() -> {
                 Optional<Player> player = Sponge.getServer().getPlayer(uuid);
-                return player.map(this::updatePlayer).orElse(null);
+                return player.map(this::updatePlayer);
             });
         } else {
             return Optional.of(res);
@@ -369,7 +355,7 @@ public class CacheService implements ICacheService {
     }
 
     @Override
-    public Optional<Collection<ICachedEntity>> getEntities(Predicate<Entity> predicate, int limit) {
+    public Collection<ICachedEntity> getEntities(Predicate<Entity> predicate, int limit) {
         return WebAPI.runOnMain(() -> {
             Collection<ICachedEntity> entities = new LinkedList<>();
 
@@ -394,11 +380,11 @@ public class CacheService implements ICacheService {
         });
     }
     @Override
-    public Optional<Collection<ICachedEntity>> getEntities(ICachedWorld world, Predicate<Entity> predicate, int limit) {
+    public Collection<ICachedEntity> getEntities(ICachedWorld world, Predicate<Entity> predicate, int limit) {
         return WebAPI.runOnMain(() -> {
             Optional<?> w = world.getLive();
             if (!w.isPresent())
-                return null;
+                throw new InternalServerErrorException("Could not get live world");
 
             int i = 0;
             Collection<ICachedEntity> entities = new LinkedList<>();
@@ -422,10 +408,10 @@ public class CacheService implements ICacheService {
             for (World world : worlds) {
                 Optional<Entity> optEnt = world.getEntity(uuid);
                 if (optEnt.isPresent()) {
-                    return new CachedEntity(optEnt.get());
+                    return Optional.of(new CachedEntity(optEnt.get()));
                 }
             }
-            return null;
+            return Optional.empty();
         });
     }
 
@@ -500,9 +486,9 @@ public class CacheService implements ICacheService {
     }
 
     @Override
-    public Optional<Collection<ICachedTileEntity>> getTileEntities(Predicate<TileEntity> predicate, int limit) {
+    public Collection<ICachedTileEntity> getTileEntities(Predicate<TileEntity> predicate, int limit) {
         return WebAPI.runOnMain(() -> {
-            Collection<ICachedTileEntity> entities = new LinkedList<>();
+            Collection<ICachedTileEntity> tes = new LinkedList<>();
 
             int i = 0;
             Collection<World> worlds = Sponge.getServer().getWorlds();
@@ -510,7 +496,7 @@ public class CacheService implements ICacheService {
                 Collection<TileEntity> ents = world.getTileEntities(predicate);
                 for (TileEntity te : ents) {
                     if (!te.isValid()) continue;
-                    entities.add(new CachedTileEntity(te));
+                    tes.add(new CachedTileEntity(te));
 
                     i++;
                     if (limit > 0 && i >= limit)
@@ -521,15 +507,15 @@ public class CacheService implements ICacheService {
                     break;
             }
 
-            return entities;
+            return tes;
         });
     }
     @Override
-    public Optional<Collection<ICachedTileEntity>> getTileEntities(ICachedWorld world, Predicate<TileEntity> predicate, int limit) {
+    public Collection<ICachedTileEntity> getTileEntities(ICachedWorld world, Predicate<TileEntity> predicate, int limit) {
         return WebAPI.runOnMain(() -> {
             Optional<?> w = world.getLive();
             if (!w.isPresent())
-                return null;
+                throw new InternalServerErrorException("Could not get live world");
 
             int i = 0;
             Collection<ICachedTileEntity> entities = new LinkedList<>();
@@ -559,24 +545,24 @@ public class CacheService implements ICacheService {
         return WebAPI.runOnMain(() -> {
             Optional<?> w = world.getLive();
             if (!w.isPresent())
-                return null;
+                throw new InternalServerErrorException("Could not get live world");
 
             Optional<TileEntity> ent = ((World)w.get()).getTileEntity(x, y, z);
             if (!ent.isPresent() || !ent.get().isValid()) {
-                return null;
+                return Optional.empty();
             }
 
-            return new CachedTileEntity(ent.get());
+            return Optional.of(new CachedTileEntity(ent.get()));
         });
     }
 
     @Override
-    public Optional<Object> executeMethod(ICachedObject cache, String methodName, Class[] paramTypes, Object[] paramValues) {
+    public Object executeMethod(ICachedObject cache, String methodName, Class[] paramTypes, Object[] paramValues) {
         return WebAPI.runOnMain(() -> {
             Optional<?> obj = cache.getLive();
 
             if (!obj.isPresent())
-                return null;
+                throw new InternalServerErrorException("Could not get live version of object");
 
             Object o = obj.get();
             Method[] ms = Arrays.stream(Util.getAllMethods(o.getClass())).filter(m -> {
@@ -597,7 +583,7 @@ public class CacheService implements ICacheService {
             }).toArray(Method[]::new);
 
             if (ms.length == 0) {
-                return new Exception("Method not found");
+                throw new NotFoundException("Could not find requested method");
             }
 
             try {
@@ -608,69 +594,8 @@ public class CacheService implements ICacheService {
                     return true;
                 return res;
             } catch (Exception e) {
-                return e;
+                throw new InternalServerErrorException(e.getMessage());
             }
         });
-    }
-    @Override
-    public Tuple<Map<String, JsonNode>, Map<String, JsonNode>> getExtraData(ICachedObject cache, boolean xml,
-                                                                            String[] reqFields, String[] reqMethods) {
-        return WebAPI.runOnMain(() -> {
-            Map<String, JsonNode> fields = new HashMap<>();
-            Map<String, JsonNode> methods = new HashMap<>();
-
-            Optional<?> opt = cache.getLive();
-            if (!opt.isPresent()) return null;
-
-            Object obj = opt.get();
-            Class c = obj.getClass();
-
-            List<Field> allFields = Arrays.asList(Util.getAllFields(c));
-            List<Method> allMethods = Arrays.asList(Util.getAllMethods(c));
-            for (String fieldName : reqFields) {
-                Optional<Field> field = allFields.stream().filter(f -> f.getName().equalsIgnoreCase(fieldName)).findAny();
-                if (!field.isPresent()) {
-                    fields.put(fieldName, TextNode.valueOf("ERROR: Field not found"));
-                    continue;
-                }
-
-                field.get().setAccessible(true);
-
-                try {
-                    Object res = field.get().get(obj);
-                    fields.put(fieldName, json.serialize(res, xml, true, IPermissionService.permitAllNode()));
-                } catch (IllegalAccessException e) {
-                    fields.put(fieldName, TextNode.valueOf("ERROR: " + e.toString()));
-                }
-            }
-            for (String methodName : reqMethods) {
-                Optional<Method> method = allMethods.stream().filter(f -> f.getName().equalsIgnoreCase(methodName)).findAny();
-                if (!method.isPresent()) {
-                    methods.put(methodName, TextNode.valueOf("ERROR: Method not found"));
-                    continue;
-                }
-
-                if (method.get().getParameterCount() > 0) {
-                    methods.put(methodName, TextNode.valueOf("ERROR: Method must not have parameters"));
-                    continue;
-                }
-
-                if (method.get().getReturnType().equals(Void.TYPE) || method.get().getReturnType().equals(Void.class)) {
-                    methods.put(methodName, TextNode.valueOf("ERROR: Method must not return void"));
-                    continue;
-                }
-
-                method.get().setAccessible(true);
-
-                try {
-                    Object res = method.get().invoke(obj);
-                    methods.put(methodName, json.serialize(res, xml, true, IPermissionService.permitAllNode()));
-                } catch (IllegalAccessException | InvocationTargetException e) {
-                    methods.put(methodName, TextNode.valueOf("ERROR: " + e.toString()));
-                }
-            }
-
-            return new Tuple<>(fields, methods);
-        }).orElse(null);
     }
 }

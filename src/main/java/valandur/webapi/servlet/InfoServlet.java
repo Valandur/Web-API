@@ -1,87 +1,221 @@
 package valandur.webapi.servlet;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import org.eclipse.jetty.http.HttpMethod;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+import io.swagger.annotations.ApiOperation;
 import org.spongepowered.api.Platform;
 import org.spongepowered.api.Server;
 import org.spongepowered.api.Sponge;
+import org.spongepowered.api.resourcepack.ResourcePack;
 import valandur.webapi.WebAPI;
-import valandur.webapi.api.servlet.BaseServlet;
-import valandur.webapi.api.servlet.Endpoint;
-import valandur.webapi.api.servlet.Servlet;
+import valandur.webapi.api.server.IServerStat;
+import valandur.webapi.api.servlet.Permission;
+import valandur.webapi.cache.plugin.CachedPluginContainer;
+import valandur.webapi.server.ServerProperty;
 import valandur.webapi.server.ServerService;
-import valandur.webapi.servlet.base.ServletData;
 
-import javax.servlet.http.HttpServletResponse;
-import java.util.Iterator;
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
-@Servlet(basePath = "info")
-public class InfoServlet extends BaseServlet {
+@Path("info")
+@Api(value = "info", tags = { "Info" })
+@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+@Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+public class InfoServlet {
 
-    @Endpoint(method = HttpMethod.GET, path = "/", perm = "get")
-    public void getInfo(ServletData data) {
-        Optional<Boolean> optRes = WebAPI.runOnMain(() -> {
+    @GET
+    @Permission("info")
+    @ApiOperation(value = "Server info", notes = "Get general information about the Minecraft server.")
+    public ServerInfo getInfo()
+            throws InternalServerErrorException {
+        return WebAPI.runOnMain(ServerInfo::new);
+    }
+
+    @GET
+    @Path("/properties")
+    @Permission({ "properties", "list" })
+    @ApiOperation(value = "List server properties", notes = "Get the main server properties (server.properties file).")
+    public Collection<ServerProperty> getProperties() {
+        ServerService srv = WebAPI.getServerService();
+        return srv.getProperties();
+    }
+
+    @PUT
+    @Path("/properties")
+    @Permission({ "properties", "change" })
+    @Permission(value = { "properties", "change", "[property]" }, autoCheck = false)
+    @ApiOperation(value = "Modify server properties", notes = "Change settings in the server.properties file. " +
+            "**Note that these settings don't take effect until you restart the server.")
+    public Collection<ServerProperty> setProperties(final Map<String, String> properties)
+            throws BadRequestException {
+        if (properties == null) {
+            throw new BadRequestException();
+        }
+
+        // TODO: Add check for setting properties
+        ServerService srv = WebAPI.getServerService();
+        for (Map.Entry<String, String> entry : properties.entrySet()) {
+            srv.setProperty(entry.getKey(), entry.getValue());
+        }
+
+        return srv.getProperties();
+    }
+
+    @GET
+    @Path("/stats")
+    @Permission("stats")
+    @ApiOperation(value = "Server stats", notes =
+            "Get statistical information about the server, such as player count, cpu and memory usage over time.")
+    public ServerStats getStats() {
+        return new ServerStats();
+    }
+
+
+    @ApiModel(value = "ServerInfo")
+    public static class ServerInfo {
+
+        private String motd;
+        @ApiModelProperty(value = "The message of the day set on the server")
+        public String getMotd() {
+            return motd;
+        }
+
+        private int players;
+        @ApiModelProperty(value = "The amount of players currently playing on the server")
+        public int getPlayers() {
+            return players;
+        }
+
+        private int maxPlayers;
+        @ApiModelProperty(value = "The maximum amount of players allowed on the server")
+        public int getMaxPlayers() {
+            return maxPlayers;
+        }
+
+        private String address;
+        @ApiModelProperty(value = "The address that the server is bound to")
+        public String getAddress() {
+            return address;
+        }
+
+        private boolean onlineMode;
+        @ApiModelProperty(value = "True if the server is in online mode and verifies connections, false otherwise")
+        public boolean isOnlineMode() {
+            return onlineMode;
+        }
+
+        private String resourcePack;
+        @ApiModelProperty(value = "The name of the resource pack this is used on the server")
+        public String getResourcePack() {
+            return resourcePack;
+        }
+
+        private boolean hasWhitelist;
+        @ApiModelProperty(value = "True if the server has activated the whitelist, false otherwise")
+        public boolean isHasWhitelist() {
+            return hasWhitelist;
+        }
+
+        private int uptimeTicks;
+        @ApiModelProperty(value = "The number of ticks the server has been running")
+        public int getUptimeTicks() {
+            return uptimeTicks;
+        }
+
+        private double tps;
+        @ApiModelProperty(value = "The average ticks per second the server is running with")
+        public double getTps() {
+            return tps;
+        }
+
+        private String minecraftVersion;
+        @ApiModelProperty(value = "The Minecraft version running on the server")
+        public String getMinecraftVersion() {
+            return minecraftVersion;
+        }
+
+        private CachedPluginContainer game;
+        public CachedPluginContainer getGame() {
+            return game;
+        }
+
+        private CachedPluginContainer api;
+        public CachedPluginContainer getApi() {
+            return api;
+        }
+
+        private CachedPluginContainer implementation;
+        public CachedPluginContainer getImplementation() {
+            return implementation;
+        }
+
+        public ServerInfo() {
             Server server = Sponge.getServer();
             Platform platform = Sponge.getPlatform();
 
-            data.addData("motd", server.getMotd().toPlain(), false);
-            data.addData("players", server.getOnlinePlayers().size(), false);
-            data.addData("maxPlayers", server.getMaxPlayers(), false);
-            data.addData("address", server.getBoundAddress().map(Object::toString).orElse(null), false);
-            data.addData("onlineMode", server.getOnlineMode(), false);
-            data.addData("resourcePack", server.getDefaultResourcePack().orElse(null), false);
-            data.addData("hasWhitelist", server.hasWhitelist(), false);
+            this.motd = server.getMotd().toPlain();
+            this.players = server.getOnlinePlayers().size();
+            this.maxPlayers = server.getMaxPlayers();
+            this.address = server.getBoundAddress().map(Object::toString).orElse(null);
+            this.onlineMode = server.getOnlineMode();
+            this.resourcePack = server.getDefaultResourcePack().map(ResourcePack::getName).orElse(null);
+            this.hasWhitelist = server.hasWhitelist();
 
-            data.addData("uptimeTicks", server.getRunningTimeTicks(), false);
-            data.addData("tps", server.getTicksPerSecond(), false);
-            data.addData("minecraftVersion", platform.getMinecraftVersion().getName(), false);
+            this.uptimeTicks = server.getRunningTimeTicks();
+            this.tps = server.getTicksPerSecond();
+            this.minecraftVersion = platform.getMinecraftVersion().getName();
 
-            data.addData("game", platform.getContainer(Platform.Component.GAME), true);
-            data.addData("api", platform.getContainer(Platform.Component.API), true);
-            data.addData("implementation", platform.getContainer(Platform.Component.IMPLEMENTATION), true);
-            return true;
-        });
-
-        data.addData("ok", optRes.orElse(false), false);
+            this.game = new CachedPluginContainer(platform.getContainer(Platform.Component.GAME));
+            this.api = new CachedPluginContainer(platform.getContainer(Platform.Component.API));
+            this.implementation = new CachedPluginContainer(platform.getContainer(Platform.Component.IMPLEMENTATION));
+        }
     }
 
-    @Endpoint(method = HttpMethod.GET, path = "/properties", perm = "properties.list")
-    public void getProperties(ServletData data) {
-        ServerService srv = WebAPI.getServerService();
+    @ApiModel(value = "ServerStats")
+    public static class ServerStats {
 
-        data.addData("ok", true, false);
-        data.addData("properties", srv.getProperties(), true);
-    }
-
-    @Endpoint(method = HttpMethod.POST, path = "/properties", perm = "properties.set")
-    public void setProperties(ServletData data) {
-        ServerService srv = WebAPI.getServerService();
-
-        JsonNode body = data.getRequestBody();
-        JsonNode props = body.get("properties");
-
-        if (props == null) {
-            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid new properties");
-            return;
+        private List<IServerStat<Double>> tps;
+        @ApiModelProperty(value = "Historic values for the average ticks per second")
+        public List<IServerStat<Double>> getTps() {
+            return tps;
         }
 
-        for (Iterator<String> it = props.fieldNames(); it.hasNext(); ) {
-            String key = it.next();
-            srv.setProperty(key, props.get(key).asText());
+        private List<IServerStat<Integer>> players;
+        @ApiModelProperty(value = "Historic values for the number of online players")
+        public List<IServerStat<Integer>> getPlayers() {
+            return players;
         }
 
-        data.addData("ok", true, false);
-        data.addData("properties", srv.getProperties(), true);
-    }
+        private List<IServerStat<Double>> cpu;
+        @ApiModelProperty(value = "Historic values for the cpu load")
+        public List<IServerStat<Double>> getCpu() {
+            return cpu;
+        }
 
-    @Endpoint(method = HttpMethod.GET, path = "/stats", perm = "stats")
-    public void getStats(ServletData data) {
-        data.addData("ok", true, true);
-        data.addData("tps", serverService.getAverageTps(), false);
-        data.addData("players", serverService.getOnlinePlayers(), false);
-        data.addData("cpu", serverService.getCpuLoad(), false);
-        data.addData("memory", serverService.getMemoryLoad(), false);
-        data.addData("disk", serverService.getDiskUsage(), false);
+        private List<IServerStat<Double>> memory;
+        @ApiModelProperty(value = "Historic values for the memory load")
+        public List<IServerStat<Double>> getMemory() {
+            return memory;
+        }
+
+        private List<IServerStat<Double>> disk;
+        @ApiModelProperty(value = "Historic values for the disk usage")
+        public List<IServerStat<Double>> getDisk() {
+            return disk;
+        }
+
+        public ServerStats() {
+            ServerService srv = WebAPI.getServerService();
+            this.tps = srv.getAverageTps();
+            this.players = srv.getOnlinePlayers();
+            this.cpu = srv.getCpuLoad();
+            this.memory = srv.getMemoryLoad();
+            this.disk = srv.getDiskUsage();
+        }
     }
 }

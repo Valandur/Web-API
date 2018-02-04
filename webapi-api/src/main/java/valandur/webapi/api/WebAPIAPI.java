@@ -9,13 +9,11 @@ import org.spongepowered.api.plugin.Plugin;
 import org.spongepowered.api.scheduler.SpongeExecutorService;
 import valandur.webapi.api.block.IBlockService;
 import valandur.webapi.api.cache.ICacheService;
-import valandur.webapi.api.extension.IExtensionService;
 import valandur.webapi.api.hook.IWebHookService;
 import valandur.webapi.api.message.IMessageService;
 import valandur.webapi.api.permission.IPermissionService;
 import valandur.webapi.api.serialize.ISerializeService;
 import valandur.webapi.api.server.IServerService;
-import valandur.webapi.api.servlet.IServletService;
 import valandur.webapi.api.util.Constants;
 
 import java.util.Optional;
@@ -63,14 +61,6 @@ public class WebAPIAPI {
     }
 
     /**
-     * Gets the extension service from the Web-API. Used to load extensions to the Web-API
-     * @return An optional containing the extension service if it was loaded.
-     */
-    public static Optional<IExtensionService> getExtensionService() {
-        return Sponge.getServiceManager().provide(IExtensionService.class);
-    }
-
-    /**
      * Gets the json service from the Web-API. Used to convert objects into json.
      * @return An optional containing the json service if it was loaded.
      */
@@ -100,14 +90,6 @@ public class WebAPIAPI {
      */
     public static Optional<IServerService> getServerService() {
         return Sponge.getServiceManager().provide(IServerService.class);
-    }
-
-    /**
-     * Gets the servlet service from the Web-API. Used to load servlets which contain the endpoints of the Web-API.
-     * @return An optional containing the servlet service if it was loaded.
-     */
-    public static Optional<IServletService> getServletService() {
-        return Sponge.getServiceManager().provide(IServletService.class);
     }
 
     /**

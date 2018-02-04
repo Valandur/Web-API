@@ -10,6 +10,7 @@ import valandur.webapi.api.block.IBlockOperation;
 import valandur.webapi.api.block.IBlockService;
 import valandur.webapi.api.cache.world.ICachedWorld;
 
+import javax.ws.rs.InternalServerErrorException;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
@@ -52,12 +53,12 @@ public class BlockService implements IBlockService {
     }
 
     @Override
-    public Optional<BlockState> getBlockAt(ICachedWorld world, Vector3i pos) {
+    public BlockState getBlockAt(ICachedWorld world, Vector3i pos) {
         return WebAPI.runOnMain(() -> {
             Optional<?> obj = world.getLive();
 
             if (!obj.isPresent())
-                return null;
+                throw new InternalServerErrorException("Could not get live world");
 
             World w = (World)obj.get();
             return w.getBlock(pos).copy();
@@ -89,12 +90,12 @@ public class BlockService implements IBlockService {
     }
 
     @Override
-    public Optional<String[][]> getBiomes(ICachedWorld world, Vector3i min, Vector3i max) {
+    public String[][] getBiomes(ICachedWorld world, Vector3i min, Vector3i max) {
         return WebAPI.runOnMain(() -> {
             Optional<?> obj = world.getLive();
 
             if (!obj.isPresent())
-                return null;
+                throw new InternalServerErrorException("Could not get live world");
 
             World w = (World)obj.get();
             BiomeVolume vol = w.getBiomeView(min, max).getRelativeBiomeView();

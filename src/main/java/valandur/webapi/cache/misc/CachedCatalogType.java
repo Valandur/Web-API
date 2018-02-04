@@ -1,7 +1,8 @@
 package valandur.webapi.cache.misc;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import io.swagger.annotations.ApiModelProperty;
 import org.spongepowered.api.CatalogType;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.text.translation.Translatable;
@@ -10,10 +11,8 @@ import valandur.webapi.api.cache.misc.ICachedCatalogType;
 
 import java.util.Optional;
 
-@JsonDeserialize
 public class CachedCatalogType<T extends CatalogType> extends CachedObject<T> implements ICachedCatalogType<T> {
 
-    @JsonDeserialize
     private String id;
     public String getId() {
         return id;
@@ -45,5 +44,12 @@ public class CachedCatalogType<T extends CatalogType> extends CachedObject<T> im
 
     public Optional<T> getLive(Class<T> clazz) {
         return Sponge.getRegistry().getType(clazz, this.id);
+    }
+
+    @Override
+    @JsonIgnore
+    @ApiModelProperty(hidden = true)
+    public String getLink() {
+        return null;
     }
 }

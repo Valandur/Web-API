@@ -1,0 +1,27 @@
+title: MMCRestrictCreateItemRequest
+type: object
+properties:
+  item:
+    type: string
+    description: The id of the item to ban.
+  banReason:
+    type: string
+    description:
+  ownershipBanned:
+    type: boolean
+    description:
+  usageBanned:
+    type: boolean
+    description:
+  breakingBanned:
+    type: boolean
+    description:
+  placingBanned:
+    type: boolean
+    description:
+  dropBanned:
+    type: boolean
+    description:
+  worldBanned:
+    type: boolean
+    description:

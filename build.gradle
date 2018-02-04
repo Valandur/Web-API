@@ -48,13 +48,31 @@ repositories {
     }
 }
 
+// Exclude apache commons because minecraft includes it
+configurations {
+    all*.exclude group: "org.apache.commons"
+    all*.exclude group: "com.google.common.base"
+}
+
+configurations.all {
+    resolutionStrategy {
+        force "com.google.guava:guava:23.0"
+    }
+}
+
 dependencies {
     compile project(":webapi-api")
+    compile group: "co.aikar", name: "minecraft-timings", version: "1.0.4"
     compile group: "io.sentry", name: "sentry", version: "1.6.4"
     compile group: "org.mindrot", name: "jbcrypt", version: "0.4"
     compile group: "org.bstats", name: "bstats-sponge", version: "1.2"
-    compile group: "co.aikar", name: "minecraft-timings", version: "1.0.4"
     compile group: "com.github.oshi", name: "oshi-core", version: "3.4.4"
+    compile group: "org.glassfish.jersey.containers", name: "jersey-container-servlet", version: "2.26"
+    compile group: "org.glassfish.jersey.inject", name: "jersey-hk2", version: "2.26"
+    compile group: "com.fasterxml.jackson.jaxrs", name: "jackson-jaxrs-json-provider", version: project.jacksonVersion
+    //compile group: "org.reflections", name: "reflections", version: "0.9.11"
+    //compile group: "io.swagger.core.v3", name: "swagger-jaxrs2", version: "2.0.0-rc3"
+
 
     compileOnly group: "com.fasterxml.jackson.core", name: "jackson-core", version: project.jacksonVersion
     compileOnly group: "com.fasterxml.jackson.core", name: "jackson-databind", version: project.jacksonVersion
@@ -65,6 +83,8 @@ dependencies {
     compileOnly group: "org.eclipse.jetty", name: "jetty-servlet", version: project.jettyVersion
     compileOnly group: "org.eclipse.jetty", name: "jetty-http", version: project.jettyVersion
     compileOnly group: "org.eclipse.jetty", name: "jetty-rewrite", version: project.jettyVersion
+
+    compileOnly group: "io.swagger", name: "swagger-jersey2-jaxrs", version: "1.5.18"
 
     // Integrations
     compileOnly name: "griefprevention-1.12.2-4.3.0.511"

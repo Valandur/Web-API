@@ -6,6 +6,8 @@ import com.google.common.reflect.TypeToken;
 import com.google.inject.Inject;
 import io.sentry.Sentry;
 import io.sentry.context.Context;
+import io.swagger.annotations.*;
+import io.swagger.jaxrs.config.BeanConfig;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
 import ninja.leaping.configurate.objectmapping.serialize.TypeSerializers;
@@ -16,11 +18,13 @@ import org.eclipse.jetty.rewrite.handler.RewriteHandler;
 import org.eclipse.jetty.server.*;
 import org.eclipse.jetty.server.handler.ContextHandler;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
-import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.servlet.ServletContextHandler;
+import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.MultiException;
 import org.eclipse.jetty.util.log.Log;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
+import org.glassfish.jersey.server.ResourceConfig;
+import org.glassfish.jersey.servlet.ServletContainer;
 import org.slf4j.Logger;
 import org.spongepowered.api.Platform;
 import org.spongepowered.api.Platform.Component;
@@ -55,14 +59,11 @@ import org.spongepowered.api.text.format.TextColors;
 import org.spongepowered.api.util.Tuple;
 import valandur.webapi.api.block.IBlockService;
 import valandur.webapi.api.cache.ICacheService;
-import valandur.webapi.api.extension.IExtensionService;
 import valandur.webapi.api.hook.IWebHookService;
 import valandur.webapi.api.message.IMessageService;
 import valandur.webapi.api.permission.IPermissionService;
 import valandur.webapi.api.serialize.ISerializeService;
 import valandur.webapi.api.server.IServerService;
-import valandur.webapi.api.servlet.BaseServlet;
-import valandur.webapi.api.servlet.IServletService;
 import valandur.webapi.block.BlockOperation;
 import valandur.webapi.block.BlockOperationStatusChangeEvent;
 import valandur.webapi.block.BlockService;
@@ -71,30 +72,19 @@ import valandur.webapi.cache.chat.CachedChatMessage;
 import valandur.webapi.cache.command.CachedCommandCall;
 import valandur.webapi.command.CommandRegistry;
 import valandur.webapi.command.CommandSource;
-import valandur.webapi.extension.ExtensionService;
+import valandur.webapi.handler.AssetHandler;
 import valandur.webapi.hook.WebHook;
 import valandur.webapi.hook.WebHookSerializer;
 import valandur.webapi.hook.WebHookService;
-import valandur.webapi.integration.huskycrates.HuskyCratesServlet;
-import valandur.webapi.integration.mmcrestrict.MMCRestrictServlet;
-import valandur.webapi.integration.mmctickets.MMCTicketsServlet;
-import valandur.webapi.integration.nucleus.NucleusServlet;
-import valandur.webapi.integration.redprotect.RedProtectServlet;
-import valandur.webapi.integration.universalmarket.UniversalMarketServlet;
-import valandur.webapi.integration.webbooks.WebBookServlet;
 import valandur.webapi.message.MessageService;
-import valandur.webapi.permission.PermissionService;
+import valandur.webapi.security.AuthenticationProvider;
+import valandur.webapi.security.PermissionService;
+import valandur.webapi.serialize.SerializationFeature;
 import valandur.webapi.serialize.SerializeService;
 import valandur.webapi.server.ServerService;
-import valandur.webapi.servlet.*;
-import valandur.webapi.servlet.base.ApiServlet;
-import valandur.webapi.servlet.base.ServletService;
-import valandur.webapi.servlet.handler.AssetHandler;
-import valandur.webapi.servlet.handler.AuthHandler;
-import valandur.webapi.servlet.handler.ErrorHandler;
-import valandur.webapi.servlet.handler.RateLimitHandler;
-import valandur.webapi.user.UserPermission;
-import valandur.webapi.user.UserPermissionConfigSerializer;
+import valandur.webapi.servlet.CmdServlet;
+import valandur.webapi.user.UserPermissionStruct;
+import valandur.webapi.user.UserPermissionStructConfigSerializer;
 import valandur.webapi.user.Users;
 import valandur.webapi.util.Constants;
 import valandur.webapi.util.JettyLogger;
@@ -103,6 +93,9 @@ import valandur.webapi.util.Util;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.InternalServerErrorException;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.MediaType;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -115,7 +108,9 @@ import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.CodeSource;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Supplier;
@@ -129,6 +124,47 @@ import java.util.stream.Collectors;
         description = Constants.DESCRIPTION,
         authors = {
                 "Valandur"
+        }
+)
+@SwaggerDefinition(
+        info = @Info(
+                title = Constants.NAME,
+                version = Constants.VERSION,
+                description = "Access Sponge powered Minecraft servers through a WebAPI\n\n# Introduction\nThis is the documentation of the various API routes offered by the WebAPI plugin.\n\nThis documentation assumes that you are familiar with the basic concepts of Web API's, such as `GET`, `PUT`, `POST` and `DELETE` methods,\nrequest `HEADERS` and `RESPONSE CODES` and `JSON` data.\n\nBy default this documentation can be found at http:/localhost:8080 (while your minecraft server is running) and the various routes start with http:/localhost:8080/api/...\n\nAs a quick test try reaching the route http:/localhost:8080/api/info (remember that you can only access \\\"localhost\\\" routes on the server on which you are running minecraft).\nThis route should show you basic information about your server, like the motd and player count.\n\n# Additional data\nCertain endpoints (such as `/player`, `/entity` and `/tile-entity` have additional properties which are not documented here, because the data depends on the concrete\nobject type (eg. `Sheep` have a wool color, others do not) and on the other plugins/mods that are running on your server which might add additional data.\n\nYou can also find more information in the github docs (https:/github.com/Valandur/Web-API/tree/master/docs/DATA.md)",
+                contact = @Contact(
+                        name = "Valandur",
+                        email = "inithilian@gmail.com",
+                        url = "https://github.com/Valandur"
+                ),
+                license = @License(
+                        name = "MIT",
+                        url = "https://opensource.org/licenses/MIT"
+                )
+        ),
+        consumes = { MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML },
+        produces = { MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML },
+        schemes = { SwaggerDefinition.Scheme.HTTP, SwaggerDefinition.Scheme.HTTPS },
+        securityDefinition = @SecurityDefinition(apiKeyAuthDefinitions = {
+                @ApiKeyAuthDefinition(key = "ApiKeyHeader", name = "X-WebAPI-Key", in = ApiKeyAuthDefinition.ApiKeyLocation.HEADER),
+                @ApiKeyAuthDefinition(key = "ApiKeyQuery", name = "key", in = ApiKeyAuthDefinition.ApiKeyLocation.QUERY)
+        }),
+        tags = {
+                @Tag(name = "Block", description = "Get information about blocks and manipulate them."),
+                @Tag(name = "Chunk", description = "Gets information about chunks, and allow creating new chunks."),
+                @Tag(name = "Command", description = "List all commands on the server and execute them."),
+                @Tag(name = "Entity", description = "List all entities and get detailed information about them."),
+                @Tag(name = "History", description = "Provides access to the command and chat history."),
+                @Tag(name = "Info", description = "Get information and stats about the Minecraft server"),
+                @Tag(name = "Map", description = "Get maps of the biomes for each world on the server"),
+                @Tag(name = "Message", description = "Send (interactive) messages to clients."),
+                @Tag(name = "Player", description = "List all players and get detailed information about them."),
+                @Tag(name = "Plugin", description = "List all plugins and get detailed information about them."),
+                @Tag(name = "Recipe", description = "List all recipes available on the server"),
+                @Tag(name = "Registry", description = "Query Sponge registry values, such as DimensionTypes and EntityTypes."),
+                @Tag(name = "Servlet", description = "Get information about the runnings servlets on the server."),
+                @Tag(name = "Tile Entity", description = "List all tile entities and get detailed information about them."),
+                @Tag(name = "User", description = "Authenticate and get user information."),
+                @Tag(name = "World", description = "List all worlds and get detailed information about them."),
         }
 )
 public class WebAPI {
@@ -191,11 +227,6 @@ public class WebAPI {
         return WebAPI.getInstance() == null || WebAPI.getInstance().reportErrors;
     }
 
-    private AuthHandler authHandler;
-    public static AuthHandler getAuthHandler() {
-        return WebAPI.getInstance().authHandler;
-    }
-
     // Services
     private BlockService blockService;
     public static BlockService getBlockService() {
@@ -205,11 +236,6 @@ public class WebAPI {
     private CacheService cacheService;
     public static CacheService getCacheService() {
         return WebAPI.getInstance().cacheService;
-    }
-
-    private ExtensionService extensionService;
-    public static ExtensionService getExtensionService() {
-        return WebAPI.getInstance().extensionService;
     }
 
     private SerializeService serializeService;
@@ -230,11 +256,6 @@ public class WebAPI {
     private ServerService serverService;
     public static ServerService getServerService() {
         return WebAPI.getInstance().serverService;
-    }
-
-    private ServletService servletService;
-    public static ServletService getServletService() {
-        return WebAPI.getInstance().servletService;
     }
 
     private WebHookService webHookService;
@@ -303,30 +324,28 @@ public class WebAPI {
         asyncExecutor = Sponge.getScheduler().createAsyncExecutor(this);
 
         // Register custom serializers
-        TypeSerializers.getDefaultSerializers().registerType(TypeToken.of(WebHook.class), new WebHookSerializer());
-        TypeSerializers.getDefaultSerializers().registerType(TypeToken.of(UserPermission.class), new UserPermissionConfigSerializer());
+        TypeSerializers.getDefaultSerializers().registerType(
+                TypeToken.of(WebHook.class), new WebHookSerializer());
+        TypeSerializers.getDefaultSerializers().registerType(
+                TypeToken.of(UserPermissionStruct.class), new UserPermissionStructConfigSerializer());
 
         // Setup services
         this.blockService = new BlockService();
         this.cacheService = new CacheService();
-        this.extensionService = new ExtensionService();
         this.serializeService = new SerializeService();
         this.messageService = new MessageService();
         this.permissionService = new PermissionService();
         this.serverService = new ServerService();
-        this.servletService = new ServletService();
         this.webHookService = new WebHookService();
 
 
         // Register services
         Sponge.getServiceManager().setProvider(this, IBlockService.class, blockService);
         Sponge.getServiceManager().setProvider(this, ICacheService.class, cacheService);
-        Sponge.getServiceManager().setProvider(this, IExtensionService.class, extensionService);
         Sponge.getServiceManager().setProvider(this, ISerializeService.class, serializeService);
         Sponge.getServiceManager().setProvider(this, IMessageService.class, messageService);
         Sponge.getServiceManager().setProvider(this, IPermissionService.class, permissionService);
         Sponge.getServiceManager().setProvider(this, IServerService.class, serverService);
-        Sponge.getServiceManager().setProvider(this, IServletService.class, servletService);
         Sponge.getServiceManager().setProvider(this, IWebHookService.class, webHookService);
 
         Timings.STARTUP.stopTiming();
@@ -340,31 +359,11 @@ public class WebAPI {
         logger.info("Setting up jetty logger...");
         Log.setLog(new JettyLogger());
 
-        // Create permission handler
-        authHandler = new AuthHandler();
-
         // Main init function, that is also called when reloading the plugin
         init(null);
 
-        logger.info("Registering servlets...");
-        servletService.registerServlet(BlockServlet.class);
-        servletService.registerServlet(CmdServlet.class);
-        servletService.registerServlet(EntityServlet.class);
-        servletService.registerServlet(HistoryServlet.class);
-        servletService.registerServlet(InfoServlet.class);
-        servletService.registerServlet(MapServlet.class);
-        servletService.registerServlet(MessageServlet.class);
-        servletService.registerServlet(PlayerServlet.class);
-        servletService.registerServlet(PluginServlet.class);
-        servletService.registerServlet(RecipeServlet.class);
-        servletService.registerServlet(RegistryServlet.class);
-        servletService.registerServlet(ServletServlet.class);
-        servletService.registerServlet(TileEntityServlet.class);
-        servletService.registerServlet(UserServlet.class);
-        servletService.registerServlet(WorldServlet.class);
-
         // Other plugin integrations
-        try {
+        /*try {
             Class.forName("com.codehusky.huskycrates.HuskyCrates");
             logger.info("  Integrating with HuskyCrates...");
             servletService.registerServlet(HuskyCratesServlet.class);
@@ -404,7 +403,7 @@ public class WebAPI {
             Class.forName("de.dosmike.sponge.WebBooks.WebBooks");
             logger.info("  Integrating with WebBooks...");
             servletService.registerServlet(WebBookServlet.class);
-        } catch (ClassNotFoundException ignored) { }
+        } catch (ClassNotFoundException ignored) { }*/
 
         logger.info(Constants.NAME + " ready");
 
@@ -453,11 +452,9 @@ public class WebAPI {
             reportErrors = false;
         }
 
-        authHandler.init();
+        AuthenticationProvider.init();
 
         blockService.init(config);
-
-        extensionService.init();
 
         cacheService.init();
 
@@ -565,15 +562,12 @@ public class WebAPI {
                     logger.error("You have disabled both HTTP and HTTPS - The WebAPI will be unreachable!");
                 }
 
-                // Add error handler
-                server.addBean(new ErrorHandler(server));
-
                 // Collection of all handlers
-                List<Handler> mainHandlers = new LinkedList<>();
+                ContextHandlerCollection mainContext = new ContextHandlerCollection();
 
                 // Asset handlers
-                mainHandlers.add(newContext("/docs", new AssetHandler("pages/redoc.html")));
-                mainHandlers.add(newContext("/swagger", new AssetHandler("swagger", (path) -> {
+                mainContext.addHandler(newContext("/docs", new AssetHandler("pages/redoc.html")));
+                mainContext.addHandler(newContext("/swagger", new AssetHandler("swagger", (path) -> {
                     if (!path.endsWith("swagger/index.yaml"))
                         return null;
                     return (data) -> {
@@ -594,27 +588,46 @@ public class WebAPI {
                     redirect.setPattern("/*");
                     redirect.setLocation("/admin");
                     rewrite.addRule(redirect);
-                    mainHandlers.add(newContext("/", rewrite));
+                    mainContext.addHandler(newContext("/", rewrite));
 
-                    mainHandlers.add(newContext("/admin", new AssetHandler("admin")));
+                    mainContext.addHandler(newContext("/admin", new AssetHandler("admin")));
                 }
-
-                // Setup all servlets
-                servletService.init();
 
                 // Main servlet context
                 ServletContextHandler servletsContext = new ServletContextHandler();
-                servletsContext.addServlet(ApiServlet.class, "/*");
+                servletsContext.setContextPath("/api");
 
-                // Use a list to make requests first go through the auth handler and rate-limit handler
-                HandlerList list = new HandlerList();
-                list.setHandlers(new Handler[]{ authHandler, new RateLimitHandler(), servletsContext });
-                mainHandlers.add(newContext("/api", list));
+                // Resource config for jersey servlet
+                ResourceConfig config = new ResourceConfig();
+                config.packages("io.swagger.jaxrs.listing", "valandur.webapi"
+                        //"io.swagger.v3.jaxrs2.integration.resources"                      // This if for Swagger 3.0
+                );
+                config.property("jersey.config.server.wadl.disableWadl", true);
 
-                // Add collection of handlers to server
-                ContextHandlerCollection coll = new ContextHandlerCollection();
-                coll.setHandlers(mainHandlers.toArray(new Handler[mainHandlers.size()]));
-                server.setHandler(coll);
+                // Register serializer
+                config.register(SerializationFeature.class);
+
+                // Jersey servlet
+                ServletHolder jerseyServlet = new ServletHolder(new ServletContainer(config));
+                jerseyServlet.setInitOrder(1);
+                // jerseyServlet.setInitParameter("openApi.configuration.location",
+                // "assets/webapi/swagger/config.json");                                    // This is for Swagger 3.0
+                servletsContext.addServlet(jerseyServlet, "/*");
+
+                // Register swagger as bean
+                BeanConfig beanConfig = new BeanConfig();
+                beanConfig.setHost(baseUri);
+                beanConfig.setBasePath("/api");
+                beanConfig.setResourcePackage("valandur.webapi");
+                beanConfig.setScan(true);
+                beanConfig.setPrettyPrint(true);
+                servletsContext.addBean(beanConfig);
+
+                // Add servlets to main context
+                mainContext.addHandler(servletsContext);
+
+                // Add main context to server
+                server.setHandler(mainContext);
 
                 server.start();
 
@@ -763,14 +776,14 @@ public class WebAPI {
             map.put("HTTPS", serverPortHttps >= 0 ? 1 : 0);
             return map;
         }));
-        metrics.addCustomChart(new Metrics.SimpleBarChart("servlets", () -> {
+        /*metrics.addCustomChart(new Metrics.SimpleBarChart("servlets", () -> {
             Map<String, Integer> map = new HashMap<>();
-            Collection<Class<? extends BaseServlet>> servlets = servletService.getLoadedServlets().values();
-            for (Class<? extends BaseServlet> servlet : servlets) {
-                map.put(servlet.getClass().getName(), 1);
+            Collection<IServletService.ServletInfo> servlets = servletService.getLoadedServlets().values();
+            for (IServletService.ServletInfo servlet : servlets) {
+                map.put(servlet.getClazz().getName(), 1);
             }
             return map;
-        }));
+        }));*/
 
         webHookService.notifyHooks(WebHookService.WebHookType.SERVER_START, event);
     }
@@ -934,38 +947,45 @@ public class WebAPI {
     }
 
     // Run functions on the main server thread
-    public static void runOnMain(Runnable runnable) {
+    public static void runOnMain(Runnable runnable) throws WebApplicationException {
         if (Sponge.getServer().isMainThread()) {
             runnable.run();
         } else {
             CompletableFuture future = CompletableFuture.runAsync(runnable, WebAPI.syncExecutor);
             try {
                 future.get();
-            } catch (InterruptedException | ExecutionException e) {
+            } catch (InterruptedException ignored) {
+            } catch (ExecutionException e) {
+                // Rethrow any web application exceptions we get, because they're handled by the servlets
+                if (e.getCause() instanceof WebApplicationException)
+                    throw (WebApplicationException)e.getCause();
+
                 e.printStackTrace();
                 if (WebAPI.reportErrors()) WebAPI.sentryCapture(e);
+                throw new InternalServerErrorException(e.getMessage());
             }
         }
     }
-    public static <T> Optional<T> runOnMain(Supplier<T> supplier) {
+    public static <T> T runOnMain(Supplier<T> supplier) throws WebApplicationException {
         if (Sponge.getServer().isMainThread()) {
             Timings.RUN_ON_MAIN.startTiming();
             T obj = supplier.get();
             Timings.RUN_ON_MAIN.stopTiming();
-            return obj == null ? Optional.empty() : Optional.of(obj);
+            return obj;
         } else {
             CompletableFuture<T> future = CompletableFuture.supplyAsync(supplier, WebAPI.syncExecutor);
             try {
-                T obj = future.get();
-                if (obj == null)
-                    return Optional.empty();
-                return Optional.of(obj);
-            } catch (InterruptedException ignored) {
-                return Optional.empty();
+                return future.get();
+            } catch (InterruptedException e) {
+                throw new InternalServerErrorException(e.getMessage());
             } catch (ExecutionException e) {
+                // Rethrow any web application exceptions we get, because they're handled by the servlets
+                if (e.getCause() instanceof WebApplicationException)
+                    throw (WebApplicationException)e.getCause();
+
                 e.printStackTrace();
                 if (WebAPI.reportErrors()) WebAPI.sentryCapture(e);
-                return Optional.empty();
+                throw new InternalServerErrorException(e.getMessage());
             }
         }
     }

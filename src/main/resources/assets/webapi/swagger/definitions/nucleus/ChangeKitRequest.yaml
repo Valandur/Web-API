@@ -1,0 +1,27 @@
+title: NucleusCreateJailRequest
+type: object
+properties:
+  cost:
+    type: number
+    format: double
+    description:
+  cooldown:
+    type: number
+    format: long
+    description:
+  firstJoinKit:
+    type: boolean
+    description:
+  oneTime:
+    type: boolean
+    description:
+  commands:
+    type: array
+    description:
+    items:
+      type: string
+  stacks:
+    type: array
+    description:
+    items:
+      $ref: "../ItemStack.yaml"

@@ -21,12 +21,57 @@ get:
     404:
       $ref: "../../responses/404.yaml"
     200:
-      description: Jail
+      $ref: "../../definitions/nucleus/JailResponse.yaml"
+put:
+  summary: Change a jail
+  operationId: changeJail
+  description: |
+    Change an existing jail.
+
+    > Required permission: nucleus.jail.change
+  parameters:
+    - name: name
+      in: path
+      type: string
+      description: The name of the jail to change.
+      required: true
+    - name: ChangeJailRequest
+      in: body
       schema:
-        title: NucleusJailResponse
-        type: object
-        properties:
-          ok:
-            $ref: "../../definitions/ok.yaml"
-          jail:
-            $ref: "../../definitions/nucleus/NucleusJailFull.yaml"
+        $ref: "../../definitions/nucleus/ChangeJailRequest.yaml"
+      required: true
+  tags:
+    - Nucleus
+  responses:
+    400:
+      $ref: "../../responses/400.yaml"
+    403:
+      $ref: "../../responses/403.yaml"
+    404:
+      $ref: "../../responses/404.yaml"
+    200:
+      $ref: "../../definitions/nucleus/JailResponse.yaml"
+delete:
+  summary: Delete a jail
+  operationId: deleteJail
+  description: |
+    Delete an existing jail.
+
+    > Required permission: nucleus.jail.delete
+  parameters:
+    - name: name
+      in: path
+      type: string
+      description: The name of the jail to delete.
+      required: true
+  tags:
+   - Nucleus
+  responses:
+    400:
+      $ref: "../../responses/400.yaml"
+    403:
+      $ref: "../../responses/403.yaml"
+    404:
+      $ref: "../../responses/404.yaml"
+    200:
+      $ref: "../../definitions/nucleus/JailResponse.yaml"

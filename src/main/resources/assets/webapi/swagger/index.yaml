@@ -91,6 +91,7 @@ x-tagGroups:
   - name: Integrations
     tags:
       - Husky Crates
+      - MMC Restrict
       - MMC Tickets
       - Nucleus
       - Web Books

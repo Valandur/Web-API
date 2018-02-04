@@ -1,7 +1,6 @@
 package valandur.webapi.servlet;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import org.eclipse.jetty.http.HttpMethod;
+import io.swagger.annotations.*;
 import org.spongepowered.api.data.manipulator.mutable.entity.ExperienceHolderData;
 import org.spongepowered.api.data.manipulator.mutable.entity.HealthData;
 import org.spongepowered.api.entity.living.player.Player;
@@ -15,64 +14,71 @@ import org.spongepowered.api.world.World;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.cache.player.ICachedPlayer;
 import valandur.webapi.api.servlet.BaseServlet;
-import valandur.webapi.api.servlet.Endpoint;
-import valandur.webapi.api.servlet.Servlet;
-import valandur.webapi.cache.player.CachedPlayer;
-import valandur.webapi.serialize.request.misc.DamageRequest;
-import valandur.webapi.serialize.request.player.UpdatePlayerRequest;
-import valandur.webapi.servlet.base.ServletData;
+import valandur.webapi.api.servlet.ExplicitDetails;
+import valandur.webapi.api.servlet.Permission;
+import valandur.webapi.serialize.deserialize.DamageRequest;
+import valandur.webapi.serialize.deserialize.ExecuteMethodRequest;
 import valandur.webapi.util.Util;
 
-import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+import java.util.Collection;
 import java.util.Optional;
 import java.util.UUID;
 
-@Servlet(basePath = "player")
+@Path("player")
+@Api(value = "player", tags = { "Player" })
+@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+@Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 public class PlayerServlet extends BaseServlet {
 
-    @Endpoint(method = HttpMethod.GET, path = "/", perm = "list")
-    public void getPlayers(ServletData data) {
-        data.addData("ok", true, false);
-        data.addData("players", cacheService.getPlayers(), data.getQueryParam("details").isPresent());
+    @GET
+    @ExplicitDetails
+    @Permission("list")
+    @ApiOperation(value = "List players", notes = "Get a list of all the players on the server.")
+    public Collection<ICachedPlayer> getPlayers() {
+        return cacheService.getPlayers();
     }
 
-    @Endpoint(method = HttpMethod.GET, path = "/:player", perm = "one")
-    public void getPlayer(ServletData data, CachedPlayer player) {
-        Optional<String> strFields = data.getQueryParam("fields");
-        Optional<String> strMethods = data.getQueryParam("methods");
-        if (strFields.isPresent() || strMethods.isPresent()) {
-            String[] fields = strFields.map(s -> s.split(",")).orElse(new String[]{});
-            String[] methods = strMethods.map(s -> s.split(",")).orElse(new String[]{});
-            Tuple extra = cacheService.getExtraData(player, data.responseIsXml(), fields, methods);
-            data.addData("fields", extra.getFirst(), true);
-            data.addData("methods", extra.getSecond(), true);
+    @GET
+    @Path("/{player}")
+    @Permission("one")
+    @ApiOperation(value = "Get a player", notes = "Get detailed information about a player.")
+    public ICachedPlayer getPlayer(
+            @PathParam("player") @ApiParam("The uuid of the player") UUID uuid)
+            throws NotFoundException {
+        Optional<ICachedPlayer> optPlayer = WebAPI.getCacheService().getPlayer(uuid);
+        if (!optPlayer.isPresent()) {
+            throw new NotFoundException("Player with UUID '" + uuid + "' could not be found");
         }
 
-        data.addData("ok", true, false);
-        data.addData("player", player, true);
+        return optPlayer.get();
     }
 
-    @Endpoint(method = HttpMethod.PUT, path = "/:player", perm = "change")
-    public void updatePlayer(ServletData data, CachedPlayer player) {
-        Optional<UpdatePlayerRequest> optReq = data.getRequestBody(UpdatePlayerRequest.class);
-        if (!optReq.isPresent()) {
-            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid player data: " + data.getLastParseError().getMessage());
-            return;
+    @PUT
+    @Path("/{player}")
+    @Permission("change")
+    @ApiOperation(value = "Change a player", notes = "Update the properties of an existing player.")
+    public ICachedPlayer updatePlayer(
+            @PathParam("player") @ApiParam("The uuid of the player") UUID uuid,
+            UpdatePlayerRequest req)
+            throws NotFoundException, InternalServerErrorException {
+        Optional<ICachedPlayer> optPlayer = WebAPI.getCacheService().getPlayer(uuid);
+        if (!optPlayer.isPresent()) {
+            throw new NotFoundException("Player with UUID '" + uuid + "' could not be found");
         }
 
-        final UpdatePlayerRequest req = optReq.get();
-
-        Optional<ICachedPlayer> resPlayer = WebAPI.runOnMain(() -> {
-            Optional<Player> optLive = player.getLive();
+        return WebAPI.runOnMain(() -> {
+            Optional<Player> optLive = optPlayer.get().getLive();
             if (!optLive.isPresent())
-                return null;
+                throw new InternalServerErrorException("Could not get live player");
 
             Player live = optLive.get();
 
             if (req.getWorld().isPresent()) {
                 Optional<World> optWorld = req.getWorld().get().getLive();
                 if (!optWorld.isPresent())
-                    return null;
+                    throw new InternalServerErrorException("Could not get live world");
 
                 if (req.getPosition() != null) {
                     live.transferToWorld(optWorld.get(), req.getPosition());
@@ -137,53 +143,92 @@ public class PlayerServlet extends BaseServlet {
                         inv.offer(stack);
                     }
                 } catch (Exception e) {
-                    return null;
+                    throw new InternalServerErrorException(e.getMessage());
                 }
             }
 
             return cacheService.updatePlayer(live);
         });
-
-        data.addData("ok", resPlayer.isPresent(), false);
-        data.addData("player", resPlayer.orElse(null), true);
     }
 
-    @Endpoint(method = HttpMethod.POST, path = "/:player/method", perm = "method")
-    public void executeMethod(ServletData data) {
-        String uuid = data.getPathParam("player");
-        if (uuid.split("-").length != 5) {
-            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid player UUID");
-            return;
+    @POST
+    @Path("/{player}/method")
+    @Permission("method")
+    @ApiOperation(value = "Execute a method", notes =
+            "Provides direct access to the underlaying player object and can execute any method on it.")
+    public Object executeMethod(
+            @PathParam("player") @ApiParam("The uuid of the player") UUID uuid,
+            ExecuteMethodRequest req)
+            throws InternalServerErrorException, NotFoundException, BadRequestException {
+        Optional<ICachedPlayer> optPlayer = WebAPI.getCacheService().getPlayer(uuid);
+        if (!optPlayer.isPresent()) {
+            throw new NotFoundException("Player with UUID '" + uuid + "' could not be found");
         }
 
-        Optional<ICachedPlayer> player = cacheService.getPlayer(UUID.fromString(uuid));
-        if (!player.isPresent()) {
-            data.sendError(HttpServletResponse.SC_NOT_FOUND, "Player with UUID '" + uuid + "' could not be found");
-            return;
+        if (req.getMethod() == null || req.getMethod().isEmpty()) {
+            throw new BadRequestException("Method must be specified");
         }
 
-        final JsonNode reqJson = data.getRequestBody();
-        if (!reqJson.has("method")) {
-            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Request must define the 'method' property");
-            return;
-        }
-
-        String mName = reqJson.get("method").asText();
-        Optional<Tuple<Class[], Object[]>> params = Util.parseParams(reqJson.get("params"));
+        String mName = req.getMethod();
+        Optional<Tuple<Class[], Object[]>> params = Util.parseParams(req.getParameters());
 
         if (!params.isPresent()) {
-            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid parameters");
-            return;
+            throw new BadRequestException("Invalid parameters");
         }
 
-        Optional<Object> res = cacheService.executeMethod(player.get(), mName, params.get().getFirst(), params.get().getSecond());
-        if (!res.isPresent()) {
-            data.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not get world");
-            return;
+        return cacheService.executeMethod(optPlayer.get(), mName, params.get().getFirst(), params.get().getSecond());
+    }
+
+
+    @ApiModel("Update Player Request")
+    public static class UpdatePlayerRequest extends EntityServlet.UpdateEntityRequest {
+
+        private Integer foodLevel;
+        @ApiModelProperty("The food level of the player")
+        public Integer getFoodLevel() {
+            return foodLevel;
         }
 
-        data.addData("ok", true, false);
-        data.addData("player", player.get(), true);
-        data.addData("result", res.get(), true);
+        private Double saturation;
+        @ApiModelProperty("The saturation of the player")
+        public Double getSaturation() {
+            return saturation;
+        }
+
+        private Double exhaustion;
+        @ApiModelProperty("The exhaustion of the player")
+        public Double getExhaustion() {
+            return exhaustion;
+        }
+
+        private Integer totalExperience;
+        @ApiModelProperty("The total experience of the player")
+        public Integer getTotalExperience() {
+            return totalExperience;
+        }
+
+        private Integer level;
+        @ApiModelProperty("The player level")
+        public Integer getLevel() {
+            return level;
+        }
+
+        private Integer experienceSinceLevel;
+        @ApiModelProperty("The amount of experience gained since the last level")
+        public Integer getExperienceSinceLevel() {
+            return experienceSinceLevel;
+        }
+
+        private Double health;
+        @ApiModelProperty("The current amount of health the player has")
+        public Double getHealth() {
+            return health;
+        }
+
+        private Double maxHealth;
+        @ApiModelProperty("The maximum health of the player")
+        public Double getMaxHealth() {
+            return maxHealth;
+        }
     }
 }

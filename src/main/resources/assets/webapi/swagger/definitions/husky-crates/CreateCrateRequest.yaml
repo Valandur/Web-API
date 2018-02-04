@@ -1,0 +1,64 @@
+title: HuskyCratesCreateCrateRequest
+type: object
+properties:
+  id:
+    type: string
+    description:
+  name:
+    type: string
+    description:
+  type:
+    type: string
+    description:
+  free:
+    type: boolean
+    description:
+  freeDelay:
+    type: number
+    format: integer
+    description:
+  scrambleRewards:
+    type: boolean
+    description:
+  keys:
+    type: object
+    description:
+  rewards:
+    type: array
+    description:
+    items:
+      title: HuskyCratesCrateReward
+      type: object
+      description:
+      properties:
+        name:
+          type: string
+          description:
+        chance:
+          type: number
+          format: double
+          description:
+        displayItem:
+          $ref: "../ItemStack.yaml"
+        announce:
+          type: boolean
+          description:
+        objects:
+          type: array
+          description:
+          items:
+            title: HuskyCratesCrateRewardObject
+            type: object
+            description:
+            properties:
+              type:
+                type: string
+                description:
+                enum:
+                  - ITEM
+                  - COMMAND
+              item:
+                $ref: "../ItemStack.yaml"
+              command:
+                type: string
+                description:

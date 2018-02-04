@@ -1,5 +1,6 @@
 package valandur.webapi.hook;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.reflect.TypeToken;
 import ninja.leaping.configurate.ConfigurationNode;
@@ -18,7 +19,6 @@ import valandur.webapi.api.hook.BaseWebHookFilter;
 import valandur.webapi.api.hook.IWebHook;
 import valandur.webapi.api.hook.IWebHookService;
 import valandur.webapi.api.hook.WebHookHeader;
-import valandur.webapi.extension.ExtensionService;
 import valandur.webapi.hook.filter.BlockTypeFilter;
 import valandur.webapi.hook.filter.ItemTypeFilter;
 import valandur.webapi.hook.filter.PlayerFilter;
@@ -39,7 +39,6 @@ public class WebHookService implements IWebHookService {
     private static String userAgent = Constants.NAME + "/" + Constants.VERSION;
 
     private SerializeService json;
-    private ExtensionService extensions;
 
     private Map<String, CommandWebHook> commandHooks = new HashMap<>();
     private Map<WebHookType, List<WebHook>> eventHooks = new HashMap<>();
@@ -57,7 +56,6 @@ public class WebHookService implements IWebHookService {
         logger.info("Initializing web hooks...");
 
         this.json = WebAPI.getSerializeService();
-        this.extensions = WebAPI.getExtensionService();
 
         // Remove existing listeners to prevent multiple subscriptions on config reload
         for (Tuple<List<WebHook>, EventListener> entry : customHooks.values()) {
@@ -87,19 +85,6 @@ public class WebHookService implements IWebHookService {
         filters.put(BlockTypeFilter.name, BlockTypeFilter.class);
         filters.put(PlayerFilter.name, PlayerFilter.class);
         filters.put(ItemTypeFilter.name, ItemTypeFilter.class);
-
-        // Load custom filters
-        extensions.loadPlugins("filters", BaseWebHookFilter.class, filterClass -> {
-            try {
-                String name = (String) filterClass.getField("name").get(null);
-                filterClass.getConstructor(WebHook.class, ConfigurationNode.class);
-                filters.put(name, filterClass);
-            } catch (NoSuchMethodException e) {
-                logger.error("   Requires a constructor like so: (WebHook hook, ConfigurationNode node)");
-            } catch (NoSuchFieldException | IllegalAccessException e) {
-                logger.error("   Requires a 'public static String name' field");
-            }
-        });
 
         logger.info("Done loading filters");
 
@@ -211,8 +196,15 @@ public class WebHookService implements IWebHookService {
 
         final String address = hook.getAddress();
 
-        String stringData = json.toString(data, hook.getDataType() == IWebHook.WebHookDataType.XML,
-                hook.includeDetails(), hook.getPermissions());
+        String stringData = "";
+        try {
+            stringData = WebAPI.getSerializeService().getDefaultObjectMapper(
+                    hook.getDataType() == IWebHook.WebHookDataType.XML,
+                    hook.includeDetails(),
+                    hook.getPermissions()).writeValueAsString(data);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
         if (data != null) {
             try {
                 stringData = hook.isForm() ? "body=" + URLEncoder.encode(stringData, "UTF-8") : stringData;

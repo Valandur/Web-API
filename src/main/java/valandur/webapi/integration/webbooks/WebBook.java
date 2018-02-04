@@ -1,26 +1,23 @@
 package valandur.webapi.integration.webbooks;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import valandur.webapi.api.serialize.JsonDetails;
 
 import java.util.List;
 
-@JsonDeserialize
 public class WebBook {
 
-    @JsonDeserialize
+    @JsonProperty(required = true)
     private String id;
     public String getId() {
         return id;
     }
 
-    @JsonDeserialize
     private String title;
     public String getTitle() {
         return title;
     }
 
-    @JsonDeserialize
     private List<String> lines;
     public List<String> getLines() {
         return lines;
@@ -36,6 +33,7 @@ public class WebBook {
     }
 
     @JsonDetails
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     public String getHtml() {
         StringBuilder html = new StringBuilder("<!DOCTYPE><html><head><title>" + title + "</title></head><body><ul class='book'>");
         for (String line : lines) {

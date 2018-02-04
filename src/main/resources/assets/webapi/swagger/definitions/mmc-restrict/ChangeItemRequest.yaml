@@ -1,0 +1,24 @@
+title: MMCRestrictChangeItemRequest
+type: object
+properties:
+  banReason:
+    type: string
+    description:
+  ownershipBanned:
+    type: boolean
+    description:
+  usageBanned:
+    type: boolean
+    description:
+  breakingBanned:
+    type: boolean
+    description:
+  placingBanned:
+    type: boolean
+    description:
+  dropBanned:
+    type: boolean
+    description:
+  worldBanned:
+    type: boolean
+    description:

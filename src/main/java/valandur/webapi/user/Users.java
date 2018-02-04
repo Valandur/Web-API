@@ -23,8 +23,8 @@ public class Users {
 
     private static ConfigurationLoader loader;
     private static ConfigurationNode config;
-    private static Map<String, UserPermission> users = new ConcurrentHashMap<>();
-    public static List<UserPermission> getUsers() {
+    private static Map<String, UserPermissionStruct> users = new ConcurrentHashMap<>();
+    public static List<UserPermissionStruct> getUsers() {
         return new ArrayList<>(users.values());
     }
 
@@ -42,7 +42,7 @@ public class Users {
         try {
             Map<Object, ? extends ConfigurationNode> nodes = config.getNode("users").getChildrenMap();
             for (Map.Entry<Object, ? extends ConfigurationNode> entry : nodes.entrySet()) {
-                UserPermission perm = entry.getValue().getValue(TypeToken.of(UserPermission.class));
+                UserPermissionStruct perm = entry.getValue().getValue(TypeToken.of(UserPermissionStruct.class));
                 users.put(perm.getUsername(), perm);
             }
         } catch (ObjectMappingException e) {
@@ -51,9 +51,9 @@ public class Users {
     }
     public static void save() {
         ConfigurationNode rootNode = config.getNode("users");
-        for (UserPermission perm : users.values()) {
+        for (UserPermissionStruct perm : users.values()) {
             try {
-                rootNode.getNode(perm.getUsername()).setValue(TypeToken.of(UserPermission.class), perm);
+                rootNode.getNode(perm.getUsername()).setValue(TypeToken.of(UserPermissionStruct.class), perm);
             } catch (ObjectMappingException ignored) {
             }
         }
@@ -64,17 +64,17 @@ public class Users {
         }
     }
 
-    public static Optional<UserPermission> getUser(String username) {
-        UserPermission user = users.get(username);
+    public static Optional<UserPermissionStruct> getUser(String username) {
+        UserPermissionStruct user = users.get(username);
         return user != null ? Optional.of(user) : Optional.empty();
     }
-    public static Optional<UserPermission> getUser(String username, String password) {
+    public static Optional<UserPermissionStruct> getUser(String username, String password) {
         if (username == null || password == null || !users.containsKey(username)) {
             return Optional.empty();
         }
 
         try {
-            UserPermission perm = users.get(username);
+            UserPermissionStruct perm = users.get(username);
             if (!BCrypt.checkpw(password, perm.getPassword())) {
                 return Optional.empty();
             }
@@ -88,7 +88,7 @@ public class Users {
     public static boolean addUser(String username, String password) {
         if (users.containsKey(username))
             return false;
-        users.put(username, new UserPermission(username, hashPassword(password), IPermissionService.permitAllNode()));
+        users.put(username, new UserPermissionStruct(username, hashPassword(password), IPermissionService.permitAllNode()));
         save();
         return true;
     }

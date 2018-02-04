@@ -1,7 +1,5 @@
 package valandur.webapi.util;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.flowpowered.math.vector.Vector3d;
 import com.flowpowered.math.vector.Vector3i;
 import ninja.leaping.configurate.ConfigurationNode;
@@ -17,6 +15,7 @@ import org.spongepowered.api.text.Text;
 import org.spongepowered.api.util.Tuple;
 import org.spongepowered.api.world.World;
 import valandur.webapi.WebAPI;
+import valandur.webapi.serialize.deserialize.ExecuteMethodParam;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
@@ -31,6 +30,11 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class Util {
+
+    public enum ParameterType {
+        INT, INTEGER, FLOAT, DOUBLE, BOOL, BOOLEAN, BYTE, CHAR, LONG, SHORT, STRING, CLASS, ENUM,
+        VECTOR3D, VECTOR3I, TEXT, WORLD, PLAYER, ITEMSTACK, STATIC,
+    }
 
     private static Map<Class, Field[]> fields = new HashMap<>();
     private static Map<Class, Method[]> methods = new HashMap<>();
@@ -150,20 +154,13 @@ public class Util {
      * @param node The json node that contains the information about the method parameters.
      * @return An optional which is empty on failure. On success it contains a tuple with the method parameters types and values.
      */
-    public static Optional<Tuple<Class[], Object[]>> parseParams(JsonNode node) {
-        if (node == null)
-            return Optional.of(new Tuple<>(new Class[0], new Object[0]));
-
-        if (!node.isArray())
-            return Optional.empty();
-
-        ArrayNode arr = (ArrayNode)node;
-        Class[] paramTypes = new Class[arr.size()];
-        Object[] paramValues = new Object[arr.size()];
+    public static Optional<Tuple<Class[], Object[]>> parseParams(List<ExecuteMethodParam> params) {
+        Class[] paramTypes = new Class[params.size()];
+        Object[] paramValues = new Object[params.size()];
 
         try {
-            for (int i = 0; i < arr.size(); i++) {
-                Tuple<Class, Object> tup = getParamFromJson(arr.get(i));
+            for (int i = 0; i < params.size(); i++) {
+                Tuple<Class, Object> tup = getParamFromJson(params.get(i));
                 paramTypes[i] = tup.getFirst();
                 paramValues[i] = tup.getSecond();
             }
@@ -173,71 +170,67 @@ public class Util {
 
         return Optional.of(new Tuple<>(paramTypes, paramValues));
     }
-    private static Tuple<Class, Object> getParamFromJson(JsonNode node) throws ClassNotFoundException, NoSuchFieldException, IllegalAccessException {
-        if (!node.isObject())
-            throw new ClassNotFoundException(node.toString());
+    private static Tuple<Class, Object> getParamFromJson(ExecuteMethodParam param)
+            throws ClassNotFoundException, NoSuchFieldException, IllegalAccessException {
+        String val = param.getValue();
+        String[] vals = val.split(":");
 
-        String type = node.get("type").asText().toLowerCase();
-        JsonNode e = node.get("value");
+        switch (param.getType()) {
+            case INT:
+            case INTEGER:
+                return new Tuple<>(Integer.class, Integer.parseInt(val));
+            case FLOAT:
+                return new Tuple<>(Float.class, Float.parseFloat(val));
+            case DOUBLE:
+                return new Tuple<>(Double.class, Double.parseDouble(val));
+            case BOOL:
+            case BOOLEAN:
+                return new Tuple<>(Boolean.class, Boolean.parseBoolean(val));
+            case BYTE:
+                return new Tuple<>(Byte.class, Byte.parseByte(val));
+            case CHAR:
+                return new Tuple<>(Character.class, val.charAt(0));
+            case LONG:
+                return new Tuple<>(Long.class, Long.parseLong(val));
+            case SHORT:
+                return new Tuple<>(Short.class, Short.parseShort(val));
+            case STRING:
+                return new Tuple<>(String.class, val);
+            case CLASS:
+                return new Tuple<>(Class.class, Class.forName(val));
+            case ENUM:
+                Class clazz = Class.forName(vals[0]);
+                return new Tuple<Class, Object>(clazz, Enum.valueOf(clazz, vals[1]));
 
-        switch (type) {
-            case "int":
-            case "integer":
-                return new Tuple<>(Integer.class, e.asInt());
-            case "float":
-                return new Tuple<>(Float.class, (float)e.asDouble());
-            case "double":
-                return new Tuple<>(Double.class, e.asDouble());
-            case "bool":
-            case "boolean":
-                return new Tuple<>(Boolean.class, e.asBoolean());
-            case "byte":
-                return new Tuple<>(Byte.class, (byte)e.asInt());
-            case "char":
-                return new Tuple<>(Character.class, e.asText().charAt(0));
-            case "long":
-                return new Tuple<>(Long.class, e.asLong());
-            case "short":
-                return new Tuple<>(Short.class, (short)e.asInt());
-            case "string":
-                return new Tuple<>(String.class, e.asText());
-            case "class":
-                return new Tuple<>(Class.class, Class.forName(type));
-            case "enum":
-                Class c = Class.forName(e.get("type").asText());
-                String name = e.get("value").asText();
-                return new Tuple<Class, Object>(c, Enum.valueOf(c, name));
+            case VECTOR3D:
+                return new Tuple<>(Vector3d.class, new Vector3d(
+                        Double.parseDouble(vals[0]), Double.parseDouble(vals[1]), Double.parseDouble(vals[2])));
 
-            case "vector3d":
-                return new Tuple<>(Vector3d.class, new Vector3d(e.get("x").asDouble(), e.get("y").asDouble(), e.get("z").asDouble()));
+            case VECTOR3I:
+                return new Tuple<>(Vector3i.class, new Vector3i(
+                        Integer.parseInt(vals[0]), Integer.parseInt(vals[1]), Integer.parseInt(vals[2])));
 
-            case "vector3i":
-                return new Tuple<>(Vector3i.class, new Vector3i(e.get("x").asInt(), e.get("y").asInt(), e.get("z").asInt()));
+            case TEXT:
+                return new Tuple<>(Text.class, Text.of(val));
 
-            case "text":
-                return new Tuple<>(Text.class, Text.of(e.asText()));
-
-            case "world":
-                Optional<World> w = Sponge.getServer().getWorld(UUID.fromString(e.asText()));
+            case WORLD:
+                Optional<World> w = Sponge.getServer().getWorld(UUID.fromString(val));
                 return new Tuple<>(World.class, w.orElse(null));
 
-            case "player":
-                Optional<Player> p = Sponge.getServer().getPlayer(UUID.fromString(e.asText()));
+            case PLAYER:
+                Optional<Player> p = Sponge.getServer().getPlayer(UUID.fromString(val));
                 return new Tuple<>(Player.class, p.orElse(null));
 
-            case "itemstack":
-                String cName = e.get("itemType").asText();
-                Optional<ItemType> t = Sponge.getRegistry().getType(ItemType.class, cName);
-                int amount = e.get("amount").asInt();
-
+            case ITEMSTACK:
+                Optional<ItemType> t = Sponge.getRegistry().getType(ItemType.class, vals[0]);
                 if (!t.isPresent())
-                    throw new ClassNotFoundException(cName);
+                    throw new ClassNotFoundException(vals[0]);
 
-                return new Tuple<>(ItemStack.class, ItemStack.of(t.get(), amount));
+                return new Tuple<>(ItemStack.class, ItemStack.of(t.get(), Integer.parseInt(vals[1])));
 
-            case "static":
-                Class clazz = Class.forName(e.get("class").asText());
-                Field f = clazz.getField(e.get("field").asText());
+            case STATIC:
+                Class c = Class.forName(vals[0]);
+                Field f = c.getField(vals[1]);
                 return new Tuple<>(f.getType(), f.get(null));
 
             default:

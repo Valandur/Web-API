@@ -19,9 +19,8 @@ public interface IMessageService {
     /**
      * Sends a new interactive message to a player.
      * @param msg The message to send.
-     * @return True if it was sent successfully, false otherwise.
      */
-    boolean sendMessage(IMessage msg);
+    void sendMessage(IMessage msg);
 
     /**
      * Gets a message by its uuid.

@@ -21,12 +21,57 @@ get:
     404:
       $ref: "../../responses/404.yaml"
     200:
-      description: Kit
+      $ref: "../../definitions/nucleus/KitResponse.yaml"
+put:
+  summary: Change a kit
+  operationId: changeKit
+  description: |
+    Change an existing kit.
+
+    > Required permission: nucleus.kit.change
+  parameters:
+    - name: name
+      in: path
+      type: string
+      description: The name of the kit to change.
+      required: true
+    - name: ChangeKitRequest
+      in: body
       schema:
-        title: NucleusKitResponse
-        type: object
-        properties:
-          ok:
-            $ref: "../../definitions/ok.yaml"
-          kit:
-            $ref: "../../definitions/nucleus/NucleusKitFull.yaml"
+        $ref: "../../definitions/nucleus/ChangeKitRequest.yaml"
+      required: true
+  tags:
+    - Nucleus
+  responses:
+    400:
+      $ref: "../../responses/400.yaml"
+    403:
+      $ref: "../../responses/403.yaml"
+    404:
+      $ref: "../../responses/404.yaml"
+    200:
+      $ref: "../../definitions/nucleus/KitResponse.yaml"
+delete:
+  summary: Delete a kit
+  operationId: deleteKit
+  description: |
+    Delete an existing kit.
+
+    > Required permission: nucleus.kit.delete
+  parameters:
+    - name: name
+      in: path
+      type: string
+      description: The name of the kit to delete.
+      required: true
+  tags:
+   - Nucleus
+  responses:
+    400:
+      $ref: "../../responses/400.yaml"
+    403:
+      $ref: "../../responses/403.yaml"
+    404:
+      $ref: "../../responses/404.yaml"
+    200:
+      $ref: "../../definitions/nucleus/KitResponse.yaml"

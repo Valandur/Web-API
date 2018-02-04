@@ -1,161 +1,109 @@
 package valandur.webapi.servlet;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import org.eclipse.jetty.http.HttpMethod;
+import io.swagger.annotations.*;
 import org.spongepowered.api.Sponge;
+import org.spongepowered.api.entity.living.player.gamemode.GameMode;
 import org.spongepowered.api.util.Tuple;
-import org.spongepowered.api.world.Chunk;
-import org.spongepowered.api.world.World;
-import org.spongepowered.api.world.WorldArchetype;
+import org.spongepowered.api.world.*;
+import org.spongepowered.api.world.difficulty.Difficulty;
 import org.spongepowered.api.world.storage.WorldProperties;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.cache.world.ICachedWorld;
 import valandur.webapi.api.servlet.BaseServlet;
-import valandur.webapi.api.servlet.Endpoint;
-import valandur.webapi.api.servlet.Servlet;
+import valandur.webapi.api.servlet.ExplicitDetails;
+import valandur.webapi.api.servlet.Permission;
+import valandur.webapi.cache.misc.CachedCatalogType;
 import valandur.webapi.cache.world.CachedChunk;
 import valandur.webapi.cache.world.CachedWorld;
-import valandur.webapi.serialize.request.world.CreateWorldRequest;
-import valandur.webapi.serialize.request.world.UpdateWorldRequest;
-import valandur.webapi.servlet.base.ServletData;
+import valandur.webapi.serialize.deserialize.ExecuteMethodRequest;
 import valandur.webapi.util.Util;
 
-import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 
-@Servlet(basePath = "world")
+@Path("world")
+@Api(value = "world", tags = { "World" })
+@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+@Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 public class WorldServlet extends BaseServlet {
 
-    @Endpoint(method = HttpMethod.GET, path = "/", perm = "list")
-    public void getWorlds(ServletData data) {
-        data.addData("ok", true, false);
-        data.addData("worlds", cacheService.getWorlds(), data.getQueryParam("details").isPresent());
+    @GET
+    @ExplicitDetails
+    @Permission("list")
+    @ApiOperation(value = "List worlds", notes = "Get a list of all the worlds on the server.")
+    public Collection<ICachedWorld> getWorlds() {
+        return cacheService.getWorlds();
     }
 
-    @Endpoint(method = HttpMethod.GET, path = "/:world", perm = "one")
-    public void getWorld(ServletData data, CachedWorld world) {
-        Optional<String> strFields = data.getQueryParam("fields");
-        Optional<String> strMethods = data.getQueryParam("methods");
-        if (strFields.isPresent() || strMethods.isPresent()) {
-            String[] fields = strFields.map(s -> s.split(",")).orElse(new String[]{});
-            String[] methods = strMethods.map(s -> s.split(",")).orElse(new String[]{});
-            Tuple extra = cacheService.getExtraData(world, data.responseIsXml(), fields, methods);
-            data.addData("fields", extra.getFirst(), true);
-            data.addData("methods", extra.getSecond(), true);
-        }
-
-        data.addData("ok", true, false);
-        data.addData("world", world, true);
+    @GET
+    @Path("/{world}")
+    @Permission("one")
+    @ApiOperation(value = "Get a world", notes = "Get detailed information about a world.")
+    public ICachedWorld getWorld(
+            @PathParam("world") @ApiParam("The uuid of the world for which to get details") ICachedWorld world) {
+        return world;
     }
 
-    @Endpoint(method = HttpMethod.POST, path = "/", perm = "create")
-    public void createWorld(ServletData data) {
+    @POST
+    @Permission("create")
+    @ApiOperation(value = "Create a world", notes =
+            "Creates a new world with the specified settings. This does not yet load the world.")
+    public ICachedWorld createWorld(CreateWorldRequest req)
+            throws BadRequestException {
         WorldArchetype.Builder builder = WorldArchetype.builder();
-
-        Optional<CreateWorldRequest> optReq = data.getRequestBody(CreateWorldRequest.class);
-        if (!optReq.isPresent()) {
-            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid world data: " + data.getLastParseError().getMessage());
-            return;
-        }
-
-        CreateWorldRequest req = optReq.get();
-
         if (req.getName().isEmpty()) {
-            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "No name provided");
-            return;
+            throw new BadRequestException("World requires a name");
         }
 
-        req.getDimensionType().ifPresent(builder::dimension);
-        req.getGeneratorType().ifPresent(builder::generator);
+        req.getDimension().ifPresent(builder::dimension);
+        req.getGenerator().ifPresent(builder::generator);
         req.getGameMode().ifPresent(builder::gameMode);
         req.getDifficulty().ifPresent(builder::difficulty);
 
         if (req.getSeed() != null) {
             builder.seed(req.getSeed());
         }
-        if (req.doesLoadOnStartup() != null) {
-            builder.loadsOnStartup(req.doesLoadOnStartup());
-        }
-        if (req.doesKeepSpawnLoaded() != null) {
-            builder.keepsSpawnLoaded(req.doesKeepSpawnLoaded());
-        }
-        if (req.doesAllowCommands() != null) {
-            builder.commandsAllowed(req.doesAllowCommands());
-        }
-        if (req.doesGenerateBonusChest() != null) {
-            builder.generateBonusChest(req.doesGenerateBonusChest());
-        }
-        if (req.doesUseMapFeatures() != null) {
-            builder.usesMapFeatures(req.doesUseMapFeatures());
-        }
 
-        String archTypeName = UUID.randomUUID().toString();
+        if (req.loadOnStartup() != null)
+            builder.loadsOnStartup(req.loadOnStartup());
+        if (req.keepSpawnLoaded() != null)
+            builder.keepsSpawnLoaded(req.keepSpawnLoaded());
+        if (req.allowCommands() != null)
+            builder.commandsAllowed(req.allowCommands());
+        if (req.generateBonusChest != null)
+            builder.generateBonusChest(req.generateBonusChest());
+        if (req.usesMapFeatures() != null)
+            builder.usesMapFeatures(req.usesMapFeatures());
+
+        String archTypeName = "WebAPI-" + UUID.randomUUID().toString();
         WorldArchetype archType = builder.enabled(true).build(archTypeName, archTypeName);
 
-        Optional<ICachedWorld> resWorld = WebAPI.runOnMain(() -> {
+        return WebAPI.runOnMain(() -> {
             try {
                 WorldProperties props = Sponge.getServer().createWorldProperties(req.getName(), archType);
                 return cacheService.updateWorld(props);
             } catch (IOException e) {
-                data.addData("ok", false, false);
-                data.addData("error", e, false);
-                return null;
+                throw new InternalServerErrorException(e.getMessage());
             }
         });
-
-        if (!resWorld.isPresent())
-            return;
-
-        data.setStatus(HttpServletResponse.SC_CREATED);
-        data.setHeader("Location", resWorld.get().getLink());
-        data.addData("ok", true, false);
-        data.addData("world", resWorld.get(), true);
     }
 
-    @Endpoint(method = HttpMethod.POST, path = "/:world/method", perm = "method")
-    public void executeMethod(ServletData data, CachedWorld world) {
-        JsonNode reqJson = data.getRequestBody();
-        if (!reqJson.has("method")) {
-            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Request must define the 'method' property");
-            return;
-        }
+    @PUT
+    @Path("/{world}")
+    @Permission("change")
+    @ApiOperation(value = "Change a world", notes = "Update the properties of an existing world.")
+    public ICachedWorld updateWorld(
+            @PathParam("world") @ApiParam("The uuid of the world which to update") ICachedWorld world,
+            UpdateWorldRequest req) {
 
-        String mName = reqJson.get("method").asText();
-        Optional<Tuple<Class[], Object[]>> params = Util.parseParams(reqJson.get("params"));
-
-        if (!params.isPresent()) {
-            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid parameters");
-            return;
-        }
-
-        Optional<Object> res = cacheService.executeMethod(world, mName, params.get().getFirst(), params.get().getSecond());
-        if (!res.isPresent()) {
-            data.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not get world");
-            return;
-        }
-
-        data.addData("ok", true, false);
-        data.addData("world", world, true);
-        data.addData("result", res.get(), true);
-    }
-
-    @Endpoint(method = HttpMethod.PUT, path = "/:world", perm = "change")
-    public void updateWorld(ServletData data, CachedWorld world) {
-        Optional<UpdateWorldRequest> optReq = data.getRequestBody(UpdateWorldRequest.class);
-        if (!optReq.isPresent()) {
-            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid world data: " + data.getLastParseError().getMessage());
-            return;
-        }
-
-        final UpdateWorldRequest req = optReq.get();
-
-        Optional<ICachedWorld> resWorld = WebAPI.runOnMain(() -> {
+        return WebAPI.runOnMain(() -> {
             Optional<World> optLive = world.getLive();
             Optional<WorldProperties> optProps = world.getLiveProps();
             if (!optProps.isPresent())
-                return null;
+                throw new InternalServerErrorException("Could not get live world properties");
 
             World live = optLive.orElse(null);
             WorldProperties props = optProps.get();
@@ -177,7 +125,7 @@ public class WorldServlet extends BaseServlet {
                     }
                 } else {
                     WebAPI.getLogger().warn("World should be unloaded but isn't present");
-                    return null;
+                    throw new InternalServerErrorException("World should be unloaded but isn't present");
                 }
             }
 
@@ -187,70 +135,89 @@ public class WorldServlet extends BaseServlet {
                 }
             }
 
-            req.getGeneratorType().ifPresent(props::setGeneratorType);
+            req.getGenerator().ifPresent(props::setGeneratorType);
             req.getGameMode().ifPresent(props::setGameMode);
             req.getDifficulty().ifPresent(props::setDifficulty);
 
             if (req.getSeed() != null) {
                 props.setSeed(req.getSeed());
             }
-            if (req.doesLoadOnStartup() != null) {
-                props.setLoadOnStartup(req.doesLoadOnStartup());
-            }
-            if (req.doesKeepSpawnLoaded() != null) {
-                props.setKeepSpawnLoaded(req.doesKeepSpawnLoaded());
-            }
-            if (req.doesAllowCommands() != null) {
-                props.setCommandsAllowed(req.doesAllowCommands());
-            }
-            if (req.doesUseMapFeatures() != null) {
-                props.setMapFeaturesEnabled(req.doesUseMapFeatures());
-            }
+
+            if (req.loadOnStartup() != null)
+                props.setLoadOnStartup(req.loadOnStartup());
+            if (req.keepSpawnLoaded() != null)
+                props.setKeepSpawnLoaded(req.keepSpawnLoaded());
+            if (req.allowCommands() != null)
+                props.setCommandsAllowed(req.allowCommands());
+            if (req.usesMapFeatures() != null)
+                props.setMapFeaturesEnabled(req.usesMapFeatures());
 
             if (live != null)
                 return cacheService.updateWorld(live);
             else
                 return cacheService.updateWorld(props);
         });
-
-        data.addData("ok", resWorld.isPresent(), false);
-        data.addData("world", resWorld.orElse(null), true);
     }
 
-    @Endpoint(method = HttpMethod.DELETE, path = "/:world", perm = "delete")
-    public void deleteWorld(ServletData data, CachedWorld world) {
-        Optional<Boolean> deleted = WebAPI.runOnMain(() -> {
+    @DELETE
+    @Path("/{world}")
+    @Permission("delete")
+    @ApiOperation(value = "Delete a world", notes =
+            "Deletes an existing world. **The world must be unloaded before deleting it**")
+    public CachedWorld deleteWorld(
+            @PathParam("world") @ApiParam("The uuid of the world to delete") CachedWorld world) {
+        boolean deleted = WebAPI.runOnMain(() -> {
             Optional<WorldProperties> optLive = world.getLiveProps();
             if (!optLive.isPresent())
-                return false;
+                throw new InternalServerErrorException("Could not get live world properties");
 
             WorldProperties live = optLive.get();
             try {
                 return Sponge.getServer().deleteWorld(live).get();
             } catch (InterruptedException | ExecutionException e) {
-                e.printStackTrace();
-                if (WebAPI.reportErrors()) WebAPI.sentryCapture(e);
+                throw new InternalServerErrorException(e.getMessage());
             }
-            return false;
         });
 
-        if (!deleted.isPresent() || !deleted.get()) {
-            data.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not delete world " + world.getName());
-            return;
-        }
-
         cacheService.removeWorld(world.getUUID());
-
-        data.addData("ok", true, false);
-        data.addData("world", world, true);
+        return world;
     }
 
-    @Endpoint(method = HttpMethod.GET, path = "/:world/chunk", perm = "chunk.list")
-    public void getChunks(ServletData data, CachedWorld world) {
-        Optional<List<CachedChunk>> optChunks = WebAPI.runOnMain(() -> {
+    @POST
+    @Path("/{world}/method")
+    @Permission("method")
+    @ApiOperation(value = "Execute a method", notes =
+            "Provides direct access to the underlaying world object and can execute any method on it.")
+    public Object executeMethod(
+            @PathParam("world") @ApiParam("The uuid of the world on which to execute the method") ICachedWorld world,
+            ExecuteMethodRequest req)
+            throws BadRequestException {
+        if (req.getMethod() == null || req.getMethod().isEmpty()) {
+            throw new BadRequestException("Method must be specified");
+        }
+
+        String mName = req.getMethod();
+        Optional<Tuple<Class[], Object[]>> params = Util.parseParams(req.getParameters());
+
+        if (!params.isPresent()) {
+            throw new BadRequestException("Invalid parameters");
+        }
+
+        return cacheService.executeMethod(world, mName, params.get().getFirst(), params.get().getSecond());
+    }
+
+    @GET
+    @ExplicitDetails
+    @Path("/{world}/chunk")
+    @Permission({ "chunk", "list" })
+    @ApiOperation(value = "List chunks", tags = { "Chunk" }, notes =
+            "Gets a list of all the loaded chunks for the specified world.")
+    public List<CachedChunk> getChunks(
+            @PathParam("world") @ApiParam("The uuid of the for which to get all chunks") ICachedWorld world) {
+        return WebAPI.runOnMain(() -> {
             Optional<World> optWorld = world.getLive();
             if (!optWorld.isPresent())
-                return null;
+                throw new InternalServerErrorException("Could not get live world");
 
             World live = optWorld.get();
             List<CachedChunk> chunks = new ArrayList<>();
@@ -260,45 +227,135 @@ public class WorldServlet extends BaseServlet {
 
             return chunks;
         });
-
-        data.addData("ok", optChunks.isPresent(), false);
-        data.addData("chunks", optChunks.orElse(null), data.getQueryParam("details").isPresent());
     }
 
-    @Endpoint(method = HttpMethod.GET, path = "/:world/chunk/:x/:z", perm = "chunk.one")
-    public void getChunkAt(ServletData data, CachedWorld world, int x, int z) {
-        Optional<CachedChunk> optChunk = WebAPI.runOnMain(() -> {
+    @GET
+    @Path("/{world}/chunk/{x}/{z}")
+    @Permission({ "chunk", "one "})
+    @ApiOperation(value = "Get a chunk", tags = { "Chunk" }, notes = "Get detailed information about a chunk")
+    public CachedChunk getChunkAt(
+            @PathParam("world") @ApiParam("The uuid of the world in which to get the chunk") ICachedWorld world,
+            @PathParam("x") @ApiParam("The x-coordinate of the chunk (in chunk coordinates)") int x,
+            @PathParam("z") @ApiParam("The z-coordinate of the chunk (in chunk coordinates)") int z) {
+        return WebAPI.runOnMain(() -> {
             Optional<World> optLive = world.getLive();
             if (!optLive.isPresent())
-                return null;
+                throw new InternalServerErrorException("Could not get live world");
 
             World live = optLive.get();
             Optional<Chunk> chunk = live.loadChunk(x, 0, z, false);
             return chunk.map(CachedChunk::new).orElse(null);
         });
-
-        data.addData("ok", optChunk.isPresent(), false);
-        data.addData("chunk", optChunk.orElse(null), true);
     }
 
-    @Endpoint(method = HttpMethod.POST, path = "/:world/chunk/:x/:z", perm = "chunk.create")
-    public void createChunkAt(ServletData data, CachedWorld world, int x, int z) {
-        Optional<CachedChunk> optChunk = WebAPI.runOnMain(() -> {
+    @POST
+    @Path("/{world}/chunk/{x}/{z}")
+    @Permission({ "chunk", "create" })
+    @ApiOperation(value = "Load & Generate a chunk", tags = { "Chunk" }, notes =
+            "Forces a chunk to be loaded into memory, and created if it does not exist.")
+    public CachedChunk createChunkAt(
+            @PathParam("world") @ApiParam("The uuid of the world in which to create the chunk") ICachedWorld world,
+            @PathParam("x") @ApiParam("The x-coordinate of the chunk (in chunk coordinates)") int x,
+            @PathParam("z") @ApiParam("The z-coordinate of the chunk (in chunk coordinates)") int z) {
+        return WebAPI.runOnMain(() -> {
             Optional<World> optLive = world.getLive();
             if (!optLive.isPresent())
-                return null;
+                throw new InternalServerErrorException("Could not get live world");
 
             World live = optLive.get();
             Optional<Chunk> chunk = live.loadChunk(x, 0, z, true);
             return chunk.map(CachedChunk::new).orElse(null);
         });
+    }
 
-        if (optChunk.isPresent()) {
-            data.setStatus(HttpServletResponse.SC_CREATED);
-            data.setHeader("Location", optChunk.get().getLink());
+
+    @ApiModel("BaseWorldRequest")
+    public static class BaseWorldRequest {
+
+        private String name;
+        @ApiModelProperty(value = "The name of the world", required = true)
+        public String getName() {
+            return name;
         }
 
-        data.addData("ok", optChunk.isPresent(), false);
-        data.addData("chunk", optChunk.orElse(null), true);
+        private Long seed;
+        @ApiModelProperty("The seed of the world")
+        public Long getSeed() {
+            return seed;
+        }
+
+        private CachedCatalogType<GeneratorType> generator;
+        @ApiModelProperty(dataType = "string", value = "Which generator to use for the world")
+        public Optional<GeneratorType> getGenerator() {
+            return generator != null ? generator.getLive(GeneratorType.class) : Optional.empty();
+        }
+
+        private CachedCatalogType<GameMode> gameMode;
+        @ApiModelProperty(dataType = "string", value = "Which game mode the world defaults to")
+        public Optional<GameMode> getGameMode() {
+            return gameMode != null ? gameMode.getLive(GameMode.class) : Optional.empty();
+        }
+
+        private CachedCatalogType<Difficulty> difficulty;
+        @ApiModelProperty(dataType = "string", value = "Which difficulty the world is set to")
+        public Optional<Difficulty> getDifficulty() {
+            return difficulty != null ? difficulty.getLive(Difficulty.class) : Optional.empty();
+        }
+
+        private Boolean loadOnStartup;
+        @ApiModelProperty(value = "True if the world should be loaded when the server starts, false otherwise.")
+        public Boolean loadOnStartup() {
+            return loadOnStartup;
+        }
+
+        private Boolean keepSpawnLoaded;
+        @ApiModelProperty("True if the world spawn should be kept loaded, even if no players are present, false otherwise")
+        public Boolean keepSpawnLoaded() {
+            return keepSpawnLoaded;
+        }
+
+        private Boolean allowCommands;
+        @ApiModelProperty("True if this world allows running commands, false otherwise")
+        public Boolean allowCommands() {
+            return allowCommands;
+        }
+
+        private Boolean usesMapFeatures;
+        @ApiModelProperty("True if this world uses special map features, false otherwise")
+        public Boolean usesMapFeatures() {
+            return usesMapFeatures;
+        }
+    }
+
+    @ApiModel("CreateWorldRequest")
+    public static class CreateWorldRequest extends BaseWorldRequest {
+
+        private CachedCatalogType<DimensionType> dimension;
+        @ApiModelProperty(dataType = "string", value = "The the dimension that this world belongs to")
+        public Optional<DimensionType> getDimension() {
+            return dimension != null ? dimension.getLive(DimensionType.class) : Optional.empty();
+        }
+
+        private Boolean generateBonusChest;
+        @ApiModelProperty("True if this world should generate bonus chests, false otherwise")
+        public boolean generateBonusChest() {
+            return generateBonusChest;
+        }
+    }
+
+    @ApiModel("UpdateWorldRequest")
+    public static class UpdateWorldRequest extends BaseWorldRequest {
+
+        private Boolean loaded;
+        @ApiModelProperty("True if the world should be loaded, false otherwise")
+        public Boolean isLoaded() {
+            return loaded;
+        }
+
+        private Map<String, String> gameRules;
+        @ApiModelProperty("The game rule settings of this world")
+        public Map<String, String> getGameRules() {
+            return gameRules;
+        }
     }
 }

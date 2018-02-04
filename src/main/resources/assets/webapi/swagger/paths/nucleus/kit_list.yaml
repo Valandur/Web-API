@@ -25,6 +25,28 @@ get:
             $ref: "../../definitions/ok.yaml"
           kits:
             type: array
-            description: A list of jails.
+            description: A list of kits.
             items:
-              $ref: "../../definitions/nucleus/NucleusKit.yaml"
+              $ref: "../../definitions/nucleus/Kit.yaml"
+post:
+  summary: Create a kit
+  operationId: createKit
+  description: |
+    Creates a new kit.
+
+    > Required permission: nucleus.kit.create
+  parameters:
+    - name: CreateKitRequest
+      in: body
+      schema:
+        $ref: "../../definitions/nucleus/CreateKitRequest.yaml"
+      required: true
+  tags:
+    - Nucleus
+  responses:
+    400:
+      $ref: "../../responses/400.yaml"
+    403:
+      $ref: "../../responses/403.yaml"
+    200:
+      $ref: "../../definitions/nucleus/KitResponse.yaml"

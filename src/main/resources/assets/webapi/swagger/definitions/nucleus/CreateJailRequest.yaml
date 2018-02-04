@@ -1,0 +1,10 @@
+title: NucleusCreateJailRequest
+type: object
+properties:
+  name:
+    type: string
+    description:
+  location:
+    $ref: "../Location.yaml"
+  rotation:
+    $ref: "../Vector3.yaml"

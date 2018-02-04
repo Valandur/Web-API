@@ -1,6 +1,5 @@
 package valandur.webapi.integration.nucleus;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import io.github.nucleuspowered.nucleus.api.nucleusdata.Kit;
 import org.spongepowered.api.data.value.ValueContainer;
 import org.spongepowered.api.item.inventory.ItemStackSnapshot;
@@ -12,47 +11,39 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@JsonDeserialize
 public class CachedKit extends CachedObject<Kit> {
 
-    @JsonDeserialize
     private String name;
     public String getName() {
         return name;
     }
 
-    @JsonDeserialize
     private Double cost;
     public Double getCost() {
         return cost;
     }
 
-    @JsonDeserialize
     private Long cooldown;
     public Long getCooldown() {
         return cooldown;
     }
 
-    @JsonDeserialize
     private Boolean firstJoinKit;
     public Boolean isFirstJoinKit() {
         return firstJoinKit;
     }
 
-    @JsonDeserialize
     private Boolean oneTime;
     public Boolean isOneTime() {
         return oneTime;
     }
 
-    @JsonDeserialize
     private List<String> commands;
     @JsonDetails
     public List<String> getCommands() {
         return commands;
     }
 
-    @JsonDeserialize
     private List<ItemStackSnapshot> stacks;
     @JsonDetails
     public List<ItemStackSnapshot> getStacks() {

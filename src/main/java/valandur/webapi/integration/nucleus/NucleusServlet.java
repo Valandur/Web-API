@@ -6,21 +6,26 @@ import io.github.nucleuspowered.nucleus.api.nucleusdata.Kit;
 import io.github.nucleuspowered.nucleus.api.nucleusdata.NamedLocation;
 import io.github.nucleuspowered.nucleus.api.service.NucleusJailService;
 import io.github.nucleuspowered.nucleus.api.service.NucleusKitService;
-import org.eclipse.jetty.http.HttpMethod;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.spongepowered.api.world.Location;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 import valandur.webapi.api.WebAPIAPI;
 import valandur.webapi.api.servlet.BaseServlet;
-import valandur.webapi.api.servlet.Endpoint;
-import valandur.webapi.api.servlet.IServletData;
-import valandur.webapi.api.servlet.Servlet;
+import valandur.webapi.api.servlet.Permission;
 
-import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
 import java.time.Duration;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-@Servlet(basePath = "nucleus")
+@Path("nucleus")
+@Api(value = "nucleus", tags = { "Nucleus" })
+@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+@Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 public class NucleusServlet extends BaseServlet {
 
     public static void onRegister() {
@@ -31,12 +36,16 @@ public class NucleusServlet extends BaseServlet {
     }
 
 
-    @Endpoint(method = HttpMethod.GET, path = "jail", perm = "jail.list")
-    public void getJails(IServletData data) {
+    // Jails
+    @GET
+    @Path("/jail")
+    @Permission({ "jail", "list" })
+    @ApiOperation(value = "List jails", notes = "Get a list of all the jails on the server.")
+    public Collection<CachedNamedLocation> getJails()
+            throws InternalServerErrorException {
         Optional<NucleusJailService> optSrv = NucleusAPI.getJailService();
         if (!optSrv.isPresent()) {
-            data.sendError(HttpServletResponse.SC_NOT_FOUND, "Nuclues jail service not available");
-            return;
+            throw new InternalServerErrorException("Nuclues jail service not available");
         }
 
         NucleusJailService srv = optSrv.get();
@@ -45,16 +54,18 @@ public class NucleusServlet extends BaseServlet {
                 () -> srv.getJails().values().stream().map(CachedNamedLocation::new).collect(Collectors.toList())
         );
 
-        data.addData("ok", optRes.isPresent(), false);
-        data.addData("jails", optRes.orElse(null), data.getQueryParam("details").isPresent());
+        return optRes.orElse(null);
     }
 
-    @Endpoint(method = HttpMethod.GET, path = "jail/:name", perm = "jail.one")
-    public void getJail(IServletData data, String name) {
+    @GET
+    @Path("/jail/{name}")
+    @Permission({ "jail", "one" })
+    @ApiOperation(value = "Get a jail", notes = "Get detailed information about a jail.")
+    public CachedNamedLocation getJail(@PathParam("name") String name)
+            throws InternalServerErrorException, NotFoundException {
         Optional<NucleusJailService> optSrv = NucleusAPI.getJailService();
         if (!optSrv.isPresent()) {
-            data.sendError(HttpServletResponse.SC_NOT_FOUND, "Nuclues jail service not available");
-            return;
+            throw new InternalServerErrorException("Nuclues jail service not available");
         }
 
         NucleusJailService srv = optSrv.get();
@@ -62,45 +73,36 @@ public class NucleusServlet extends BaseServlet {
         Optional<CachedNamedLocation> optRes = WebAPIAPI.runOnMain(() -> {
             Optional<NamedLocation> optJail = srv.getJail(name);
             if (!optJail.isPresent()) {
-                data.sendError(HttpServletResponse.SC_NOT_FOUND, "Jail not found");
-                return null;
+                throw new NotFoundException("Jail with name " + name + " not found");
             }
 
             return new CachedNamedLocation(optJail.get());
         });
 
-        data.addData("ok", optRes.isPresent(), false);
-        data.addData("jail", optRes.orElse(null), true);
+        return optRes.orElse(null);
     }
 
-    @Endpoint(method = HttpMethod.POST, path = "jail", perm = "jail.create")
-    public void createJail(IServletData data) {
+    @POST
+    @Path("/jail")
+    @Permission({ "jail", "create" })
+    @ApiOperation(value = "Create a jail", notes = "Creates a new jail.")
+    public CachedNamedLocation createJail(CachedNamedLocation req)
+            throws BadRequestException, InternalServerErrorException {
         Optional<NucleusJailService> optSrv = NucleusAPI.getJailService();
         if (!optSrv.isPresent()) {
-            data.sendError(HttpServletResponse.SC_NOT_FOUND, "Nuclues jail service not available");
-            return;
+            throw new InternalServerErrorException("Nuclues jail service not available");
         }
 
         NucleusJailService srv = optSrv.get();
 
-        Optional<CachedNamedLocation> optReq = data.getRequestBody(CachedNamedLocation.class);
-        if (!optReq.isPresent()) {
-            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid jail data: " +
-                    data.getLastParseError().getMessage());
-            return;
-        }
-
-        CachedNamedLocation req = optReq.get();
         if (req.getLocation() == null) {
-            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "A location is required");
-            return;
+            throw new BadRequestException("A location is required");
         }
 
         Optional<CachedNamedLocation> optRes = WebAPIAPI.runOnMain(() -> {
             Optional<Location> optLive = req.getLocation().getLive();
             if (!optLive.isPresent()) {
-                data.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not get live location");
-                return null;
+                throw new InternalServerErrorException("Could not get live location");
             }
             Vector3d rot = req.getRotation() == null ? Vector3d.FORWARD : req.getRotation();
             srv.setJail(req.getName(), optLive.get(), rot);
@@ -108,22 +110,26 @@ public class NucleusServlet extends BaseServlet {
             return optJail.map(CachedNamedLocation::new).orElse(null);
         });
 
-        data.setStatus(HttpServletResponse.SC_CREATED);
-        data.addData("ok", optRes.isPresent(), false);
-        data.addData("jail", optRes.orElse(null), true);
+        return optRes.orElse(null);
     }
 
-    @Endpoint(method = HttpMethod.PUT, path = "jail/:name", perm = "jail.change")
-    public void changeJail(IServletData data) {
-        data.sendError(HttpServletResponse.SC_NOT_IMPLEMENTED, "Not implemented");
+    @PUT
+    @Path("/jail/{name}")
+    @Permission({ "jail", "change" })
+    @ApiOperation(value = "Change a jail", notes = "Change an existing jail.")
+    public CachedNamedLocation changeJail() {
+        throw new NotImplementedException();
     }
 
-    @Endpoint(method = HttpMethod.DELETE, path = "jail/:name", perm = "jail.delete")
-    public void deleteJail(IServletData data, String name) {
+    @DELETE
+    @Path("/jail/{name}")
+    @Permission({ "jail", "delete" })
+    @ApiOperation(value = "Delete a jail", notes = "Delete an existing jail.")
+    public CachedNamedLocation deleteJail(@PathParam("name") String name)
+            throws InternalServerErrorException, NotFoundException {
         Optional<NucleusJailService> optSrv = NucleusAPI.getJailService();
         if (!optSrv.isPresent()) {
-            data.sendError(HttpServletResponse.SC_NOT_FOUND, "Nuclues jail service not available");
-            return;
+            throw new InternalServerErrorException("Nuclues jail service not available");
         }
 
         NucleusJailService srv = optSrv.get();
@@ -131,8 +137,7 @@ public class NucleusServlet extends BaseServlet {
         Optional<CachedNamedLocation> optRes = WebAPIAPI.runOnMain(() -> {
             Optional<NamedLocation> optJail = srv.getJail(name);
             if (!optJail.isPresent()) {
-                data.sendError(HttpServletResponse.SC_NOT_FOUND, "Jail not found");
-                return null;
+                throw new NotFoundException("Jail with name " + name + " not found");
             }
 
             srv.removeJail(name);
@@ -140,17 +145,20 @@ public class NucleusServlet extends BaseServlet {
             return new CachedNamedLocation(optJail.get());
         });
 
-        data.addData("ok", optRes.isPresent(), false);
-        data.addData("jail", optRes.orElse(null), true);
+        return optRes.orElse(null);
     }
 
 
-    @Endpoint(method = HttpMethod.GET, path = "kit", perm = "kit.list")
-    public void getKits(IServletData data) {
+    // Tickets
+    @GET
+    @Path("/kit")
+    @Permission({ "kit", "list" })
+    @ApiOperation(value = "List kits", notes = "Get a list of all the kits on the server.")
+    public Collection<CachedKit> getKits()
+            throws InternalServerErrorException {
         Optional<NucleusKitService> optSrv = NucleusAPI.getKitService();
         if (!optSrv.isPresent()) {
-            data.sendError(HttpServletResponse.SC_NOT_FOUND, "Nuclues kit service not available");
-            return;
+            throw new InternalServerErrorException("Nuclues kit service not available");
         }
 
         NucleusKitService srv = optSrv.get();
@@ -161,16 +169,18 @@ public class NucleusServlet extends BaseServlet {
                         .collect(Collectors.toList())
         );
 
-        data.addData("ok", kits.isPresent(), false);
-        data.addData("kits", kits.orElse(null), data.getQueryParam("details").isPresent());
+        return kits.orElse(null);
     }
 
-    @Endpoint(method = HttpMethod.GET, path = "kit/:name", perm = "kit.one")
-    public void getKit(IServletData data, String name) {
+    @GET
+    @Path("/kit/{name}")
+    @Permission({ "kit", "one" })
+    @ApiOperation(value = "Get a kit", notes = "Get detailed information about a kit.")
+    public CachedKit getKit(@PathParam("name") String name)
+            throws InternalServerErrorException, NotFoundException {
         Optional<NucleusKitService> optSrv = NucleusAPI.getKitService();
         if (!optSrv.isPresent()) {
-            data.sendError(HttpServletResponse.SC_NOT_FOUND, "Nuclues kit service not available");
-            return;
+            throw new InternalServerErrorException("Nuclues kit service not available");
         }
 
         NucleusKitService srv = optSrv.get();
@@ -178,38 +188,30 @@ public class NucleusServlet extends BaseServlet {
         Optional<CachedKit> optRes = WebAPIAPI.runOnMain(() -> {
             Optional<Kit> optKit = srv.getKit(name);
             if (!optKit.isPresent()) {
-                data.sendError(HttpServletResponse.SC_NOT_FOUND, "Kit not found");
-                return null;
+                throw new NotFoundException("Kit with name " + name + " not found");
             }
 
             return new CachedKit(optKit.get());
         });
 
-        data.addData("ok", optRes.isPresent(), false);
-        data.addData("kit", optRes.orElse(null), true);
+        return optRes.orElse(null);
     }
 
-    @Endpoint(method = HttpMethod.POST, path = "kit", perm = "kit.create")
-    public void createKit(IServletData data) {
+    @POST
+    @Path("/kit")
+    @Permission({ "kit", "create" })
+    @ApiOperation(value = "Create a kit", notes = "Creates a new kit.")
+    public CachedKit createKit(CachedKit req)
+            throws InternalServerErrorException, BadRequestException {
         Optional<NucleusKitService> optSrv = NucleusAPI.getKitService();
         if (!optSrv.isPresent()) {
-            data.sendError(HttpServletResponse.SC_NOT_FOUND, "Nuclues kit service not available");
-            return;
+            throw new InternalServerErrorException("Nuclues kit service not available");
         }
 
         NucleusKitService srv = optSrv.get();
 
-        Optional<CachedKit> optReq = data.getRequestBody(CachedKit.class);
-        if (!optReq.isPresent()) {
-            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid kit data: " + data.getLastParseError().getMessage());
-            return;
-        }
-
-        CachedKit req = optReq.get();
-
         if (req.getName().isEmpty()) {
-            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid kit name");
-            return;
+            throw new BadRequestException("Invalid kit name");
         }
 
         Optional<CachedKit> resKit = WebAPIAPI.runOnMain(() -> {
@@ -220,8 +222,7 @@ public class NucleusServlet extends BaseServlet {
                 try {
                     kit.setStacks(req.getStacks());
                 } catch (Exception e) {
-                    data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Could not process item stack: " + e.getMessage());
-                    return null;
+                    throw new BadRequestException("Could not process item stack: " + e.getMessage());
                 }
             }
             if (req.getCommands() != null) {
@@ -231,33 +232,26 @@ public class NucleusServlet extends BaseServlet {
             return new CachedKit(kit);
         });
 
-        data.addData("ok", resKit.isPresent(), false);
-        data.addData("kit", resKit.orElse(null), true);
+        return resKit.orElse(null);
     }
 
-    @Endpoint(method = HttpMethod.PUT, path = "kit/:name", perm = "kit.change")
-    public void changeKit(IServletData data, String name) {
+    @PUT
+    @Path("/kit/{name}")
+    @Permission({ "kit", "chang" })
+    @ApiOperation(value = "Change a kit", notes = "Change an existing kit.")
+    public CachedKit changeKit(@PathParam("name") String name, CachedKit req)
+            throws InternalServerErrorException, NotFoundException, BadRequestException {
         Optional<NucleusKitService> optSrv = NucleusAPI.getKitService();
         if (!optSrv.isPresent()) {
-            data.sendError(HttpServletResponse.SC_NOT_FOUND, "Nuclues kit service not available");
-            return;
+            throw new InternalServerErrorException("Nuclues kit service not available");
         }
 
         NucleusKitService srv = optSrv.get();
 
-        Optional<CachedKit> optReq = data.getRequestBody(CachedKit.class);
-        if (!optReq.isPresent()) {
-            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid kit data: " + data.getLastParseError().getMessage());
-            return;
-        }
-
-        CachedKit req = optReq.get();
-
         Optional<CachedKit> optRes = WebAPIAPI.runOnMain(() -> {
             Optional<Kit> optKit = srv.getKit(name);
             if (!optKit.isPresent()) {
-                data.sendError(HttpServletResponse.SC_NOT_FOUND, "Kit not found");
-                return null;
+                throw new NotFoundException("Kit with name " + name + " not found");
             }
 
             Kit kit = optKit.get();
@@ -274,8 +268,7 @@ public class NucleusServlet extends BaseServlet {
                 try {
                     kit.setStacks(req.getStacks());
                 } catch (Exception e) {
-                    data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Could not process item stack: " + e.getMessage());
-                    return null;
+                    throw new BadRequestException("Could not process item stack: " + e.getMessage());
                 }
             }
 
@@ -284,16 +277,18 @@ public class NucleusServlet extends BaseServlet {
             return new CachedKit(kit);
         });
 
-        data.addData("ok", optRes.isPresent(), false);
-        data.addData("kit", optRes.orElse(null), true);
+        return optRes.orElse(null);
     }
 
-    @Endpoint(method = HttpMethod.DELETE, path = "kit/:name", perm = "kit.delete")
-    public void deleteKit(IServletData data, String name) {
+    @DELETE
+    @Path("/kit/{name}")
+    @Permission({ "kit", "delete" })
+    @ApiOperation(value = "Delete a kit", notes = "Delete an existing kit.")
+    public CachedKit deleteKit(@PathParam("name") String name)
+            throws InternalServerErrorException, NotFoundException {
         Optional<NucleusKitService> optSrv = NucleusAPI.getKitService();
         if (!optSrv.isPresent()) {
-            data.sendError(HttpServletResponse.SC_NOT_FOUND, "Nuclues kit service not available");
-            return;
+            throw new InternalServerErrorException("Nuclues kit service not available");
         }
 
         NucleusKitService srv = optSrv.get();
@@ -301,15 +296,13 @@ public class NucleusServlet extends BaseServlet {
         Optional<CachedKit> optRes = WebAPIAPI.runOnMain(() -> {
             Optional<Kit> optKit = srv.getKit(name);
             if (!optKit.isPresent()) {
-                data.sendError(HttpServletResponse.SC_NOT_FOUND, "Kit not found");
-                return null;
+                throw new NotFoundException("Kit with name " + name + " not found");
             }
 
             srv.removeKit(name);
             return new CachedKit(optKit.get());
         });
 
-        data.addData("ok", optRes.isPresent(), false);
-        data.addData("kit", optRes.orElse(null), true);
+        return optRes.orElse(null);
     }
 }

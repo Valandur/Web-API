@@ -1,23 +1,38 @@
 package valandur.webapi.servlet;
 
-import org.eclipse.jetty.http.HttpMethod;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import valandur.webapi.api.cache.chat.ICachedChatMessage;
+import valandur.webapi.api.cache.command.ICachedCommandCall;
 import valandur.webapi.api.servlet.BaseServlet;
-import valandur.webapi.api.servlet.Endpoint;
-import valandur.webapi.api.servlet.Servlet;
-import valandur.webapi.servlet.base.ServletData;
+import valandur.webapi.api.servlet.Permission;
 
-@Servlet(basePath = "history")
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
+import java.util.List;
+
+@Path("history")
+@Api(value = "history", tags = { "History" })
+@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+@Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 public class HistoryServlet extends BaseServlet {
 
-    @Endpoint(method = HttpMethod.GET, path = "/cmd", perm = "cmd")
-    public void getCmds(ServletData data) {
-        data.addData("ok", true, false);
-        data.addData("calls", cacheService.getCommandCalls(), false);
+    @GET
+    @Path("/cmd")
+    @Permission("cmd")
+    @ApiOperation(value = "Get command history", notes = "View a history of the server commands.")
+    public List<ICachedCommandCall> getCommands() {
+        return cacheService.getCommandCalls();
     }
 
-    @Endpoint(method = HttpMethod.GET, path = "/chat", perm = "chat")
-    public void getChat(ServletData data) {
-        data.addData("ok", true, false);
-        data.addData("messages", cacheService.getChatMessages(), false);
+    @GET
+    @Path("/chat")
+    @Permission("chat")
+    @ApiOperation(value = "Get chat history", notes = "View a history of the server chat.")
+    public List<ICachedChatMessage> getChat() {
+        return cacheService.getChatMessages();
     }
 }

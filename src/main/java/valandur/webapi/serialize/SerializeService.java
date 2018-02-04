@@ -1,14 +1,8 @@
 package valandur.webapi.serialize;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.flowpowered.math.vector.Vector3d;
@@ -97,14 +91,7 @@ import valandur.webapi.serialize.view.player.GameModeView;
 import valandur.webapi.serialize.view.player.GameProfileView;
 import valandur.webapi.serialize.view.player.RespawnLocationView;
 import valandur.webapi.serialize.view.tileentity.PatternLayerView;
-import valandur.webapi.util.Util;
 
-import java.io.IOException;
-import java.io.Reader;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.lang.reflect.Parameter;
 import java.time.Instant;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -464,121 +451,7 @@ public class SerializeService implements ISerializeService {
         return supportedData;
     }
 
-    @Override
-    public String toString(Object obj, boolean xml, boolean details, TreeNode<String, Boolean> perms) {
-        ObjectMapper mapper = getDefaultObjectMapper(xml, details, perms);
-
-        try {
-            return mapper.writeValueAsString(obj);
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-            return "{\"error\":\"" + e.getMessage() + "\"}";
-        }
-    }
-
-    @Override
-    public JsonNode serialize(Object obj, boolean xml, boolean details, TreeNode<String, Boolean> perms) {
-        ObjectMapper mapper = getDefaultObjectMapper(xml, details, perms);
-        return mapper.valueToTree(obj);
-    }
-    @Override
-    public JsonNode deserialize(Reader reader, boolean xml, TreeNode<String, Boolean> perms) throws IOException {
-        ObjectMapper mapper = getDefaultObjectMapper(xml, true, perms);
-        return mapper.readTree(reader);
-    }
-
-    @Override
-    public <T> T deserialize(String content, boolean xml, JavaType type, TreeNode<String, Boolean> perms) throws IOException {
-        ObjectMapper mapper = getDefaultObjectMapper(xml, true, perms);
-        return mapper.readValue(content, type);
-    }
-    @Override
-    public <T> T deserialize(JsonNode content, Class<T> clazz, TreeNode<String, Boolean> perms) throws IOException {
-        ObjectMapper mapper = getDefaultObjectMapper(false, true, perms);
-        return mapper.treeToValue(content, clazz);
-    }
-
-    @Override
-    public JsonNode classToJson(Class c) {
-        ObjectNode json = JsonNodeFactory.instance.objectNode();
-
-        json.put("name", c.getName());
-        json.put("parent", c.getSuperclass() != null ? c.getSuperclass().getName() : null);
-
-        ObjectNode jsonFields = JsonNodeFactory.instance.objectNode();
-        Field[] fs = Util.getAllFields(c);
-        for (Field f : fs) {
-            ObjectNode jsonField = JsonNodeFactory.instance.objectNode();
-
-            f.setAccessible(true);
-
-            jsonField.put("type", f.getType().getName());
-
-            ArrayNode arr = JsonNodeFactory.instance.arrayNode();
-            int mod = f.getModifiers();
-            if (Modifier.isAbstract(mod)) arr.add("abstract");
-            if (Modifier.isFinal(mod)) arr.add("final");
-            if (Modifier.isInterface(mod)) arr.add("interface");
-            if (Modifier.isNative(mod)) arr.add("native");
-            if (Modifier.isPrivate(mod)) arr.add("private");
-            if (Modifier.isProtected(mod)) arr.add("protected");
-            if (Modifier.isPublic(mod)) arr.add("public");
-            if (Modifier.isStatic(mod)) arr.add("static");
-            if (Modifier.isStrict(mod)) arr.add("strict");
-            if (Modifier.isSynchronized(mod)) arr.add("synchronized");
-            if (Modifier.isTransient(mod)) arr.add("transient");
-            if (Modifier.isVolatile(mod)) arr.add("volatile");
-            jsonField.set("modifiers", arr);
-
-            if (f.getDeclaringClass() != c) {
-                jsonField.put("from", f.getDeclaringClass().getName());
-            }
-
-            jsonFields.set(f.getName(), jsonField);
-        }
-        json.set("fields", jsonFields);
-
-        ObjectNode jsonMethods = JsonNodeFactory.instance.objectNode();
-        Method[] ms = Util.getAllMethods(c);
-        for (Method m : ms) {
-            ObjectNode jsonMethod = JsonNodeFactory.instance.objectNode();
-
-            ArrayNode arr = JsonNodeFactory.instance.arrayNode();
-            int mod = m.getModifiers();
-            if (Modifier.isAbstract(mod)) arr.add("abstract");
-            if (Modifier.isFinal(mod)) arr.add("final");
-            if (Modifier.isInterface(mod)) arr.add("interface");
-            if (Modifier.isNative(mod)) arr.add("native");
-            if (Modifier.isPrivate(mod)) arr.add("private");
-            if (Modifier.isProtected(mod)) arr.add("protected");
-            if (Modifier.isPublic(mod)) arr.add("public");
-            if (Modifier.isStatic(mod)) arr.add("static");
-            if (Modifier.isStrict(mod)) arr.add("strict");
-            if (Modifier.isSynchronized(mod)) arr.add("synchronized");
-            if (Modifier.isTransient(mod)) arr.add("transient");
-            if (Modifier.isVolatile(mod)) arr.add("volatile");
-            jsonMethod.set("modifiers", arr);
-
-            ArrayNode arr2 = JsonNodeFactory.instance.arrayNode();
-            for (Parameter p : m.getParameters()) {
-                arr2.add(p.getType().getName());
-            }
-            jsonMethod.set("params", arr2);
-
-            jsonMethod.put("return", m.getReturnType().getName());
-
-            if (m.getDeclaringClass() != c) {
-                jsonMethod.put("from", m.getDeclaringClass().getName());
-            }
-
-            jsonMethods.set(m.getName(), jsonMethod);
-        }
-        json.set("methods", jsonMethods);
-
-        return json;
-    }
-
-    private ObjectMapper getDefaultObjectMapper(boolean xml, boolean details, TreeNode<String, Boolean> perms) {
+    public ObjectMapper getDefaultObjectMapper(boolean xml, boolean details, TreeNode<String, Boolean> perms) {
         if (perms == null) {
             throw new NullPointerException("Permissions may not be null");
         }

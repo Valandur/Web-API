@@ -9,7 +9,7 @@ import valandur.webapi.WebAPI;
 import valandur.webapi.api.permission.IPermissionService;
 import valandur.webapi.api.serialize.JsonDetails;
 import valandur.webapi.api.util.TreeNode;
-import valandur.webapi.permission.PermissionService;
+import valandur.webapi.security.PermissionService;
 
 import java.util.ArrayList;
 

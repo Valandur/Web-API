@@ -1,21 +1,23 @@
-package valandur.webapi.servlet;
+/*package valandur.webapi.servlet;
 
-import org.eclipse.jetty.http.HttpMethod;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import valandur.webapi.api.servlet.BaseServlet;
-import valandur.webapi.api.servlet.Endpoint;
-import valandur.webapi.api.servlet.Servlet;
-import valandur.webapi.servlet.base.ServletData;
+import valandur.webapi.api.servlet.Permission;
 
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
 import java.util.Map;
 
-@Servlet(basePath = "servlet")
+@Path("servlet")
+@Api(value = "servlet", tags = { "Servlet" })
 public class ServletServlet extends BaseServlet {
 
-    @Endpoint(method = HttpMethod.GET, path = "/", perm = "list")
-    public void getServlets(ServletData data) {
-        Map<String, Class<? extends BaseServlet>> servlets = servletService.getLoadedServlets();
-
-        data.addData("ok", true, false);
-        data.addData("servlets", servlets, false);
+    @GET
+    @Permission("list")
+    @ApiOperation("List servlets")
+    public Map<String, IServletService.ServletInfo> getServlets() {
+        return servletService.getLoadedServlets();
     }
 }
+*/

@@ -1,0 +1,7 @@
+title: NucleusChangeJailRequest
+type: object
+properties:
+  location:
+    $ref: "../Location.yaml"
+  rotation:
+    $ref: "../Vector3.yaml"

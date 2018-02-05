@@ -1,8 +1,10 @@
 package valandur.webapi.servlet.handler;
 
 import com.google.common.net.HttpHeaders;
+import com.google.common.reflect.TypeToken;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
+import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.AbstractHandler;
 import org.slf4j.Logger;
@@ -101,21 +103,19 @@ public class AuthHandler extends AbstractHandler {
             permMap.put(key, new PermissionStruct(perms, rateLimit));
         }
 
-        useWhitelist = config.getNode("useWhitelist").getBoolean();
-        whitelist.clear();
-        for (ConfigurationNode node : config.getNode("whitelist").getChildrenList()) {
-            whitelist.add(node.getString());
-        }
+        try {
+            // Load whitelist
+            useWhitelist = config.getNode("useWhitelist").getBoolean();
+            whitelist = config.getNode("whitelist").getList(TypeToken.of(String.class));
 
-        useBlacklist = config.getNode("useBlacklist").getBoolean();
-        blacklist.clear();
-        for (ConfigurationNode node : config.getNode("blacklist").getChildrenList()) {
-            blacklist.add(node.getString());
-        }
+            // Load blacklist
+            useBlacklist = config.getNode("useBlacklist").getBoolean();
+            blacklist = config.getNode("blacklist").getList(TypeToken.of(String.class));
 
-        allowedProxies.clear();
-        for (ConfigurationNode node : config.getNode("allowedProxies").getChildrenList()) {
-            allowedProxies.add(node.getString());
+            // Allowed proxies
+            allowedProxies = config.getNode("allowedProxies").getList(TypeToken.of(String.class));
+        } catch (ObjectMappingException e) {
+            e.printStackTrace();
         }
 
         ACCESS_CONTROL_ORIGIN = config.getNode("accessControlOrigin").getString(ACCESS_CONTROL_ORIGIN);
@@ -162,16 +162,7 @@ public class AuthHandler extends AbstractHandler {
     public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
 
-        String addr = request.getRemoteAddr();
-        String forwardedFor = request.getHeader(HttpHeaders.X_FORWARDED_FOR);
-        if (forwardedFor != null) {
-            if (allowedProxies.contains(addr)) {
-                addr = forwardedFor;
-            } else {
-                WebAPI.getLogger().warn(addr + " sent " + HttpHeaders.X_FORWARDED_FOR +
-                        " header, but is not a proxy. Header will be ignored!");
-            }
-        }
+        String addr = getRealAddr(request);
 
         if (useWhitelist && !whitelist.contains(addr)) {
             WebAPI.getLogger().warn(addr + " is not on whitelist: " + target);
@@ -214,5 +205,34 @@ public class AuthHandler extends AbstractHandler {
         response.addHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, ACCESS_CONTROL_ORIGIN);
         response.addHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, ACCESS_CONTROL_METHODS);
         response.addHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_HEADERS, ACCESS_CONTROL_HEADERS);
+    }
+
+    private String getRealAddr(HttpServletRequest request) {
+        final String addr = request.getRemoteAddr();
+        String forwardedFor = request.getHeader(HttpHeaders.X_FORWARDED_FOR);
+        if (forwardedFor == null)
+            return addr;
+
+        // First check the actual IP that we got. If that is not a trusted proxy we're done.
+        if (!allowedProxies.contains(addr)) {
+            WebAPI.getLogger().warn(addr + " sent " + HttpHeaders.X_FORWARDED_FOR +
+                    " header, but is not a proxy. Header will be ignored!");
+            return addr;
+        }
+
+        String[] ips = forwardedFor.split(",");
+
+        // Traverse the X-Forwarded-For header backwards and take the first IP that we don't trust.
+        for (int i = ips.length - 1; i >= 0; i--) {
+            if (!allowedProxies.contains(ips[i].trim())) {
+                if (i > 0) {
+                    WebAPI.getLogger().warn(ips[i].trim() + " sent " + HttpHeaders.X_FORWARDED_FOR +
+                            " header, but is not a proxy. Header will be ignored!");
+                }
+                return ips[i];
+            }
+        }
+
+        return null;
     }
 }

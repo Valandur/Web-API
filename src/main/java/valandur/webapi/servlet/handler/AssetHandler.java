@@ -92,6 +92,7 @@ public class AssetHandler extends AbstractHandler {
                 String type = guessContentType(path);
                 cachedAssets.put(path, new Tuple<>(type, data));
 
+                response.setContentType(type);
                 response.setStatus(HttpServletResponse.SC_OK);
                 stream.write(data);
             } else {

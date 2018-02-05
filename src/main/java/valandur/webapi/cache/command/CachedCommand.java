@@ -4,6 +4,7 @@ import org.spongepowered.api.command.CommandMapping;
 import org.spongepowered.api.text.Text;
 import valandur.webapi.api.cache.CachedObject;
 import valandur.webapi.api.cache.command.ICachedCommand;
+import valandur.webapi.util.Constants;
 
 import static valandur.webapi.command.CommandSource.instance;
 
@@ -51,6 +52,6 @@ public class CachedCommand extends CachedObject<CommandMapping> implements ICach
 
     @Override
     public String getLink() {
-        return "/api/cmd/" + name;
+        return Constants.BASE_PATH + "/cmd/" + name;
     }
 }

@@ -14,6 +14,7 @@ import valandur.webapi.api.cache.CachedObject;
 import valandur.webapi.api.cache.world.ICachedWorld;
 import valandur.webapi.api.serialize.JsonDetails;
 import valandur.webapi.cache.misc.CachedCatalogType;
+import valandur.webapi.util.Constants;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -177,6 +178,6 @@ public class CachedWorld extends CachedObject<World> implements ICachedWorld {
 
     @Override
     public String getLink() {
-        return "/api/world/" + uuid;
+        return Constants.BASE_PATH + "/world/" + uuid;
     }
 }

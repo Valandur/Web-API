@@ -1,5 +1,8 @@
 package valandur.webapi.servlet;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonValue;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import io.swagger.annotations.*;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.gamemode.GameMode;
@@ -22,7 +25,9 @@ import valandur.webapi.util.Util;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import java.io.IOException;
+import java.net.URI;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
@@ -54,12 +59,19 @@ public class WorldServlet extends BaseServlet {
 
     @POST
     @Permission("create")
-    @ApiOperation(value = "Create a world", notes =
-            "Creates a new world with the specified settings. This does not yet load the world.")
-    public ICachedWorld createWorld(CreateWorldRequest req)
+    @ApiOperation(
+            value = "Create a world",
+            notes = "Creates a new world with the specified settings. This does not yet load the world.",
+            response = ICachedWorld.class
+    )
+    public Response createWorld(CreateWorldRequest req)
             throws BadRequestException {
+        if (req == null) {
+            throw new BadRequestException("Request body is required");
+        }
+
         WorldArchetype.Builder builder = WorldArchetype.builder();
-        if (req.getName().isEmpty()) {
+        if (req.getName() == null || req.getName().isEmpty()) {
             throw new BadRequestException("World requires a name");
         }
 
@@ -89,7 +101,8 @@ public class WorldServlet extends BaseServlet {
         return WebAPI.runOnMain(() -> {
             try {
                 WorldProperties props = Sponge.getServer().createWorldProperties(req.getName(), archType);
-                return cacheService.updateWorld(props);
+                ICachedWorld world = cacheService.updateWorld(props);
+                return Response.created(URI.create(world.getLink())).entity(world).build();
             } catch (IOException e) {
                 throw new InternalServerErrorException(e.getMessage());
             }
@@ -245,12 +258,14 @@ public class WorldServlet extends BaseServlet {
             return difficulty != null ? difficulty.getLive(Difficulty.class) : Optional.empty();
         }
 
+        @JsonDeserialize
         private Boolean loadOnStartup;
         @ApiModelProperty(value = "True if the world should be loaded when the server starts, false otherwise.")
         public Boolean loadOnStartup() {
             return loadOnStartup;
         }
 
+        @JsonProperty("keepSpawnLoaded")
         private Boolean keepSpawnLoaded;
         @ApiModelProperty("True if the world spawn should be kept loaded, even if no players are present, false otherwise")
         public Boolean keepSpawnLoaded() {
@@ -281,7 +296,7 @@ public class WorldServlet extends BaseServlet {
 
         private Boolean generateBonusChest;
         @ApiModelProperty("True if this world should generate bonus chests, false otherwise")
-        public boolean generateBonusChest() {
+        public Boolean generateBonusChest() {
             return generateBonusChest;
         }
     }

@@ -554,6 +554,7 @@ public class WebAPI {
 
                 if (baseUri == null) {
                     logger.error("You have disabled both HTTP and HTTPS - The Web-API will be unreachable!");
+                    baseUri = ""; // for swagger
                 }
 
                 // Collection of all handlers
@@ -589,7 +590,7 @@ public class WebAPI {
 
                 // Main servlet context
                 ServletContextHandler servletsContext = new ServletContextHandler();
-                servletsContext.setContextPath("/api/v5");
+                servletsContext.setContextPath(Constants.BASE_PATH);
 
                 // Resource config for jersey servlet
                 ResourceConfig config = new ResourceConfig();
@@ -622,9 +623,9 @@ public class WebAPI {
                 servletsContext.addServlet(jerseyServlet, "/*");
 
                 // Register swagger as bean
+                // TODO: We can't set scheme and host yet because Swagger 2.0 doesn't support that
                 BeanConfig beanConfig = new BeanConfig();
-                beanConfig.setHost(baseUri);
-                beanConfig.setBasePath("/api/v5");
+                beanConfig.setBasePath(Constants.BASE_PATH);
                 beanConfig.setResourcePackage("valandur.webapi.swagger" + swaggerPath);
                 beanConfig.setScan(true);
                 beanConfig.setPrettyPrint(true);

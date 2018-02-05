@@ -16,6 +16,10 @@ public class ErrorMapper implements ExceptionMapper<Throwable> {
         int status = Response.Status.INTERNAL_SERVER_ERROR.getStatusCode();
         if (exception instanceof WebApplicationException) {
             status = ((WebApplicationException)exception).getResponse().getStatus();
+        } else {
+            // Print the stack trace as this is an "unexpected" exception,
+            // and we want to make sure we can track it down
+            exception.printStackTrace();
         }
 
         return Response

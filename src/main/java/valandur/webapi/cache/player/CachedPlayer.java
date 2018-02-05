@@ -13,6 +13,7 @@ import valandur.webapi.api.cache.player.ICachedPlayer;
 import valandur.webapi.api.cache.world.CachedLocation;
 import valandur.webapi.api.serialize.JsonDetails;
 import valandur.webapi.cache.misc.CachedInventory;
+import valandur.webapi.util.Constants;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -163,6 +164,6 @@ public class CachedPlayer extends CachedObject<Player> implements ICachedPlayer 
 
     @Override
     public String getLink() {
-        return "/api/player/" + uuid;
+        return Constants.BASE_PATH + "/player/" + uuid;
     }
 }

@@ -9,10 +9,10 @@ import io.github.nucleuspowered.nucleus.api.service.NucleusKitService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.spongepowered.api.world.Location;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 import valandur.webapi.api.WebAPIAPI;
 import valandur.webapi.api.servlet.BaseServlet;
 import valandur.webapi.api.servlet.Permission;
+import valandur.webapi.handler.NotImplementedException;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -117,7 +117,8 @@ public class NucleusServlet extends BaseServlet {
     @Path("/jail/{name}")
     @Permission({ "jail", "change" })
     @ApiOperation(value = "Change a jail", notes = "Change an existing jail.")
-    public CachedNamedLocation changeJail() {
+    public CachedNamedLocation changeJail()
+            throws NotImplementedException {
         throw new NotImplementedException();
     }
 

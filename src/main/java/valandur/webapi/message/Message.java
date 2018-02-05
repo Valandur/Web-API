@@ -9,6 +9,7 @@ import valandur.webapi.api.cache.CachedObject;
 import valandur.webapi.api.message.IMessage;
 import valandur.webapi.api.message.IMessageOption;
 import valandur.webapi.api.serialize.JsonDetails;
+import valandur.webapi.util.Constants;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -88,7 +89,7 @@ public class Message extends CachedObject<IMessage> implements IMessage {
 
     @Override
     public String getLink() {
-        return "/api/message/" + uuid;
+        return Constants.BASE_PATH + "/message/" + uuid;
     }
 
     @Override

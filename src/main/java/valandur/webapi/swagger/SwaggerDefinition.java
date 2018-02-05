@@ -16,7 +16,21 @@ import java.util.stream.Collectors;
         info = @Info(
                 title = Constants.NAME,
                 version = Constants.VERSION,
-                description = "Access Sponge powered Minecraft servers through a WebAPI\n\n# Introduction\nThis is the documentation of the various API routes offered by the WebAPI plugin.\n\nThis documentation assumes that you are familiar with the basic concepts of Web API's, such as `GET`, `PUT`, `POST` and `DELETE` methods,\nrequest `HEADERS` and `RESPONSE CODES` and `JSON` data.\n\nBy default this documentation can be found at http:/localhost:8080 (while your minecraft server is running) and the various routes start with http:/localhost:8080/api/...\n\nAs a quick test try reaching the route http:/localhost:8080/api/info (remember that you can only access \\\"localhost\\\" routes on the server on which you are running minecraft).\nThis route should show you basic information about your server, like the motd and player count.\n\n# Additional data\nCertain endpoints (such as `/player`, `/entity` and `/tile-entity` have additional properties which are not documented here, because the data depends on the concrete\nobject type (eg. `Sheep` have a wool color, others do not) and on the other plugins/mods that are running on your server which might add additional data.\n\nYou can also find more information in the github docs (https:/github.com/Valandur/Web-API/tree/master/docs/DATA.md)",
+                description = "Access Sponge powered Minecraft servers through a WebAPI\n\n# Introduction\n" +
+                        "This is the documentation of the various API routes offered by the WebAPI plugin.\n\n" +
+                        "This documentation assumes that you are familiar with the basic concepts of Web API's, " +
+                        "such as `GET`, `PUT`, `POST` and `DELETE` methods,\nrequest `HEADERS` and `RESPONSE CODES` " +
+                        "and `JSON` data.\n\nBy default this documentation can be found at http:/localhost:8080 " +
+                        "(while your minecraft server is running) and the various routes start with " +
+                        "http:/localhost:8080/api/v5...\n\nAs a quick test try reaching the route " +
+                        "http:/localhost:8080/api/v5/info (remember that you can only access \\\"localhost\\\" routes " +
+                        "on the server on which you are running minecraft).\nThis route should show you basic " +
+                        "information about your server, like the motd and player count.\n\n# Additional data\n" +
+                        "Certain endpoints (such as `/player`, `/entity` and `/tile-entity` have additional " +
+                        "properties which are not documented here, because the data depends on the concrete\n" +
+                        "object type (eg. `Sheep` have a wool color, others do not) and on the other plugins/mods " +
+                        "that are running on your server which might add additional data.\n\nYou can also find more " +
+                        "information in the github docs (https:/github.com/Valandur/Web-API/tree/master/docs/DATA.md)",
                 contact = @Contact(
                         name = "Valandur",
                         email = "inithilian@gmail.com",
@@ -29,10 +43,18 @@ import java.util.stream.Collectors;
         ),
         consumes = { MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML },
         produces = { MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML },
-        schemes = { io.swagger.annotations.SwaggerDefinition.Scheme.HTTP, io.swagger.annotations.SwaggerDefinition.Scheme.HTTPS },
         securityDefinition = @SecurityDefinition(apiKeyAuthDefinitions = {
-                @ApiKeyAuthDefinition(key = "ApiKeyHeader", name = "X-WebAPI-Key", in = ApiKeyAuthDefinition.ApiKeyLocation.HEADER),
-                @ApiKeyAuthDefinition(key = "ApiKeyQuery", name = "key", in = ApiKeyAuthDefinition.ApiKeyLocation.QUERY)
+                @ApiKeyAuthDefinition(
+                        key = "ApiKeyHeader",
+                        name = "X-WebAPI-Key",
+                        description = "Authorize using an HTTP header. This can also be done using the " +
+                                "`Authorization` header with a `Bearer` token",
+                        in = ApiKeyAuthDefinition.ApiKeyLocation.HEADER),
+                @ApiKeyAuthDefinition(
+                        key = "ApiKeyQuery",
+                        name = "key",
+                        description = "Authorize using a query value.",
+                        in = ApiKeyAuthDefinition.ApiKeyLocation.QUERY),
         })
 )
 public class SwaggerDefinition implements ReaderListener {

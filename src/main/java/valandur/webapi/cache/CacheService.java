@@ -201,6 +201,7 @@ public class CacheService implements ICacheService {
             worlds.clear();
 
             // The worlds that are loaded on server start are overwritten by the world load event later
+            // TODO: Sponge has a bug that makes the "getAllWorldProperties" method cache the world properties
             Collection<WorldProperties> unloadedWorlds = Sponge.getServer().getAllWorldProperties();
             for (WorldProperties world : unloadedWorlds) {
                 updateWorld(world);

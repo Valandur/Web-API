@@ -16,6 +16,7 @@ import valandur.webapi.api.block.IBlockService;
 import valandur.webapi.api.cache.CachedObject;
 import valandur.webapi.api.cache.world.ICachedWorld;
 import valandur.webapi.api.serialize.JsonDetails;
+import valandur.webapi.util.Constants;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -195,7 +196,7 @@ public abstract class BlockOperation extends CachedObject<IBlockOperation> imple
 
     @Override
     public String getLink() {
-        return "/api/block/op/" + uuid;
+        return Constants.BASE_PATH + "/block/op/" + uuid;
     }
 
     @Override

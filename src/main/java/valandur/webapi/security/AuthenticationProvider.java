@@ -201,6 +201,10 @@ public class AuthenticationProvider implements ContainerRequestFilter {
         if (key == null || key.isEmpty()) {
             key = context.getUriInfo().getQueryParameters().getFirst("key");
         }
+        if (key == null || key.isEmpty()) {
+            key = context.getHeaderString(HttpHeaders.AUTHORIZATION);
+            if (key != null) key = key.substring(key.indexOf(" ") + 1);
+        }
 
         PermissionStruct permStruct = null;
         if (key != null) {

@@ -12,6 +12,7 @@ import valandur.webapi.api.cache.world.CachedLocation;
 import valandur.webapi.api.serialize.JsonDetails;
 import valandur.webapi.cache.misc.CachedCatalogType;
 import valandur.webapi.cache.misc.CachedInventory;
+import valandur.webapi.util.Constants;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -90,6 +91,6 @@ public class CachedEntity extends CachedObject<Entity> implements ICachedEntity 
 
     @Override
     public String getLink() {
-        return "/api/entity/" + uuid;
+        return Constants.BASE_PATH + "/entity/" + uuid;
     }
 }

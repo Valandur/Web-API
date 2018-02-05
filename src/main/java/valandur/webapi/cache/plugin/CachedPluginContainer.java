@@ -6,6 +6,7 @@ import org.spongepowered.api.Sponge;
 import org.spongepowered.api.plugin.PluginContainer;
 import valandur.webapi.api.cache.CachedObject;
 import valandur.webapi.api.cache.plugin.ICachedPluginContainer;
+import valandur.webapi.util.Constants;
 
 import java.util.*;
 
@@ -79,6 +80,6 @@ public class CachedPluginContainer extends CachedObject<PluginContainer> impleme
 
     @Override
     public String getLink() {
-        return "/api/plugin/" + id;
+        return Constants.BASE_PATH + "/plugin/" + id;
     }
 }

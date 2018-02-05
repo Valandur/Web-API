@@ -18,7 +18,7 @@ import java.util.Optional;
 import java.util.function.Predicate;
 
 @Path("tile-entity")
-@Api(value = "tile-entity", tags = { "Tile Entity" })
+@Api(tags = { "Tile Entity" }, value = "List all tile entities and get detailed information about them.")
 @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 @Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 public class TileEntityServlet extends BaseServlet {

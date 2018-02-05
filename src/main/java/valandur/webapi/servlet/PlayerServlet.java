@@ -27,7 +27,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Path("player")
-@Api(value = "player", tags = { "Player" })
+@Api(tags = { "Player" }, value = "List all players and get detailed information about them.")
 @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 @Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 public class PlayerServlet extends BaseServlet {

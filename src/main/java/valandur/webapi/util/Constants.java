@@ -1,5 +1,9 @@
 package valandur.webapi.util;
 
+import io.swagger.annotations.*;
+
+import javax.ws.rs.core.MediaType;
+
 public class Constants {
     public static final String ID = "webapi";
     public static final String NAME = "Web-API";

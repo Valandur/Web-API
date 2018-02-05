@@ -20,7 +20,7 @@ import javax.ws.rs.core.MediaType;
 import java.util.*;
 
 @Path("block")
-@Api(value = "block", tags = { "Block" })
+@Api(tags = { "Block" }, value = "Get information about blocks and manipulate them.")
 @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 @Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 public class BlockServlet extends BaseServlet {

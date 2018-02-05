@@ -13,7 +13,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
 @Path("recipe")
-@Api(value = "recipe", tags = { "Recipe" })
+@Api(tags = { "Recipe" }, value = "List all recipes available on the server")
 @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 @Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 public class RecipeServlet extends BaseServlet {

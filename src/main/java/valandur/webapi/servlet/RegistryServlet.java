@@ -19,7 +19,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 @Path("registry")
-@Api(value = "registry", tags = { "Registry" })
+@Api(tags = { "Registry" }, value = "Query Sponge registry values, such as DimensionTypes and EntityTypes.")
 @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 @Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 public class RegistryServlet extends BaseServlet {

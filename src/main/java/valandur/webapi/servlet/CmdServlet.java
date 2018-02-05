@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Path("cmd")
-@Api(value = "cmd", tags = { "Command" })
+@Api(tags = { "Command" }, value = "List all commands on the server and execute them.")
 @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 @Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 public class CmdServlet extends BaseServlet {

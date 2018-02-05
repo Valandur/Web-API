@@ -27,7 +27,7 @@ import java.util.Map;
 import java.util.Optional;
 
 @Path("map")
-@Api(value = "map", tags = { "Map" })
+@Api(tags = { "Map" }, value = "Get maps of the biomes for each world on the server")
 @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 @Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 public class MapServlet extends BaseServlet {

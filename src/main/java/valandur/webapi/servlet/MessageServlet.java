@@ -16,7 +16,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Path("message")
-@Api(value = "message", tags = { "Message" })
+@Api(tags = { "Message" }, value = "Send (interactive) messages to clients.")
 @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 @Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 public class MessageServlet extends BaseServlet {

@@ -10,6 +10,7 @@ import org.spongepowered.api.Sponge;
 import org.spongepowered.api.resourcepack.ResourcePack;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.server.IServerStat;
+import valandur.webapi.api.servlet.BaseServlet;
 import valandur.webapi.api.servlet.Permission;
 import valandur.webapi.cache.plugin.CachedPluginContainer;
 import valandur.webapi.server.ServerProperty;
@@ -23,10 +24,10 @@ import java.util.Map;
 import java.util.Optional;
 
 @Path("info")
-@Api(value = "info", tags = { "Info" })
+@Api(tags = { "Info" }, value = "Get information and stats about the Minecraft server")
 @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 @Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-public class InfoServlet {
+public class InfoServlet extends BaseServlet {
 
     @GET
     @Permission("info")

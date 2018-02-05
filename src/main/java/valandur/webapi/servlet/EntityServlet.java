@@ -33,7 +33,7 @@ import java.util.UUID;
 import java.util.function.Predicate;
 
 @Path("entity")
-@Api(value = "entity", tags = { "Entity" })
+@Api(tags = { "Entity" }, value = "List all entities and get detailed information about them.")
 @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 @Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 public class EntityServlet extends BaseServlet {

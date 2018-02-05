@@ -20,7 +20,7 @@ import java.security.AuthProvider;
 import java.util.Optional;
 
 @Path("user")
-@Api(value = "user", tags = { "User" })
+@Api(tags = { "User" }, value = "Authenticate and get user information.")
 @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 @Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 public class UserServlet extends BaseServlet {

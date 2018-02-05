@@ -25,7 +25,7 @@ import java.util.*;
 import java.util.concurrent.ExecutionException;
 
 @Path("world")
-@Api(value = "world", tags = { "World" })
+@Api(tags = { "World" }, value = "List all worlds and get detailed information about them.")
 @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 @Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 public class WorldServlet extends BaseServlet {
@@ -204,68 +204,6 @@ public class WorldServlet extends BaseServlet {
         }
 
         return cacheService.executeMethod(world, mName, params.get().getFirst(), params.get().getSecond());
-    }
-
-    @GET
-    @ExplicitDetails
-    @Path("/{world}/chunk")
-    @Permission({ "chunk", "list" })
-    @ApiOperation(value = "List chunks", tags = { "Chunk" }, notes =
-            "Gets a list of all the loaded chunks for the specified world.")
-    public List<CachedChunk> getChunks(
-            @PathParam("world") @ApiParam("The uuid of the for which to get all chunks") ICachedWorld world) {
-        return WebAPI.runOnMain(() -> {
-            Optional<World> optWorld = world.getLive();
-            if (!optWorld.isPresent())
-                throw new InternalServerErrorException("Could not get live world");
-
-            World live = optWorld.get();
-            List<CachedChunk> chunks = new ArrayList<>();
-
-            Iterable<Chunk> iterable = live.getLoadedChunks();
-            iterable.forEach(c -> chunks.add(new CachedChunk(c)));
-
-            return chunks;
-        });
-    }
-
-    @GET
-    @Path("/{world}/chunk/{x}/{z}")
-    @Permission({ "chunk", "one "})
-    @ApiOperation(value = "Get a chunk", tags = { "Chunk" }, notes = "Get detailed information about a chunk")
-    public CachedChunk getChunkAt(
-            @PathParam("world") @ApiParam("The uuid of the world in which to get the chunk") ICachedWorld world,
-            @PathParam("x") @ApiParam("The x-coordinate of the chunk (in chunk coordinates)") int x,
-            @PathParam("z") @ApiParam("The z-coordinate of the chunk (in chunk coordinates)") int z) {
-        return WebAPI.runOnMain(() -> {
-            Optional<World> optLive = world.getLive();
-            if (!optLive.isPresent())
-                throw new InternalServerErrorException("Could not get live world");
-
-            World live = optLive.get();
-            Optional<Chunk> chunk = live.loadChunk(x, 0, z, false);
-            return chunk.map(CachedChunk::new).orElse(null);
-        });
-    }
-
-    @POST
-    @Path("/{world}/chunk/{x}/{z}")
-    @Permission({ "chunk", "create" })
-    @ApiOperation(value = "Load & Generate a chunk", tags = { "Chunk" }, notes =
-            "Forces a chunk to be loaded into memory, and created if it does not exist.")
-    public CachedChunk createChunkAt(
-            @PathParam("world") @ApiParam("The uuid of the world in which to create the chunk") ICachedWorld world,
-            @PathParam("x") @ApiParam("The x-coordinate of the chunk (in chunk coordinates)") int x,
-            @PathParam("z") @ApiParam("The z-coordinate of the chunk (in chunk coordinates)") int z) {
-        return WebAPI.runOnMain(() -> {
-            Optional<World> optLive = world.getLive();
-            if (!optLive.isPresent())
-                throw new InternalServerErrorException("Could not get live world");
-
-            World live = optLive.get();
-            Optional<Chunk> chunk = live.loadChunk(x, 0, z, true);
-            return chunk.map(CachedChunk::new).orElse(null);
-        });
     }
 
 

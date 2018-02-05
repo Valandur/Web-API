@@ -1,4 +1,4 @@
-package valandur.webapi.util;
+package valandur.webapi.swagger;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.jersey.SwaggerJersey2Jaxrs;

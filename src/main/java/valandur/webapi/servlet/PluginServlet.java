@@ -22,7 +22,7 @@ import java.nio.file.Paths;
 import java.util.*;
 
 @Path("plugin")
-@Api(value = "plugin", tags = { "Plugin" })
+@Api(tags = { "Plugin" }, value = "List all plugins and get detailed information about them.")
 @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 @Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 public class PluginServlet extends BaseServlet {

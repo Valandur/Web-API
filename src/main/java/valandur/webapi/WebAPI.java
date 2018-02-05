@@ -6,7 +6,6 @@ import com.google.common.reflect.TypeToken;
 import com.google.inject.Inject;
 import io.sentry.Sentry;
 import io.sentry.context.Context;
-import io.swagger.annotations.*;
 import io.swagger.jaxrs.config.BeanConfig;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
@@ -64,6 +63,8 @@ import valandur.webapi.api.message.IMessageService;
 import valandur.webapi.api.permission.IPermissionService;
 import valandur.webapi.api.serialize.ISerializeService;
 import valandur.webapi.api.server.IServerService;
+import valandur.webapi.api.servlet.BaseServlet;
+import valandur.webapi.api.servlet.IServletService;
 import valandur.webapi.block.BlockOperation;
 import valandur.webapi.block.BlockOperationStatusChangeEvent;
 import valandur.webapi.block.BlockService;
@@ -76,13 +77,21 @@ import valandur.webapi.handler.AssetHandler;
 import valandur.webapi.hook.WebHook;
 import valandur.webapi.hook.WebHookSerializer;
 import valandur.webapi.hook.WebHookService;
+import valandur.webapi.integration.huskycrates.HuskyCratesServlet;
+import valandur.webapi.integration.mmcrestrict.MMCRestrictServlet;
+import valandur.webapi.integration.mmctickets.MMCTicketsServlet;
+import valandur.webapi.integration.nucleus.NucleusServlet;
+import valandur.webapi.integration.redprotect.RedProtectServlet;
+import valandur.webapi.integration.universalmarket.UniversalMarketServlet;
+import valandur.webapi.integration.webbooks.WebBookServlet;
 import valandur.webapi.message.MessageService;
 import valandur.webapi.security.AuthenticationProvider;
 import valandur.webapi.security.PermissionService;
 import valandur.webapi.serialize.SerializationFeature;
 import valandur.webapi.serialize.SerializeService;
 import valandur.webapi.server.ServerService;
-import valandur.webapi.servlet.CmdServlet;
+import valandur.webapi.servlet.*;
+import valandur.webapi.servlet.base.ServletService;
 import valandur.webapi.user.UserPermissionStruct;
 import valandur.webapi.user.UserPermissionStructConfigSerializer;
 import valandur.webapi.user.Users;
@@ -95,7 +104,6 @@ import javax.net.ssl.HttpsURLConnection;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.MediaType;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -124,47 +132,6 @@ import java.util.stream.Collectors;
         description = Constants.DESCRIPTION,
         authors = {
                 "Valandur"
-        }
-)
-@SwaggerDefinition(
-        info = @Info(
-                title = Constants.NAME,
-                version = Constants.VERSION,
-                description = "Access Sponge powered Minecraft servers through a WebAPI\n\n# Introduction\nThis is the documentation of the various API routes offered by the WebAPI plugin.\n\nThis documentation assumes that you are familiar with the basic concepts of Web API's, such as `GET`, `PUT`, `POST` and `DELETE` methods,\nrequest `HEADERS` and `RESPONSE CODES` and `JSON` data.\n\nBy default this documentation can be found at http:/localhost:8080 (while your minecraft server is running) and the various routes start with http:/localhost:8080/api/...\n\nAs a quick test try reaching the route http:/localhost:8080/api/info (remember that you can only access \\\"localhost\\\" routes on the server on which you are running minecraft).\nThis route should show you basic information about your server, like the motd and player count.\n\n# Additional data\nCertain endpoints (such as `/player`, `/entity` and `/tile-entity` have additional properties which are not documented here, because the data depends on the concrete\nobject type (eg. `Sheep` have a wool color, others do not) and on the other plugins/mods that are running on your server which might add additional data.\n\nYou can also find more information in the github docs (https:/github.com/Valandur/Web-API/tree/master/docs/DATA.md)",
-                contact = @Contact(
-                        name = "Valandur",
-                        email = "inithilian@gmail.com",
-                        url = "https://github.com/Valandur"
-                ),
-                license = @License(
-                        name = "MIT",
-                        url = "https://opensource.org/licenses/MIT"
-                )
-        ),
-        consumes = { MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML },
-        produces = { MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML },
-        schemes = { SwaggerDefinition.Scheme.HTTP, SwaggerDefinition.Scheme.HTTPS },
-        securityDefinition = @SecurityDefinition(apiKeyAuthDefinitions = {
-                @ApiKeyAuthDefinition(key = "ApiKeyHeader", name = "X-WebAPI-Key", in = ApiKeyAuthDefinition.ApiKeyLocation.HEADER),
-                @ApiKeyAuthDefinition(key = "ApiKeyQuery", name = "key", in = ApiKeyAuthDefinition.ApiKeyLocation.QUERY)
-        }),
-        tags = {
-                @Tag(name = "Block", description = "Get information about blocks and manipulate them."),
-                @Tag(name = "Chunk", description = "Gets information about chunks, and allow creating new chunks."),
-                @Tag(name = "Command", description = "List all commands on the server and execute them."),
-                @Tag(name = "Entity", description = "List all entities and get detailed information about them."),
-                @Tag(name = "History", description = "Provides access to the command and chat history."),
-                @Tag(name = "Info", description = "Get information and stats about the Minecraft server"),
-                @Tag(name = "Map", description = "Get maps of the biomes for each world on the server"),
-                @Tag(name = "Message", description = "Send (interactive) messages to clients."),
-                @Tag(name = "Player", description = "List all players and get detailed information about them."),
-                @Tag(name = "Plugin", description = "List all plugins and get detailed information about them."),
-                @Tag(name = "Recipe", description = "List all recipes available on the server"),
-                @Tag(name = "Registry", description = "Query Sponge registry values, such as DimensionTypes and EntityTypes."),
-                @Tag(name = "Servlet", description = "Get information about the runnings servlets on the server."),
-                @Tag(name = "Tile Entity", description = "List all tile entities and get detailed information about them."),
-                @Tag(name = "User", description = "Authenticate and get user information."),
-                @Tag(name = "World", description = "List all worlds and get detailed information about them."),
         }
 )
 public class WebAPI {
@@ -258,6 +225,11 @@ public class WebAPI {
         return WebAPI.getInstance().serverService;
     }
 
+    private ServletService servletService;
+    public static ServletService getServletService() {
+        return WebAPI.getInstance().servletService;
+    }
+
     private WebHookService webHookService;
     public static WebHookService getWebHookService() {
         return WebAPI.getInstance().webHookService;
@@ -336,6 +308,7 @@ public class WebAPI {
         this.messageService = new MessageService();
         this.permissionService = new PermissionService();
         this.serverService = new ServerService();
+        this.servletService = new ServletService();
         this.webHookService = new WebHookService();
 
 
@@ -346,6 +319,7 @@ public class WebAPI {
         Sponge.getServiceManager().setProvider(this, IMessageService.class, messageService);
         Sponge.getServiceManager().setProvider(this, IPermissionService.class, permissionService);
         Sponge.getServiceManager().setProvider(this, IServerService.class, serverService);
+        Sponge.getServiceManager().setProvider(this, IServletService.class, servletService);
         Sponge.getServiceManager().setProvider(this, IWebHookService.class, webHookService);
 
         Timings.STARTUP.stopTiming();
@@ -362,8 +336,26 @@ public class WebAPI {
         // Main init function, that is also called when reloading the plugin
         init(null);
 
+        logger.info("Registering servlets...");
+        servletService.registerServlet(BlockServlet.class);
+        servletService.registerServlet(CmdServlet.class);
+        servletService.registerServlet(EntityServlet.class);
+        servletService.registerServlet(HistoryServlet.class);
+        servletService.registerServlet(InfoServlet.class);
+        servletService.registerServlet(MapServlet.class);
+        servletService.registerServlet(MessageServlet.class);
+        servletService.registerServlet(PlayerServlet.class);
+        servletService.registerServlet(PluginServlet.class);
+        servletService.registerServlet(RecipeServlet.class);
+        servletService.registerServlet(RegistryServlet.class);
+        //servletService.registerServlet(ServletServlet.class);
+        servletService.registerServlet(TileEntityServlet.class);
+        servletService.registerServlet(UserServlet.class);
+        servletService.registerServlet(WorldServlet.class);
+
+
         // Other plugin integrations
-        /*try {
+        try {
             Class.forName("com.codehusky.huskycrates.HuskyCrates");
             logger.info("  Integrating with HuskyCrates...");
             servletService.registerServlet(HuskyCratesServlet.class);
@@ -403,7 +395,7 @@ public class WebAPI {
             Class.forName("de.dosmike.sponge.WebBooks.WebBooks");
             logger.info("  Integrating with WebBooks...");
             servletService.registerServlet(WebBookServlet.class);
-        } catch (ClassNotFoundException ignored) { }*/
+        } catch (ClassNotFoundException ignored) { }
 
         logger.info(Constants.NAME + " ready");
 
@@ -559,7 +551,7 @@ public class WebAPI {
                 }
 
                 if (baseUri == null) {
-                    logger.error("You have disabled both HTTP and HTTPS - The WebAPI will be unreachable!");
+                    logger.error("You have disabled both HTTP and HTTPS - The Web-API will be unreachable!");
                 }
 
                 // Collection of all handlers
@@ -595,14 +587,28 @@ public class WebAPI {
 
                 // Main servlet context
                 ServletContextHandler servletsContext = new ServletContextHandler();
-                servletsContext.setContextPath("/api");
+                servletsContext.setContextPath("/api/v5");
 
                 // Resource config for jersey servlet
                 ResourceConfig config = new ResourceConfig();
-                config.packages("io.swagger.jaxrs.listing", "valandur.webapi"
+                config.packages(
+                        "io.swagger.jaxrs.listing",
+                        "valandur.webapi.handler",
+                        "valandur.webapi.security",
+                        "valandur.webapi.serialize",
+                        "valandur.webapi.user"
                         //"io.swagger.v3.jaxrs2.integration.resources"                      // This if for Swagger 3.0
                 );
                 config.property("jersey.config.server.wadl.disableWadl", true);
+
+                // Register all servlets. We use this instead of package scanning because we don't want the
+                // integrated servlets to load unless their plugin is present. Also this gives us more control/info
+                // over which servlets/endpoints are loaded.
+                StringBuilder swaggerPath = new StringBuilder();
+                for (Class<? extends BaseServlet> servletClass : servletService.getRegisteredServlets().values()) {
+                    config.register(servletClass);
+                    swaggerPath.append(",").append(servletClass.getPackage().getName());
+                }
 
                 // Register serializer
                 config.register(SerializationFeature.class);
@@ -610,15 +616,14 @@ public class WebAPI {
                 // Jersey servlet
                 ServletHolder jerseyServlet = new ServletHolder(new ServletContainer(config));
                 jerseyServlet.setInitOrder(1);
-                // jerseyServlet.setInitParameter("openApi.configuration.location",
-                // "assets/webapi/swagger/config.json");                                    // This is for Swagger 3.0
+                // jerseyServlet.setInitParameter("openApi.configuration.location", assets/webapi/swagger/config.json");                                    // This is for Swagger 3.0
                 servletsContext.addServlet(jerseyServlet, "/*");
 
                 // Register swagger as bean
                 BeanConfig beanConfig = new BeanConfig();
                 beanConfig.setHost(baseUri);
-                beanConfig.setBasePath("/api");
-                beanConfig.setResourcePackage("valandur.webapi");
+                beanConfig.setBasePath("/api/v5");
+                beanConfig.setResourcePackage("valandur.webapi.swagger" + swaggerPath);
                 beanConfig.setScan(true);
                 beanConfig.setPrettyPrint(true);
                 servletsContext.addBean(beanConfig);

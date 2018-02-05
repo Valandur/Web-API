@@ -210,7 +210,7 @@ public class AuthenticationProvider implements ContainerRequestFilter {
             }
             // If the user provided a key and it's invalid, then throw an exception
             if (permStruct == null) {
-                throw new NotAuthorizedException("Invalid api key");
+                throw new ForbiddenException("Invalid api key");
             } else {
                 // Makes sure that we have the correct key in case this PermStruct
                 // is from a logged-in user, who usually only has a username and password.

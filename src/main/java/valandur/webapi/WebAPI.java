@@ -116,6 +116,7 @@ import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.CodeSource;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -338,6 +339,7 @@ public class WebAPI {
 
         logger.info("Registering servlets...");
         servletService.registerServlet(BlockServlet.class);
+        servletService.registerServlet(ChunkServlet.class);
         servletService.registerServlet(CmdServlet.class);
         servletService.registerServlet(EntityServlet.class);
         servletService.registerServlet(HistoryServlet.class);
@@ -348,7 +350,7 @@ public class WebAPI {
         servletService.registerServlet(PluginServlet.class);
         servletService.registerServlet(RecipeServlet.class);
         servletService.registerServlet(RegistryServlet.class);
-        //servletService.registerServlet(ServletServlet.class);
+        servletService.registerServlet(ServletServlet.class);
         servletService.registerServlet(TileEntityServlet.class);
         servletService.registerServlet(UserServlet.class);
         servletService.registerServlet(WorldServlet.class);
@@ -781,14 +783,14 @@ public class WebAPI {
             map.put("HTTPS", serverPortHttps >= 0 ? 1 : 0);
             return map;
         }));
-        /*metrics.addCustomChart(new Metrics.SimpleBarChart("servlets", () -> {
+        metrics.addCustomChart(new Metrics.SimpleBarChart("servlets", () -> {
             Map<String, Integer> map = new HashMap<>();
-            Collection<IServletService.ServletInfo> servlets = servletService.getLoadedServlets().values();
-            for (IServletService.ServletInfo servlet : servlets) {
-                map.put(servlet.getClazz().getName(), 1);
+            Collection<Class<? extends BaseServlet>> servlets = servletService.getRegisteredServlets().values();
+            for (Class<? extends BaseServlet> servlet : servlets) {
+                map.put(servlet.getName(), 1);
             }
             return map;
-        }));*/
+        }));
 
         webHookService.notifyHooks(WebHookService.WebHookType.SERVER_START, event);
     }

@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Path("mmc-restrict")
-@Api(value = "mmc-restrict", tags = { "MMC Restrict "})
+@Api(tags = { "MMC Restrict "}, value = "Manage restricted items on your server.")
 @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 @Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 public class MMCRestrictServlet extends BaseServlet {

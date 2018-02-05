@@ -15,12 +15,11 @@ import valandur.webapi.api.servlet.Permission;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.util.Collection;
-import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Path("universal-market")
-@Api(value = "universal-market", tags = { "Universal Market" })
+@Api(tags = { "Universal Market" }, value = "View the current items on the market")
 @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 @Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 public class UniversalMarketServlet extends BaseServlet {

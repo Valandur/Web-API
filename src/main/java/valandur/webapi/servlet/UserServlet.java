@@ -16,7 +16,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import java.security.AuthProvider;
 import java.util.Optional;
 
 @Path("user")

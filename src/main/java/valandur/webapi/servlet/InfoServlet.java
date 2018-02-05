@@ -21,7 +21,6 @@ import javax.ws.rs.core.MediaType;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 @Path("info")
 @Api(tags = { "Info" }, value = "Get information and stats about the Minecraft server")

@@ -18,7 +18,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Path("red-protect")
-@Api(value = "red-protect", tags = { "Red Protect"})
+@Api(tags = { "Red Protect"}, value = "Create, edit and delete protected regions on your server")
 @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 @Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 public class RedProtectServlet extends BaseServlet {

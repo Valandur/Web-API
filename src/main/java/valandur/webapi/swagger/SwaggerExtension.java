@@ -12,7 +12,6 @@ import io.swagger.models.properties.StringProperty;
 import valandur.webapi.api.servlet.Permission;
 
 import javax.ws.rs.BadRequestException;
-import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.Path;
 import java.lang.annotation.Annotation;

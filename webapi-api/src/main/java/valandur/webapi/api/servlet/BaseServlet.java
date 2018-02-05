@@ -19,6 +19,7 @@ public abstract class BaseServlet extends HttpServlet {
     protected IMessageService messageService;
     protected IPermissionService permissionService;
     protected IServerService serverService;
+    protected IServletService servletService;
     protected IWebHookService webHookService;
 
 
@@ -29,6 +30,7 @@ public abstract class BaseServlet extends HttpServlet {
         messageService = WebAPIAPI.getMessageService().orElse(null);
         permissionService = WebAPIAPI.getPermissionService().orElse(null);
         serverService = WebAPIAPI.getServerService().orElse(null);
+        servletService = WebAPIAPI.getServletService().orElse(null);
         webHookService = WebAPIAPI.getWebHookService().orElse(null);
     }
 }

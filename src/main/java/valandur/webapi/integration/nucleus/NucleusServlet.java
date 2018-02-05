@@ -23,7 +23,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Path("nucleus")
-@Api(value = "nucleus", tags = { "Nucleus" })
+@Api(tags = { "Nucleus" }, value = "Manage your kits and jails")
 @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 @Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 public class NucleusServlet extends BaseServlet {

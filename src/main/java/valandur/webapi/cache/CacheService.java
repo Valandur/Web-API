@@ -53,7 +53,6 @@ import valandur.webapi.serialize.SerializeService;
 import valandur.webapi.util.Timings;
 import valandur.webapi.util.Util;
 
-import javax.ws.rs.BadRequestException;
 import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.NotFoundException;
 import java.lang.reflect.Method;

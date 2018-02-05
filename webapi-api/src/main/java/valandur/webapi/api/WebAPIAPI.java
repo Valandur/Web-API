@@ -14,6 +14,7 @@ import valandur.webapi.api.message.IMessageService;
 import valandur.webapi.api.permission.IPermissionService;
 import valandur.webapi.api.serialize.ISerializeService;
 import valandur.webapi.api.server.IServerService;
+import valandur.webapi.api.servlet.IServletService;
 import valandur.webapi.api.util.Constants;
 
 import java.util.Optional;
@@ -90,6 +91,14 @@ public class WebAPIAPI {
      */
     public static Optional<IServerService> getServerService() {
         return Sponge.getServiceManager().provide(IServerService.class);
+    }
+
+    /**
+     * Gets the servlet service from the Web-API. Used to load servlets which contain the endpoints of the Web-API.
+     * @return An optional containing the servlet service if it was loaded.
+     */
+    public static Optional<IServletService> getServletService() {
+        return Sponge.getServiceManager().provide(IServletService.class);
     }
 
     /**

@@ -4,7 +4,6 @@ package valandur.webapi.security;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import valandur.webapi.api.servlet.Permission;
 import valandur.webapi.api.util.TreeNode;
 
 import java.security.Principal;

@@ -12,7 +12,6 @@ import valandur.webapi.api.message.IMessageService;
 import valandur.webapi.hook.WebHookService;
 
 import javax.ws.rs.InternalServerErrorException;
-import javax.ws.rs.NotFoundException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;

@@ -1,6 +1,8 @@
 package valandur.webapi.servlet;
 
-import io.swagger.annotations.*;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import org.spongepowered.api.block.tileentity.TileEntity;
 import org.spongepowered.api.util.Tuple;
 import valandur.webapi.api.cache.tileentity.ICachedTileEntity;

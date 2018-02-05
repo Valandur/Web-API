@@ -23,7 +23,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Path("web-books")
-@Api(value = "web-books", tags = { "Web Books" })
+@Api(tags = { "Web Books" }, value =
+        "Create, edit and delete web books that have unique links which work on your server in-game.")
 @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 @Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 public class WebBookServlet extends BaseServlet {

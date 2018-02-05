@@ -2,7 +2,6 @@ package valandur.webapi.servlet;
 
 import com.flowpowered.math.vector.Vector3d;
 import io.swagger.annotations.*;
-import io.swagger.models.auth.In;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.EntityType;

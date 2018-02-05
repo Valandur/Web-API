@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Path("mmc-tickets")
-@Api(value = "mmc-tickets", tags = { "MMC Tickets" })
+@Api(tags = { "MMC Tickets" }, value = "View, assign and reply-to tickets on the server.")
 @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 @Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 public class MMCTicketsServlet extends BaseServlet {

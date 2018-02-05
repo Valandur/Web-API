@@ -7,8 +7,6 @@ import valandur.webapi.util.Util;
 
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.NotFoundException;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ParamConverter;
 import java.util.Optional;
 import java.util.UUID;

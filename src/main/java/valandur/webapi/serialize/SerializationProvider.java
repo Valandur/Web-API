@@ -7,7 +7,6 @@ import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.permission.IPermissionService;
 import valandur.webapi.api.util.TreeNode;
-import valandur.webapi.security.PermissionStruct;
 import valandur.webapi.security.SecurityContext;
 import valandur.webapi.util.Util;
 

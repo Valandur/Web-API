@@ -22,7 +22,8 @@ import java.util.List;
 import java.util.Optional;
 
 @Path("husky-crates")
-@Api(value = "husky-crates", tags = { "Husky Crates" })
+@Api(tags = { "Husky Crates" }, value =
+        "Create, edit and delete the crate types on your server, without having to restart it.")
 @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 @Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 public class HuskyCratesServlet extends BaseServlet {

@@ -14,6 +14,8 @@ import valandur.webapi.cache.world.CachedChunk;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -69,9 +71,10 @@ public class ChunkServlet extends BaseServlet {
     @POST
     @Path("/{world}/{x}/{z}")
     @Permission({ "chunk", "create" })
-    @ApiOperation(value = "Load & Generate a chunk", notes =
-            "Forces a chunk to be loaded into memory, and created if it does not exist.")
-    public CachedChunk createChunkAt(
+    @ApiOperation(
+            value = "Load & Generate a chunk", response = CachedChunk.class,
+            notes = "Forces a chunk to be loaded into memory, and created if it does not exist.")
+    public Response createChunkAt(
             @PathParam("world") @ApiParam("The uuid of the world in which to create the chunk") ICachedWorld world,
             @PathParam("x") @ApiParam("The x-coordinate of the chunk (in chunk coordinates)") int x,
             @PathParam("z") @ApiParam("The z-coordinate of the chunk (in chunk coordinates)") int z) {
@@ -81,8 +84,11 @@ public class ChunkServlet extends BaseServlet {
                 throw new InternalServerErrorException("Could not get live world");
 
             World live = optLive.get();
-            Optional<Chunk> chunk = live.loadChunk(x, 0, z, true);
-            return chunk.map(CachedChunk::new).orElse(null);
+            Optional<Chunk> optChunk = live.loadChunk(x, 0, z, true);
+            if (!optChunk.isPresent())
+                throw new InternalServerErrorException("Could not load live chunk");
+            CachedChunk chunk = new CachedChunk(optChunk.get());
+            return Response.created(URI.create(chunk.getLink())).entity(chunk).build();
         });
     }
 }

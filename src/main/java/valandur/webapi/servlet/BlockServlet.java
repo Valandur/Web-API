@@ -17,6 +17,8 @@ import valandur.webapi.serialize.view.block.BlockStateView;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.net.URI;
 import java.util.*;
 
 @Path("block")
@@ -52,9 +54,10 @@ public class BlockServlet extends BaseServlet {
     @POST
     @Path("/op")
     @Permission({ "op", "create" })
-    @ApiOperation(value = "Create a block operation",
+    @ApiOperation(
+            value = "Create a block operation", response = IBlockOperation.class,
             notes = "Start a request to get or change blocks on the server.")
-    public IBlockOperation createBlockOperation(CreateOperationRequest req)
+    public Response createBlockOperation(CreateOperationRequest req)
             throws BadRequestException, NotAcceptableException {
         // Check world
         if (!req.getWorld().isPresent()) {
@@ -152,7 +155,7 @@ public class BlockServlet extends BaseServlet {
             throw new BadRequestException("Unknown block operation type");
         }
 
-        return op;
+        return Response.created(URI.create(op.getLink())).entity(op).build();
     }
 
     @GET

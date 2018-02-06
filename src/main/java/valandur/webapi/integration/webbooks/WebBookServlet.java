@@ -8,14 +8,15 @@ import ninja.leaping.configurate.loader.ConfigurationLoader;
 import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 import ninja.leaping.configurate.objectmapping.serialize.TypeSerializers;
 import org.spongepowered.api.util.Tuple;
-import valandur.webapi.WebAPI;
 import valandur.webapi.api.servlet.BaseServlet;
 import valandur.webapi.api.servlet.Permission;
 import valandur.webapi.util.Util;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import java.io.IOException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -63,7 +64,6 @@ public class WebBookServlet extends BaseServlet {
             loader.save(config);
         } catch (IOException e) {
             e.printStackTrace();
-            if (WebAPI.reportErrors()) WebAPI.sentryCapture(e);
             throw new InternalServerErrorException(e.getMessage());
         }
     }
@@ -107,8 +107,10 @@ public class WebBookServlet extends BaseServlet {
     @POST
     @Path("/book")
     @Permission({ "book", "create" })
-    @ApiOperation(value = "Create a book", notes = "Create a new web book from the specified data.")
-    public WebBook createWebBook(WebBook book)
+    @ApiOperation(
+            value = "Create a book", response = WebBook.class,
+            notes = "Create a new web book from the specified data.")
+    public Response createWebBook(WebBook book)
             throws BadRequestException, InternalServerErrorException {
         String id = book.getId();
         if (id == null || id.isEmpty()) {
@@ -133,7 +135,7 @@ public class WebBookServlet extends BaseServlet {
         books.put(id, book);
         saveBooks();
 
-        return book;
+        return Response.created(URI.create(newBook.getLink())).entity(newBook).build();
     }
 
     @PUT

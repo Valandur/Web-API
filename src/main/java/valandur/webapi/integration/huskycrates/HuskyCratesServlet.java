@@ -15,7 +15,9 @@ import valandur.webapi.api.servlet.Permission;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import java.io.IOException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -57,15 +59,13 @@ public class HuskyCratesServlet extends BaseServlet {
     public Collection<CachedVirtualCrate> getCrates() {
         HuskyCrates plugin = getHuskyPlugin();
 
-        Optional<List<CachedVirtualCrate>> optList = WebAPIAPI.runOnMain(() -> {
+        return WebAPIAPI.runOnMain(() -> {
             List<CachedVirtualCrate> crates = new ArrayList<>();
             for (VirtualCrate crate : plugin.getCrateUtilities().crateTypes.values()) {
                 crates.add(new CachedVirtualCrate(crate));
             }
             return crates;
         });
-
-        return optList.orElse(null);
     }
 
     @GET
@@ -73,10 +73,10 @@ public class HuskyCratesServlet extends BaseServlet {
     @Permission({ "crate", "one" })
     @ApiOperation(value = "Get a crate", notes = "Get detailed information about a crate.")
     public CachedVirtualCrate getCrate(@PathParam("id") String id)
-            throws NotFoundException, InternalServerErrorException {
+            throws NotFoundException {
         HuskyCrates plugin = getHuskyPlugin();
 
-        Optional<CachedVirtualCrate> optRes = WebAPIAPI.runOnMain(() -> {
+        return WebAPIAPI.runOnMain(() -> {
             VirtualCrate crate = plugin.crateUtilities.getVirtualCrate(id);
             if (crate == null) {
                 throw new NotFoundException("Crate with id " + id + " not found");
@@ -84,35 +84,28 @@ public class HuskyCratesServlet extends BaseServlet {
 
             return new CachedVirtualCrate(crate);
         });
-
-        return optRes.orElse(null);
     }
 
     @POST
     @Path("/crate")
     @Permission({ "crate", "create "})
-    @ApiOperation(value = "Create a crate", notes = "Creates a new crate.")
-    public CachedVirtualCrate createCrate(CachedVirtualCrate req)
-            throws InternalServerErrorException {
+    @ApiOperation(value = "Create a crate", response = CachedVirtualCrate.class, notes = "Creates a new crate.")
+    public Response createCrate(CachedVirtualCrate req) {
         HuskyCrates plugin = getHuskyPlugin();
 
-        Optional<CachedVirtualCrate> optCrate = WebAPIAPI.runOnMain(() -> {
-            try {
-                saveCrate(plugin.crateConfig, req);
-                plugin.crateUtilities.generateVirtualCrates(plugin.crateConfig);
+        CachedVirtualCrate crate = WebAPIAPI.runOnMain(() -> {
+            saveCrate(plugin.crateConfig, req);
+            plugin.crateUtilities.generateVirtualCrates(plugin.crateConfig);
 
-                VirtualCrate crate = plugin.crateUtilities.getVirtualCrate(req.getId());
-                if (crate == null) {
-                    throw new InternalServerErrorException("Could not get crate after creating it");
-                }
-
-                return new CachedVirtualCrate(crate);
-            } catch (IOException e) {
-                throw new InternalServerErrorException(e.getMessage());
+            VirtualCrate vCrate = plugin.crateUtilities.getVirtualCrate(req.getId());
+            if (vCrate == null) {
+                throw new InternalServerErrorException("Could not get crate after creating it");
             }
+
+            return new CachedVirtualCrate(vCrate);
         });
 
-        return optCrate.orElse(null);
+        return Response.created(URI.create(crate.getLink())).entity(crate).build();
     }
 
     @PUT
@@ -120,33 +113,27 @@ public class HuskyCratesServlet extends BaseServlet {
     @Permission({ "crate", "change" })
     @ApiOperation(value = "Change a crate", notes = "Change a crate.")
     public CachedVirtualCrate changeCrate(@PathParam("id") String id, CachedVirtualCrate req)
-            throws NotFoundException, InternalServerErrorException {
+            throws NotFoundException {
         HuskyCrates plugin = getHuskyPlugin();
 
-        Optional<CachedVirtualCrate> optRes = WebAPIAPI.runOnMain(() -> {
-            try {
-                VirtualCrate oldCrate = plugin.crateUtilities.getVirtualCrate(id);
-                if (oldCrate == null) {
-                    throw new NotFoundException("Crate with id " + id + " not found");
-                }
-
-                req.setId(oldCrate.id);
-                saveCrate(plugin.crateConfig, req);
-                plugin.crateUtilities.generateVirtualCrates(plugin.crateConfig);
-
-                VirtualCrate crate = plugin.crateUtilities.getVirtualCrate(req.getId());
-
-                if (crate == null) {
-                    throw new InternalServerErrorException("Could not get crate after modifying it");
-                }
-
-                return new CachedVirtualCrate(crate);
-            } catch (IOException e) {
-                throw new InternalServerErrorException(e.getMessage());
+        return WebAPIAPI.runOnMain(() -> {
+            VirtualCrate oldCrate = plugin.crateUtilities.getVirtualCrate(id);
+            if (oldCrate == null) {
+                throw new NotFoundException("Crate with id " + id + " not found");
             }
-        });
 
-        return optRes.orElse(null);
+            req.setId(oldCrate.id);
+            saveCrate(plugin.crateConfig, req);
+            plugin.crateUtilities.generateVirtualCrates(plugin.crateConfig);
+
+            VirtualCrate crate = plugin.crateUtilities.getVirtualCrate(req.getId());
+
+            if (crate == null) {
+                throw new InternalServerErrorException("Could not get crate after modifying it");
+            }
+
+            return new CachedVirtualCrate(crate);
+        });
     }
 
     @DELETE
@@ -154,10 +141,10 @@ public class HuskyCratesServlet extends BaseServlet {
     @Permission({ "crate", "delete" })
     @ApiOperation(value = "Delete a crate", notes = "Delete a crate.")
     public CachedVirtualCrate deleteCrate(@PathParam("id") String id)
-            throws NotFoundException, InternalServerErrorException {
+            throws NotFoundException {
         HuskyCrates plugin = getHuskyPlugin();
 
-        Optional<CachedVirtualCrate> optCrate = WebAPIAPI.runOnMain(() -> {
+        return WebAPIAPI.runOnMain(() -> {
             VirtualCrate crate = plugin.crateUtilities.getVirtualCrate(id);
             if (crate == null) {
                 throw new NotFoundException("Crate with id " + id + " not found");
@@ -175,44 +162,46 @@ public class HuskyCratesServlet extends BaseServlet {
                 throw new InternalServerErrorException(e.getMessage());
             }
         });
-
-        return optCrate.orElse(null);
     }
 
-    private void saveCrate(ConfigurationLoader loader, CachedVirtualCrate crate) throws IOException {
-        ConfigurationNode root = loader.load();
-        ConfigurationNode node = root.getNode("crates", crate.getId());
+    private void saveCrate(ConfigurationLoader loader, CachedVirtualCrate crate) {
+        try {
+            ConfigurationNode root = loader.load();
+            ConfigurationNode node = root.getNode("crates", crate.getId());
 
-        node.getNode("name").setValue(crate.getName());
-        node.getNode("type").setValue(crate.getType());
-        node.getNode("options", "freeCrate").setValue(crate.isFree());
-        node.getNode("options", "freeCrateDelay").setValue(crate.getFreeDelay());
-        node.getNode("options", "scrambleRewards").setValue(crate.isScrambleRewards());
+            node.getNode("name").setValue(crate.getName());
+            node.getNode("type").setValue(crate.getType());
+            node.getNode("options", "freeCrate").setValue(crate.isFree());
+            node.getNode("options", "freeCrateDelay").setValue(crate.getFreeDelay());
+            node.getNode("options", "scrambleRewards").setValue(crate.isScrambleRewards());
 
-        node.removeChild("items");
+            node.removeChild("items");
 
-        if (crate.getRewards() != null) {
-            ConfigurationNode itemsNode = node.getNode("items");
-            for (CachedCrateReward reward : crate.getRewards()) {
-                ConfigurationNode rewardNode = itemsNode.getAppendedNode();
-                rewardNode.getNode("name").setValue(reward.getName());
-                if (reward.getDisplayItem() != null)
-                    rewardNode.getNode("id").setValue(reward.getDisplayItem().getItem().getId());
-                else
-                    rewardNode.getNode("id").setValue("minecraft:dirt");
-                rewardNode.getNode("count").setValue(1);
+            if (crate.getRewards() != null) {
+                ConfigurationNode itemsNode = node.getNode("items");
+                for (CachedCrateReward reward : crate.getRewards()) {
+                    ConfigurationNode rewardNode = itemsNode.getAppendedNode();
+                    rewardNode.getNode("name").setValue(reward.getName());
+                    if (reward.getDisplayItem() != null)
+                        rewardNode.getNode("id").setValue(reward.getDisplayItem().getItem().getId());
+                    else
+                        rewardNode.getNode("id").setValue("minecraft:dirt");
+                    rewardNode.getNode("count").setValue(1);
 
-                ConfigurationNode huskyNode = rewardNode.getNode("huskydata");
-                huskyNode.getNode("weight").setValue(reward.getChance());
-                huskyNode.removeChild("rewards");
+                    ConfigurationNode huskyNode = rewardNode.getNode("huskydata");
+                    huskyNode.getNode("weight").setValue(reward.getChance());
+                    huskyNode.removeChild("rewards");
 
-                ConfigurationNode rewardsNode = huskyNode.getNode("rewards");
-                for (CrateRewardObject object : reward.getObjects()) {
-                    object.saveToNode(rewardsNode.getAppendedNode());
+                    ConfigurationNode rewardsNode = huskyNode.getNode("rewards");
+                    for (CrateRewardObject object : reward.getObjects()) {
+                        object.saveToNode(rewardsNode.getAppendedNode());
+                    }
                 }
             }
-        }
 
-        loader.save(root);
+            loader.save(root);
+        } catch (IOException e) {
+            throw new InternalServerErrorException(e.getMessage());
+        }
     }
 }

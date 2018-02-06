@@ -2,7 +2,7 @@ package valandur.webapi.integration.universalmarket;
 
 import com.xwaffle.universalmarket.market.MarketItem;
 import org.spongepowered.api.item.inventory.ItemStack;
-import valandur.webapi.WebAPI;
+import valandur.webapi.api.WebAPIAPI;
 import valandur.webapi.api.cache.CachedObject;
 import valandur.webapi.api.cache.player.ICachedPlayer;
 
@@ -41,6 +41,6 @@ public class CachedMarketItem extends CachedObject<MarketItem> {
         this.item = value.getItem().copy();
         this.expires = value.getExpireTime() / 1000;
         this.price = value.getPrice();
-        this.owner = WebAPI.getCacheService().getPlayer(value.getOwnerUUID()).orElse(null);
+        this.owner = WebAPIAPI.getCacheService().flatMap(srv -> srv.getPlayer(value.getOwnerUUID())).orElse(null);
     }
 }

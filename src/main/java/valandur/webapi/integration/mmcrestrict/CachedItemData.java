@@ -5,7 +5,7 @@ import net.moddedminecraft.mmcrestrict.Data.ItemData;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.item.ItemType;
 import valandur.webapi.api.cache.CachedObject;
-import valandur.webapi.cache.misc.CachedCatalogType;
+import valandur.webapi.api.cache.misc.CachedCatalogType;
 
 import java.util.Optional;
 

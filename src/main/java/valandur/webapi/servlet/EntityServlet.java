@@ -25,6 +25,8 @@ import valandur.webapi.util.Util;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.net.URI;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -145,8 +147,10 @@ public class EntityServlet extends BaseServlet {
 
     @POST
     @Permission("create")
-    @ApiOperation(value = "Spawn an entity", notes = "Creates & Spawns a new entity with the specified properties.")
-    public ICachedEntity createEntity(CreateEntityRequest req)
+    @ApiOperation(
+            value = "Spawn an entity", response = ICachedEntity.class,
+            notes = "Creates & Spawns a new entity with the specified properties.")
+    public Response createEntity(CreateEntityRequest req)
             throws BadRequestException {
         Optional<ICachedWorld> optWorld = req.getWorld();
         if (!optWorld.isPresent()) {
@@ -171,7 +175,8 @@ public class EntityServlet extends BaseServlet {
             Entity e = w.createEntity(optEntType.get(), req.getPosition());
 
             if (w.spawnEntity(e)) {
-                return new CachedEntity(e);
+                CachedEntity ent = new CachedEntity(e);
+                return Response.created(URI.create(ent.getLink())).entity(ent).build();
             } else {
                 e.remove();
                 throw new InternalServerErrorException("Could not spawn entity");

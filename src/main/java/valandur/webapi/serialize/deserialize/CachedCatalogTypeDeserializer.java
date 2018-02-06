@@ -9,7 +9,7 @@ import com.fasterxml.jackson.databind.deser.ContextualDeserializer;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import org.spongepowered.api.CatalogType;
 import org.spongepowered.api.Sponge;
-import valandur.webapi.cache.misc.CachedCatalogType;
+import valandur.webapi.api.cache.misc.CachedCatalogType;
 
 import java.io.IOException;
 import java.util.Optional;

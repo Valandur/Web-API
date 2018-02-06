@@ -4,6 +4,7 @@ import org.spongepowered.api.item.inventory.Inventory;
 import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.item.inventory.Slot;
 import valandur.webapi.api.cache.CachedObject;
+import valandur.webapi.api.cache.misc.CachedCatalogType;
 
 import java.util.ArrayList;
 import java.util.List;

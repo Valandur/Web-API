@@ -65,7 +65,7 @@ import valandur.webapi.api.serialize.BaseView;
 import valandur.webapi.api.serialize.ISerializeService;
 import valandur.webapi.api.util.TreeNode;
 import valandur.webapi.cache.entity.CachedEntity;
-import valandur.webapi.cache.misc.CachedCatalogType;
+import valandur.webapi.api.cache.misc.CachedCatalogType;
 import valandur.webapi.cache.misc.CachedCause;
 import valandur.webapi.cache.misc.CachedInventory;
 import valandur.webapi.cache.player.CachedPlayer;

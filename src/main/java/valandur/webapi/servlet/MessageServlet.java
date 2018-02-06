@@ -11,6 +11,8 @@ import valandur.webapi.message.Message;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.net.URI;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -47,15 +49,17 @@ public class MessageServlet extends BaseServlet {
 
     @POST
     @Permission("create")
-    @ApiOperation(value = "Send a message", notes = "Send an interactive message to a player. Make sure to " +
-            "have an event hook for \"custom_message\" to receive the response.")
-    public IMessage sendMessage(Message msg)
+    @ApiOperation(
+            value = "Send a message", response = IMessage.class,
+            notes = "Send an interactive message to a player. Make sure to have an event hook for " +
+                    "\"custom_message\" to receive the response.")
+    public Response sendMessage(Message msg)
             throws BadRequestException, InternalServerErrorException {
         if (msg.getTarget() == null && (msg.getTargets() == null || msg.getTargets().size() == 0)) {
             throw new BadRequestException("You need to specify either a single target or a list of targets");
         }
 
         messageService.sendMessage(msg);
-        return msg;
+        return Response.created(URI.create(msg.getLink())).entity(msg).build();
     }
 }

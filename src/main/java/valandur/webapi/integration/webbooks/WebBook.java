@@ -2,6 +2,7 @@ package valandur.webapi.integration.webbooks;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import valandur.webapi.api.serialize.JsonDetails;
+import valandur.webapi.util.Constants;
 
 import java.util.List;
 
@@ -40,5 +41,9 @@ public class WebBook {
             html.append("<li>").append(line).append("</li>");
         }
         return html + "</ul></body></html>";
+    }
+
+    public String getLink() {
+        return Constants.BASE_PATH + "/book/" + id;
     }
 }

@@ -8,7 +8,7 @@ import org.spongepowered.api.Sponge;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.servlet.BaseServlet;
 import valandur.webapi.api.servlet.Permission;
-import valandur.webapi.cache.misc.CachedCatalogType;
+import valandur.webapi.api.cache.misc.CachedCatalogType;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;

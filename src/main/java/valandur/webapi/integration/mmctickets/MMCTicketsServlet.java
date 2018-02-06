@@ -30,7 +30,7 @@ public class MMCTicketsServlet extends BaseServlet {
     }
 
 
-    private Main getMMCTicketsPlugin() throws InternalServerErrorException {
+    private Main getMMCTicketsPlugin() {
         Optional<PluginContainer> optContainer = Sponge.getPluginManager().getPlugin("mmctickets");
         if (!optContainer.isPresent()) {
             throw new InternalServerErrorException("MMCTickets plugin not found");
@@ -48,19 +48,16 @@ public class MMCTicketsServlet extends BaseServlet {
     @Path("/ticket")
     @Permission({ "ticket", "list" })
     @ApiOperation(value = "List tickets", notes = "Get a list of all the tickets on the server.")
-    public Collection<CachedTicketData> getTickets()
-            throws InternalServerErrorException {
+    public Collection<CachedTicketData> getTickets() {
         Main plugin = getMMCTicketsPlugin();
 
-        Optional<List<CachedTicketData>> optTickets = WebAPIAPI.runOnMain(() -> {
+        return WebAPIAPI.runOnMain(() -> {
             List<CachedTicketData> tickets = new ArrayList<>();
             for (TicketData ticket : plugin.getTickets()) {
                 tickets.add(new CachedTicketData(ticket));
             }
             return tickets;
         });
-
-        return optTickets.orElse(null);
     }
 
     @GET
@@ -68,10 +65,10 @@ public class MMCTicketsServlet extends BaseServlet {
     @Permission({ "ticket", "one" })
     @ApiOperation(value = "Get a ticket", notes = "Get detailed information about a ticket.")
     public CachedTicketData getTicket(@PathParam("id") Integer id)
-            throws InternalServerErrorException, NotFoundException {
+            throws NotFoundException {
         Main plugin = getMMCTicketsPlugin();
 
-        Optional<CachedTicketData> optTicket = WebAPIAPI.runOnMain(() -> {
+        return WebAPIAPI.runOnMain(() -> {
             TicketData ticketData = plugin.getTicket(id);
             if (ticketData == null) {
                 throw new NotFoundException("Ticket with id " + id + " not found");
@@ -79,8 +76,6 @@ public class MMCTicketsServlet extends BaseServlet {
 
             return new CachedTicketData(ticketData);
         });
-
-        return optTicket.orElse(null);
     }
 
     @PUT
@@ -88,10 +83,10 @@ public class MMCTicketsServlet extends BaseServlet {
     @Permission({ "ticket", "change" })
     @ApiOperation(value = "Change a ticket", notes = "Update the properties of an existing ticket.")
     public CachedTicketData changeTicket(@PathParam("id") Integer id, CachedTicketData req)
-            throws InternalServerErrorException, NotFoundException {
+            throws NotFoundException {
         Main plugin = getMMCTicketsPlugin();
 
-        Optional<CachedTicketData> optTicket = WebAPIAPI.runOnMain(() -> {
+        return WebAPIAPI.runOnMain(() -> {
             TicketData ticketData = plugin.getTicket(id);
             if (ticketData == null) {
                 throw new NotFoundException("Ticket with id " + id + " not found");
@@ -109,7 +104,5 @@ public class MMCTicketsServlet extends BaseServlet {
 
             return new CachedTicketData(ticketData);
         });
-
-        return optTicket.orElse(null);
     }
 }

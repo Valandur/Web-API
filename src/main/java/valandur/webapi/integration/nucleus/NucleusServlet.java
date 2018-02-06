@@ -10,15 +10,16 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.spongepowered.api.world.Location;
 import valandur.webapi.api.WebAPIAPI;
+import valandur.webapi.api.exceptions.NotImplementedException;
 import valandur.webapi.api.servlet.BaseServlet;
 import valandur.webapi.api.servlet.Permission;
-import valandur.webapi.handler.NotImplementedException;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.net.URI;
 import java.time.Duration;
 import java.util.Collection;
-import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -41,8 +42,7 @@ public class NucleusServlet extends BaseServlet {
     @Path("/jail")
     @Permission({ "jail", "list" })
     @ApiOperation(value = "List jails", notes = "Get a list of all the jails on the server.")
-    public Collection<CachedNamedLocation> getJails()
-            throws InternalServerErrorException {
+    public Collection<CachedNamedLocation> getJails() {
         Optional<NucleusJailService> optSrv = NucleusAPI.getJailService();
         if (!optSrv.isPresent()) {
             throw new InternalServerErrorException("Nuclues jail service not available");
@@ -50,11 +50,11 @@ public class NucleusServlet extends BaseServlet {
 
         NucleusJailService srv = optSrv.get();
 
-        Optional<List<CachedNamedLocation>> optRes = WebAPIAPI.runOnMain(
-                () -> srv.getJails().values().stream().map(CachedNamedLocation::new).collect(Collectors.toList())
+        return WebAPIAPI.runOnMain(
+                () -> srv.getJails().values().stream()
+                        .map(CachedNamedLocation::new)
+                        .collect(Collectors.toList())
         );
-
-        return optRes.orElse(null);
     }
 
     @GET
@@ -62,7 +62,7 @@ public class NucleusServlet extends BaseServlet {
     @Permission({ "jail", "one" })
     @ApiOperation(value = "Get a jail", notes = "Get detailed information about a jail.")
     public CachedNamedLocation getJail(@PathParam("name") String name)
-            throws InternalServerErrorException, NotFoundException {
+            throws NotFoundException {
         Optional<NucleusJailService> optSrv = NucleusAPI.getJailService();
         if (!optSrv.isPresent()) {
             throw new InternalServerErrorException("Nuclues jail service not available");
@@ -70,7 +70,7 @@ public class NucleusServlet extends BaseServlet {
 
         NucleusJailService srv = optSrv.get();
 
-        Optional<CachedNamedLocation> optRes = WebAPIAPI.runOnMain(() -> {
+        return WebAPIAPI.runOnMain(() -> {
             Optional<NamedLocation> optJail = srv.getJail(name);
             if (!optJail.isPresent()) {
                 throw new NotFoundException("Jail with name " + name + " not found");
@@ -78,16 +78,14 @@ public class NucleusServlet extends BaseServlet {
 
             return new CachedNamedLocation(optJail.get());
         });
-
-        return optRes.orElse(null);
     }
 
     @POST
     @Path("/jail")
     @Permission({ "jail", "create" })
-    @ApiOperation(value = "Create a jail", notes = "Creates a new jail.")
-    public CachedNamedLocation createJail(CachedNamedLocation req)
-            throws BadRequestException, InternalServerErrorException {
+    @ApiOperation(value = "Create a jail", response = CachedNamedLocation.class, notes = "Creates a new jail.")
+    public Response createJail(CachedNamedLocation req)
+            throws BadRequestException {
         Optional<NucleusJailService> optSrv = NucleusAPI.getJailService();
         if (!optSrv.isPresent()) {
             throw new InternalServerErrorException("Nuclues jail service not available");
@@ -99,7 +97,7 @@ public class NucleusServlet extends BaseServlet {
             throw new BadRequestException("A location is required");
         }
 
-        Optional<CachedNamedLocation> optRes = WebAPIAPI.runOnMain(() -> {
+        CachedNamedLocation jail = WebAPIAPI.runOnMain(() -> {
             Optional<Location> optLive = req.getLocation().getLive();
             if (!optLive.isPresent()) {
                 throw new InternalServerErrorException("Could not get live location");
@@ -110,7 +108,7 @@ public class NucleusServlet extends BaseServlet {
             return optJail.map(CachedNamedLocation::new).orElse(null);
         });
 
-        return optRes.orElse(null);
+        return Response.created(URI.create(jail.getLink())).entity(jail).build();
     }
 
     @PUT
@@ -127,7 +125,7 @@ public class NucleusServlet extends BaseServlet {
     @Permission({ "jail", "delete" })
     @ApiOperation(value = "Delete a jail", notes = "Delete an existing jail.")
     public CachedNamedLocation deleteJail(@PathParam("name") String name)
-            throws InternalServerErrorException, NotFoundException {
+            throws NotFoundException {
         Optional<NucleusJailService> optSrv = NucleusAPI.getJailService();
         if (!optSrv.isPresent()) {
             throw new InternalServerErrorException("Nuclues jail service not available");
@@ -135,7 +133,7 @@ public class NucleusServlet extends BaseServlet {
 
         NucleusJailService srv = optSrv.get();
 
-        Optional<CachedNamedLocation> optRes = WebAPIAPI.runOnMain(() -> {
+        return WebAPIAPI.runOnMain(() -> {
             Optional<NamedLocation> optJail = srv.getJail(name);
             if (!optJail.isPresent()) {
                 throw new NotFoundException("Jail with name " + name + " not found");
@@ -145,8 +143,6 @@ public class NucleusServlet extends BaseServlet {
 
             return new CachedNamedLocation(optJail.get());
         });
-
-        return optRes.orElse(null);
     }
 
 
@@ -155,8 +151,7 @@ public class NucleusServlet extends BaseServlet {
     @Path("/kit")
     @Permission({ "kit", "list" })
     @ApiOperation(value = "List kits", notes = "Get a list of all the kits on the server.")
-    public Collection<CachedKit> getKits()
-            throws InternalServerErrorException {
+    public Collection<CachedKit> getKits() {
         Optional<NucleusKitService> optSrv = NucleusAPI.getKitService();
         if (!optSrv.isPresent()) {
             throw new InternalServerErrorException("Nuclues kit service not available");
@@ -164,13 +159,11 @@ public class NucleusServlet extends BaseServlet {
 
         NucleusKitService srv = optSrv.get();
 
-        Optional<List<CachedKit>> kits = WebAPIAPI.runOnMain(
+        return WebAPIAPI.runOnMain(
                 () -> srv.getKitNames().stream()
                         .map(name -> srv.getKit(name).map(CachedKit::new).orElse(null))
                         .collect(Collectors.toList())
         );
-
-        return kits.orElse(null);
     }
 
     @GET
@@ -178,7 +171,7 @@ public class NucleusServlet extends BaseServlet {
     @Permission({ "kit", "one" })
     @ApiOperation(value = "Get a kit", notes = "Get detailed information about a kit.")
     public CachedKit getKit(@PathParam("name") String name)
-            throws InternalServerErrorException, NotFoundException {
+            throws NotFoundException {
         Optional<NucleusKitService> optSrv = NucleusAPI.getKitService();
         if (!optSrv.isPresent()) {
             throw new InternalServerErrorException("Nuclues kit service not available");
@@ -186,7 +179,7 @@ public class NucleusServlet extends BaseServlet {
 
         NucleusKitService srv = optSrv.get();
 
-        Optional<CachedKit> optRes = WebAPIAPI.runOnMain(() -> {
+        return WebAPIAPI.runOnMain(() -> {
             Optional<Kit> optKit = srv.getKit(name);
             if (!optKit.isPresent()) {
                 throw new NotFoundException("Kit with name " + name + " not found");
@@ -194,16 +187,14 @@ public class NucleusServlet extends BaseServlet {
 
             return new CachedKit(optKit.get());
         });
-
-        return optRes.orElse(null);
     }
 
     @POST
     @Path("/kit")
     @Permission({ "kit", "create" })
-    @ApiOperation(value = "Create a kit", notes = "Creates a new kit.")
-    public CachedKit createKit(CachedKit req)
-            throws InternalServerErrorException, BadRequestException {
+    @ApiOperation(value = "Create a kit", response = CachedKit.class, notes = "Creates a new kit.")
+    public Response createKit(CachedKit req)
+            throws BadRequestException {
         Optional<NucleusKitService> optSrv = NucleusAPI.getKitService();
         if (!optSrv.isPresent()) {
             throw new InternalServerErrorException("Nuclues kit service not available");
@@ -215,7 +206,7 @@ public class NucleusServlet extends BaseServlet {
             throw new BadRequestException("Invalid kit name");
         }
 
-        Optional<CachedKit> resKit = WebAPIAPI.runOnMain(() -> {
+        CachedKit resKit = WebAPIAPI.runOnMain(() -> {
             Kit kit = srv.createKit(req.getName());
             kit.setCost(req.getCost());
             kit.setCooldown(Duration.ofMillis(req.getCooldown()));
@@ -233,7 +224,7 @@ public class NucleusServlet extends BaseServlet {
             return new CachedKit(kit);
         });
 
-        return resKit.orElse(null);
+        return Response.created(URI.create(resKit.getLink())).entity(resKit).build();
     }
 
     @PUT
@@ -241,7 +232,7 @@ public class NucleusServlet extends BaseServlet {
     @Permission({ "kit", "chang" })
     @ApiOperation(value = "Change a kit", notes = "Change an existing kit.")
     public CachedKit changeKit(@PathParam("name") String name, CachedKit req)
-            throws InternalServerErrorException, NotFoundException, BadRequestException {
+            throws NotFoundException, BadRequestException {
         Optional<NucleusKitService> optSrv = NucleusAPI.getKitService();
         if (!optSrv.isPresent()) {
             throw new InternalServerErrorException("Nuclues kit service not available");
@@ -249,7 +240,7 @@ public class NucleusServlet extends BaseServlet {
 
         NucleusKitService srv = optSrv.get();
 
-        Optional<CachedKit> optRes = WebAPIAPI.runOnMain(() -> {
+        return WebAPIAPI.runOnMain(() -> {
             Optional<Kit> optKit = srv.getKit(name);
             if (!optKit.isPresent()) {
                 throw new NotFoundException("Kit with name " + name + " not found");
@@ -277,8 +268,6 @@ public class NucleusServlet extends BaseServlet {
 
             return new CachedKit(kit);
         });
-
-        return optRes.orElse(null);
     }
 
     @DELETE
@@ -286,7 +275,7 @@ public class NucleusServlet extends BaseServlet {
     @Permission({ "kit", "delete" })
     @ApiOperation(value = "Delete a kit", notes = "Delete an existing kit.")
     public CachedKit deleteKit(@PathParam("name") String name)
-            throws InternalServerErrorException, NotFoundException {
+            throws NotFoundException {
         Optional<NucleusKitService> optSrv = NucleusAPI.getKitService();
         if (!optSrv.isPresent()) {
             throw new InternalServerErrorException("Nuclues kit service not available");
@@ -294,7 +283,7 @@ public class NucleusServlet extends BaseServlet {
 
         NucleusKitService srv = optSrv.get();
 
-        Optional<CachedKit> optRes = WebAPIAPI.runOnMain(() -> {
+        return WebAPIAPI.runOnMain(() -> {
             Optional<Kit> optKit = srv.getKit(name);
             if (!optKit.isPresent()) {
                 throw new NotFoundException("Kit with name " + name + " not found");
@@ -303,7 +292,5 @@ public class NucleusServlet extends BaseServlet {
             srv.removeKit(name);
             return new CachedKit(optKit.get());
         });
-
-        return optRes.orElse(null);
     }
 }

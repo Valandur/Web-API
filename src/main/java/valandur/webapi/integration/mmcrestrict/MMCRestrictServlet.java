@@ -9,13 +9,15 @@ import org.spongepowered.api.Sponge;
 import org.spongepowered.api.item.ItemType;
 import org.spongepowered.api.plugin.PluginContainer;
 import valandur.webapi.api.WebAPIAPI;
+import valandur.webapi.api.cache.misc.CachedCatalogType;
 import valandur.webapi.api.servlet.BaseServlet;
 import valandur.webapi.api.servlet.Permission;
-import valandur.webapi.cache.misc.CachedCatalogType;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import java.io.IOException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -33,7 +35,7 @@ public class MMCRestrictServlet extends BaseServlet {
         });
     }
 
-    private Main getMMCRestrictPlugin() throws InternalServerErrorException {
+    private Main getMMCRestrictPlugin() {
         Optional<PluginContainer> optContainer = Sponge.getPluginManager().getPlugin("mmcrestrict");
         if (!optContainer.isPresent()) {
             throw new InternalServerErrorException("MMCRestrict plugin not found");
@@ -54,30 +56,30 @@ public class MMCRestrictServlet extends BaseServlet {
     public Collection<CachedItemData> getItems() {
         Main plugin = getMMCRestrictPlugin();
 
-        Optional<List<CachedItemData>> optItems = WebAPIAPI.runOnMain(() -> {
+        return WebAPIAPI.runOnMain(() -> {
             List<CachedItemData> items = new ArrayList<>();
             for (ItemData item : plugin.getItemData()) {
                 items.add(new CachedItemData(item));
             }
             return items;
         });
-
-        return optItems.orElse(null);
     }
 
     @POST
     @Path("/item")
     @Permission({ "item", "create" })
-    @ApiOperation(value = "Create an item", notes = "Adds a new item to the restricted item list.")
-    public CachedItemData addItem(CachedItemData req)
-            throws BadRequestException, InternalServerErrorException {
+    @ApiOperation(
+            value = "Add an item", response = CachedItemData.class,
+            notes = "Adds a new item to the restricted item list.")
+    public Response addItem(CachedItemData req)
+            throws BadRequestException {
         Main plugin = getMMCRestrictPlugin();
 
         if (req.getItem() == null) {
             throw new BadRequestException("Invalid item data");
         }
 
-        Optional<CachedItemData> optItem = WebAPIAPI.runOnMain(() -> {
+        CachedItemData item = WebAPIAPI.runOnMain(() -> {
             Optional<ItemData> optData = req.getLive();
             if (!optData.isPresent()) {
                 return null;
@@ -87,7 +89,7 @@ public class MMCRestrictServlet extends BaseServlet {
             return new CachedItemData(optData.get());
         });
 
-        return optItem.orElse(null);
+        return Response.created(URI.create(item.getLink())).entity(item).build();
     }
 
     @PUT
@@ -95,10 +97,10 @@ public class MMCRestrictServlet extends BaseServlet {
     @Permission({ "item", "change" })
     @ApiOperation(value = "Change an item", notes = "Change an existing restricted item.")
     public CachedItemData changeItem(@PathParam("id") String id, CachedItemData req)
-            throws NotFoundException, InternalServerErrorException {
+            throws NotFoundException {
         Main plugin = getMMCRestrictPlugin();
 
-        Optional<CachedItemData> optItem = WebAPIAPI.runOnMain(() -> {
+        return WebAPIAPI.runOnMain(() -> {
             ItemData item = plugin.removeItem(id);
             if (item == null) {
                 throw new NotFoundException("The specified item is not restricted");
@@ -119,8 +121,6 @@ public class MMCRestrictServlet extends BaseServlet {
             saveData(plugin);
             return new CachedItemData(optData.get());
         });
-
-        return optItem.orElse(null);
     }
 
     @DELETE
@@ -128,10 +128,10 @@ public class MMCRestrictServlet extends BaseServlet {
     @Permission({ "item", "delete" })
     @ApiOperation(value = "Delete an item", notes = "Delete an existing restricted item.")
     public CachedItemData deleteItem(@PathParam("id") String id)
-            throws NotFoundException, InternalServerErrorException{
+            throws NotFoundException {
         Main plugin = getMMCRestrictPlugin();
 
-        Optional<CachedItemData> optItem = WebAPIAPI.runOnMain(() -> {
+        return WebAPIAPI.runOnMain(() -> {
             ItemData item = plugin.removeItem(id);
             if (item == null) {
                 throw new NotFoundException("The specified item is not restricted");
@@ -139,11 +139,9 @@ public class MMCRestrictServlet extends BaseServlet {
             saveData(plugin);
             return new CachedItemData(item);
         });
-
-        return optItem.orElse(null);
     }
 
-    private void saveData(Main plugin) throws InternalServerErrorException {
+    private void saveData(Main plugin) {
         try {
             plugin.saveData();
         } catch (IOException | ObjectMappingException e) {

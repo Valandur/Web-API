@@ -1,4 +1,4 @@
-package valandur.webapi.cache.misc;
+package valandur.webapi.api.cache.misc;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -7,7 +7,6 @@ import org.spongepowered.api.CatalogType;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.text.translation.Translatable;
 import valandur.webapi.api.cache.CachedObject;
-import valandur.webapi.api.cache.misc.ICachedCatalogType;
 
 import java.util.Optional;
 

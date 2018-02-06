@@ -1,4 +1,4 @@
-package valandur.webapi.handler;
+package valandur.webapi.api.exceptions;
 
 import javax.ws.rs.ServerErrorException;
 import javax.ws.rs.core.Response;

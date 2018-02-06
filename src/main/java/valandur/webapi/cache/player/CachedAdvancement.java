@@ -5,7 +5,7 @@ import org.spongepowered.api.advancement.AdvancementTree;
 import org.spongepowered.api.advancement.DisplayInfo;
 import org.spongepowered.api.text.Text;
 import valandur.webapi.api.serialize.JsonDetails;
-import valandur.webapi.cache.misc.CachedCatalogType;
+import valandur.webapi.api.cache.misc.CachedCatalogType;
 
 public class CachedAdvancement extends CachedCatalogType<Advancement> {
 

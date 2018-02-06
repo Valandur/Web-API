@@ -13,7 +13,7 @@ import org.spongepowered.api.world.weather.Weather;
 import valandur.webapi.api.cache.CachedObject;
 import valandur.webapi.api.cache.world.ICachedWorld;
 import valandur.webapi.api.serialize.JsonDetails;
-import valandur.webapi.cache.misc.CachedCatalogType;
+import valandur.webapi.api.cache.misc.CachedCatalogType;
 import valandur.webapi.util.Constants;
 
 import java.util.HashMap;

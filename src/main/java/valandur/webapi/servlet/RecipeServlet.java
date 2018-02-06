@@ -4,7 +4,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import valandur.webapi.api.servlet.BaseServlet;
 import valandur.webapi.api.servlet.Permission;
-import valandur.webapi.handler.NotImplementedException;
+import valandur.webapi.api.exceptions.NotImplementedException;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;

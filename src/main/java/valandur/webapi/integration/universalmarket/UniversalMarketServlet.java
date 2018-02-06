@@ -7,7 +7,6 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.plugin.PluginContainer;
-import valandur.webapi.WebAPI;
 import valandur.webapi.api.WebAPIAPI;
 import valandur.webapi.api.servlet.BaseServlet;
 import valandur.webapi.api.servlet.Permission;
@@ -38,7 +37,7 @@ public class UniversalMarketServlet extends BaseServlet {
             throws InternalServerErrorException {
         UniversalMarket plugin = getUMPlugin();
 
-        return WebAPI.runOnMain(() -> {
+        return WebAPIAPI.runOnMain(() -> {
             Market market = plugin.getMarket();
             return market.getListings().stream().map(CachedMarketItem::new).collect(Collectors.toList());
         });

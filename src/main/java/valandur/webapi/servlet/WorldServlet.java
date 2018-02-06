@@ -1,7 +1,6 @@
 package valandur.webapi.servlet;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import io.swagger.annotations.*;
 import org.spongepowered.api.Sponge;
@@ -18,7 +17,7 @@ import valandur.webapi.api.cache.world.ICachedWorld;
 import valandur.webapi.api.servlet.BaseServlet;
 import valandur.webapi.api.servlet.ExplicitDetails;
 import valandur.webapi.api.servlet.Permission;
-import valandur.webapi.cache.misc.CachedCatalogType;
+import valandur.webapi.api.cache.misc.CachedCatalogType;
 import valandur.webapi.cache.world.CachedWorld;
 import valandur.webapi.serialize.deserialize.ExecuteMethodRequest;
 import valandur.webapi.util.Util;
@@ -60,10 +59,8 @@ public class WorldServlet extends BaseServlet {
     @POST
     @Permission("create")
     @ApiOperation(
-            value = "Create a world",
-            notes = "Creates a new world with the specified settings. This does not yet load the world.",
-            response = ICachedWorld.class
-    )
+            value = "Create a world", response = ICachedWorld.class,
+            notes = "Creates a new world with the specified settings. This does not yet load the world.")
     public Response createWorld(CreateWorldRequest req)
             throws BadRequestException {
         if (req == null) {

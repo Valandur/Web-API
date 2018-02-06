@@ -10,7 +10,7 @@ import valandur.webapi.api.cache.misc.ICachedCatalogType;
 import valandur.webapi.api.cache.tileentity.ICachedTileEntity;
 import valandur.webapi.api.cache.world.CachedLocation;
 import valandur.webapi.api.serialize.JsonDetails;
-import valandur.webapi.cache.misc.CachedCatalogType;
+import valandur.webapi.api.cache.misc.CachedCatalogType;
 import valandur.webapi.cache.misc.CachedInventory;
 import valandur.webapi.util.Constants;
 

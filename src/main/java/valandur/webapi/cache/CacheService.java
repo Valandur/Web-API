@@ -41,7 +41,7 @@ import valandur.webapi.cache.chat.CachedChatMessage;
 import valandur.webapi.cache.command.CachedCommand;
 import valandur.webapi.cache.command.CachedCommandCall;
 import valandur.webapi.cache.entity.CachedEntity;
-import valandur.webapi.cache.misc.CachedCatalogType;
+import valandur.webapi.api.cache.misc.CachedCatalogType;
 import valandur.webapi.cache.misc.CachedCause;
 import valandur.webapi.cache.misc.CachedInventory;
 import valandur.webapi.cache.player.CachedPlayer;

@@ -14,6 +14,8 @@ import valandur.webapi.api.servlet.Permission;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.net.URI;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -35,9 +37,9 @@ public class RedProtectServlet extends BaseServlet {
     @Permission({ "region", "list" })
     @ApiOperation("List regions")
     public Collection<CachedRegion> getRegions(@QueryParam("world") ICachedWorld world) {
-        Optional<Set<CachedRegion>> optRegions;
+        Set<CachedRegion> regions;
         if (world != null) {
-            optRegions = WebAPIAPI.runOnMain(() -> {
+            regions = WebAPIAPI.runOnMain(() -> {
                 Optional<World> optLive = world.getLive();
                 if (!optLive.isPresent()) {
                     return null;
@@ -49,12 +51,12 @@ public class RedProtectServlet extends BaseServlet {
                         .collect(Collectors.toSet());
             });
         } else {
-            optRegions = WebAPIAPI.runOnMain(() -> RedProtect.get().rm.getAllRegions().stream()
+            regions = WebAPIAPI.runOnMain(() -> RedProtect.get().rm.getAllRegions().stream()
                     .map(CachedRegion::new)
                     .collect(Collectors.toSet()));
         }
 
-        return optRegions.orElse(null);
+        return regions;
     }
 
     @GET
@@ -67,17 +69,18 @@ public class RedProtectServlet extends BaseServlet {
             throw new BadRequestException("Invalid region id");
         }
 
-        Optional<CachedRegion> optRegion = WebAPIAPI.runOnMain(() -> new CachedRegion(RedProtect.get().rm.getRegionById(id)));
-        return optRegion.orElse(null);
+        return WebAPIAPI.runOnMain(() -> new CachedRegion(RedProtect.get().rm.getRegionById(id)));
     }
 
     @POST
     @Path("/region")
     @Permission({ "region", "create" })
-    @ApiOperation("Create a region")
-    public CachedRegion createRegion(CachedRegion req)
-            throws BadRequestException, InternalServerErrorException {
-        Optional<CachedRegion> optRegion = WebAPIAPI.runOnMain(() -> {
+    @ApiOperation(
+            value = "Create a region", response = CachedRegion.class,
+            notes = "Create a new region at a specified location")
+    public Response createRegion(CachedRegion req)
+            throws BadRequestException {
+        CachedRegion resRegion = WebAPIAPI.runOnMain(() -> {
             String name = req.getName();
             if (name == null) {
                 throw new BadRequestException("The region needs a name");
@@ -161,7 +164,7 @@ public class RedProtectServlet extends BaseServlet {
             return new CachedRegion(region);
         });
 
-        return optRegion.orElse(null);
+        return Response.created(URI.create(resRegion.getLink())).entity(resRegion).build();
     }
 
     @PUT
@@ -174,7 +177,7 @@ public class RedProtectServlet extends BaseServlet {
             throw new BadRequestException("Invalid region id");
         }
 
-        Optional<CachedRegion> optRegion = WebAPIAPI.runOnMain(() -> {
+        return WebAPIAPI.runOnMain(() -> {
             Region region = RedProtect.get().rm.getRegionById(id);
             if (region == null) {
                 throw new BadRequestException("Could not find region with id " + id);
@@ -234,8 +237,6 @@ public class RedProtectServlet extends BaseServlet {
 
             return new CachedRegion(region);
         });
-
-        return optRegion.orElse(null);
     }
 
     @DELETE
@@ -248,7 +249,7 @@ public class RedProtectServlet extends BaseServlet {
             throw new BadRequestException("Invalid region id");
         }
 
-        Optional<CachedRegion> optRegion = WebAPIAPI.runOnMain(() -> {
+        return WebAPIAPI.runOnMain(() -> {
             Region region = RedProtect.get().rm.getRegionById(id);
             if (region == null) {
                 throw new NotFoundException("Could not find region with id " + id);
@@ -259,7 +260,5 @@ public class RedProtectServlet extends BaseServlet {
 
             return new CachedRegion(region);
         });
-
-        return optRegion.orElse(null);
     }
 }

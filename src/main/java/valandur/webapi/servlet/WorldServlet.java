@@ -20,7 +20,6 @@ import valandur.webapi.api.servlet.ExplicitDetails;
 import valandur.webapi.api.servlet.Permission;
 import valandur.webapi.cache.world.CachedWorld;
 import valandur.webapi.serialize.deserialize.ExecuteMethodRequest;
-import valandur.webapi.util.Util;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -221,13 +220,8 @@ public class WorldServlet extends BaseServlet {
         }
 
         String mName = req.getMethod();
-        Optional<Tuple<Class[], Object[]>> params = Util.parseParams(req.getParameters());
-
-        if (!params.isPresent()) {
-            throw new BadRequestException("Invalid parameters");
-        }
-
-        return cacheService.executeMethod(world, mName, params.get().getFirst(), params.get().getSecond());
+        Tuple<Class[], Object[]> params = req.getParsedParameters();
+        return cacheService.executeMethod(world, mName, params.getFirst(), params.getSecond());
     }
 
 

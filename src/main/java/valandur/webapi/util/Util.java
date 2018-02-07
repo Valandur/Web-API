@@ -150,95 +150,6 @@ public class Util {
     }
 
     /**
-     * Parse a json node as an array of method parameters
-     * @param node The json node that contains the information about the method parameters.
-     * @return An optional which is empty on failure. On success it contains a tuple with the method parameters types and values.
-     */
-    public static Optional<Tuple<Class[], Object[]>> parseParams(List<ExecuteMethodParam> params) {
-        Class[] paramTypes = new Class[params.size()];
-        Object[] paramValues = new Object[params.size()];
-
-        try {
-            for (int i = 0; i < params.size(); i++) {
-                Tuple<Class, Object> tup = getParamFromJson(params.get(i));
-                paramTypes[i] = tup.getFirst();
-                paramValues[i] = tup.getSecond();
-            }
-        } catch (ClassNotFoundException | NoSuchFieldException | IllegalAccessException e) {
-            return Optional.empty();
-        }
-
-        return Optional.of(new Tuple<>(paramTypes, paramValues));
-    }
-    private static Tuple<Class, Object> getParamFromJson(ExecuteMethodParam param)
-            throws ClassNotFoundException, NoSuchFieldException, IllegalAccessException {
-        String val = param.getValue();
-        String[] vals = val.split(":");
-
-        switch (param.getType()) {
-            case INT:
-            case INTEGER:
-                return new Tuple<>(Integer.class, Integer.parseInt(val));
-            case FLOAT:
-                return new Tuple<>(Float.class, Float.parseFloat(val));
-            case DOUBLE:
-                return new Tuple<>(Double.class, Double.parseDouble(val));
-            case BOOL:
-            case BOOLEAN:
-                return new Tuple<>(Boolean.class, Boolean.parseBoolean(val));
-            case BYTE:
-                return new Tuple<>(Byte.class, Byte.parseByte(val));
-            case CHAR:
-                return new Tuple<>(Character.class, val.charAt(0));
-            case LONG:
-                return new Tuple<>(Long.class, Long.parseLong(val));
-            case SHORT:
-                return new Tuple<>(Short.class, Short.parseShort(val));
-            case STRING:
-                return new Tuple<>(String.class, val);
-            case CLASS:
-                return new Tuple<>(Class.class, Class.forName(val));
-            case ENUM:
-                Class clazz = Class.forName(vals[0]);
-                return new Tuple<Class, Object>(clazz, Enum.valueOf(clazz, vals[1]));
-
-            case VECTOR3D:
-                return new Tuple<>(Vector3d.class, new Vector3d(
-                        Double.parseDouble(vals[0]), Double.parseDouble(vals[1]), Double.parseDouble(vals[2])));
-
-            case VECTOR3I:
-                return new Tuple<>(Vector3i.class, new Vector3i(
-                        Integer.parseInt(vals[0]), Integer.parseInt(vals[1]), Integer.parseInt(vals[2])));
-
-            case TEXT:
-                return new Tuple<>(Text.class, Text.of(val));
-
-            case WORLD:
-                Optional<World> w = Sponge.getServer().getWorld(UUID.fromString(val));
-                return new Tuple<>(World.class, w.orElse(null));
-
-            case PLAYER:
-                Optional<Player> p = Sponge.getServer().getPlayer(UUID.fromString(val));
-                return new Tuple<>(Player.class, p.orElse(null));
-
-            case ITEMSTACK:
-                Optional<ItemType> t = Sponge.getRegistry().getType(ItemType.class, vals[0]);
-                if (!t.isPresent())
-                    throw new ClassNotFoundException(vals[0]);
-
-                return new Tuple<>(ItemStack.class, ItemStack.of(t.get(), Integer.parseInt(vals[1])));
-
-            case STATIC:
-                Class c = Class.forName(vals[0]);
-                Field f = c.getField(vals[1]);
-                return new Tuple<>(f.getType(), f.get(null));
-
-            default:
-                return null;
-        }
-    }
-
-    /**
      * Returns all NON MINECRAFT NATIVE fields from a class and it's ancestors. (The fields that don't start with "field_")
      * @param c The class for which to get the fields.
      * @return The array of fields of that class and all inherited fields.
@@ -282,7 +193,9 @@ public class Util {
      * @param def The default configuration
      * @param restoreDefaults True if missing values in the config marked with _DEFAULT_ in the comment of the default config should be added.
      */
-    public static void mergeConfigs(CommentedConfigurationNode node, CommentedConfigurationNode def, boolean restoreDefaults) {
+    public static void mergeConfigs(CommentedConfigurationNode node,
+                                    CommentedConfigurationNode def,
+                                    boolean restoreDefaults) {
         if (def.getComment().isPresent() && def.getComment().get().contains("_EXAMPLE_") && !restoreDefaults) {
             return;
         }

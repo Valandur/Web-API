@@ -21,7 +21,6 @@ import valandur.webapi.api.servlet.Permission;
 import valandur.webapi.cache.entity.CachedEntity;
 import valandur.webapi.serialize.deserialize.DamageRequest;
 import valandur.webapi.serialize.deserialize.ExecuteMethodRequest;
-import valandur.webapi.util.Util;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -217,13 +216,8 @@ public class EntityServlet extends BaseServlet {
         }
 
         String mName = req.getMethod();
-        Optional<Tuple<Class[], Object[]>> params = Util.parseParams(req.getParameters());
-
-        if (!params.isPresent()) {
-            throw new BadRequestException("Invalid parameters");
-        }
-
-        return cacheService.executeMethod(optEntity.get(), mName, params.get().getFirst(), params.get().getSecond());
+        Tuple<Class[], Object[]> params = req.getParsedParameters();
+        return cacheService.executeMethod(optEntity.get(), mName, params.getFirst(), params.getSecond());
     }
 
     @DELETE

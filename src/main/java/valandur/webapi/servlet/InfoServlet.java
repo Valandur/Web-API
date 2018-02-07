@@ -47,9 +47,9 @@ public class InfoServlet extends BaseServlet {
 
     @PUT
     @Path("/properties")
-    @Permission({ "properties", "change" })
-    @Permission(value = { "properties", "change", "[property]" }, autoCheck = false)
-    @ApiOperation(value = "Modify server properties", notes = "Change settings in the server.properties file. " +
+    @Permission({ "properties", "modify" })
+    @Permission(value = { "properties", "modify", "[property]" }, autoCheck = false)
+    @ApiOperation(value = "Modify server properties", notes = "Modify settings in the server.properties file. " +
             "**Note that these settings don't take effect until you restart the server.")
     public Collection<ServerProperty> setProperties(final Map<String, String> properties)
             throws BadRequestException {

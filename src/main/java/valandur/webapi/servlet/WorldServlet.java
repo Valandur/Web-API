@@ -108,9 +108,9 @@ public class WorldServlet extends BaseServlet {
 
     @PUT
     @Path("/{world}")
-    @Permission("change")
-    @ApiOperation(value = "Change a world", notes = "Update the properties of an existing world.")
-    public ICachedWorld updateWorld(
+    @Permission("modify")
+    @ApiOperation(value = "Modify a world", notes = "Modify the properties of an existing world.")
+    public ICachedWorld modifyWorld(
             @PathParam("world") @ApiParam("The uuid of the world which to update") ICachedWorld world,
             UpdateWorldRequest req) {
 

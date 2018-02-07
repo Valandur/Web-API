@@ -118,9 +118,9 @@ public class NucleusServlet extends BaseServlet {
 
     @PUT
     @Path("/jail/{name}")
-    @Permission({ "jail", "change" })
-    @ApiOperation(value = "Change a jail", notes = "Change an existing jail.")
-    public CachedNamedLocation changeJail()
+    @Permission({ "jail", "modify" })
+    @ApiOperation(value = "Modify a jail", notes = "Modify an existing jail.")
+    public CachedNamedLocation modifyJail()
             throws NotImplementedException {
         throw new NotImplementedException();
     }
@@ -239,9 +239,9 @@ public class NucleusServlet extends BaseServlet {
 
     @PUT
     @Path("/kit/{name}")
-    @Permission({ "kit", "chang" })
-    @ApiOperation(value = "Change a kit", notes = "Change an existing kit.")
-    public CachedKit changeKit(@PathParam("name") String name, CachedKit req)
+    @Permission({ "kit", "modify" })
+    @ApiOperation(value = "Modify a kit", notes = "Modify an existing kit.")
+    public CachedKit modifyKit(@PathParam("name") String name, CachedKit req)
             throws NotFoundException, BadRequestException {
 
         if (req == null) {

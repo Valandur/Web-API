@@ -57,9 +57,9 @@ public class PlayerServlet extends BaseServlet {
 
     @PUT
     @Path("/{player}")
-    @Permission("change")
-    @ApiOperation(value = "Change a player", notes = "Update the properties of an existing player.")
-    public ICachedPlayer updatePlayer(
+    @Permission("modify")
+    @ApiOperation(value = "Modify a player", notes = "Modify the properties of an existing player.")
+    public ICachedPlayer modifyPlayer(
             @PathParam("player") @ApiParam("The uuid of the player") UUID uuid,
             UpdatePlayerRequest req)
             throws NotFoundException, InternalServerErrorException {

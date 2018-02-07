@@ -98,9 +98,9 @@ public class MMCRestrictServlet extends BaseServlet {
 
     @PUT
     @Path("/item/{id}")
-    @Permission({ "item", "change" })
-    @ApiOperation(value = "Change an item", notes = "Change an existing restricted item.")
-    public CachedItemData changeItem(@PathParam("id") String id, CachedItemData req)
+    @Permission({ "item", "modify" })
+    @ApiOperation(value = "Modify an item", notes = "Modify an existing restricted item.")
+    public CachedItemData modifyItem(@PathParam("id") String id, CachedItemData req)
             throws NotFoundException {
 
         if (req == null) {

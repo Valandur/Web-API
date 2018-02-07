@@ -145,9 +145,9 @@ public class WebBookServlet extends BaseServlet {
 
     @PUT
     @Path("/book/{id}")
-    @Permission({ "book", "change" })
-    @ApiOperation(value = "Change a book", notes = "Change an existing book.")
-    public WebBook changeWebBook(@PathParam("id") String id, WebBook newBook)
+    @Permission({ "book", "modify" })
+    @ApiOperation(value = "Modify a book", notes = "Modify an existing book.")
+    public WebBook modifyWebBook(@PathParam("id") String id, WebBook newBook)
             throws InternalServerErrorException, NotFoundException {
 
         if (newBook == null) {

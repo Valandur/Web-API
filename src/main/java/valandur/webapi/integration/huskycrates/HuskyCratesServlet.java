@@ -112,9 +112,9 @@ public class HuskyCratesServlet extends BaseServlet {
 
     @PUT
     @Path("/crate/{id}")
-    @Permission({ "crate", "change" })
-    @ApiOperation(value = "Change a crate", notes = "Change a crate.")
-    public CachedVirtualCrate changeCrate(@PathParam("id") String id, CachedVirtualCrate req)
+    @Permission({ "crate", "modify" })
+    @ApiOperation(value = "Change a crate", notes = "Modify a crate.")
+    public CachedVirtualCrate modifyCrate(@PathParam("id") String id, CachedVirtualCrate req)
             throws NotFoundException {
 
         if (req == null) {

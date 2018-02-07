@@ -73,9 +73,9 @@ public class EntityServlet extends BaseServlet {
 
     @PUT
     @Path("/{entity}")
-    @Permission("change")
-    @ApiOperation(value = "Change an entity", notes = "Update the properties of an existing entity.")
-    public ICachedEntity updateEntity(
+    @Permission("modify")
+    @ApiOperation(value = "Modify an entity", notes = "Modify the properties of an existing entity.")
+    public ICachedEntity modifyEntity(
             @PathParam("entity") @ApiParam("The uuid of the entity") UUID uuid,
             UpdateEntityRequest req)
             throws NotFoundException, BadRequestException {

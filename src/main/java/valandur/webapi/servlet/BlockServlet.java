@@ -181,8 +181,8 @@ public class BlockServlet extends BaseServlet {
 
     @PUT
     @Path("/op/{uuid}")
-    @Permission({ "op", "change" })
-    @ApiOperation(value = "Change a block operation",
+    @Permission({ "op", "modify" })
+    @ApiOperation(value = "Modify a block operation",
             notes = "Modify an existing block operation to either pause or continue it.")
     public IBlockOperation modifyBlockOperation(
             @PathParam("uuid") @ApiParam("The uuid of the block operation") UUID uuid)

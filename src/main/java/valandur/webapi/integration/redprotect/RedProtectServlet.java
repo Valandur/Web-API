@@ -174,9 +174,9 @@ public class RedProtectServlet extends BaseServlet {
 
     @PUT
     @Path("/region/{id}")
-    @Permission({ "region", "change" })
-    @ApiOperation("Change a region")
-    public CachedRegion changeRegion(@PathParam("id") String id, CachedRegion req)
+    @Permission({ "region", "modify" })
+    @ApiOperation("Modify a region")
+    public CachedRegion modifyRegion(@PathParam("id") String id, CachedRegion req)
             throws BadRequestException {
         if (!id.contains("@")) {
             throw new BadRequestException("Invalid region id");

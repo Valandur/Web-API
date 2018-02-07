@@ -79,9 +79,9 @@ public class MMCTicketsServlet extends BaseServlet {
 
     @PUT
     @Path("/ticket/{id}")
-    @Permission({ "ticket", "change" })
-    @ApiOperation(value = "Change a ticket", notes = "Update the properties of an existing ticket.")
-    public CachedTicketData changeTicket(@PathParam("id") Integer id, CachedTicketData req)
+    @Permission({ "ticket", "modify" })
+    @ApiOperation(value = "Modify a ticket", notes = "Modify the properties of an existing ticket.")
+    public CachedTicketData modifyTicket(@PathParam("id") Integer id, CachedTicketData req)
             throws NotFoundException {
 
         if (req == null) {

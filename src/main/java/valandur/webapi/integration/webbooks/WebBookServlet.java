@@ -112,6 +112,11 @@ public class WebBookServlet extends BaseServlet {
             notes = "Create a new web book from the specified data.")
     public Response createWebBook(WebBook book)
             throws BadRequestException, InternalServerErrorException {
+
+        if (book == null) {
+            throw new BadRequestException("Request body is required");
+        }
+
         String id = book.getId();
         if (id == null || id.isEmpty()) {
             throw new BadRequestException("The book needs an id");
@@ -144,6 +149,11 @@ public class WebBookServlet extends BaseServlet {
     @ApiOperation(value = "Change a book", notes = "Change an existing book.")
     public WebBook changeWebBook(@PathParam("id") String id, WebBook newBook)
             throws InternalServerErrorException, NotFoundException {
+
+        if (newBook == null) {
+            throw new BadRequestException("Request body is required");
+        }
+
         WebBook oldBook = books.get(id);
         if (oldBook == null) {
             throw new NotFoundException("Book with id " + id + " not found");

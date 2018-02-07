@@ -46,8 +46,7 @@ public class EntityServlet extends BaseServlet {
     public Collection<ICachedEntity> getEntities(
             @QueryParam("world") @ApiParam("The world to filter the entities by") ICachedWorld world,
             @QueryParam("type") @ApiParam("The type id of the entities to filter by") String typeId,
-            @QueryParam("limit") @ApiParam("The maximum amount of entities returned") int limit)
-            throws InternalServerErrorException {
+            @QueryParam("limit") @ApiParam("The maximum amount of entities returned") int limit) {
         Predicate<Entity> filter = e -> typeId == null || e.getType().getId().equalsIgnoreCase(typeId);
 
         if (world != null) {
@@ -79,7 +78,12 @@ public class EntityServlet extends BaseServlet {
     public ICachedEntity updateEntity(
             @PathParam("entity") @ApiParam("The uuid of the entity") UUID uuid,
             UpdateEntityRequest req)
-            throws InternalServerErrorException, NotFoundException, BadRequestException {
+            throws NotFoundException, BadRequestException {
+
+        if (req == null) {
+            throw new BadRequestException("Request body is required");
+        }
+
         Optional<ICachedEntity> optEntity = WebAPI.getCacheService().getEntity(uuid);
         if (!optEntity.isPresent()) {
             throw new NotFoundException("Entity with UUID '" + uuid + "' could not be found");
@@ -152,6 +156,11 @@ public class EntityServlet extends BaseServlet {
             notes = "Creates & Spawns a new entity with the specified properties.")
     public Response createEntity(CreateEntityRequest req)
             throws BadRequestException {
+
+        if (req == null) {
+            throw new BadRequestException("Request body is required");
+        }
+
         Optional<ICachedWorld> optWorld = req.getWorld();
         if (!optWorld.isPresent()) {
             throw new BadRequestException("No valid world provided");
@@ -192,7 +201,12 @@ public class EntityServlet extends BaseServlet {
     public Object executeMethod(
             @PathParam("entity") @ApiParam("The uuid of the entity") UUID uuid,
             ExecuteMethodRequest req)
-            throws NotFoundException, BadRequestException, InternalServerErrorException {
+            throws NotFoundException, BadRequestException {
+
+        if (req == null) {
+            throw new BadRequestException("Request body is required");
+        }
+
         Optional<ICachedEntity> optEntity = WebAPI.getCacheService().getEntity(uuid);
         if (!optEntity.isPresent()) {
             throw new NotFoundException("Entity with UUID '" + uuid + "' could not be found");
@@ -218,7 +232,7 @@ public class EntityServlet extends BaseServlet {
     @ApiOperation(value = "Destroy an entity", notes = "Destroys an entity.")
     public ICachedEntity removeEntity(
             @PathParam("entity") @ApiParam("The uuid of the entity") UUID uuid)
-            throws NotFoundException, InternalServerErrorException {
+            throws NotFoundException {
         Optional<ICachedEntity> optEntity = WebAPI.getCacheService().getEntity(uuid);
         if (!optEntity.isPresent()) {
             throw new NotFoundException("Entity with UUID '" + uuid + "' could not be found");

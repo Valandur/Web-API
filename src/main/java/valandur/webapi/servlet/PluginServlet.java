@@ -92,6 +92,11 @@ public class PluginServlet extends BaseServlet {
             @PathParam("plugin") @ApiParam("The id of the plugin") String pluginName,
             Map<String, Object> configs)
             throws NotFoundException {
+
+        if (configs == null) {
+            throw new BadRequestException("Request body is required");
+        }
+
         Optional<ICachedPluginContainer> optPlugin = cacheService.getPlugin(pluginName);
         if (!optPlugin.isPresent()) {
             throw new NotFoundException("Plugin with id '" + pluginName + "' could not be found");

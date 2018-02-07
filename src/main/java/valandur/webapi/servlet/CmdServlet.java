@@ -52,6 +52,11 @@ public class CmdServlet extends BaseServlet {
             "(Almost the same as running it from the console).  \nPass a list of commands to execute them in " +
             "succession, if only passing one command the array is not required.")
     public void runCommands(ExecuteCommandRequest req) {
+
+        if (req == null) {
+            throw new BadRequestException("Request body is required");
+        }
+
         // TODO: Implement executing commands
         // TODO: Check specific command permissions
         /*final JsonNode reqJson = data.getRequestBody();

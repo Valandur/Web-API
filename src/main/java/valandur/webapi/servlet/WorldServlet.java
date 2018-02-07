@@ -114,6 +114,10 @@ public class WorldServlet extends BaseServlet {
             @PathParam("world") @ApiParam("The uuid of the world which to update") ICachedWorld world,
             UpdateWorldRequest req) {
 
+        if (req == null) {
+            throw new BadRequestException("Request body is required");
+        }
+
         return WebAPI.runOnMain(() -> {
             Optional<World> optLive = world.getLive();
             Optional<WorldProperties> optProps = world.getLiveProps();
@@ -207,6 +211,11 @@ public class WorldServlet extends BaseServlet {
             @PathParam("world") @ApiParam("The uuid of the world on which to execute the method") ICachedWorld world,
             ExecuteMethodRequest req)
             throws BadRequestException {
+
+        if (req == null) {
+            throw new BadRequestException("Request body is required");
+        }
+
         if (req.getMethod() == null || req.getMethod().isEmpty()) {
             throw new BadRequestException("Method must be specified");
         }

@@ -66,9 +66,8 @@ public class MMCTicketsServlet extends BaseServlet {
     @ApiOperation(value = "Get a ticket", notes = "Get detailed information about a ticket.")
     public CachedTicketData getTicket(@PathParam("id") Integer id)
             throws NotFoundException {
-        Main plugin = getMMCTicketsPlugin();
-
         return WebAPIAPI.runOnMain(() -> {
+            Main plugin = getMMCTicketsPlugin();
             TicketData ticketData = plugin.getTicket(id);
             if (ticketData == null) {
                 throw new NotFoundException("Ticket with id " + id + " not found");
@@ -84,9 +83,13 @@ public class MMCTicketsServlet extends BaseServlet {
     @ApiOperation(value = "Change a ticket", notes = "Update the properties of an existing ticket.")
     public CachedTicketData changeTicket(@PathParam("id") Integer id, CachedTicketData req)
             throws NotFoundException {
-        Main plugin = getMMCTicketsPlugin();
+
+        if (req == null) {
+            throw new BadRequestException("Request body is required");
+        }
 
         return WebAPIAPI.runOnMain(() -> {
+            Main plugin = getMMCTicketsPlugin();
             TicketData ticketData = plugin.getTicket(id);
             if (ticketData == null) {
                 throw new NotFoundException("Ticket with id " + id + " not found");

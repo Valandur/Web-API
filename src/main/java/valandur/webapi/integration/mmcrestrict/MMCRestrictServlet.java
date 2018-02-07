@@ -73,13 +73,17 @@ public class MMCRestrictServlet extends BaseServlet {
             notes = "Adds a new item to the restricted item list.")
     public Response addItem(CachedItemData req)
             throws BadRequestException {
-        Main plugin = getMMCRestrictPlugin();
+
+        if (req == null) {
+            throw new BadRequestException("Request body is required");
+        }
 
         if (req.getItem() == null) {
             throw new BadRequestException("Invalid item data");
         }
 
         CachedItemData item = WebAPIAPI.runOnMain(() -> {
+            Main plugin = getMMCRestrictPlugin();
             Optional<ItemData> optData = req.getLive();
             if (!optData.isPresent()) {
                 return null;
@@ -98,9 +102,13 @@ public class MMCRestrictServlet extends BaseServlet {
     @ApiOperation(value = "Change an item", notes = "Change an existing restricted item.")
     public CachedItemData changeItem(@PathParam("id") String id, CachedItemData req)
             throws NotFoundException {
-        Main plugin = getMMCRestrictPlugin();
+
+        if (req == null) {
+            throw new BadRequestException("Request body is required");
+        }
 
         return WebAPIAPI.runOnMain(() -> {
+            Main plugin = getMMCRestrictPlugin();
             ItemData item = plugin.removeItem(id);
             if (item == null) {
                 throw new NotFoundException("The specified item is not restricted");
@@ -129,9 +137,9 @@ public class MMCRestrictServlet extends BaseServlet {
     @ApiOperation(value = "Delete an item", notes = "Delete an existing restricted item.")
     public CachedItemData deleteItem(@PathParam("id") String id)
             throws NotFoundException {
-        Main plugin = getMMCRestrictPlugin();
 
         return WebAPIAPI.runOnMain(() -> {
+            Main plugin = getMMCRestrictPlugin();
             ItemData item = plugin.removeItem(id);
             if (item == null) {
                 throw new NotFoundException("The specified item is not restricted");

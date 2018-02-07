@@ -54,7 +54,12 @@ public class MessageServlet extends BaseServlet {
             notes = "Send an interactive message to a player. Make sure to have an event hook for " +
                     "\"custom_message\" to receive the response.")
     public Response sendMessage(Message msg)
-            throws BadRequestException, InternalServerErrorException {
+            throws BadRequestException {
+
+        if (msg == null) {
+            throw new BadRequestException("Request body is required");
+        }
+
         if (msg.getTarget() == null && (msg.getTargets() == null || msg.getTargets().size() == 0)) {
             throw new BadRequestException("You need to specify either a single target or a list of targets");
         }

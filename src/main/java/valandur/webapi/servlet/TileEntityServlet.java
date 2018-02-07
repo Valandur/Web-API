@@ -76,6 +76,11 @@ public class TileEntityServlet extends BaseServlet {
             @PathParam("z") @ApiParam("The x-coordinate of the tile-entity") Integer z,
             ExecuteMethodRequest req)
             throws BadRequestException, NotFoundException {
+
+        if (req == null) {
+            throw new BadRequestException("Request body is required");
+        }
+
         if (req.getMethod() == null || req.getMethod().isEmpty()) {
             throw new BadRequestException("Method must be specified");
         }

@@ -53,8 +53,9 @@ public class InfoServlet extends BaseServlet {
             "**Note that these settings don't take effect until you restart the server.")
     public Collection<ServerProperty> setProperties(final Map<String, String> properties)
             throws BadRequestException {
+
         if (properties == null) {
-            throw new BadRequestException();
+            throw new BadRequestException("Request body is required");
         }
 
         // TODO: Add check for setting properties

@@ -39,6 +39,10 @@ public class UserServlet extends BaseServlet {
     @ApiOperation(value = "Login", notes = "Tries to aquire an api key with the passed credentials.")
     public PermissionStruct authUser(AuthRequest req)
             throws ForbiddenException {
+        if (req == null) {
+            throw new BadRequestException("Request body is required");
+        }
+
         Optional<UserPermissionStruct> optPerm = Users.getUser(req.getUsername(), req.getPassword());
         if (!optPerm.isPresent()) {
             throw new ForbiddenException("Invalid username / password");

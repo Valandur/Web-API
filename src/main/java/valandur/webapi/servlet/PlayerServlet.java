@@ -63,6 +63,11 @@ public class PlayerServlet extends BaseServlet {
             @PathParam("player") @ApiParam("The uuid of the player") UUID uuid,
             UpdatePlayerRequest req)
             throws NotFoundException, InternalServerErrorException {
+
+        if (req == null) {
+            throw new BadRequestException("Request body is required");
+        }
+
         Optional<ICachedPlayer> optPlayer = WebAPI.getCacheService().getPlayer(uuid);
         if (!optPlayer.isPresent()) {
             throw new NotFoundException("Player with UUID '" + uuid + "' could not be found");
@@ -160,6 +165,11 @@ public class PlayerServlet extends BaseServlet {
             @PathParam("player") @ApiParam("The uuid of the player") UUID uuid,
             ExecuteMethodRequest req)
             throws InternalServerErrorException, NotFoundException, BadRequestException {
+
+        if (req == null) {
+            throw new BadRequestException("Request body is required");
+        }
+
         Optional<ICachedPlayer> optPlayer = WebAPI.getCacheService().getPlayer(uuid);
         if (!optPlayer.isPresent()) {
             throw new NotFoundException("Player with UUID '" + uuid + "' could not be found");

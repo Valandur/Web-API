@@ -59,6 +59,11 @@ public class BlockServlet extends BaseServlet {
             notes = "Start a request to get or change blocks on the server.")
     public Response createBlockOperation(CreateOperationRequest req)
             throws BadRequestException, NotAcceptableException {
+
+        if (req == null) {
+            throw new BadRequestException("Request body is required");
+        }
+
         // Check world
         if (!req.getWorld().isPresent()) {
             throw new BadRequestException("No valid world provided");

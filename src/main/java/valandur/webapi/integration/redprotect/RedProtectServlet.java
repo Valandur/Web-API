@@ -80,6 +80,11 @@ public class RedProtectServlet extends BaseServlet {
             notes = "Create a new region at a specified location")
     public Response createRegion(CachedRegion req)
             throws BadRequestException {
+
+        if (req == null) {
+            throw new BadRequestException("Request body is required");
+        }
+
         CachedRegion resRegion = WebAPIAPI.runOnMain(() -> {
             String name = req.getName();
             if (name == null) {
@@ -175,6 +180,10 @@ public class RedProtectServlet extends BaseServlet {
             throws BadRequestException {
         if (!id.contains("@")) {
             throw new BadRequestException("Invalid region id");
+        }
+
+        if (req == null) {
+            throw new BadRequestException("Request body is required");
         }
 
         return WebAPIAPI.runOnMain(() -> {

@@ -56,8 +56,7 @@ public class MapServlet extends BaseServlet {
     public Response getMap(
             @PathParam("world") @ApiParam("The world to get the map tile from") CachedWorld world,
             @PathParam("x") @ApiParam("The x-coordinate of the tile (is multiplied by the TILE_SIZE)") int x,
-            @PathParam("z") @ApiParam("The z-coordinate of the tile (is multiplied by the TILE_SIZE)") int z)
-            throws InternalServerErrorException {
+            @PathParam("z") @ApiParam("The z-coordinate of the tile (is multiplied by the TILE_SIZE)") int z) {
         int bX = TILE_SIZE * x;
         int bZ = TILE_SIZE * z;
         Vector3i min = new Vector3i(bX - HALF_TILE_SIZE, 0, bZ - HALF_TILE_SIZE);

@@ -57,9 +57,8 @@ public class HuskyCratesServlet extends BaseServlet {
     @Permission({ "crate", "list" })
     @ApiOperation(value = "List crates", notes = "Get a list of all the crates on the server.")
     public Collection<CachedVirtualCrate> getCrates() {
-        HuskyCrates plugin = getHuskyPlugin();
-
         return WebAPIAPI.runOnMain(() -> {
+            HuskyCrates plugin = getHuskyPlugin();
             List<CachedVirtualCrate> crates = new ArrayList<>();
             for (VirtualCrate crate : plugin.getCrateUtilities().crateTypes.values()) {
                 crates.add(new CachedVirtualCrate(crate));
@@ -74,9 +73,8 @@ public class HuskyCratesServlet extends BaseServlet {
     @ApiOperation(value = "Get a crate", notes = "Get detailed information about a crate.")
     public CachedVirtualCrate getCrate(@PathParam("id") String id)
             throws NotFoundException {
-        HuskyCrates plugin = getHuskyPlugin();
-
         return WebAPIAPI.runOnMain(() -> {
+            HuskyCrates plugin = getHuskyPlugin();
             VirtualCrate crate = plugin.crateUtilities.getVirtualCrate(id);
             if (crate == null) {
                 throw new NotFoundException("Crate with id " + id + " not found");
@@ -91,9 +89,13 @@ public class HuskyCratesServlet extends BaseServlet {
     @Permission({ "crate", "create "})
     @ApiOperation(value = "Create a crate", response = CachedVirtualCrate.class, notes = "Creates a new crate.")
     public Response createCrate(CachedVirtualCrate req) {
-        HuskyCrates plugin = getHuskyPlugin();
+
+        if (req == null) {
+            throw new BadRequestException("Request body is required");
+        }
 
         CachedVirtualCrate crate = WebAPIAPI.runOnMain(() -> {
+            HuskyCrates plugin = getHuskyPlugin();
             saveCrate(plugin.crateConfig, req);
             plugin.crateUtilities.generateVirtualCrates(plugin.crateConfig);
 
@@ -114,9 +116,13 @@ public class HuskyCratesServlet extends BaseServlet {
     @ApiOperation(value = "Change a crate", notes = "Change a crate.")
     public CachedVirtualCrate changeCrate(@PathParam("id") String id, CachedVirtualCrate req)
             throws NotFoundException {
-        HuskyCrates plugin = getHuskyPlugin();
+
+        if (req == null) {
+            throw new BadRequestException("Request body is required");
+        }
 
         return WebAPIAPI.runOnMain(() -> {
+            HuskyCrates plugin = getHuskyPlugin();
             VirtualCrate oldCrate = plugin.crateUtilities.getVirtualCrate(id);
             if (oldCrate == null) {
                 throw new NotFoundException("Crate with id " + id + " not found");
@@ -142,9 +148,9 @@ public class HuskyCratesServlet extends BaseServlet {
     @ApiOperation(value = "Delete a crate", notes = "Delete a crate.")
     public CachedVirtualCrate deleteCrate(@PathParam("id") String id)
             throws NotFoundException {
-        HuskyCrates plugin = getHuskyPlugin();
 
         return WebAPIAPI.runOnMain(() -> {
+            HuskyCrates plugin = getHuskyPlugin();
             VirtualCrate crate = plugin.crateUtilities.getVirtualCrate(id);
             if (crate == null) {
                 throw new NotFoundException("Crate with id " + id + " not found");

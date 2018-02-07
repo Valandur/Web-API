@@ -86,6 +86,11 @@ public class NucleusServlet extends BaseServlet {
     @ApiOperation(value = "Create a jail", response = CachedNamedLocation.class, notes = "Creates a new jail.")
     public Response createJail(CachedNamedLocation req)
             throws BadRequestException {
+
+        if (req == null) {
+            throw new BadRequestException("Request body is required");
+        }
+
         Optional<NucleusJailService> optSrv = NucleusAPI.getJailService();
         if (!optSrv.isPresent()) {
             throw new InternalServerErrorException("Nuclues jail service not available");
@@ -195,6 +200,11 @@ public class NucleusServlet extends BaseServlet {
     @ApiOperation(value = "Create a kit", response = CachedKit.class, notes = "Creates a new kit.")
     public Response createKit(CachedKit req)
             throws BadRequestException {
+
+        if (req == null) {
+            throw new BadRequestException("Request body is required");
+        }
+
         Optional<NucleusKitService> optSrv = NucleusAPI.getKitService();
         if (!optSrv.isPresent()) {
             throw new InternalServerErrorException("Nuclues kit service not available");
@@ -233,6 +243,11 @@ public class NucleusServlet extends BaseServlet {
     @ApiOperation(value = "Change a kit", notes = "Change an existing kit.")
     public CachedKit changeKit(@PathParam("name") String name, CachedKit req)
             throws NotFoundException, BadRequestException {
+
+        if (req == null) {
+            throw new BadRequestException("Request body is required");
+        }
+
         Optional<NucleusKitService> optSrv = NucleusAPI.getKitService();
         if (!optSrv.isPresent()) {
             throw new InternalServerErrorException("Nuclues kit service not available");

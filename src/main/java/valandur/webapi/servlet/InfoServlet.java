@@ -13,10 +13,13 @@ import valandur.webapi.api.server.IServerStat;
 import valandur.webapi.api.servlet.BaseServlet;
 import valandur.webapi.api.servlet.Permission;
 import valandur.webapi.cache.plugin.CachedPluginContainer;
+import valandur.webapi.security.SecurityContext;
 import valandur.webapi.server.ServerProperty;
 import valandur.webapi.server.ServerService;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import java.util.Collection;
 import java.util.List;
@@ -50,16 +53,22 @@ public class InfoServlet extends BaseServlet {
     @Permission(value = { "properties", "modify", "[property]" }, autoCheck = false)
     @ApiOperation(value = "Modify server properties", notes = "Modify settings in the server.properties file. " +
             "**Note that these settings don't take effect until you restart the server.")
-    public Collection<ServerProperty> setProperties(final Map<String, String> properties)
+    public Collection<ServerProperty> modifyProperties(
+            final Map<String, String> properties,
+            @Context HttpServletRequest request)
             throws BadRequestException {
 
         if (properties == null) {
             throw new BadRequestException("Request body is required");
         }
 
-        // TODO: Add check for setting properties
+        SecurityContext context = (SecurityContext)request.getAttribute("security");
+
         ServerService srv = WebAPI.getServerService();
         for (Map.Entry<String, String> entry : properties.entrySet()) {
+            if (!context.hasPerms(entry.getKey())) {
+                throw new ForbiddenException("You do not have permission to change the " + entry.getKey() + " setting");
+            }
             srv.setProperty(entry.getKey(), entry.getValue());
         }
 

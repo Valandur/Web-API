@@ -284,7 +284,10 @@ public class AuthenticationProvider implements ContainerRequestFilter {
                     throw new ForbiddenException();
                 }
             }
-            securityContext.setEndpointPerms(methodPerms);
+
+            // Set the endpoint permissions to the first permissions listed
+            if (securityContext.getEndpointPerms() == null)
+                securityContext.setEndpointPerms(methodPerms);
         }
 
     }

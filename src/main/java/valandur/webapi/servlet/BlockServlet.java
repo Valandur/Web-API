@@ -1,9 +1,7 @@
 package valandur.webapi.servlet;
 
 import com.flowpowered.math.vector.Vector3i;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.*;
 import org.spongepowered.api.block.BlockState;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.block.IBlockOperation;
@@ -184,20 +182,25 @@ public class BlockServlet extends BaseServlet {
     @ApiOperation(value = "Modify a block operation",
             notes = "Modify an existing block operation to either pause or continue it.")
     public IBlockOperation modifyBlockOperation(
-            @PathParam("uuid") @ApiParam("The uuid of the block operation") UUID uuid)
+            @PathParam("uuid") @ApiParam("The uuid of the block operation") UUID uuid,
+            ModifyBlockOperationRequest req)
             throws NotFoundException {
+
+        if (req == null) {
+            throw new BadRequestException("Request body is required");
+        }
+
         // Check block op
         Optional<IBlockOperation> op = blockService.getBlockOperation(uuid);
         if (!op.isPresent()) {
             throw new NotFoundException("Block opeartion with UUID '" + uuid + "' could not be found");
         }
 
-        // TODO: Implement pausing and unpausing block ops
-        /*if (reqJson.get("pause").asBoolean()) {
+        if (req.isPaused) {
             op.get().pause();
         } else {
             op.get().start();
-        }*/
+        }
 
         return op.get();
     }
@@ -222,36 +225,55 @@ public class BlockServlet extends BaseServlet {
     }
 
 
+    @ApiModel("CreateOperationRequest")
     public static class CreateOperationRequest {
 
         private IBlockOperation.BlockOperationType type;
+        @ApiModelProperty(value = "The type of the block operation", required = true)
         public IBlockOperation.BlockOperationType getType() {
             return type;
         }
 
         private String world;
+        @ApiModelProperty(dataType = "string", value = "The world that the operation is run in", required = true)
         public Optional<ICachedWorld> getWorld() {
             return WebAPI.getCacheService().getWorld(world);
         }
 
         private Vector3i min;
+        @ApiModelProperty(value = "The minimum world coordinates spanning the cube where the operation is run",
+                required = true)
         public Vector3i getMin() {
             return min;
         }
 
         private Vector3i max;
+        @ApiModelProperty(value = "The maximum world coordinates spanning the cube where the operation is run",
+                required = true)
         public Vector3i getMax() {
             return max;
         }
 
         private BlockState block;
+        @ApiModelProperty("The block that we want to change all other blocks into (when using an UPDATE operation")
         public BlockState getBlock() {
             return block;
         }
 
         private BlockState[][][] blocks;
+        @ApiModelProperty("An array of blocks defining what each block in the spanned cube")
         public BlockState[][][] getBlocks() {
             return blocks;
+        }
+    }
+
+    @ApiModel("ModifyBlockOperationRequest")
+    public static class ModifyBlockOperationRequest {
+
+        private boolean isPaused;
+        @ApiModelProperty("True if the operation should be paused, false otherwise")
+        public boolean isPaused() {
+            return isPaused;
         }
     }
 }

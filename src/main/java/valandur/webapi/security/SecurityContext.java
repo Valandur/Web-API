@@ -1,5 +1,6 @@
 package valandur.webapi.security;
 
+import valandur.webapi.WebAPI;
 import valandur.webapi.api.util.TreeNode;
 import valandur.webapi.user.UserPermissionStruct;
 
@@ -38,6 +39,10 @@ public class SecurityContext implements javax.ws.rs.core.SecurityContext {
     @Override
     public String getAuthenticationScheme() {
         return "WEBAPI-PERMS";
+    }
+
+    public boolean hasPerms(String... reqPerms) {
+        return WebAPI.getPermissionService().subPermissions(endpointPerms, reqPerms).getValue();
     }
 
 

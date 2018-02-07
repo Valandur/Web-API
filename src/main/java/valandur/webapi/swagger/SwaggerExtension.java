@@ -9,8 +9,8 @@ import io.swagger.models.properties.IntegerProperty;
 import io.swagger.models.properties.ObjectProperty;
 import io.swagger.models.properties.Property;
 import io.swagger.models.properties.StringProperty;
-import valandur.webapi.api.servlet.Permission;
 import valandur.webapi.api.exceptions.NotImplementedException;
+import valandur.webapi.api.servlet.Permission;
 
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.NotFoundException;

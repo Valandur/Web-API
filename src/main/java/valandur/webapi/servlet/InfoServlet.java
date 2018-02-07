@@ -31,8 +31,7 @@ public class InfoServlet extends BaseServlet {
     @GET
     @Permission("info")
     @ApiOperation(value = "Server info", notes = "Get general information about the Minecraft server.")
-    public ServerInfo getInfo()
-            throws InternalServerErrorException {
+    public ServerInfo getInfo() {
         return WebAPI.runOnMain(ServerInfo::new);
     }
 

@@ -62,7 +62,7 @@ public class PlayerServlet extends BaseServlet {
     public ICachedPlayer modifyPlayer(
             @PathParam("player") @ApiParam("The uuid of the player") UUID uuid,
             UpdatePlayerRequest req)
-            throws NotFoundException, InternalServerErrorException {
+            throws NotFoundException {
 
         if (req == null) {
             throw new BadRequestException("Request body is required");
@@ -164,7 +164,7 @@ public class PlayerServlet extends BaseServlet {
     public Object executeMethod(
             @PathParam("player") @ApiParam("The uuid of the player") UUID uuid,
             ExecuteMethodRequest req)
-            throws InternalServerErrorException, NotFoundException, BadRequestException {
+            throws NotFoundException, BadRequestException {
 
         if (req == null) {
             throw new BadRequestException("Request body is required");

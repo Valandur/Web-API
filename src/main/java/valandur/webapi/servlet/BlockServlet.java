@@ -35,8 +35,7 @@ public class BlockServlet extends BaseServlet {
             @PathParam("world") @ApiParam("The uuid of the world to get the block from") ICachedWorld world,
             @PathParam("x") @ApiParam("The x-coordinate of the block") int x,
             @PathParam("y") @ApiParam("The y-coordinate of the block") int y,
-            @PathParam("z") @ApiParam("The z-coordinate of the block") int z)
-            throws InternalServerErrorException {
+            @PathParam("z") @ApiParam("The z-coordinate of the block") int z) {
         Vector3i pos = new Vector3i(x, y, z);
         return new BlockStateView(blockService.getBlockAt(world, pos));
     }

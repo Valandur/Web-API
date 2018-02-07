@@ -33,17 +33,15 @@ public class UniversalMarketServlet extends BaseServlet {
     @Path("/item")
     @Permission({ "item", "list" })
     @ApiOperation("List items")
-    public Collection<CachedMarketItem> getMarketItems()
-            throws InternalServerErrorException {
-        UniversalMarket plugin = getUMPlugin();
-
+    public Collection<CachedMarketItem> getMarketItems() {
         return WebAPIAPI.runOnMain(() -> {
+            UniversalMarket plugin = getUMPlugin();
             Market market = plugin.getMarket();
             return market.getListings().stream().map(CachedMarketItem::new).collect(Collectors.toList());
         });
     }
 
-    private UniversalMarket getUMPlugin() throws InternalServerErrorException {
+    private UniversalMarket getUMPlugin() {
         Optional<PluginContainer> optContainer = Sponge.getPluginManager().getPlugin("universalmarket");
         if (!optContainer.isPresent()) {
             throw new InternalServerErrorException("UniversalMarket plugin not found");

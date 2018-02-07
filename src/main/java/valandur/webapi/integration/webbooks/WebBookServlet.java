@@ -59,7 +59,7 @@ public class WebBookServlet extends BaseServlet {
                 TypeToken.of(WebBook.class), new WebBookConfigSerializer());
     }
 
-    private void saveBooks() throws InternalServerErrorException {
+    private void saveBooks() {
         try {
             loader.save(config);
         } catch (IOException e) {
@@ -111,7 +111,7 @@ public class WebBookServlet extends BaseServlet {
             value = "Create a book", response = WebBook.class,
             notes = "Create a new web book from the specified data.")
     public Response createWebBook(WebBook book)
-            throws BadRequestException, InternalServerErrorException {
+            throws BadRequestException {
 
         if (book == null) {
             throw new BadRequestException("Request body is required");
@@ -148,7 +148,7 @@ public class WebBookServlet extends BaseServlet {
     @Permission({ "book", "modify" })
     @ApiOperation(value = "Modify a book", notes = "Modify an existing book.")
     public WebBook modifyWebBook(@PathParam("id") String id, WebBook newBook)
-            throws InternalServerErrorException, NotFoundException {
+            throws NotFoundException {
 
         if (newBook == null) {
             throw new BadRequestException("Request body is required");
@@ -182,7 +182,7 @@ public class WebBookServlet extends BaseServlet {
     @Permission({ "book", "delete" })
     @ApiOperation(value = "Delete a book", notes = "Delete a web book.")
     public WebBook deleteWebBook(@PathParam("id") String id)
-            throws NotFoundException, InternalServerErrorException {
+            throws NotFoundException {
         WebBook book = books.get(id);
         if (book == null) {
             throw new NotFoundException("Book with id " + id + " not found");

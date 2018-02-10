@@ -51,9 +51,55 @@ public class PermissionServlet extends BaseServlet {
 
         try {
             if (!srv.hasCollection(id).get())
-                throw new NotFoundException("Subject collection with id " + id + " could not be found");
+                throw new NotFoundException("Collection with id " + id + " could not be found");
 
             return srv.loadCollection(id).get();
+        } catch (InterruptedException e) {
+            throw new ClientErrorException(e.getMessage(), Response.Status.REQUEST_TIMEOUT);
+        } catch (ExecutionException e) {
+            throw new InternalServerErrorException(e.getMessage());
+        }
+    }
+
+    @GET
+    @Path("/collection/{id}/subject")
+    @Permission({ "collection", "subject", "list" })
+    @ApiOperation(
+            value = "List subjects",
+            notes = "List all subjects belonging to a certain collection")
+    public Set<String> listSubjects(@PathParam("id") String id) {
+        PermissionService srv = getPermissionService();
+
+        try {
+            if (!srv.hasCollection(id).get())
+                throw new NotFoundException("Collection with id " + id + " could not be found");
+
+            return srv.loadCollection(id).get().getAllIdentifiers().get();
+        } catch (InterruptedException e) {
+            throw new ClientErrorException(e.getMessage(), Response.Status.REQUEST_TIMEOUT);
+        } catch (ExecutionException e) {
+            throw new InternalServerErrorException(e.getMessage());
+        }
+    }
+
+    @GET
+    @Path("/collection/{id}/subject/{subId}")
+    @Permission({ "collection", "subject", "list" })
+    @ApiOperation(
+            value = "Get subject",
+            notes = "Gets one specific subject belonging to a certain collection")
+    public Subject getSubject(@PathParam("id") String id, @PathParam("subId") String subId) {
+        PermissionService srv = getPermissionService();
+
+        try {
+            if (!srv.hasCollection(id).get())
+                throw new NotFoundException("Collection with id " + id + " could not be found");
+
+            SubjectCollection coll = srv.loadCollection(id).get();
+            if (!coll.hasSubject(subId).get())
+                throw new NotFoundException("Subject with id " + id + " could not be found");
+
+            return coll.loadSubject(subId).get();
         } catch (InterruptedException e) {
             throw new ClientErrorException(e.getMessage(), Response.Status.REQUEST_TIMEOUT);
         } catch (ExecutionException e) {

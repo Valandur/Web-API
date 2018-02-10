@@ -2,6 +2,7 @@ package valandur.webapi.serialize;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.fasterxml.jackson.jaxrs.cfg.JaxRSFeature;
 import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 import valandur.webapi.WebAPI;
@@ -37,17 +38,28 @@ public class SerializationProvider extends JacksonJsonProvider {
 
     @Override
     public ObjectMapper locateMapper(Class<?> type, MediaType mediaType) {
-        if (Throwable.class.isAssignableFrom(type)) {
-            return new ObjectMapper();
+        Map<String, String> queryParams = Util.getQueryParams(request);
+        boolean xml = MediaType.APPLICATION_XML_TYPE.isCompatible(mediaType);
+        // Allow override the media type with a header (for better browser debugging)
+        if (queryParams.containsKey("accept")) {
+            String acc = queryParams.get("accept");
+            if (acc.equalsIgnoreCase("json"))
+                xml = false;
+            if (acc.equalsIgnoreCase("xml"))
+                xml = true;
         }
 
-        boolean xml = MediaType.APPLICATION_XML_TYPE.isCompatible(mediaType);
+        // If we're serializing an error return a normal XML/Object mapper, just in case the error
+        // happened while creating the mapper, so that we don't get an infinite recursion
+        if (Throwable.class.isAssignableFrom(type)) {
+            return xml ? new XmlMapper() : new ObjectMapper();
+        }
+
         SecurityContext ctx = (SecurityContext)request.getAttribute("security");
         TreeNode<String, Boolean> perms = IPermissionService.permitAllNode();
         if (ctx != null && ctx.getEndpointPerms() != null) {
             perms = ctx.getEndpointPerms();
         }
-        Map<String, String> queryParams = Util.getQueryParams(request);
 
         Boolean det = (Boolean)request.getAttribute("details");
         boolean details = (det != null && det) || queryParams.containsKey("details");

@@ -1,42 +1,32 @@
 package valandur.webapi.serialize.view.permission;
 
-import org.spongepowered.api.service.context.Context;
+import io.swagger.annotations.ApiModel;
 import org.spongepowered.api.service.permission.Subject;
 import valandur.webapi.api.serialize.BaseView;
 
-import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
+@ApiModel("Subject")
 public class SubjectView extends BaseView<Subject> {
 
-    public String getIdentifier() {
+    public String getId() {
         return value.getIdentifier();
     }
 
-    public String getFriendlyIdentifier() {
+    public String getDisplayName() {
         return value.getFriendlyIdentifier().orElse(null);
     }
 
-    public List<GrantedPermission> getAllPermissions() {
-        return value.getSubjectData().getAllPermissions().entrySet().stream()
-                .map(e -> new GrantedPermission(e.getKey(), e.getValue()))
-                .collect(Collectors.toList());
+    public Map<String, Boolean> getPermissions() {
+        Map<String, Boolean> res = new HashMap<>();
+        for (Map<String, Boolean> map : value.getSubjectData().getAllPermissions().values()) {
+            res.putAll(map);
+        }
+        return res;
     }
 
     public SubjectView(Subject value) {
         super(value);
-    }
-
-
-    public static class GrantedPermission {
-        public Set<Context> contexts;
-        public Map<String, Boolean> permissions;
-
-        public GrantedPermission(Set<Context> contexts, Map<String, Boolean> permissions) {
-            this.contexts = contexts;
-            this.permissions = permissions;
-        }
     }
 }

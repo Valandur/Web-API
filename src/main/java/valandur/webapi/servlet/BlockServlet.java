@@ -202,7 +202,7 @@ public class BlockServlet extends BaseServlet {
             throw new NotFoundException("Block opeartion with UUID '" + uuid + "' could not be found");
         }
 
-        if (req.isPaused) {
+        if (req.isPaused()) {
             op.get().pause();
         } else {
             op.get().start();
@@ -277,10 +277,10 @@ public class BlockServlet extends BaseServlet {
     @ApiModel("ModifyBlockOperationRequest")
     public static class ModifyBlockOperationRequest {
 
-        private boolean isPaused;
+        private boolean paused;
         @ApiModelProperty("True if the operation should be paused, false otherwise")
         public boolean isPaused() {
-            return isPaused;
+            return paused;
         }
     }
 }

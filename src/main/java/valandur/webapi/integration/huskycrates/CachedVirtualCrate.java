@@ -7,6 +7,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import valandur.webapi.api.cache.CachedObject;
 import valandur.webapi.api.serialize.JsonDetails;
+import valandur.webapi.util.Constants;
 
 import java.util.List;
 import java.util.Map;
@@ -92,5 +93,10 @@ public class CachedVirtualCrate extends CachedObject<VirtualCrate> {
         this.rewards = crate.getItemSet().stream()
                 .map(o -> new CachedCrateReward((CrateReward)o[1]))
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public String getLink() {
+        return Constants.BASE_PATH + "/crate/" + id;
     }
 }

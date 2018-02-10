@@ -7,6 +7,7 @@ import org.spongepowered.api.data.value.ValueContainer;
 import org.spongepowered.api.item.inventory.ItemStackSnapshot;
 import valandur.webapi.api.cache.CachedObject;
 import valandur.webapi.api.serialize.JsonDetails;
+import valandur.webapi.util.Constants;
 
 import java.time.Duration;
 import java.util.ArrayList;
@@ -76,5 +77,10 @@ public class CachedKit extends CachedObject<Kit> {
         this.oneTime = kit.isOneTime();
         this.commands = new ArrayList<>(kit.getCommands());
         this.stacks = kit.getStacks().stream().map(ValueContainer::copy).collect(Collectors.toList());
+    }
+
+    @Override
+    public String getLink() {
+        return Constants.BASE_PATH + "/kit/" + name;
     }
 }

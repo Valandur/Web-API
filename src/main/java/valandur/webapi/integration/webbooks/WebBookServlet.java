@@ -62,8 +62,9 @@ public class WebBookServlet extends BaseServlet {
 
     private void saveBooks() {
         try {
+            config.getNode("books").setValue(new TypeToken<List<WebBook>>() {}, new ArrayList<>(books.values()));
             loader.save(config);
-        } catch (IOException e) {
+        } catch (IOException | ObjectMappingException e) {
             e.printStackTrace();
             throw new InternalServerErrorException(e.getMessage());
         }

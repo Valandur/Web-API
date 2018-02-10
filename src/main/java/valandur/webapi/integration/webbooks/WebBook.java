@@ -3,14 +3,18 @@ package valandur.webapi.integration.webbooks;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import ninja.leaping.configurate.objectmapping.Setting;
+import ninja.leaping.configurate.objectmapping.serialize.ConfigSerializable;
 import valandur.webapi.api.serialize.JsonDetails;
 import valandur.webapi.util.Constants;
 
 import java.util.List;
 
+@ConfigSerializable
 @ApiModel("WebBooksBook")
 public class WebBook {
 
+    @Setting
     @JsonProperty(required = true)
     private String id;
     @ApiModelProperty(value = "The unique id of this book", required = true)

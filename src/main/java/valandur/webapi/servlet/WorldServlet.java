@@ -1,7 +1,6 @@
 package valandur.webapi.servlet;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import io.swagger.annotations.*;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.gamemode.GameMode;
@@ -268,7 +267,7 @@ public class WorldServlet extends BaseServlet {
             return difficulty != null ? difficulty.getLive(Difficulty.class) : Optional.empty();
         }
 
-        @JsonDeserialize
+        @JsonProperty("loadOnStartup")
         private Boolean loadOnStartup;
         @ApiModelProperty(value = "True if the world should be loaded when the server starts, false otherwise.")
         public Boolean loadOnStartup() {
@@ -282,12 +281,14 @@ public class WorldServlet extends BaseServlet {
             return keepSpawnLoaded;
         }
 
+        @JsonProperty("allowCommands")
         private Boolean allowCommands;
         @ApiModelProperty("True if this world allows running commands, false otherwise")
         public Boolean allowCommands() {
             return allowCommands;
         }
 
+        @JsonProperty("usesMapFeatures")
         private Boolean usesMapFeatures;
         @ApiModelProperty("True if this world uses special map features, false otherwise")
         public Boolean usesMapFeatures() {

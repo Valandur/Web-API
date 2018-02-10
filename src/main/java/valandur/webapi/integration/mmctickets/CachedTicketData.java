@@ -8,6 +8,7 @@ import valandur.webapi.api.cache.CachedObject;
 import valandur.webapi.api.cache.player.ICachedPlayer;
 import valandur.webapi.api.cache.world.CachedLocation;
 import valandur.webapi.api.serialize.JsonDetails;
+import valandur.webapi.util.Constants;
 
 @ApiModel("MMCTicketsTicket")
 public class CachedTicketData extends CachedObject<TicketData> {
@@ -87,5 +88,10 @@ public class CachedTicketData extends CachedObject<TicketData> {
         this.staff = cacheService.getPlayer(ticket.getPlayerUUID()).orElse(null);
         this.notified = ticket.getNotified();
         this.location = new CachedLocation(ticket.getWorld(), ticket.getX(), ticket.getY(), ticket.getZ());
+    }
+
+    @Override
+    public String getLink() {
+        return Constants.BASE_PATH + "/ticket/" + id;
     }
 }

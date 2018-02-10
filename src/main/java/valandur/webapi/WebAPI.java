@@ -76,6 +76,7 @@ import valandur.webapi.cache.command.CachedCommandCall;
 import valandur.webapi.command.CommandRegistry;
 import valandur.webapi.command.CommandSource;
 import valandur.webapi.handler.AssetHandler;
+import valandur.webapi.handler.ErrorHandler;
 import valandur.webapi.hook.WebHook;
 import valandur.webapi.hook.WebHookSerializer;
 import valandur.webapi.hook.WebHookService;
@@ -645,6 +646,11 @@ public class WebAPI {
 
                 // Add main context to server
                 server.setHandler(mainContext);
+
+                // Add error handler to jetty (will also be picked up by jersey
+                ErrorHandler errHandler = new ErrorHandler();
+                server.setErrorHandler(errHandler);
+                server.addBean(errHandler);
 
                 server.start();
 

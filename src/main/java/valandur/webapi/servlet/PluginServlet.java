@@ -8,7 +8,6 @@ import io.swagger.annotations.ApiParam;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
-import valandur.webapi.WebAPI;
 import valandur.webapi.api.cache.plugin.ICachedPluginContainer;
 import valandur.webapi.api.servlet.BaseServlet;
 import valandur.webapi.api.servlet.ExplicitDetails;
@@ -109,7 +108,6 @@ public class PluginServlet extends BaseServlet {
 
             try {
                 java.nio.file.Path newPath = path.getParent().resolve(path.getFileName().toString() + ".bck");
-                WebAPI.getLogger().info(newPath.toString());
                 if (!Files.exists(newPath)) {
                     Files.copy(path, newPath);
                 }

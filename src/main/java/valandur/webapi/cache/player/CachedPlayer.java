@@ -10,7 +10,6 @@ import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.item.inventory.ItemStack;
 import valandur.webapi.api.cache.CachedObject;
 import valandur.webapi.api.cache.player.ICachedAdvancement;
-import valandur.webapi.api.cache.player.ICachedPlayer;
 import valandur.webapi.api.cache.player.ICachedPlayerFull;
 import valandur.webapi.api.cache.world.CachedLocation;
 import valandur.webapi.api.serialize.JsonDetails;

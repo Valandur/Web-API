@@ -258,9 +258,8 @@ public class AuthenticationProvider implements ContainerRequestFilter {
         }
         request.setAttribute("details", details);
 
-        if (!method.isAnnotationPresent(Permission.class)) {
-            return;
-        }
+        String basePath = resourceInfo.getResourceClass().getAnnotation(Path.class).value();
+        TreeNode<String, Boolean> perms = permStruct.getPermissions();
 
         Permission[] reqPerms = method.getAnnotationsByType(Permission.class);
         if (reqPerms.length == 0) {
@@ -268,12 +267,11 @@ public class AuthenticationProvider implements ContainerRequestFilter {
         }
 
         // Calculate the sub-perms that apply for our endpoint
-        TreeNode<String, Boolean> perms = permStruct.getPermissions();
         for (Permission reqPerm : reqPerms) {
             if (!reqPerm.autoCheck()) continue;
 
             List<String> reqPermList = new ArrayList<>(Arrays.asList(reqPerm.value()));
-            reqPermList.add(0, resourceInfo.getResourceClass().getAnnotation(Path.class).value());
+            reqPermList.add(0, basePath);
 
             TreeNode<String, Boolean> methodPerms = permissionService.subPermissions(perms, reqPermList);
             if (!methodPerms.getValue()) {
@@ -289,7 +287,6 @@ public class AuthenticationProvider implements ContainerRequestFilter {
             if (securityContext.getEndpointPerms() == null)
                 securityContext.setEndpointPerms(methodPerms);
         }
-
     }
 
     private String getRealAddr(HttpServletRequest request) {

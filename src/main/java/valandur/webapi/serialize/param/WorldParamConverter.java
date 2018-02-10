@@ -16,6 +16,10 @@ public class WorldParamConverter implements ParamConverter<ICachedWorld> {
 
     @Override
     public ICachedWorld fromString(String value) {
+        // If we didn't request a world don't try to find one
+        if (value == null)
+            return null;
+
         if (!Util.isValidUUID(value))
             throw new BadRequestException("Invalid world uuid");
 

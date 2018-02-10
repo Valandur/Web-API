@@ -2,7 +2,6 @@ package valandur.webapi.servlet;
 
 import com.flowpowered.math.vector.Vector3d;
 import io.swagger.annotations.*;
-import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.EntityType;
 import org.spongepowered.api.event.cause.entity.damage.DamageType;
@@ -15,6 +14,7 @@ import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.cache.entity.ICachedEntity;
+import valandur.webapi.api.cache.misc.CachedCatalogType;
 import valandur.webapi.api.cache.world.ICachedWorld;
 import valandur.webapi.api.servlet.BaseServlet;
 import valandur.webapi.api.servlet.ExplicitDetails;
@@ -126,8 +126,14 @@ public class EntityServlet extends BaseServlet {
             if (req.getDamage() != null) {
                 DamageRequest dmgReq = req.getDamage();
                 DamageSource.Builder builder = DamageSource.builder();
-                if (dmgReq.getDamageType().isPresent())
-                    builder.type(dmgReq.getDamageType().get());
+
+                if (dmgReq.getType().isPresent()) {
+                    Optional<DamageType> optDmgType = dmgReq.getType().get().getLive(DamageType.class);
+                    if (!optDmgType.isPresent())
+                        throw new InternalServerErrorException("Could not get live damage type");
+
+                    builder.type(optDmgType.get());
+                }
 
                 live.damage(req.getDamage().getAmount(), builder.build());
             }
@@ -170,7 +176,7 @@ public class EntityServlet extends BaseServlet {
             throw new BadRequestException("No valid world provided");
         }
 
-        Optional<EntityType> optEntType = req.getEntityType();
+        Optional<CachedCatalogType<EntityType>> optEntType = req.getType();
         if (!optEntType.isPresent()) {
             throw new BadRequestException("No valid entity type provided");
         }
@@ -184,8 +190,12 @@ public class EntityServlet extends BaseServlet {
             if (!optLive.isPresent())
                 throw new InternalServerErrorException("Could not get live entity");
 
+            Optional<EntityType> optLiveType = optEntType.get().getLive(EntityType.class);
+            if (!optLiveType.isPresent())
+                throw new InternalServerErrorException("Could not get live entity type");
+
             World w = optLive.get();
-            Entity e = w.createEntity(optEntType.get(), req.getPosition());
+            Entity e = w.createEntity(optLiveType.get(), req.getPosition());
 
             if (w.spawnEntity(e)) {
                 CachedEntity ent = new CachedEntity(e);
@@ -267,11 +277,10 @@ public class EntityServlet extends BaseServlet {
             return position;
         }
 
-        private String type;
+        private CachedCatalogType<EntityType> type;
         @ApiModelProperty(dataType = "string", value = "The type of entity that will be spawned", required = true)
-        public Optional<EntityType> getEntityType() {
-            Collection<EntityType> types = Sponge.getRegistry().getAllOf(EntityType.class);
-            return types.stream().filter(g -> g.getId().equalsIgnoreCase(type) || g.getName().equalsIgnoreCase(type)).findAny();
+        public Optional<CachedCatalogType<EntityType>> getType() {
+            return type != null ? Optional.of(type) : Optional.empty();
         }
     }
 
@@ -333,11 +342,10 @@ public class EntityServlet extends BaseServlet {
             return amount;
         }
 
-        private String type;
+        private CachedCatalogType<DamageType> type;
         @ApiModelProperty(dataType = "string", value = "The type of damage that should be dealt")
-        public Optional<DamageType> getDamageType() {
-            Collection<DamageType> types = Sponge.getRegistry().getAllOf(DamageType.class);
-            return types.stream().filter(t -> t.getId().equalsIgnoreCase(type) || t.getName().equalsIgnoreCase(type)).findAny();
+        public Optional<CachedCatalogType<DamageType>> getType() {
+            return type != null ? Optional.of(type) : Optional.empty();
         }
     }
 }

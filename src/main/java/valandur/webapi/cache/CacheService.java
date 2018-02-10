@@ -1,5 +1,6 @@
 package valandur.webapi.cache;
 
+import com.google.common.collect.Lists;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
 import org.spongepowered.api.CatalogType;
@@ -83,10 +84,10 @@ public class CacheService implements ICacheService {
     private Map<UUID, CachedPlayer> players = new ConcurrentHashMap<>();
 
     public List<ICachedChatMessage> getChatMessages() {
-        return Arrays.asList(chatMessages.toArray(new ICachedChatMessage[0]));
+        return Lists.reverse(Arrays.asList(chatMessages.toArray(new ICachedChatMessage[chatMessages.size()])));
     }
     public List<ICachedCommandCall> getCommandCalls() {
-        return Arrays.asList(commandCalls.toArray(new ICachedCommandCall[0]));
+        return Lists.reverse(Arrays.asList(commandCalls.toArray(new ICachedCommandCall[commandCalls.size()])));
     }
 
 

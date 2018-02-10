@@ -154,7 +154,7 @@ public class WebHookService implements IWebHookService {
 
     @Override
     public void notifyHooks(WebHookType type, Object data) {
-        Timings.WEBHOOK_NOTIFY.startTiming();
+        Timings.WEBHOOK_NOTIFY.startTimingIfSync();
 
         List<WebHook> notifyHooks = new ArrayList<>(eventHooks.get(type));
         if (type != WebHookType.CUSTOM_MESSAGE) {
@@ -164,28 +164,28 @@ public class WebHookService implements IWebHookService {
             notifyHook(hook, type, null, data);
         }
 
-        Timings.WEBHOOK_NOTIFY.stopTiming();
+        Timings.WEBHOOK_NOTIFY.stopTimingIfSync();
     }
     public void notifyHook(CommandWebHook cmdHook, String source, Map<String, Object> data) {
-        Timings.WEBHOOK_NOTIFY.startTiming();
+        Timings.WEBHOOK_NOTIFY.startTimingIfSync();
 
         for (WebHook hook : cmdHook.getHooks()) {
             notifyHook(hook, WebHookType.CUSTOM_COMMAND, source, data);
         }
 
-        Timings.WEBHOOK_NOTIFY.stopTiming();
+        Timings.WEBHOOK_NOTIFY.stopTimingIfSync();
     }
 
     @Override
     public void notifyHooks(Class<? extends Event> clazz, Object data) {
-        Timings.WEBHOOK_NOTIFY.startTiming();
+        Timings.WEBHOOK_NOTIFY.startTimingIfSync();
 
         List<WebHook> notifyHooks = new ArrayList<>(customHooks.get(clazz).getFirst());
         for (WebHook hook : notifyHooks) {
             notifyHook(hook, WebHookType.CUSTOM_EVENT, null, data);
         }
 
-        Timings.WEBHOOK_NOTIFY.stopTiming();
+        Timings.WEBHOOK_NOTIFY.stopTimingIfSync();
     }
 
     private void notifyHook(WebHook hook, WebHookType eventType, String source, Object data) {

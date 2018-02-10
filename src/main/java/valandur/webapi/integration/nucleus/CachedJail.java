@@ -6,6 +6,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import valandur.webapi.api.cache.CachedObject;
 import valandur.webapi.api.cache.world.CachedLocation;
+import valandur.webapi.util.Constants;
 
 @ApiModel("NucleusJail")
 public class CachedJail extends CachedObject<NamedLocation> {
@@ -38,5 +39,10 @@ public class CachedJail extends CachedObject<NamedLocation> {
         this.name = value.getName();
         this.location = value.getLocation().map(CachedLocation::new).orElse(null);
         this.rotation = value.getRotation();
+    }
+
+    @Override
+    public String getLink() {
+        return Constants.BASE_PATH + "/jail/" + name;
     }
 }

@@ -8,7 +8,9 @@ import valandur.webapi.api.util.TreeNode;
 
 import java.security.Principal;
 
-@ApiModel("Represents a permissions struct that contains information to access the Web-API")
+@ApiModel(
+        value = "PermissionStruct",
+        description = "Represents a permissions struct that contains information to access the Web-API")
 public class PermissionStruct implements Principal {
 
     private String key = null;

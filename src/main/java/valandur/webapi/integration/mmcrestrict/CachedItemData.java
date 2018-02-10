@@ -7,6 +7,7 @@ import org.spongepowered.api.Sponge;
 import org.spongepowered.api.item.ItemType;
 import valandur.webapi.api.cache.CachedObject;
 import valandur.webapi.api.cache.misc.CachedCatalogType;
+import valandur.webapi.util.Constants;
 
 import java.util.Optional;
 
@@ -93,5 +94,10 @@ public class CachedItemData extends CachedObject<ItemData> {
                 ownershipBanned != null ? ownershipBanned : true,
                 dropBanned != null ? dropBanned : false,
                 worldBanned != null ? worldBanned : false));
+    }
+
+    @Override
+    public String getLink() {
+        return Constants.BASE_PATH + "/item/" + item.getId();
     }
 }

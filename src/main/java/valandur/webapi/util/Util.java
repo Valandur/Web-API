@@ -37,14 +37,11 @@ public class Util {
         try {
             Path filePath = WebAPI.getConfigPath().resolve(path).normalize();
             Optional<Asset> optAsset = Sponge.getAssetManager().getAsset(WebAPI.getInstance(), defaultPath);
-            if (!optAsset.isPresent()) {
-                throw new IOException("Could not find default asset " + defaultPath);
-            }
-            Asset asset = optAsset.get();
 
             if (!Files.exists(filePath)) {
                 filePath.getParent().toFile().mkdirs();
-                asset.copyToDirectory(WebAPI.getConfigPath());
+                if (optAsset.isPresent())
+                    optAsset.get().copyToDirectory(WebAPI.getConfigPath());
             }
 
             ConfigurationLoader<CommentedConfigurationNode> loader = HoconConfigurationLoader.builder()
@@ -52,23 +49,27 @@ public class Util {
                     .build();
             CommentedConfigurationNode config = loader.load();
 
-            ConfigurationLoader<CommentedConfigurationNode> defLoader = HoconConfigurationLoader.builder()
-                    .setURL(asset.getUrl())
-                    .build();
-            CommentedConfigurationNode defConfig = defLoader.load();
+            boolean newVersion = false;
 
-            int version = config.getNode("version").getInt(0);
-            int defVersion = defConfig.getNode("version").getInt(0);
-            boolean newVersion = defVersion != version;
+            if (optAsset.isPresent()) {
+                ConfigurationLoader<CommentedConfigurationNode> defLoader = HoconConfigurationLoader.builder()
+                        .setURL(optAsset.get().getUrl())
+                        .build();
+                CommentedConfigurationNode defConfig = defLoader.load();
 
-            Util.mergeConfigs(config, defConfig, newVersion);
-            loader.save(config);
+                int version = config.getNode("version").getInt(0);
+                int defVersion = defConfig.getNode("version").getInt(0);
+                newVersion = defVersion != version;
 
-            if (newVersion) {
-                WebAPI.getLogger().info("New configuration version '" + defVersion + "' for " + path);
-                config.getNode("version").setValue(defVersion);
-                loader.save(config);
+                Util.mergeConfigs(config, defConfig, newVersion);
+
+                if (newVersion) {
+                    WebAPI.getLogger().info("New configuration version '" + defVersion + "' for " + path);
+                    config.getNode("version").setValue(defVersion);
+                }
             }
+
+            loader.save(config);
 
             return new Tuple<>(loader, config);
 

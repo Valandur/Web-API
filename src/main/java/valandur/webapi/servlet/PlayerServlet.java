@@ -4,6 +4,7 @@ import io.swagger.annotations.*;
 import org.spongepowered.api.data.manipulator.mutable.entity.ExperienceHolderData;
 import org.spongepowered.api.data.manipulator.mutable.entity.HealthData;
 import org.spongepowered.api.entity.living.player.Player;
+import org.spongepowered.api.event.cause.entity.damage.DamageType;
 import org.spongepowered.api.event.cause.entity.damage.source.DamageSource;
 import org.spongepowered.api.item.inventory.Carrier;
 import org.spongepowered.api.item.inventory.Inventory;
@@ -138,8 +139,14 @@ public class PlayerServlet extends BaseServlet {
             if (req.getDamage() != null) {
                 EntityServlet.DamageRequest dmgReq = req.getDamage();
                 DamageSource.Builder builder = DamageSource.builder();
-                if (dmgReq.getDamageType().isPresent())
-                    builder.type(dmgReq.getDamageType().get());
+
+                if (dmgReq.getType().isPresent()) {
+                    Optional<DamageType> optDmgType = dmgReq.getType().get().getLive(DamageType.class);
+                    if (!optDmgType.isPresent())
+                        throw new InternalServerErrorException("Could not get live damage type");
+
+                    builder.type(optDmgType.get());
+                }
 
                 live.damage(req.getDamage().getAmount(), builder.build());
             }

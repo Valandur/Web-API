@@ -6,6 +6,8 @@ import com.google.common.reflect.TypeToken;
 import com.google.inject.Inject;
 import io.sentry.Sentry;
 import io.sentry.context.Context;
+import io.swagger.config.FilterFactory;
+import io.swagger.converter.ModelConverters;
 import io.swagger.jaxrs.config.BeanConfig;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
@@ -92,6 +94,8 @@ import valandur.webapi.serialize.SerializeService;
 import valandur.webapi.server.ServerService;
 import valandur.webapi.servlet.*;
 import valandur.webapi.servlet.base.ServletService;
+import valandur.webapi.swagger.SwaggerModelConverter;
+import valandur.webapi.swagger.SwaggerSpecFilter;
 import valandur.webapi.user.UserPermissionStruct;
 import valandur.webapi.user.UserPermissionStructConfigSerializer;
 import valandur.webapi.user.Users;
@@ -322,6 +326,10 @@ public class WebAPI {
         Sponge.getServiceManager().setProvider(this, IServerService.class, serverService);
         Sponge.getServiceManager().setProvider(this, IServletService.class, servletService);
         Sponge.getServiceManager().setProvider(this, IWebHookService.class, webHookService);
+
+        // Swagger setup stuff
+        ModelConverters.getInstance().addConverter(new SwaggerModelConverter());
+        FilterFactory.setFilter(new SwaggerSpecFilter());
 
         Timings.STARTUP.stopTiming();
     }
@@ -619,11 +627,12 @@ public class WebAPI {
                 // Jersey servlet
                 ServletHolder jerseyServlet = new ServletHolder(new ServletContainer(config));
                 jerseyServlet.setInitOrder(1);
+                jerseyServlet.setInitParameter("swagger.filter", SwaggerSpecFilter.class.getName());
                 // jerseyServlet.setInitParameter("openApi.configuration.location", assets/webapi/swagger/config.json");                                    // This is for Swagger 3.0
                 servletsContext.addServlet(jerseyServlet, "/*");
 
                 // Register swagger as bean
-                // TODO: We can't set scheme and host yet because Swagger 2.0 doesn't support that
+                // TODO: We can't set scheme and host yet because Swagger 2.0 doesn't support multiple different ones
                 BeanConfig beanConfig = new BeanConfig();
                 beanConfig.setBasePath(Constants.BASE_PATH);
                 beanConfig.setResourcePackage("valandur.webapi.swagger" + swaggerPath);

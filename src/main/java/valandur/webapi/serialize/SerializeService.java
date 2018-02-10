@@ -9,9 +9,11 @@ import com.flowpowered.math.vector.Vector3d;
 import com.flowpowered.math.vector.Vector3i;
 import org.slf4j.Logger;
 import org.spongepowered.api.CatalogType;
+import org.spongepowered.api.advancement.Advancement;
 import org.spongepowered.api.block.BlockSnapshot;
 import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.block.tileentity.TileEntity;
+import org.spongepowered.api.command.CommandMapping;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.data.manipulator.DataManipulator;
 import org.spongepowered.api.data.manipulator.mutable.*;
@@ -52,9 +54,12 @@ import org.spongepowered.api.util.Color;
 import org.spongepowered.api.util.RespawnLocation;
 import org.spongepowered.api.util.ban.Ban;
 import org.spongepowered.api.util.weighted.RandomObjectTable;
+import org.spongepowered.api.world.Chunk;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
+import org.spongepowered.api.world.WorldBorder;
 import org.spongepowered.api.world.explosion.Explosion;
+import org.spongepowered.plugin.meta.PluginDependency;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.cache.ICachedObject;
 import valandur.webapi.api.cache.misc.CachedCatalogType;
@@ -65,13 +70,18 @@ import valandur.webapi.api.cache.world.ICachedWorld;
 import valandur.webapi.api.serialize.BaseView;
 import valandur.webapi.api.serialize.ISerializeService;
 import valandur.webapi.api.util.TreeNode;
+import valandur.webapi.cache.command.CachedCommand;
 import valandur.webapi.cache.entity.CachedEntity;
 import valandur.webapi.cache.misc.CachedCause;
 import valandur.webapi.cache.misc.CachedInventory;
+import valandur.webapi.cache.player.CachedAdvancement;
 import valandur.webapi.cache.player.CachedPlayer;
 import valandur.webapi.cache.plugin.CachedPluginContainer;
+import valandur.webapi.cache.plugin.CachedPluginDependency;
 import valandur.webapi.cache.tileentity.CachedTileEntity;
+import valandur.webapi.cache.world.CachedChunk;
 import valandur.webapi.cache.world.CachedWorld;
+import valandur.webapi.cache.world.CachedWorldBorder;
 import valandur.webapi.serialize.deserialize.*;
 import valandur.webapi.serialize.view.block.BlockSnapshotView;
 import valandur.webapi.serialize.view.block.BlockStateView;
@@ -94,6 +104,7 @@ import valandur.webapi.serialize.view.tileentity.PatternLayerView;
 
 import java.time.Instant;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class SerializeService implements ISerializeService {
@@ -110,16 +121,21 @@ public class SerializeService implements ISerializeService {
         serializers = new ConcurrentHashMap<>();
 
         // Cached Objects
-        registerCache(Entity.class, CachedEntity.class);
-        registerCache(Cause.class, CachedCause.class);
-        registerCache(Inventory.class, CachedInventory.class);
+        registerCache(Advancement.class, CachedAdvancement.class);
         _registerCache(CatalogType.class, CachedCatalogType.class);
+        registerCache(Cause.class, CachedCause.class);
+        registerCache(Chunk.class, CachedChunk.class);
+        registerCache(CommandMapping.class, CachedCommand.class);
+        registerCache(Entity.class, CachedEntity.class);
+        registerCache(Inventory.class, CachedInventory.class);
         registerCache(Location.class, CachedLocation.class);
         registerCache(Player.class, CachedPlayer.class);
         registerCache(PluginContainer.class, CachedPluginContainer.class);
+        registerCache(PluginDependency.class, CachedPluginDependency.class);
         registerCache(TileEntity.class, CachedTileEntity.class);
         registerCache(Transform.class, CachedTransform.class);
         registerCache(World.class, CachedWorld.class);
+        registerCache(WorldBorder.class, CachedWorldBorder.class);
 
         // Block
         registerView(BlockSnapshot.class, BlockSnapshotView.class);
@@ -250,7 +266,6 @@ public class SerializeService implements ISerializeService {
         registerView(Enchantment.class, EnchantmentView.class);
         registerView(ItemStackSnapshot.class, ItemStackSnapshotView.class);
         registerView(ItemStack.class, ItemStackView.class);
-        registerView(ItemType.class, ItemTypeView.class);
         registerView(PotionEffectType.class, PotionEffectTypeView.class);
         registerView(PotionEffect.class, PotionEffectView.class);
 
@@ -449,6 +464,12 @@ public class SerializeService implements ISerializeService {
     @Override
     public Map<String, Class<? extends DataManipulator<?, ?>>> getSupportedData() {
         return supportedData;
+    }
+
+    public Optional<Class> getViewFor(Class clazz) {
+        BaseSerializer ser = serializers.get(clazz);
+        if (ser == null) return Optional.empty();
+        return Optional.of(ser.getCacheClass());
     }
 
     public ObjectMapper getDefaultObjectMapper(boolean xml, boolean details, TreeNode<String, Boolean> perms) {

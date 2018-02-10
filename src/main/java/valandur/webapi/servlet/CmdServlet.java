@@ -25,15 +25,19 @@ public class CmdServlet extends BaseServlet {
     @GET
     @ExplicitDetails
     @Permission("list")
-    @ApiOperation(value = "List commands", notes = "Gets a list of all the commands available on the server.")
-    public Collection<ICachedCommand> getCommands() {
+    @ApiOperation(
+            value = "List commands",
+            notes = "Gets a list of all the commands available on the server.")
+    public Collection<ICachedCommand> listCommands() {
         return cacheService.getCommands();
     }
 
     @GET
     @Path("/{cmd}")
     @Permission("one")
-    @ApiOperation(value = "Get a command", notes = "Get detailed information about a command.")
+    @ApiOperation(
+            value = "Get a command",
+            notes = "Get detailed information about a command.")
     public ICachedCommand getCommand(
             @PathParam("cmd") @ApiParam("The id of the command") String cmdName)
             throws NotFoundException {
@@ -48,9 +52,11 @@ public class CmdServlet extends BaseServlet {
     @POST
     @Permission("run")
     @Permission(value = { "run", "[command]" }, autoCheck = false)
-    @ApiOperation(value = "Execute a command", notes = "Execute a command on the server. " +
-            "(Almost the same as running it from the console).  \nPass a list of commands to execute them in " +
-            "succession, if only passing one command the array is not required.")
+    @ApiOperation(
+            value = "Execute a command",
+            notes = "Execute a command on the server. (Almost the same as running it from the console).  \n" +
+                    "Pass a list of commands to execute them in succession, if only passing one command " +
+                    "the array is not required.")
     public void runCommands(ExecuteCommandRequest req) {
 
         if (req == null) {
@@ -141,7 +147,7 @@ public class CmdServlet extends BaseServlet {
     public static class ExecuteCommandRequest {
 
         private String command;
-        @ApiModelProperty("The command to execute")
+        @ApiModelProperty(value = "The command to execute", required = true)
         public String getCommand() {
             return command;
         }

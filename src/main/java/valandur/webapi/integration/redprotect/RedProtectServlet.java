@@ -35,8 +35,10 @@ public class RedProtectServlet extends BaseServlet {
     @GET
     @Path("/region")
     @Permission({ "region", "list" })
-    @ApiOperation("List regions")
-    public Collection<CachedRegion> getRegions(@QueryParam("world") ICachedWorld world) {
+    @ApiOperation(
+            value = "List regions",
+            notes = "Lists all the regions being protected")
+    public Collection<CachedRegion> listRegions(@QueryParam("world") ICachedWorld world) {
         Set<CachedRegion> regions;
         if (world != null) {
             regions = WebAPIAPI.runOnMain(() -> {
@@ -62,7 +64,9 @@ public class RedProtectServlet extends BaseServlet {
     @GET
     @Path("/region/{id}")
     @Permission({ "region", "one" })
-    @ApiOperation("Get a region")
+    @ApiOperation(
+            value = "Get a region",
+            notes = "Get details for a specific protected region")
     public CachedRegion getRegion(@PathParam("id") String id)
             throws BadRequestException {
         if (!id.contains("@")) {
@@ -76,7 +80,8 @@ public class RedProtectServlet extends BaseServlet {
     @Path("/region")
     @Permission({ "region", "create" })
     @ApiOperation(
-            value = "Create a region", response = CachedRegion.class,
+            value = "Create a region",
+            response = CachedRegion.class,
             notes = "Create a new region at a specified location")
     public Response createRegion(CachedRegion req)
             throws BadRequestException {
@@ -175,7 +180,9 @@ public class RedProtectServlet extends BaseServlet {
     @PUT
     @Path("/region/{id}")
     @Permission({ "region", "modify" })
-    @ApiOperation("Modify a region")
+    @ApiOperation(
+            value = "Modify a region",
+            notes = "Update the details for a specific protected region")
     public CachedRegion modifyRegion(@PathParam("id") String id, CachedRegion req)
             throws BadRequestException {
         if (!id.contains("@")) {
@@ -251,7 +258,9 @@ public class RedProtectServlet extends BaseServlet {
     @DELETE
     @Path("/region/{id}")
     @Permission({ "region", "delete" })
-    @ApiOperation("Delete a region")
+    @ApiOperation(
+            value = "Delete a region",
+            notes = "Remove the specified protected region")
     public CachedRegion deleteRegion(@PathParam("id") String id)
             throws NotFoundException, BadRequestException {
         if (!id.contains("@")) {

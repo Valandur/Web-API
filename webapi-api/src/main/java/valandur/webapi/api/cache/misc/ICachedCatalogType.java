@@ -1,11 +1,13 @@
 package valandur.webapi.api.cache.misc;
 
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.spongepowered.api.CatalogType;
 import valandur.webapi.api.cache.ICachedObject;
 
 import java.util.Optional;
 
+@ApiModel("CatalogType")
 public interface ICachedCatalogType<T extends CatalogType> extends ICachedObject<T> {
 
     /***

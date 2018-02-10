@@ -31,7 +31,7 @@ public class NucleusServlet extends BaseServlet {
 
     public static void onRegister() {
         WebAPIAPI.getJsonService().ifPresent(srv -> {
-            srv.registerCache(NamedLocation.class, CachedNamedLocation.class);
+            srv.registerCache(NamedLocation.class, CachedJail.class);
             srv.registerCache(Kit.class, CachedKit.class);
         });
     }
@@ -42,7 +42,7 @@ public class NucleusServlet extends BaseServlet {
     @Path("/jail")
     @Permission({ "jail", "list" })
     @ApiOperation(value = "List jails", notes = "Get a list of all the jails on the server.")
-    public Collection<CachedNamedLocation> getJails() {
+    public Collection<CachedJail> listJails() {
         Optional<NucleusJailService> optSrv = NucleusAPI.getJailService();
         if (!optSrv.isPresent()) {
             throw new InternalServerErrorException("Nuclues jail service not available");
@@ -52,7 +52,7 @@ public class NucleusServlet extends BaseServlet {
 
         return WebAPIAPI.runOnMain(
                 () -> srv.getJails().values().stream()
-                        .map(CachedNamedLocation::new)
+                        .map(CachedJail::new)
                         .collect(Collectors.toList())
         );
     }
@@ -61,7 +61,7 @@ public class NucleusServlet extends BaseServlet {
     @Path("/jail/{name}")
     @Permission({ "jail", "one" })
     @ApiOperation(value = "Get a jail", notes = "Get detailed information about a jail.")
-    public CachedNamedLocation getJail(@PathParam("name") String name)
+    public CachedJail getJail(@PathParam("name") String name)
             throws NotFoundException {
         Optional<NucleusJailService> optSrv = NucleusAPI.getJailService();
         if (!optSrv.isPresent()) {
@@ -76,15 +76,15 @@ public class NucleusServlet extends BaseServlet {
                 throw new NotFoundException("Jail with name " + name + " not found");
             }
 
-            return new CachedNamedLocation(optJail.get());
+            return new CachedJail(optJail.get());
         });
     }
 
     @POST
     @Path("/jail")
     @Permission({ "jail", "create" })
-    @ApiOperation(value = "Create a jail", response = CachedNamedLocation.class, notes = "Creates a new jail.")
-    public Response createJail(CachedNamedLocation req)
+    @ApiOperation(value = "Create a jail", response = CachedJail.class, notes = "Creates a new jail.")
+    public Response createJail(CachedJail req)
             throws BadRequestException {
 
         if (req == null) {
@@ -102,7 +102,7 @@ public class NucleusServlet extends BaseServlet {
             throw new BadRequestException("A location is required");
         }
 
-        CachedNamedLocation jail = WebAPIAPI.runOnMain(() -> {
+        CachedJail jail = WebAPIAPI.runOnMain(() -> {
             Optional<Location> optLive = req.getLocation().getLive();
             if (!optLive.isPresent()) {
                 throw new InternalServerErrorException("Could not get live location");
@@ -110,7 +110,7 @@ public class NucleusServlet extends BaseServlet {
             Vector3d rot = req.getRotation() == null ? Vector3d.FORWARD : req.getRotation();
             srv.setJail(req.getName(), optLive.get(), rot);
             Optional<NamedLocation> optJail = srv.getJail(req.getName());
-            return optJail.map(CachedNamedLocation::new).orElse(null);
+            return optJail.map(CachedJail::new).orElse(null);
         });
 
         return Response.created(URI.create(jail.getLink())).entity(jail).build();
@@ -120,7 +120,7 @@ public class NucleusServlet extends BaseServlet {
     @Path("/jail/{name}")
     @Permission({ "jail", "modify" })
     @ApiOperation(value = "Modify a jail", notes = "Modify an existing jail.")
-    public CachedNamedLocation modifyJail()
+    public CachedJail modifyJail()
             throws NotImplementedException {
         throw new NotImplementedException();
     }
@@ -129,7 +129,7 @@ public class NucleusServlet extends BaseServlet {
     @Path("/jail/{name}")
     @Permission({ "jail", "delete" })
     @ApiOperation(value = "Delete a jail", notes = "Delete an existing jail.")
-    public CachedNamedLocation deleteJail(@PathParam("name") String name)
+    public CachedJail deleteJail(@PathParam("name") String name)
             throws NotFoundException {
         Optional<NucleusJailService> optSrv = NucleusAPI.getJailService();
         if (!optSrv.isPresent()) {
@@ -146,7 +146,7 @@ public class NucleusServlet extends BaseServlet {
 
             srv.removeJail(name);
 
-            return new CachedNamedLocation(optJail.get());
+            return new CachedJail(optJail.get());
         });
     }
 
@@ -156,7 +156,7 @@ public class NucleusServlet extends BaseServlet {
     @Path("/kit")
     @Permission({ "kit", "list" })
     @ApiOperation(value = "List kits", notes = "Get a list of all the kits on the server.")
-    public Collection<CachedKit> getKits() {
+    public Collection<CachedKit> listKits() {
         Optional<NucleusKitService> optSrv = NucleusAPI.getKitService();
         if (!optSrv.isPresent()) {
             throw new InternalServerErrorException("Nuclues kit service not available");

@@ -12,16 +12,19 @@ import java.util.Date;
 public class CachedChatMessage extends CachedObject implements ICachedChatMessage {
 
     private Long timestamp;
+    @Override
     public Long getTimestamp() {
         return timestamp;
     }
 
     private ICachedPlayer sender;
+    @Override
     public ICachedPlayer getSender() {
         return sender;
     }
 
     private String message;
+    @Override
     public String getMessage() {
         return message;
     }

@@ -2,7 +2,6 @@ package valandur.webapi.message;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.serializer.TextSerializers;
 import valandur.webapi.api.cache.CachedObject;
@@ -16,7 +15,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-@JsonDeserialize
 public class Message extends CachedObject<IMessage> implements IMessage {
 
     private UUID uuid;
@@ -25,15 +23,12 @@ public class Message extends CachedObject<IMessage> implements IMessage {
         return uuid;
     }
 
-    @JsonDeserialize
     private String id;
-
     @Override
     public String getId() {
         return id;
     }
 
-    @JsonDeserialize
     private UUID target;
     @Override
     @JsonDetails
@@ -41,13 +36,11 @@ public class Message extends CachedObject<IMessage> implements IMessage {
         return target;
     }
 
-    @JsonDeserialize
     private List<UUID> targets;
     @Override
     @JsonDetails
     public List<UUID> getTargets() { return targets; }
 
-    @JsonDeserialize
     private String message;
     @Override
     @JsonIgnore
@@ -60,7 +53,6 @@ public class Message extends CachedObject<IMessage> implements IMessage {
         return message;
     }
 
-    @JsonDeserialize
     private Boolean once;
     @Override
     @JsonDetails
@@ -68,17 +60,20 @@ public class Message extends CachedObject<IMessage> implements IMessage {
         return once;
     }
 
-    @JsonDeserialize
     private List<MessageOption> options;
-    @Override
-    public boolean hasOptions() {
-        return options != null;
-    }
     @Override
     @JsonDetails
     public List<IMessageOption> getOptions() {
         return new ArrayList<>(options);
     }
+
+    @Override
+    @JsonIgnore
+    public boolean hasOptions() {
+        return options != null;
+    }
+
+
 
 
     public Message() {

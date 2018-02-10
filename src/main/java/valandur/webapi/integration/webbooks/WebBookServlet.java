@@ -24,8 +24,9 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Path("web-books")
-@Api(tags = { "Web Books" }, value =
-        "Create, edit and delete web books that have unique links which work on your server in-game.")
+@Api(
+        tags = { "Web Books" },
+        value = "Create, edit and delete web books that have unique links which work on your server in-game.")
 @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 @Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 public class WebBookServlet extends BaseServlet {
@@ -71,7 +72,9 @@ public class WebBookServlet extends BaseServlet {
     @GET
     @Path("/book")
     @Permission({ "book", "list" })
-    @ApiOperation(value = "List books", notes = "Get a list of all the web books on the server.")
+    @ApiOperation(
+            value = "List books",
+            notes = "Get a list of all the web books on the server.")
     public Collection<WebBook> listWebBooks() {
         return books.values();
     }
@@ -79,7 +82,9 @@ public class WebBookServlet extends BaseServlet {
     @GET
     @Path("/book/{id}")
     @Permission({ "book", "one" })
-    @ApiOperation(value = "Get a book", notes = "Get detailed information about a web book.")
+    @ApiOperation(
+            value = "Get a book",
+            notes = "Get detailed information about a web book.")
     public WebBook getWebBook(@PathParam("id") String id)
             throws NotFoundException {
         WebBook book = books.get(id);
@@ -92,7 +97,9 @@ public class WebBookServlet extends BaseServlet {
 
     @GET
     @Path("/book/{id}/html")
-    @ApiOperation(value = "Book HTML", notes = "Get the web book content as HTML.")
+    @ApiOperation(
+            value = "Book HTML",
+            notes = "Get the web book content as HTML.")
     @Produces(MediaType.TEXT_HTML)
     public String getWebBookContent(@PathParam("id") String id)
             throws NotFoundException {
@@ -108,7 +115,8 @@ public class WebBookServlet extends BaseServlet {
     @Path("/book")
     @Permission({ "book", "create" })
     @ApiOperation(
-            value = "Create a book", response = WebBook.class,
+            value = "Create a book",
+            response = WebBook.class,
             notes = "Create a new web book from the specified data.")
     public Response createWebBook(WebBook book)
             throws BadRequestException {
@@ -146,7 +154,9 @@ public class WebBookServlet extends BaseServlet {
     @PUT
     @Path("/book/{id}")
     @Permission({ "book", "modify" })
-    @ApiOperation(value = "Modify a book", notes = "Modify an existing book.")
+    @ApiOperation(
+            value = "Modify a book",
+            notes = "Modify an existing book.")
     public WebBook modifyWebBook(@PathParam("id") String id, WebBook newBook)
             throws NotFoundException {
 
@@ -180,7 +190,9 @@ public class WebBookServlet extends BaseServlet {
     @DELETE
     @Path("/book/{id}")
     @Permission({ "book", "delete" })
-    @ApiOperation(value = "Delete a book", notes = "Delete a web book.")
+    @ApiOperation(
+            value = "Delete a book",
+            notes = "Delete a web book.")
     public WebBook deleteWebBook(@PathParam("id") String id)
             throws NotFoundException {
         WebBook book = books.get(id);

@@ -12,7 +12,7 @@ import org.spongepowered.api.world.storage.WorldProperties;
 import org.spongepowered.api.world.weather.Weather;
 import valandur.webapi.api.cache.CachedObject;
 import valandur.webapi.api.cache.misc.CachedCatalogType;
-import valandur.webapi.api.cache.world.ICachedWorld;
+import valandur.webapi.api.cache.world.ICachedWorldFull;
 import valandur.webapi.api.serialize.JsonDetails;
 import valandur.webapi.util.Constants;
 
@@ -21,7 +21,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-public class CachedWorld extends CachedObject<World> implements ICachedWorld {
+public class CachedWorld extends CachedObject<World> implements ICachedWorldFull {
 
     private UUID uuid;
     @Override

@@ -2,6 +2,7 @@ package valandur.webapi.serialize.param;
 
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.cache.world.ICachedWorld;
+import valandur.webapi.api.cache.world.ICachedWorldFull;
 import valandur.webapi.cache.CacheService;
 import valandur.webapi.util.Util;
 
@@ -20,7 +21,7 @@ public class WorldParamConverter implements ParamConverter<ICachedWorld> {
 
         CacheService srv = WebAPI.getCacheService();
 
-        Optional<ICachedWorld> optWorld = srv.getWorld(UUID.fromString(value));
+        Optional<ICachedWorldFull> optWorld = srv.getWorld(UUID.fromString(value));
         if (!optWorld.isPresent())
             throw new NotFoundException("Could not find world with uuid " + value);
         return optWorld.get();

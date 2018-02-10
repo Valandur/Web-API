@@ -33,7 +33,9 @@ public class InfoServlet extends BaseServlet {
 
     @GET
     @Permission("info")
-    @ApiOperation(value = "Server info", notes = "Get general information about the Minecraft server.")
+    @ApiOperation(
+            value = "Server info",
+            notes = "Get general information about the Minecraft server.")
     public ServerInfo getInfo() {
         return WebAPI.runOnMain(ServerInfo::new);
     }
@@ -41,8 +43,10 @@ public class InfoServlet extends BaseServlet {
     @GET
     @Path("/properties")
     @Permission({ "properties", "list" })
-    @ApiOperation(value = "List server properties", notes = "Get the main server properties (server.properties file).")
-    public Collection<ServerProperty> getProperties() {
+    @ApiOperation(
+            value = "List server properties",
+            notes = "Get the main server properties (server.properties file).")
+    public Collection<ServerProperty> listProperties() {
         ServerService srv = WebAPI.getServerService();
         return srv.getProperties();
     }
@@ -51,8 +55,10 @@ public class InfoServlet extends BaseServlet {
     @Path("/properties")
     @Permission({ "properties", "modify" })
     @Permission(value = { "properties", "modify", "[property]" }, autoCheck = false)
-    @ApiOperation(value = "Modify server properties", notes = "Modify settings in the server.properties file. " +
-            "**Note that these settings don't take effect until you restart the server.")
+    @ApiOperation(
+            value = "Modify server properties",
+            notes = "Modify settings in the server.properties file. **Note that these settings don't take effect " +
+                    "until you restart the server.")
     public Collection<ServerProperty> modifyProperties(
             final Map<String, String> properties,
             @Context HttpServletRequest request)
@@ -78,8 +84,10 @@ public class InfoServlet extends BaseServlet {
     @GET
     @Path("/stats")
     @Permission("stats")
-    @ApiOperation(value = "Server stats", notes =
-            "Get statistical information about the server, such as player count, cpu and memory usage over time.")
+    @ApiOperation(
+            value = "Server stats",
+            notes = "Get statistical information about the server, such as player count, " +
+                    "cpu and memory usage over time.")
     public ServerStats getStats() {
         return new ServerStats();
     }

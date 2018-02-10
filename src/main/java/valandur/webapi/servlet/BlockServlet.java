@@ -3,7 +3,6 @@ package valandur.webapi.servlet;
 import com.flowpowered.math.vector.Vector3i;
 import io.swagger.annotations.*;
 import org.spongepowered.api.block.BlockState;
-import valandur.webapi.WebAPI;
 import valandur.webapi.api.block.IBlockOperation;
 import valandur.webapi.api.cache.world.ICachedWorld;
 import valandur.webapi.api.servlet.BaseServlet;
@@ -28,7 +27,9 @@ public class BlockServlet extends BaseServlet {
     @GET
     @Path("/{world}/{x}/{y}/{z}")
     @Permission("one")
-    @ApiOperation(value = "Get a block", notes = "Gets information about one block in the world.")
+    @ApiOperation(
+            value = "Get a block",
+            notes = "Gets information about one block in the world.")
     public BlockStateView getBlock(
             @PathParam("world") @ApiParam("The uuid of the world to get the block from") ICachedWorld world,
             @PathParam("x") @ApiParam("The x-coordinate of the block") int x,
@@ -42,9 +43,10 @@ public class BlockServlet extends BaseServlet {
     @Path("/op")
     @ExplicitDetails
     @Permission({ "op", "list" })
-    @ApiOperation(value = "List block operations",
+    @ApiOperation(
+            value = "List block operations",
             notes = "Returns a list of all the currently running block operations.")
-    public Collection<IBlockOperation> getBlockOperations() {
+    public Collection<IBlockOperation> listBlockOperations() {
         return blockService.getBlockOperations();
     }
 
@@ -52,7 +54,8 @@ public class BlockServlet extends BaseServlet {
     @Path("/op")
     @Permission({ "op", "create" })
     @ApiOperation(
-            value = "Create a block operation", response = IBlockOperation.class,
+            value = "Create a block operation",
+            response = IBlockOperation.class,
             notes = "Start a request to get or change blocks on the server.")
     public Response createBlockOperation(CreateOperationRequest req)
             throws BadRequestException, NotAcceptableException {
@@ -163,7 +166,9 @@ public class BlockServlet extends BaseServlet {
     @GET
     @Path("/op/{uuid}")
     @Permission({ "op", "one" })
-    @ApiOperation(value = "Get a block operation", notes = "Gets details about a specific block operation")
+    @ApiOperation(
+            value = "Get a block operation",
+            notes = "Gets details about a specific block operation")
     public IBlockOperation getBlockOperation(
             @PathParam("uuid") @ApiParam("The uuid of the block operation") UUID uuid)
             throws NotFoundException {
@@ -179,7 +184,8 @@ public class BlockServlet extends BaseServlet {
     @PUT
     @Path("/op/{uuid}")
     @Permission({ "op", "modify" })
-    @ApiOperation(value = "Modify a block operation",
+    @ApiOperation(
+            value = "Modify a block operation",
             notes = "Modify an existing block operation to either pause or continue it.")
     public IBlockOperation modifyBlockOperation(
             @PathParam("uuid") @ApiParam("The uuid of the block operation") UUID uuid,
@@ -208,7 +214,8 @@ public class BlockServlet extends BaseServlet {
     @DELETE
     @Path("/op/{uuid}")
     @Permission({ "op", "delete" })
-    @ApiOperation(value = "Stop a block operation",
+    @ApiOperation(
+            value = "Stop a block operation",
             notes = "Cancel a pending or running block operation. **THIS DOES NOT UNDO THE BLOCK CHANGES**")
     public IBlockOperation deleteBlockOperation(
             @PathParam("uuid") @ApiParam("The uuid of the block operation") UUID uuid)
@@ -234,10 +241,10 @@ public class BlockServlet extends BaseServlet {
             return type;
         }
 
-        private String world;
+        private ICachedWorld world;
         @ApiModelProperty(dataType = "string", value = "The world that the operation is run in", required = true)
         public Optional<ICachedWorld> getWorld() {
-            return WebAPI.getCacheService().getWorld(world);
+            return world != null ? Optional.of(world) : Optional.empty();
         }
 
         private Vector3i min;

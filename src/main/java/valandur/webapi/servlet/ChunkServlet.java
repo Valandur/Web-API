@@ -30,9 +30,10 @@ public class ChunkServlet extends BaseServlet {
     @ExplicitDetails
     @Path("/{world}")
     @Permission({ "chunk", "list" })
-    @ApiOperation(value = "List chunks", tags = { "Chunk" }, notes =
-            "Gets a list of all the loaded chunks for the specified world.")
-    public List<CachedChunk> getChunks(
+    @ApiOperation(
+            value = "List chunks",
+            notes = "Gets a list of all the loaded chunks for the specified world.")
+    public List<CachedChunk> listChunks(
             @PathParam("world") @ApiParam("The uuid of the for which to get all chunks") ICachedWorld world) {
         return WebAPI.runOnMain(() -> {
             Optional<World> optWorld = world.getLive();
@@ -52,7 +53,9 @@ public class ChunkServlet extends BaseServlet {
     @GET
     @Path("/{world}/{x}/{z}")
     @Permission({ "chunk", "one "})
-    @ApiOperation(value = "Get a chunk", notes = "Get detailed information about a chunk")
+    @ApiOperation(
+            value = "Get a chunk",
+            notes = "Get detailed information about a chunk")
     public CachedChunk getChunkAt(
             @PathParam("world") @ApiParam("The uuid of the world in which to get the chunk") ICachedWorld world,
             @PathParam("x") @ApiParam("The x-coordinate of the chunk (in chunk coordinates)") int x,
@@ -72,7 +75,8 @@ public class ChunkServlet extends BaseServlet {
     @Path("/{world}/{x}/{z}")
     @Permission({ "chunk", "create" })
     @ApiOperation(
-            value = "Load & Generate a chunk", response = CachedChunk.class,
+            value = "Load & Generate a chunk",
+            response = CachedChunk.class,
             notes = "Forces a chunk to be loaded into memory, and created if it does not exist.")
     public Response createChunkAt(
             @PathParam("world") @ApiParam("The uuid of the world in which to create the chunk") ICachedWorld world,

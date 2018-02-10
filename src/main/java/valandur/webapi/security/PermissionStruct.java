@@ -24,7 +24,7 @@ public class PermissionStruct implements Principal {
     }
 
     private TreeNode<String, Boolean> permissions;
-    @ApiModelProperty("The permissions tree that this key grants access to")
+    @ApiModelProperty(dataType = "object", value = "The permissions tree that this key grants access to")
     public TreeNode<String, Boolean> getPermissions() {
         return permissions;
     }

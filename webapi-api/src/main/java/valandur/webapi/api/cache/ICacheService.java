@@ -17,6 +17,7 @@ import valandur.webapi.api.cache.player.ICachedPlayer;
 import valandur.webapi.api.cache.plugin.ICachedPluginContainer;
 import valandur.webapi.api.cache.tileentity.ICachedTileEntity;
 import valandur.webapi.api.cache.world.ICachedWorld;
+import valandur.webapi.api.cache.world.ICachedWorldFull;
 
 import java.util.Collection;
 import java.util.List;
@@ -67,7 +68,7 @@ public interface ICacheService {
      *
      * @return A collection of all the worlds.
      */
-    Collection<ICachedWorld> getWorlds();
+    Collection<ICachedWorldFull> getWorlds();
 
     /**
      * Gets a specific world by name or UUID.
@@ -76,7 +77,7 @@ public interface ICacheService {
      *                   already parsed.
      * @return An optional containing the world, or empty if not found.
      */
-    Optional<ICachedWorld> getWorld(String nameOrUuid);
+    Optional<ICachedWorldFull> getWorld(String nameOrUuid);
 
     /**
      * Gets a specific world by UUID.
@@ -84,7 +85,7 @@ public interface ICacheService {
      * @param uuid The UUID of the world.
      * @return An optional containing the world, or empty if not found.
      */
-    Optional<ICachedWorld> getWorld(UUID uuid);
+    Optional<ICachedWorldFull> getWorld(UUID uuid);
 
     /**
      * Gets the passed world as a cached object. This method first tries to get the world from the cache, and if
@@ -93,7 +94,7 @@ public interface ICacheService {
      * @param world The world which is returned in it's cached form.
      * @return The cached version of the specified world.
      */
-    ICachedWorld getWorld(World world);
+    ICachedWorldFull getWorld(World world);
 
     /**
      * Updates the internal representation of the passed world and returns it.
@@ -101,7 +102,7 @@ public interface ICacheService {
      * @param world The world which will be updated.
      * @return The updated cached world.
      */
-    ICachedWorld updateWorld(World world);
+    ICachedWorldFull updateWorld(World world);
 
     /**
      * Updates a world according to the passed world properties (used for unloaded worlds).
@@ -109,7 +110,7 @@ public interface ICacheService {
      * @param world The world which will be updated.
      * @return The updated cached world.
      */
-    ICachedWorld updateWorld(WorldProperties world);
+    ICachedWorldFull updateWorld(WorldProperties world);
 
     /**
      * Removes a world from the cache.
@@ -117,7 +118,7 @@ public interface ICacheService {
      * @param worldUuid The UUID of the world to remove.
      * @return The removed world representation.
      */
-    ICachedWorld removeWorld(UUID worldUuid);
+    ICachedWorldFull removeWorld(UUID worldUuid);
 
     /**
      * Gets all the online players of the server.

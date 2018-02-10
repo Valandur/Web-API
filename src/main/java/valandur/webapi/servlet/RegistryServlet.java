@@ -28,7 +28,9 @@ public class RegistryServlet extends BaseServlet {
     @GET
     @Path("/{class}")
     @Permission("one")
-    @ApiOperation(value = "Get a catalog type", notes = "Lists all the catalog values of a specified CatalogType.")
+    @ApiOperation(
+            value = "Get a catalog type",
+            notes = "Lists all the catalog values of a specified CatalogType.")
     public Collection<CachedCatalogType> getRegistry(
             @PathParam("class") @ApiParam("The fully qualified classname of the catalog type") String className)
             throws BadRequestException, NotFoundException {

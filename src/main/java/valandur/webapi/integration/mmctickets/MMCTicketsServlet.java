@@ -47,8 +47,10 @@ public class MMCTicketsServlet extends BaseServlet {
     @GET
     @Path("/ticket")
     @Permission({ "ticket", "list" })
-    @ApiOperation(value = "List tickets", notes = "Get a list of all the tickets on the server.")
-    public Collection<CachedTicketData> getTickets() {
+    @ApiOperation(
+            value = "List tickets",
+            notes = "Get a list of all the tickets on the server.")
+    public Collection<CachedTicketData> listTickets() {
         Main plugin = getMMCTicketsPlugin();
 
         return WebAPIAPI.runOnMain(() -> {
@@ -63,7 +65,9 @@ public class MMCTicketsServlet extends BaseServlet {
     @GET
     @Path("/ticket/{id}")
     @Permission({ "ticket", "one" })
-    @ApiOperation(value = "Get a ticket", notes = "Get detailed information about a ticket.")
+    @ApiOperation(
+            value = "Get a ticket",
+            notes = "Get detailed information about a ticket.")
     public CachedTicketData getTicket(@PathParam("id") Integer id)
             throws NotFoundException {
         return WebAPIAPI.runOnMain(() -> {
@@ -80,7 +84,9 @@ public class MMCTicketsServlet extends BaseServlet {
     @PUT
     @Path("/ticket/{id}")
     @Permission({ "ticket", "modify" })
-    @ApiOperation(value = "Modify a ticket", notes = "Modify the properties of an existing ticket.")
+    @ApiOperation(
+            value = "Modify a ticket",
+            notes = "Modify the properties of an existing ticket.")
     public CachedTicketData modifyTicket(@PathParam("id") Integer id, CachedTicketData req)
             throws NotFoundException {
 

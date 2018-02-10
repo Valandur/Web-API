@@ -23,7 +23,9 @@ public class HistoryServlet extends BaseServlet {
     @GET
     @Path("/cmd")
     @Permission("cmd")
-    @ApiOperation(value = "Get command history", notes = "View a history of the server commands.")
+    @ApiOperation(
+            value = "Get command history",
+            notes = "View a history of the server commands.")
     public List<ICachedCommandCall> getCommands() {
         return cacheService.getCommandCalls();
     }
@@ -31,7 +33,9 @@ public class HistoryServlet extends BaseServlet {
     @GET
     @Path("/chat")
     @Permission("chat")
-    @ApiOperation(value = "Get chat history", notes = "View a history of the server chat.")
+    @ApiOperation(
+            value = "Get chat history",
+            notes = "View a history of the server chat.")
     public List<ICachedChatMessage> getChat() {
         return cacheService.getChatMessages();
     }

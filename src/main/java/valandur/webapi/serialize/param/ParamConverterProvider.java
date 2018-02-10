@@ -1,6 +1,7 @@
 package valandur.webapi.serialize.param;
 
 import valandur.webapi.api.cache.world.ICachedWorld;
+import valandur.webapi.api.cache.world.ICachedWorldFull;
 import valandur.webapi.cache.world.CachedWorld;
 
 import javax.ws.rs.ext.ParamConverter;
@@ -13,7 +14,8 @@ public class ParamConverterProvider implements javax.ws.rs.ext.ParamConverterPro
 
     @Override
     public <T> ParamConverter<T> getConverter(Class<T> rawType, Type genericType, Annotation[] annotations) {
-        if (rawType.equals(ICachedWorld.class) || rawType.equals(CachedWorld.class)) {
+        if (rawType.equals(ICachedWorld.class) || rawType.equals(ICachedWorldFull.class) ||
+                rawType.equals(CachedWorld.class)) {
             return (ParamConverter<T>) new WorldParamConverter();
         }
         return null;

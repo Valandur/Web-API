@@ -24,8 +24,9 @@ import java.util.List;
 import java.util.Optional;
 
 @Path("husky-crates")
-@Api(tags = { "Husky Crates" }, value =
-        "Create, edit and delete the crate types on your server, without having to restart it.")
+@Api(
+        tags = { "Husky Crates" },
+        value = "Create, edit and delete the crate types on your server, without having to restart it.")
 @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 @Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 public class HuskyCratesServlet extends BaseServlet {
@@ -55,8 +56,10 @@ public class HuskyCratesServlet extends BaseServlet {
     @GET
     @Path("/crate")
     @Permission({ "crate", "list" })
-    @ApiOperation(value = "List crates", notes = "Get a list of all the crates on the server.")
-    public Collection<CachedVirtualCrate> getCrates() {
+    @ApiOperation(
+            value = "List crates",
+            notes = "Get a list of all the crates on the server.")
+    public Collection<CachedVirtualCrate> listCrates() {
         return WebAPIAPI.runOnMain(() -> {
             HuskyCrates plugin = getHuskyPlugin();
             List<CachedVirtualCrate> crates = new ArrayList<>();
@@ -70,7 +73,9 @@ public class HuskyCratesServlet extends BaseServlet {
     @GET
     @Path("/crate/{id}")
     @Permission({ "crate", "one" })
-    @ApiOperation(value = "Get a crate", notes = "Get detailed information about a crate.")
+    @ApiOperation(
+            value = "Get a crate",
+            notes = "Get detailed information about a crate.")
     public CachedVirtualCrate getCrate(@PathParam("id") String id)
             throws NotFoundException {
         return WebAPIAPI.runOnMain(() -> {
@@ -87,7 +92,10 @@ public class HuskyCratesServlet extends BaseServlet {
     @POST
     @Path("/crate")
     @Permission({ "crate", "create "})
-    @ApiOperation(value = "Create a crate", response = CachedVirtualCrate.class, notes = "Creates a new crate.")
+    @ApiOperation(
+            value = "Create a crate",
+            response = CachedVirtualCrate.class,
+            notes = "Creates a new crate.")
     public Response createCrate(CachedVirtualCrate req) {
 
         if (req == null) {
@@ -113,7 +121,9 @@ public class HuskyCratesServlet extends BaseServlet {
     @PUT
     @Path("/crate/{id}")
     @Permission({ "crate", "modify" })
-    @ApiOperation(value = "Change a crate", notes = "Modify a crate.")
+    @ApiOperation(
+            value = "Change a crate",
+            notes = "Modify a crate.")
     public CachedVirtualCrate modifyCrate(@PathParam("id") String id, CachedVirtualCrate req)
             throws NotFoundException {
 
@@ -145,7 +155,9 @@ public class HuskyCratesServlet extends BaseServlet {
     @DELETE
     @Path("/crate/{id}")
     @Permission({ "crate", "delete" })
-    @ApiOperation(value = "Delete a crate", notes = "Delete a crate.")
+    @ApiOperation(
+            value = "Delete a crate",
+            notes = "Delete a crate.")
     public CachedVirtualCrate deleteCrate(@PathParam("id") String id)
             throws NotFoundException {
 

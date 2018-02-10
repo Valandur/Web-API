@@ -52,7 +52,9 @@ public class MapServlet extends BaseServlet {
     @Path("/{world}/{x}/{z}")
     @Permission("map")
     @Produces("image/png")
-    @ApiOperation("Get a map tile")
+    @ApiOperation(
+            value = "Get a map tile",
+            notes = "Returns an image representing the biomes of the blocks within the specified tile")
     public Response getMap(
             @PathParam("world") @ApiParam("The world to get the map tile from") CachedWorld world,
             @PathParam("x") @ApiParam("The x-coordinate of the tile (is multiplied by the TILE_SIZE)") int x,

@@ -26,16 +26,20 @@ public class MessageServlet extends BaseServlet {
     @GET
     @ExplicitDetails
     @Permission("list")
-    @ApiOperation(value = "Get sent messages", notes =
-            "Get a list of all the messages that were sent through the message endpoint since the server started.")
-    public List<IMessage> getMessages() {
+    @ApiOperation(
+            value = "List messages",
+            notes = "Get a list of all the messages that were sent through the message " +
+                    "endpoint since the server started.")
+    public List<IMessage> listMessages() {
         return messageService.getMessages();
     }
 
     @GET
     @Path("/{uuid}")
     @Permission("one")
-    @ApiOperation(value = "Get a message", notes = "Get detailed information about a message.")
+    @ApiOperation(
+            value = "Get a message",
+            notes = "Get detailed information about a message.")
     public IMessage getMessage(
             @PathParam("uuid") @ApiParam("The uuid of the sent message") UUID uuid)
             throws NotFoundException {
@@ -50,7 +54,8 @@ public class MessageServlet extends BaseServlet {
     @POST
     @Permission("create")
     @ApiOperation(
-            value = "Send a message", response = IMessage.class,
+            value = "Send a message",
+            response = IMessage.class,
             notes = "Send an interactive message to a player. Make sure to have an event hook for " +
                     "\"custom_message\" to receive the response.")
     public Response sendMessage(Message msg)

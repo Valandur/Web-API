@@ -5,6 +5,7 @@ import io.swagger.annotations.*;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.EntityType;
+import org.spongepowered.api.event.cause.entity.damage.DamageType;
 import org.spongepowered.api.event.cause.entity.damage.source.DamageSource;
 import org.spongepowered.api.item.inventory.Carrier;
 import org.spongepowered.api.item.inventory.Inventory;
@@ -19,7 +20,6 @@ import valandur.webapi.api.servlet.BaseServlet;
 import valandur.webapi.api.servlet.ExplicitDetails;
 import valandur.webapi.api.servlet.Permission;
 import valandur.webapi.cache.entity.CachedEntity;
-import valandur.webapi.serialize.deserialize.DamageRequest;
 import valandur.webapi.serialize.deserialize.ExecuteMethodRequest;
 
 import javax.ws.rs.*;
@@ -41,8 +41,8 @@ public class EntityServlet extends BaseServlet {
     @GET
     @ExplicitDetails
     @Permission("list")
-    @ApiOperation(value = "Get entities", notes = "Get a list of all entities on the server (in all worlds).")
-    public Collection<ICachedEntity> getEntities(
+    @ApiOperation(value = "List entities", notes = "Get a list of all entities on the server (in all worlds).")
+    public Collection<ICachedEntity> listEntities(
             @QueryParam("world") @ApiParam("The world to filter the entities by") ICachedWorld world,
             @QueryParam("type") @ApiParam("The type id of the entities to filter by") String typeId,
             @QueryParam("limit") @ApiParam("The maximum amount of entities returned") int limit) {
@@ -58,7 +58,9 @@ public class EntityServlet extends BaseServlet {
     @GET
     @Path("/{entity}")
     @Permission("one")
-    @ApiOperation(value = "Get entity", notes = "Get detailed information about an entity.")
+    @ApiOperation(
+            value = "Get entity",
+            notes = "Get detailed information about an entity.")
     public ICachedEntity getEntity(
             @PathParam("entity") @ApiParam("The uuid of the entity") UUID uuid)
             throws NotFoundException {
@@ -73,7 +75,9 @@ public class EntityServlet extends BaseServlet {
     @PUT
     @Path("/{entity}")
     @Permission("modify")
-    @ApiOperation(value = "Modify an entity", notes = "Modify the properties of an existing entity.")
+    @ApiOperation(
+            value = "Modify an entity",
+            notes = "Modify the properties of an existing entity.")
     public ICachedEntity modifyEntity(
             @PathParam("entity") @ApiParam("The uuid of the entity") UUID uuid,
             UpdateEntityRequest req)
@@ -151,7 +155,8 @@ public class EntityServlet extends BaseServlet {
     @POST
     @Permission("create")
     @ApiOperation(
-            value = "Spawn an entity", response = ICachedEntity.class,
+            value = "Spawn an entity",
+            response = ICachedEntity.class,
             notes = "Creates & Spawns a new entity with the specified properties.")
     public Response createEntity(CreateEntityRequest req)
             throws BadRequestException {
@@ -195,7 +200,8 @@ public class EntityServlet extends BaseServlet {
     @POST
     @Path("/{entity}/method")
     @Permission("method")
-    @ApiOperation(value = "Execute a method",
+    @ApiOperation(
+            value = "Execute a method",
             notes = "Provides direct access to the underlaying entity object and can execute any method on it.")
     public Object executeMethod(
             @PathParam("entity") @ApiParam("The uuid of the entity") UUID uuid,
@@ -223,7 +229,9 @@ public class EntityServlet extends BaseServlet {
     @DELETE
     @Path("/{entity}")
     @Permission("delete")
-    @ApiOperation(value = "Destroy an entity", notes = "Destroys an entity.")
+    @ApiOperation(
+            value = "Destroy an entity",
+            notes = "Destroys an entity.")
     public ICachedEntity removeEntity(
             @PathParam("entity") @ApiParam("The uuid of the entity") UUID uuid)
             throws NotFoundException {
@@ -247,14 +255,14 @@ public class EntityServlet extends BaseServlet {
     @ApiModel("Create Entity RequesT")
     public static class CreateEntityRequest {
 
-        private String world;
+        private ICachedWorld world;
         @ApiModelProperty(dataType = "string", value = "The world that the entity will be spawned in", required = true)
         public Optional<ICachedWorld> getWorld() {
-            return WebAPI.getCacheService().getWorld(world);
+            return world != null ? Optional.of(world) : Optional.empty();
         }
 
         private Vector3d position;
-        @ApiModelProperty(value = "The position at which the entity will be spawned", required = true)
+        @ApiModelProperty(value = "The position where the entity is spawned", required = true)
         public Vector3d getPosition() {
             return position;
         }
@@ -270,10 +278,10 @@ public class EntityServlet extends BaseServlet {
     @ApiModel("Update Entity Request")
     public static class UpdateEntityRequest {
 
-        private String world;
+        private ICachedWorld world;
         @ApiModelProperty(dataType = "string", value = "The world that the entity will be moved to")
         public Optional<ICachedWorld> getWorld() {
-            return WebAPI.getCacheService().getWorld(world);
+            return world != null ? Optional.of(world) : Optional.empty();
         }
 
         private Vector3d position;
@@ -313,6 +321,23 @@ public class EntityServlet extends BaseServlet {
         }
         public boolean hasInventory() {
             return inventory != null;
+        }
+    }
+
+    @ApiModel("DamageRequest")
+    public static class DamageRequest {
+
+        private Integer amount;
+        @ApiModelProperty("The amount of damage that should be dealt to the entity")
+        public Integer getAmount() {
+            return amount;
+        }
+
+        private String type;
+        @ApiModelProperty(dataType = "string", value = "The type of damage that should be dealt")
+        public Optional<DamageType> getDamageType() {
+            Collection<DamageType> types = Sponge.getRegistry().getAllOf(DamageType.class);
+            return types.stream().filter(t -> t.getId().equalsIgnoreCase(type) || t.getName().equalsIgnoreCase(type)).findAny();
         }
     }
 }

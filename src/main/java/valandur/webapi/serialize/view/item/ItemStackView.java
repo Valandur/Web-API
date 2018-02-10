@@ -1,10 +1,13 @@
 package valandur.webapi.serialize.view.item;
 
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import org.spongepowered.api.data.Property;
 import org.spongepowered.api.data.manipulator.DataManipulator;
 import org.spongepowered.api.item.ItemType;
 import org.spongepowered.api.item.inventory.ItemStack;
 import valandur.webapi.WebAPI;
+import valandur.webapi.api.cache.misc.CachedCatalogType;
 import valandur.webapi.api.serialize.BaseView;
 import valandur.webapi.api.serialize.JsonDetails;
 
@@ -12,20 +15,23 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+@ApiModel("ItemStack")
 public class ItemStackView extends BaseView<ItemStack> {
 
-    public ItemType type;
-    public int quantity;
+    private CachedCatalogType<ItemType> type;
+    @ApiModelProperty(value = "The type of this item", required = true)
+    public CachedCatalogType<ItemType> getType() {
+        return type;
+    }
 
-
-    public ItemStackView(ItemStack value) {
-        super(value);
-
-        this.type = value.getItem();
-        this.quantity = value.getQuantity();
+    private int quantity;
+    @ApiModelProperty(value = "The quantity of items in this stack", required = true)
+    public int getQuantity() {
+        return quantity;
     }
 
     @JsonDetails
+    @ApiModelProperty("Additional item data attached to this ItemStack")
     public Map<String, Object> getData() {
         HashMap<String, Object> data = new HashMap<>();
         // Add properties
@@ -52,5 +58,13 @@ public class ItemStackView extends BaseView<ItemStack> {
             }
         }
         return data;
+    }
+
+
+    public ItemStackView(ItemStack value) {
+        super(value);
+
+        this.type = new CachedCatalogType<>(value.getType());
+        this.quantity = value.getQuantity();
     }
 }

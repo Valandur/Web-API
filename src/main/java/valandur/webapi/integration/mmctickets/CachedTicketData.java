@@ -1,6 +1,7 @@
 package valandur.webapi.integration.mmctickets;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import net.moddedminecraft.mmctickets.data.TicketData;
 import net.moddedminecraft.mmctickets.data.ticketStatus;
 import valandur.webapi.api.cache.CachedObject;
@@ -8,61 +9,64 @@ import valandur.webapi.api.cache.player.ICachedPlayer;
 import valandur.webapi.api.cache.world.CachedLocation;
 import valandur.webapi.api.serialize.JsonDetails;
 
+@ApiModel("MMCTicketsTicket")
 public class CachedTicketData extends CachedObject<TicketData> {
 
-    @JsonDeserialize
     private int id;
+    @ApiModelProperty(value = "The unique id of this ticket", required = true)
     public int getId() {
         return id;
     }
 
     private long timestamp;
+    @ApiModelProperty(value = "The unix timestamp (in seconds) when this ticket was submitted", required = true)
     public long getTimestamp() {
         return timestamp;
     }
 
-    private ICachedPlayer sender;
-    @JsonDetails
-    public ICachedPlayer getSender() {
-        return sender;
-    }
-
-    private String message;
-    @JsonDetails
-    public String getMessage() {
-        return message;
-    }
-
-    @JsonDeserialize
-    private String comment;
-    @JsonDetails
-    public String getComment() {
-        return comment;
-    }
-
-    @JsonDeserialize
     private ticketStatus status;
-    @JsonDetails
+    @ApiModelProperty(value = "The current status of the ticket", required = true)
     public ticketStatus getStatus() {
         return status;
     }
 
-    @JsonDeserialize
+    private String message;
+    @ApiModelProperty(value = "The message sent along with this ticket", required = true)
+    public String getMessage() {
+        return message;
+    }
+
+    private ICachedPlayer sender;
+    @JsonDetails
+    @ApiModelProperty("The sender of this ticket")
+    public ICachedPlayer getSender() {
+        return sender;
+    }
+
+    private String comment;
+    @JsonDetails
+    @ApiModelProperty("The comment added by staff to this ticket")
+    public String getComment() {
+        return comment;
+    }
+
     private ICachedPlayer staff;
     @JsonDetails
+    @ApiModelProperty("The staff member that was assigned to this ticket")
     public ICachedPlayer getStaff() {
         return staff;
     }
 
-    @JsonDeserialize
     private Integer notified;
     @JsonDetails
+    @ApiModelProperty("True if staff has been notified about this ticket, false otherwise")
     public Integer getNotified() {
         return notified;
     }
 
     private CachedLocation location;
     @JsonDetails
+    @ApiModelProperty("The location at which this ticket was submitted")
     public CachedLocation getLocation() {
         return location;
     }

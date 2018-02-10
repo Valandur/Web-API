@@ -16,7 +16,6 @@ import valandur.webapi.api.cache.player.ICachedPlayer;
 import valandur.webapi.api.servlet.BaseServlet;
 import valandur.webapi.api.servlet.ExplicitDetails;
 import valandur.webapi.api.servlet.Permission;
-import valandur.webapi.serialize.deserialize.DamageRequest;
 import valandur.webapi.serialize.deserialize.ExecuteMethodRequest;
 
 import javax.ws.rs.*;
@@ -34,15 +33,19 @@ public class PlayerServlet extends BaseServlet {
     @GET
     @ExplicitDetails
     @Permission("list")
-    @ApiOperation(value = "List players", notes = "Get a list of all the players on the server.")
-    public Collection<ICachedPlayer> getPlayers() {
+    @ApiOperation(
+            value = "List players",
+            notes = "Get a list of all the players on the server.")
+    public Collection<ICachedPlayer> listPlayers() {
         return cacheService.getPlayers();
     }
 
     @GET
     @Path("/{player}")
     @Permission("one")
-    @ApiOperation(value = "Get a player", notes = "Get detailed information about a player.")
+    @ApiOperation(
+            value = "Get a player",
+            notes = "Get detailed information about a player.")
     public ICachedPlayer getPlayer(
             @PathParam("player") @ApiParam("The uuid of the player") UUID uuid)
             throws NotFoundException {
@@ -57,7 +60,9 @@ public class PlayerServlet extends BaseServlet {
     @PUT
     @Path("/{player}")
     @Permission("modify")
-    @ApiOperation(value = "Modify a player", notes = "Modify the properties of an existing player.")
+    @ApiOperation(
+            value = "Modify a player",
+            notes = "Modify the properties of an existing player.")
     public ICachedPlayer modifyPlayer(
             @PathParam("player") @ApiParam("The uuid of the player") UUID uuid,
             UpdatePlayerRequest req)
@@ -131,7 +136,7 @@ public class PlayerServlet extends BaseServlet {
             }
 
             if (req.getDamage() != null) {
-                DamageRequest dmgReq = req.getDamage();
+                EntityServlet.DamageRequest dmgReq = req.getDamage();
                 DamageSource.Builder builder = DamageSource.builder();
                 if (dmgReq.getDamageType().isPresent())
                     builder.type(dmgReq.getDamageType().get());
@@ -158,8 +163,9 @@ public class PlayerServlet extends BaseServlet {
     @POST
     @Path("/{player}/method")
     @Permission("method")
-    @ApiOperation(value = "Execute a method", notes =
-            "Provides direct access to the underlaying player object and can execute any method on it.")
+    @ApiOperation(
+            value = "Execute a method",
+            notes = "Provides direct access to the underlaying player object and can execute any method on it.")
     public Object executeMethod(
             @PathParam("player") @ApiParam("The uuid of the player") UUID uuid,
             ExecuteMethodRequest req)

@@ -74,7 +74,7 @@ public abstract class BlockOperation extends CachedObject<IBlockOperation> imple
 
     @Override
     @JsonIgnore
-    public boolean hasError() {
+    public boolean isErrored() {
         return error != null;
     }
 

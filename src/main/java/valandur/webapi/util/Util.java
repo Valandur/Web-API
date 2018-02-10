@@ -1,21 +1,13 @@
 package valandur.webapi.util;
 
-import com.flowpowered.math.vector.Vector3d;
-import com.flowpowered.math.vector.Vector3i;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.asset.Asset;
-import org.spongepowered.api.entity.living.player.Player;
-import org.spongepowered.api.item.ItemType;
-import org.spongepowered.api.item.inventory.ItemStack;
-import org.spongepowered.api.text.Text;
 import org.spongepowered.api.util.Tuple;
-import org.spongepowered.api.world.World;
 import valandur.webapi.WebAPI;
-import valandur.webapi.serialize.deserialize.ExecuteMethodParam;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;

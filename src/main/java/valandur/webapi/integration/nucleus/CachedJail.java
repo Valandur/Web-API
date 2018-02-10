@@ -1,37 +1,38 @@
 package valandur.webapi.integration.nucleus;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.flowpowered.math.vector.Vector3d;
 import io.github.nucleuspowered.nucleus.api.nucleusdata.NamedLocation;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import valandur.webapi.api.cache.CachedObject;
 import valandur.webapi.api.cache.world.CachedLocation;
 
-@JsonDeserialize
-public class CachedNamedLocation extends CachedObject<NamedLocation> {
+@ApiModel("NucleusJail")
+public class CachedJail extends CachedObject<NamedLocation> {
 
-    @JsonDeserialize
     private String name;
+    @ApiModelProperty(value = "The unique name of this jail", required = true)
     public String getName() {
         return name;
     }
 
-    @JsonDeserialize
     private CachedLocation location;
+    @ApiModelProperty(value = "The location of the jail", required = true)
     public CachedLocation getLocation() {
         return location;
     }
 
-    @JsonDeserialize
     private Vector3d rotation;
+    @ApiModelProperty(value = "The rotation of players within the jail", required = true)
     public Vector3d getRotation() {
         return rotation;
     }
 
 
-    public CachedNamedLocation() {
+    public CachedJail() {
         super(null);
     }
-    public CachedNamedLocation(NamedLocation value) {
+    public CachedJail(NamedLocation value) {
         super(value);
 
         this.name = value.getName();

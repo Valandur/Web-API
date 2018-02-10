@@ -27,9 +27,10 @@ public class TileEntityServlet extends BaseServlet {
     @GET
     @ExplicitDetails
     @Permission("list")
-    @ApiOperation(value = "List tile entities", notes =
-            "Get a list of all tile entities on the server (in all worlds, unless specified).")
-    public Collection<ICachedTileEntity> getTileEntities(
+    @ApiOperation(
+            value = "List tile entities",
+            notes = "Get a list of all tile entities on the server (in all worlds, unless specified).")
+    public Collection<ICachedTileEntity> listTileEntities(
             @QueryParam("world") @ApiParam("The world to filter tile entities by") ICachedWorld world,
             @QueryParam("type") @ApiParam("The type if of tile entities to filter by") String typeId,
             @QueryParam("limit") @ApiParam("The maximum amount of tile entities returned") int limit) {
@@ -46,7 +47,9 @@ public class TileEntityServlet extends BaseServlet {
     @GET
     @Path("/{world}/{x}/{y}/{z}")
     @Permission("one")
-    @ApiOperation(value = "Get tile entity", notes = "Get detailed information about a tile entity.")
+    @ApiOperation(
+            value = "Get tile entity",
+            notes = "Get detailed information about a tile entity.")
     public ICachedTileEntity getTileEntity(
             @PathParam("world") @ApiParam("The world the tile entity is in") ICachedWorld world,
             @PathParam("x") @ApiParam("The x-coordinate of the tile-entity") Integer x,
@@ -66,8 +69,9 @@ public class TileEntityServlet extends BaseServlet {
     @POST
     @Path("/{world}/{x}/{y}/{z}/method")
     @Permission("method")
-    @ApiOperation(value = "Execute a method", notes =
-            "Provides direct access to the underlaying tile entity object and can execute any method on it.")
+    @ApiOperation(
+            value = "Execute a method",
+            notes = "Provides direct access to the underlaying tile entity object and can execute any method on it.")
     public Object executeMethod(
             @PathParam("world") @ApiParam("The world the tile entity is in") ICachedWorld world,
             @PathParam("x") @ApiParam("The x-coordinate of the tile-entity") Integer x,

@@ -52,8 +52,10 @@ public class MMCRestrictServlet extends BaseServlet {
     @GET
     @Path("/item")
     @Permission({ "item", "list" })
-    @ApiOperation(value = "List items", notes = "Gets the list of restricted items on the server.")
-    public Collection<CachedItemData> getItems() {
+    @ApiOperation(
+            value = "List items",
+            notes = "Gets the list of restricted items on the server.")
+    public Collection<CachedItemData> listItems() {
         Main plugin = getMMCRestrictPlugin();
 
         return WebAPIAPI.runOnMain(() -> {
@@ -69,7 +71,8 @@ public class MMCRestrictServlet extends BaseServlet {
     @Path("/item")
     @Permission({ "item", "create" })
     @ApiOperation(
-            value = "Add an item", response = CachedItemData.class,
+            value = "Add an item",
+            response = CachedItemData.class,
             notes = "Adds a new item to the restricted item list.")
     public Response addItem(CachedItemData req)
             throws BadRequestException {
@@ -99,7 +102,9 @@ public class MMCRestrictServlet extends BaseServlet {
     @PUT
     @Path("/item/{id}")
     @Permission({ "item", "modify" })
-    @ApiOperation(value = "Modify an item", notes = "Modify an existing restricted item.")
+    @ApiOperation(
+            value = "Modify an item",
+            notes = "Modify an existing restricted item.")
     public CachedItemData modifyItem(@PathParam("id") String id, CachedItemData req)
             throws NotFoundException {
 
@@ -134,7 +139,9 @@ public class MMCRestrictServlet extends BaseServlet {
     @DELETE
     @Path("/item/{id}")
     @Permission({ "item", "delete" })
-    @ApiOperation(value = "Delete an item", notes = "Delete an existing restricted item.")
+    @ApiOperation(
+            value = "Delete an item",
+            notes = "Delete an existing restricted item.")
     public CachedItemData deleteItem(@PathParam("id") String id)
             throws NotFoundException {
 

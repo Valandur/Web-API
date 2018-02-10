@@ -17,8 +17,8 @@ public class CachedCatalogType<T extends CatalogType> extends CachedObject<T> im
         return id;
     }
 
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private String name;
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     public String getName() {
         return name;
     }

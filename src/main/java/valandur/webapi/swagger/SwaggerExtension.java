@@ -1,10 +1,8 @@
 package valandur.webapi.swagger;
 
-import io.swagger.annotations.ApiOperation;
 import io.swagger.jersey.SwaggerJersey2Jaxrs;
 import io.swagger.models.Operation;
 import io.swagger.models.Response;
-import io.swagger.models.parameters.Parameter;
 import io.swagger.models.properties.IntegerProperty;
 import io.swagger.models.properties.ObjectProperty;
 import io.swagger.models.properties.Property;
@@ -15,13 +13,9 @@ import valandur.webapi.api.servlet.Permission;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.Path;
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
 
 public class SwaggerExtension extends SwaggerJersey2Jaxrs {
 
@@ -44,17 +38,6 @@ public class SwaggerExtension extends SwaggerJersey2Jaxrs {
         return new ObjectProperty().property("status", statusProp).property("error", errorProp);
     }
 
-    @Override
-    public String extractOperationMethod(ApiOperation apiOperation, Method method,
-                                         Iterator<io.swagger.jaxrs.ext.SwaggerExtension> chain) {
-        return super.extractOperationMethod(apiOperation, method, chain);
-    }
-
-    @Override
-    public List<Parameter> extractParameters(List<Annotation> annotations, Type type, Set<Type> typesToSkip,
-                                             Iterator<io.swagger.jaxrs.ext.SwaggerExtension> chain) {
-        return super.extractParameters(annotations, type, typesToSkip, chain);
-    }
 
     @Override
     public void decorateOperation(Operation operation, Method method,

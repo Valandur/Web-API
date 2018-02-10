@@ -32,29 +32,34 @@ public class CachedEntity extends CachedObject<Entity> implements ICachedEntity 
     }
 
     private CachedLocation location;
+    @Override
     public CachedLocation getLocation() {
         return location;
     }
 
     private Vector3d rotation;
+    @Override
     @JsonDetails
     public Vector3d getRotation() {
         return rotation;
     }
 
     private Vector3d velocity;
+    @Override
     @JsonDetails
     public Vector3d getVelocity() {
         return velocity;
     }
 
     private Vector3d scale;
+    @Override
     @JsonDetails
     public Vector3d getScale() {
         return scale;
     }
 
     private CachedInventory inventory;
+    @Override
     @JsonDetails
     public CachedInventory getInventory() {
         return inventory;

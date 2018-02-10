@@ -4,6 +4,7 @@ import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
 import org.spongepowered.api.CatalogType;
 import org.spongepowered.api.Sponge;
+import org.spongepowered.api.advancement.Advancement;
 import org.spongepowered.api.block.tileentity.TileEntity;
 import org.spongepowered.api.command.CommandMapping;
 import org.spongepowered.api.entity.Entity;
@@ -38,12 +39,14 @@ import valandur.webapi.api.cache.tileentity.ICachedTileEntity;
 import valandur.webapi.api.cache.world.CachedLocation;
 import valandur.webapi.api.cache.world.CachedTransform;
 import valandur.webapi.api.cache.world.ICachedWorld;
+import valandur.webapi.api.cache.world.ICachedWorldFull;
 import valandur.webapi.cache.chat.CachedChatMessage;
 import valandur.webapi.cache.command.CachedCommand;
 import valandur.webapi.cache.command.CachedCommandCall;
 import valandur.webapi.cache.entity.CachedEntity;
 import valandur.webapi.cache.misc.CachedCause;
 import valandur.webapi.cache.misc.CachedInventory;
+import valandur.webapi.cache.player.CachedAdvancement;
 import valandur.webapi.cache.player.CachedPlayer;
 import valandur.webapi.cache.plugin.CachedPluginContainer;
 import valandur.webapi.cache.tileentity.CachedTileEntity;
@@ -149,6 +152,8 @@ public class CacheService implements ICacheService {
             return new CachedInventory((Inventory)obj);
         if (obj instanceof CommandMapping)
             return getCommand((CommandMapping)obj);
+        if (obj instanceof Advancement)
+            return new CachedAdvancement((Advancement)obj);
 
         if (obj instanceof ItemStack)
             return ((ItemStack)obj).copy();
@@ -209,11 +214,11 @@ public class CacheService implements ICacheService {
         });
     }
     @Override
-    public Collection<ICachedWorld> getWorlds() {
+    public Collection<ICachedWorldFull> getWorlds() {
         return new ArrayList<>(worlds.values());
     }
     @Override
-    public Optional<ICachedWorld> getWorld(String nameOrUuid) {
+    public Optional<ICachedWorldFull> getWorld(String nameOrUuid) {
         if (Util.isValidUUID(nameOrUuid)) {
             return getWorld(UUID.fromString(nameOrUuid));
         }
@@ -223,7 +228,7 @@ public class CacheService implements ICacheService {
 
     }
     @Override
-    public Optional<ICachedWorld> getWorld(UUID uuid) {
+    public Optional<ICachedWorldFull> getWorld(UUID uuid) {
         if (!worlds.containsKey(uuid)) {
             return Optional.empty();
         }
@@ -244,12 +249,12 @@ public class CacheService implements ICacheService {
         }
     }
     @Override
-    public ICachedWorld getWorld(World world) {
-        Optional<ICachedWorld> w = getWorld(world.getUniqueId());
+    public ICachedWorldFull getWorld(World world) {
+        Optional<ICachedWorldFull> w = getWorld(world.getUniqueId());
         return w.orElseGet(() -> updateWorld(world));
     }
     @Override
-    public ICachedWorld updateWorld(World world) {
+    public ICachedWorldFull updateWorld(World world) {
         assert Sponge.getServer().isMainThread();
 
         Timings.CACHE_WORLD.startTiming();
@@ -259,7 +264,7 @@ public class CacheService implements ICacheService {
         return w;
     }
     @Override
-    public ICachedWorld updateWorld(WorldProperties world) {
+    public ICachedWorldFull updateWorld(WorldProperties world) {
         assert Sponge.getServer().isMainThread();
 
         Timings.CACHE_WORLD.startTiming();
@@ -269,7 +274,7 @@ public class CacheService implements ICacheService {
         return w;
     }
     @Override
-    public ICachedWorld removeWorld(UUID worldUuid) {
+    public ICachedWorldFull removeWorld(UUID worldUuid) {
         return worlds.remove(worldUuid);
     }
 
@@ -534,7 +539,7 @@ public class CacheService implements ICacheService {
     }
     @Override
     public Optional<ICachedTileEntity> getTileEntity(Location<World> location) {
-        Optional<ICachedWorld> w = this.getWorld(location.getExtent().getUniqueId());
+        Optional<ICachedWorldFull> w = this.getWorld(location.getExtent().getUniqueId());
         if (!w.isPresent())
             return Optional.empty();
 

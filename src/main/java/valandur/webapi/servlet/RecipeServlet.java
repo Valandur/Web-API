@@ -21,7 +21,7 @@ public class RecipeServlet extends BaseServlet {
     @GET
     @Permission("list")
     @ApiOperation("List recipes")
-    public Object getRecipes() {
+    public Object listRecipes() {
         throw new NotImplementedException();
     }
 }

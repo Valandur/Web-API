@@ -9,6 +9,7 @@ import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.item.inventory.ItemStack;
 import valandur.webapi.api.cache.CachedObject;
+import valandur.webapi.api.cache.player.ICachedAdvancement;
 import valandur.webapi.api.cache.player.ICachedPlayer;
 import valandur.webapi.api.cache.world.CachedLocation;
 import valandur.webapi.api.serialize.JsonDetails;
@@ -104,9 +105,9 @@ public class CachedPlayer extends CachedObject<Player> implements ICachedPlayer 
         return inventory;
     }
 
-    private List<CachedAdvancement> unlockedAdvancements = new ArrayList<>();
+    private List<ICachedAdvancement> unlockedAdvancements = new ArrayList<>();
     @JsonDetails
-    public List<CachedAdvancement> getUnlockedAdvancements() {
+    public List<ICachedAdvancement> getUnlockedAdvancements() {
         return unlockedAdvancements;
     }
 

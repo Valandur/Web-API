@@ -25,11 +25,13 @@ public class CachedTileEntity extends CachedObject<TileEntity> implements ICache
     }
 
     private CachedLocation location;
+    @Override
     public CachedLocation getLocation() {
         return location;
     }
 
     protected CachedInventory inventory;
+    @Override
     @JsonDetails
     public CachedInventory getInventory() {
         return inventory;

@@ -31,7 +31,7 @@ public class PluginServlet extends BaseServlet {
     @ExplicitDetails
     @Permission("list")
     @ApiOperation(value = "List plugins", notes = "Get a list of all the plugins running on the server.")
-    public Collection<ICachedPluginContainer> getPlugins() {
+    public Collection<ICachedPluginContainer> listPlugins() {
         return cacheService.getPlugins();
     }
 

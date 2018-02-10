@@ -22,7 +22,10 @@ public interface ICachedObject<T> {
      * Gets a link representing a Web-API endpoint where details for the object can be retrieved..
      * @return The link to the details of the object, or null if not applicable.
      */
-    @ApiModelProperty(value = "The API link that can be used to obtain more information about this object", required = true)
+    @ApiModelProperty(
+            value = "The API link that can be used to obtain more information about this object",
+            required = true,
+            readOnly = true)
     String getLink();
 
     /**

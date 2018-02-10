@@ -28,15 +28,19 @@ public class UserServlet extends BaseServlet {
     HttpServletRequest request;
 
     @GET
-    @ApiOperation(value = "Check info", notes = "Checks to see if the passed api key is still valid and retrieves " +
-            "the user info and permissions associated with this key")
+    @ApiOperation(
+            value = "Check info",
+            notes = "Checks to see if the passed api key is still valid and retrieves the user info and " +
+                    "permissions associated with this key")
     public PermissionStruct getUserDetails() {
         SecurityContext context = (SecurityContext)request.getAttribute("security");
         return context.getPermissionStruct();
     }
 
     @POST
-    @ApiOperation(value = "Login", notes = "Tries to aquire an api key with the passed credentials.")
+    @ApiOperation(
+            value = "Login",
+            notes = "Tries to acquire an api key with the passed credentials.")
     public PermissionStruct authUser(AuthRequest req)
             throws ForbiddenException {
         if (req == null) {

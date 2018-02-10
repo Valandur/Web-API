@@ -15,6 +15,7 @@ import org.spongepowered.api.world.storage.WorldProperties;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.cache.misc.CachedCatalogType;
 import valandur.webapi.api.cache.world.ICachedWorld;
+import valandur.webapi.api.cache.world.ICachedWorldFull;
 import valandur.webapi.api.servlet.BaseServlet;
 import valandur.webapi.api.servlet.ExplicitDetails;
 import valandur.webapi.api.servlet.Permission;
@@ -41,24 +42,29 @@ public class WorldServlet extends BaseServlet {
     @GET
     @ExplicitDetails
     @Permission("list")
-    @ApiOperation(value = "List worlds", notes = "Get a list of all the worlds on the server.")
-    public Collection<ICachedWorld> getWorlds() {
+    @ApiOperation(
+            value = "List worlds",
+            notes = "Get a list of all the worlds on the server.")
+    public Collection<ICachedWorldFull> listWorlds() {
         return cacheService.getWorlds();
     }
 
     @GET
     @Path("/{world}")
     @Permission("one")
-    @ApiOperation(value = "Get a world", notes = "Get detailed information about a world.")
-    public ICachedWorld getWorld(
-            @PathParam("world") @ApiParam("The uuid of the world for which to get details") ICachedWorld world) {
+    @ApiOperation(
+            value = "Get a world",
+            notes = "Get detailed information about a world.")
+    public ICachedWorldFull getWorld(
+            @PathParam("world") @ApiParam("The uuid of the world for which to get details") ICachedWorldFull world) {
         return world;
     }
 
     @POST
     @Permission("create")
     @ApiOperation(
-            value = "Create a world", response = ICachedWorld.class,
+            value = "Create a world",
+            response = ICachedWorld.class,
             notes = "Creates a new world with the specified settings. This does not yet load the world.")
     public Response createWorld(CreateWorldRequest req)
             throws BadRequestException {
@@ -108,9 +114,11 @@ public class WorldServlet extends BaseServlet {
     @PUT
     @Path("/{world}")
     @Permission("modify")
-    @ApiOperation(value = "Modify a world", notes = "Modify the properties of an existing world.")
-    public ICachedWorld modifyWorld(
-            @PathParam("world") @ApiParam("The uuid of the world which to update") ICachedWorld world,
+    @ApiOperation(
+            value = "Modify a world",
+            notes = "Modify the properties of an existing world.")
+    public ICachedWorldFull modifyWorld(
+            @PathParam("world") @ApiParam("The uuid of the world which to update") ICachedWorldFull world,
             UpdateWorldRequest req) {
 
         if (req == null) {
@@ -180,8 +188,9 @@ public class WorldServlet extends BaseServlet {
     @DELETE
     @Path("/{world}")
     @Permission("delete")
-    @ApiOperation(value = "Delete a world", notes =
-            "Deletes an existing world. **The world must be unloaded before deleting it**")
+    @ApiOperation(
+            value = "Delete a world",
+            notes = "Deletes an existing world. **The world must be unloaded before deleting it**")
     public CachedWorld deleteWorld(
             @PathParam("world") @ApiParam("The uuid of the world to delete") CachedWorld world) {
         boolean deleted = WebAPI.runOnMain(() -> {
@@ -204,10 +213,11 @@ public class WorldServlet extends BaseServlet {
     @POST
     @Path("/{world}/method")
     @Permission("method")
-    @ApiOperation(value = "Execute a method", notes =
-            "Provides direct access to the underlaying world object and can execute any method on it.")
+    @ApiOperation(
+            value = "Execute a method",
+            notes = "Provides direct access to the underlaying world object and can execute any method on it.")
     public Object executeMethod(
-            @PathParam("world") @ApiParam("The uuid of the world on which to execute the method") ICachedWorld world,
+            @PathParam("world") @ApiParam("The uuid of the world on which to execute the method") ICachedWorldFull world,
             ExecuteMethodRequest req)
             throws BadRequestException {
 

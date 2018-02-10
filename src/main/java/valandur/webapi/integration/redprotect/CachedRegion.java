@@ -1,8 +1,9 @@
 package valandur.webapi.integration.redprotect;
 
 import br.net.fabiozumbi12.RedProtect.Sponge.Region;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.flowpowered.math.vector.Vector3d;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import valandur.webapi.api.cache.CachedObject;
 import valandur.webapi.api.cache.player.ICachedPlayer;
 import valandur.webapi.api.cache.world.CachedLocation;
@@ -11,99 +12,99 @@ import valandur.webapi.api.serialize.JsonDetails;
 
 import java.util.*;
 
-@JsonDeserialize
+@ApiModel("RedProtectRegion")
 public class CachedRegion extends CachedObject<Region> {
 
-    @JsonDeserialize
     private String id;
+    @ApiModelProperty(value = "The unique id of this region", required = true)
     public String getId() {
         return id;
     }
 
-    @JsonDeserialize
     private String name;
+    @ApiModelProperty(value = "The name of this region", required = true)
     public String getName() {
         return name;
     }
 
-    @JsonDeserialize
     private ICachedWorld world;
     @JsonDetails(value = false, simple = true)
+    @ApiModelProperty(value = "The world this region is located in", required = true)
     public ICachedWorld getWorld() {
         return world;
     }
 
-    @JsonDeserialize
     private Vector3d min;
+    @ApiModelProperty(value = "The minimum coordinates that define the region", required = true)
     public Vector3d getMin() {
         return min;
     }
 
-    @JsonDeserialize
     private Vector3d max;
+    @ApiModelProperty(value = "The maximum coordinates that define the region", required = true)
     public Vector3d getMax() {
         return max;
     }
 
-    @JsonDeserialize
     private Integer priority;
     @JsonDetails
+    @ApiModelProperty("The priority of this region compared to other regions")
     public Integer getPriority() {
         return priority;
     }
 
-    @JsonDeserialize
     private Boolean canDelete;
     @JsonDetails
+    @ApiModelProperty("True if this region can be deleted, false otherwise")
     public Boolean getCanDelete() {
         return canDelete;
     }
 
-    @JsonDeserialize
     private List<ICachedPlayer> leaders;
     @JsonDetails(simple = true)
+    @ApiModelProperty("A list of players that are leaders of this region")
     public List<ICachedPlayer> getLeaders() {
         return leaders;
     }
 
-    @JsonDeserialize
     private List<ICachedPlayer> admins;
     @JsonDetails(simple = true)
+    @ApiModelProperty("A list of players that are admins of this region")
     public List<ICachedPlayer> getAdmins() {
         return admins;
     }
 
-    @JsonDeserialize
     private List<ICachedPlayer> members;
     @JsonDetails(simple = true)
+    @ApiModelProperty("A list of players that are members of this region")
     public List<ICachedPlayer> getMembers() {
         return members;
     }
 
-    @JsonDeserialize
     private String welcomeMessage;
     @JsonDetails
+    @ApiModelProperty("The welcome message displayed to a player when they enter this region")
     public String getWelcomeMessage() {
         return welcomeMessage;
     }
 
-    @JsonDeserialize
     private String date;
     @JsonDetails
+    @ApiModelProperty("The date this region was created?")
     public String getDate() {
         return date;
     }
 
-    @JsonDeserialize
     private HashMap<String, Object> flags;
     @JsonDetails
+    @ApiModelProperty("A map of flags applicable to this region")
     public HashMap<String, Object> getFlags() {
         return flags;
     }
 
-    @JsonDeserialize
     private CachedLocation tpPoint;
     @JsonDetails
+    @ApiModelProperty("The teleport point for this region")
     public CachedLocation getTpPoint() {
         return tpPoint;
     }

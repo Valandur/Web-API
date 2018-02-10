@@ -8,7 +8,6 @@ import org.spongepowered.api.util.Tuple;
 import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.NotFoundException;
 import java.util.List;
-import java.util.Optional;
 
 @ApiModel("ExecuteMethodRequest")
 public class ExecuteMethodRequest {

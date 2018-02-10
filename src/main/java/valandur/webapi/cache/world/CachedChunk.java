@@ -27,8 +27,8 @@ public class CachedChunk extends CachedObject<Chunk> {
         return pos;
     }
 
-    @JsonDetails(simple = true)
     private ICachedWorld world;
+    @JsonDetails(simple = true)
     @ApiModelProperty("The world the chunk is in")
     public ICachedWorld getWorld() {
         return world;

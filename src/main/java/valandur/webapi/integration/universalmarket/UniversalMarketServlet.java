@@ -32,8 +32,10 @@ public class UniversalMarketServlet extends BaseServlet {
     @GET
     @Path("/item")
     @Permission({ "item", "list" })
-    @ApiOperation("List items")
-    public Collection<CachedMarketItem> getMarketItems() {
+    @ApiOperation(
+            value = "List items",
+            notes = "Lists all the items in the market currently available for sale")
+    public Collection<CachedMarketItem> listMarketItems() {
         return WebAPIAPI.runOnMain(() -> {
             UniversalMarket plugin = getUMPlugin();
             Market market = plugin.getMarket();

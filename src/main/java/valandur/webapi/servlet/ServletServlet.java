@@ -16,8 +16,10 @@ public class ServletServlet extends BaseServlet {
 
     @GET
     @Permission("list")
-    @ApiOperation("List servlets")
-    public Map<String, String> getServlets() {
+    @ApiOperation(
+            value = "List servlets",
+            notes = "Lists all the active servlets running in the Web-API")
+    public Map<String, String> listServlets() {
         return servletService.getRegisteredServlets().entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().getName()));
     }

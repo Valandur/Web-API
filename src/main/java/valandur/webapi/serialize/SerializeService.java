@@ -40,7 +40,6 @@ import org.spongepowered.api.extra.fluid.FluidStackSnapshot;
 import org.spongepowered.api.extra.fluid.data.manipulator.mutable.FluidItemData;
 import org.spongepowered.api.extra.fluid.data.manipulator.mutable.FluidTankData;
 import org.spongepowered.api.item.FireworkEffect;
-import org.spongepowered.api.item.ItemType;
 import org.spongepowered.api.item.enchantment.Enchantment;
 import org.spongepowered.api.item.inventory.Inventory;
 import org.spongepowered.api.item.inventory.ItemStack;
@@ -48,6 +47,8 @@ import org.spongepowered.api.item.inventory.ItemStackSnapshot;
 import org.spongepowered.api.item.merchant.TradeOffer;
 import org.spongepowered.api.plugin.PluginContainer;
 import org.spongepowered.api.profile.GameProfile;
+import org.spongepowered.api.service.permission.Subject;
+import org.spongepowered.api.service.permission.SubjectCollection;
 import org.spongepowered.api.statistic.Statistic;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.util.Color;
@@ -96,6 +97,8 @@ import valandur.webapi.serialize.view.fluid.FluidStackSnapshotView;
 import valandur.webapi.serialize.view.fluid.FluidStackView;
 import valandur.webapi.serialize.view.item.*;
 import valandur.webapi.serialize.view.misc.*;
+import valandur.webapi.serialize.view.permission.SubjectCollectionView;
+import valandur.webapi.serialize.view.permission.SubjectView;
 import valandur.webapi.serialize.view.player.BanView;
 import valandur.webapi.serialize.view.player.GameModeView;
 import valandur.webapi.serialize.view.player.GameProfileView;
@@ -280,6 +283,10 @@ public class SerializeService implements ISerializeService {
         registerView(Text.class, TextView.class);
         registerView(Vector3d.class, Vector3dView.class);
         registerView(Vector3i.class, Vector3iView.class);
+
+        // Permission
+        registerView(SubjectCollection.class, SubjectCollectionView.class);
+        registerView(Subject.class, SubjectView.class);
 
         // Player
         //registerView(Achievement.class, AchievementView.class);

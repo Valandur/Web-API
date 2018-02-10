@@ -355,6 +355,7 @@ public class WebAPI {
         servletService.registerServlet(InfoServlet.class);
         servletService.registerServlet(MapServlet.class);
         servletService.registerServlet(MessageServlet.class);
+        servletService.registerServlet(PermissionServlet.class);
         servletService.registerServlet(PlayerServlet.class);
         servletService.registerServlet(PluginServlet.class);
         servletService.registerServlet(RecipeServlet.class);

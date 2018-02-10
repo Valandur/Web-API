@@ -33,7 +33,7 @@ import valandur.webapi.api.cache.command.ICachedCommand;
 import valandur.webapi.api.cache.command.ICachedCommandCall;
 import valandur.webapi.api.cache.entity.ICachedEntity;
 import valandur.webapi.api.cache.misc.CachedCatalogType;
-import valandur.webapi.api.cache.player.ICachedPlayer;
+import valandur.webapi.api.cache.player.ICachedPlayerFull;
 import valandur.webapi.api.cache.plugin.ICachedPluginContainer;
 import valandur.webapi.api.cache.tileentity.ICachedTileEntity;
 import valandur.webapi.api.cache.world.CachedLocation;
@@ -279,11 +279,11 @@ public class CacheService implements ICacheService {
     }
 
     @Override
-    public Collection<ICachedPlayer> getPlayers() {
+    public Collection<ICachedPlayerFull> getPlayers() {
         return new ArrayList<>(players.values());
     }
     @Override
-    public Optional<ICachedPlayer> getPlayer(String nameOrUuid) {
+    public Optional<ICachedPlayerFull> getPlayer(String nameOrUuid) {
         if (Util.isValidUUID(nameOrUuid)) {
             return getPlayer(UUID.fromString(nameOrUuid));
         }
@@ -298,11 +298,11 @@ public class CacheService implements ICacheService {
                 throw new InternalServerErrorException("User storage service is not available");
 
             Optional<User> optUser = optSrv.get().get(nameOrUuid);
-            return optUser.<ICachedPlayer>map(CachedPlayer::new);
+            return optUser.<ICachedPlayerFull>map(CachedPlayer::new);
         });
     }
     @Override
-    public Optional<ICachedPlayer> getPlayer(UUID uuid) {
+    public Optional<ICachedPlayerFull> getPlayer(UUID uuid) {
         if (!players.containsKey(uuid)) {
             return WebAPI.runOnMain(() -> {
                 Optional<UserStorageService> optSrv = Sponge.getServiceManager().provide(UserStorageService.class);
@@ -310,7 +310,7 @@ public class CacheService implements ICacheService {
                     throw new InternalServerErrorException("User storage service is not available");
 
                 Optional<User> optUser = optSrv.get().get(uuid);
-                return optUser.<ICachedPlayer>map(CachedPlayer::new);
+                return optUser.<ICachedPlayerFull>map(CachedPlayer::new);
             });
         }
 
@@ -325,17 +325,17 @@ public class CacheService implements ICacheService {
         }
     }
     @Override
-    public ICachedPlayer getPlayer(Player player) {
-        Optional<ICachedPlayer> p = getPlayer(player.getUniqueId());
+    public ICachedPlayerFull getPlayer(Player player) {
+        Optional<ICachedPlayerFull> p = getPlayer(player.getUniqueId());
         return p.orElseGet(() -> updatePlayer(player));
     }
     @Override
-    public ICachedPlayer getPlayer(User user) {
-        Optional<ICachedPlayer> p = getPlayer(user.getUniqueId());
+    public ICachedPlayerFull getPlayer(User user) {
+        Optional<ICachedPlayerFull> p = getPlayer(user.getUniqueId());
         return p.orElseGet(() -> updatePlayer(user));
     }
     @Override
-    public ICachedPlayer updatePlayer(Player player) {
+    public ICachedPlayerFull updatePlayer(Player player) {
         assert Sponge.getServer().isMainThread();
 
         Timings.CACHE_PLAYER.startTiming();
@@ -345,7 +345,7 @@ public class CacheService implements ICacheService {
         return p;
     }
     @Override
-    public ICachedPlayer updatePlayer(User user) {
+    public ICachedPlayerFull updatePlayer(User user) {
         assert Sponge.getServer().isMainThread();
 
         Timings.CACHE_PLAYER.startTiming();
@@ -355,7 +355,7 @@ public class CacheService implements ICacheService {
         return p;
     }
     @Override
-    public ICachedPlayer removePlayer(UUID uuid) {
+    public ICachedPlayerFull removePlayer(UUID uuid) {
         return players.remove(uuid);
     }
 

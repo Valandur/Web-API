@@ -11,6 +11,7 @@ import org.spongepowered.api.item.inventory.ItemStack;
 import valandur.webapi.api.cache.CachedObject;
 import valandur.webapi.api.cache.player.ICachedAdvancement;
 import valandur.webapi.api.cache.player.ICachedPlayer;
+import valandur.webapi.api.cache.player.ICachedPlayerFull;
 import valandur.webapi.api.cache.world.CachedLocation;
 import valandur.webapi.api.serialize.JsonDetails;
 import valandur.webapi.cache.misc.CachedInventory;
@@ -21,7 +22,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-public class CachedPlayer extends CachedObject<Player> implements ICachedPlayer {
+public class CachedPlayer extends CachedObject<Player> implements ICachedPlayerFull {
 
     protected UUID uuid;
     @Override

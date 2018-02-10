@@ -6,6 +6,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import valandur.webapi.api.cache.CachedObject;
 import valandur.webapi.api.cache.player.ICachedPlayer;
+import valandur.webapi.api.cache.player.ICachedPlayerFull;
 import valandur.webapi.api.cache.world.CachedLocation;
 import valandur.webapi.api.cache.world.ICachedWorld;
 import valandur.webapi.api.serialize.JsonDetails;
@@ -129,19 +130,19 @@ public class CachedRegion extends CachedObject<Region> {
 
         this.leaders = new ArrayList<>();
         for (String uuid : region.getLeaders()) {
-            Optional<ICachedPlayer> optPlayer = cacheService.getPlayer(uuid);
+            Optional<ICachedPlayerFull> optPlayer = cacheService.getPlayer(uuid);
             optPlayer.ifPresent(player -> this.leaders.add(player));
         }
 
         this.admins = new ArrayList<>();
         for (String uuid : region.getAdmins()) {
-            Optional<ICachedPlayer> optPlayer = cacheService.getPlayer(uuid);
+            Optional<ICachedPlayerFull> optPlayer = cacheService.getPlayer(uuid);
             optPlayer.ifPresent(player -> this.admins.add(player));
         }
 
         this.members = new ArrayList<>();
         for (String uuid : region.getLeaders()) {
-            Optional<ICachedPlayer> optPlayer = cacheService.getPlayer(uuid);
+            Optional<ICachedPlayerFull> optPlayer = cacheService.getPlayer(uuid);
             optPlayer.ifPresent(player -> this.members.add(player));
         }
 

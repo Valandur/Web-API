@@ -12,7 +12,7 @@ import org.spongepowered.api.util.Tuple;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 import valandur.webapi.WebAPI;
-import valandur.webapi.api.cache.player.ICachedPlayer;
+import valandur.webapi.api.cache.player.ICachedPlayerFull;
 import valandur.webapi.api.servlet.BaseServlet;
 import valandur.webapi.api.servlet.ExplicitDetails;
 import valandur.webapi.api.servlet.Permission;
@@ -36,7 +36,7 @@ public class PlayerServlet extends BaseServlet {
     @ApiOperation(
             value = "List players",
             notes = "Get a list of all the players on the server.")
-    public Collection<ICachedPlayer> listPlayers() {
+    public Collection<ICachedPlayerFull> listPlayers() {
         return cacheService.getPlayers();
     }
 
@@ -46,10 +46,10 @@ public class PlayerServlet extends BaseServlet {
     @ApiOperation(
             value = "Get a player",
             notes = "Get detailed information about a player.")
-    public ICachedPlayer getPlayer(
+    public ICachedPlayerFull getPlayer(
             @PathParam("player") @ApiParam("The uuid of the player") UUID uuid)
             throws NotFoundException {
-        Optional<ICachedPlayer> optPlayer = WebAPI.getCacheService().getPlayer(uuid);
+        Optional<ICachedPlayerFull> optPlayer = WebAPI.getCacheService().getPlayer(uuid);
         if (!optPlayer.isPresent()) {
             throw new NotFoundException("Player with UUID '" + uuid + "' could not be found");
         }
@@ -63,7 +63,7 @@ public class PlayerServlet extends BaseServlet {
     @ApiOperation(
             value = "Modify a player",
             notes = "Modify the properties of an existing player.")
-    public ICachedPlayer modifyPlayer(
+    public ICachedPlayerFull modifyPlayer(
             @PathParam("player") @ApiParam("The uuid of the player") UUID uuid,
             UpdatePlayerRequest req)
             throws NotFoundException {
@@ -72,7 +72,7 @@ public class PlayerServlet extends BaseServlet {
             throw new BadRequestException("Request body is required");
         }
 
-        Optional<ICachedPlayer> optPlayer = WebAPI.getCacheService().getPlayer(uuid);
+        Optional<ICachedPlayerFull> optPlayer = WebAPI.getCacheService().getPlayer(uuid);
         if (!optPlayer.isPresent()) {
             throw new NotFoundException("Player with UUID '" + uuid + "' could not be found");
         }
@@ -175,7 +175,7 @@ public class PlayerServlet extends BaseServlet {
             throw new BadRequestException("Request body is required");
         }
 
-        Optional<ICachedPlayer> optPlayer = WebAPI.getCacheService().getPlayer(uuid);
+        Optional<ICachedPlayerFull> optPlayer = WebAPI.getCacheService().getPlayer(uuid);
         if (!optPlayer.isPresent()) {
             throw new NotFoundException("Player with UUID '" + uuid + "' could not be found");
         }

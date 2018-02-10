@@ -5,13 +5,18 @@ import io.swagger.annotations.ApiOperation;
 import valandur.webapi.api.servlet.BaseServlet;
 import valandur.webapi.api.servlet.Permission;
 
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 @Path("servlet")
 @Api(tags = { "Servlet" }, value = "Get information about the runnings servlets on the server.")
+@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+@Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 public class ServletServlet extends BaseServlet {
 
     @GET

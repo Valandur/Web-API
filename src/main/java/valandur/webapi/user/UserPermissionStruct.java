@@ -6,7 +6,7 @@ import valandur.webapi.security.PermissionStruct;
 
 public class UserPermissionStruct extends PermissionStruct {
 
-    private static final int MAX_REQUESTS_PER_SECOND = 20;
+    private static final int MAX_REQUESTS_PER_SECOND = 0;
 
     private String username;
     public String getUsername() {

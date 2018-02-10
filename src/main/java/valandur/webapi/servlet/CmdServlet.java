@@ -7,9 +7,13 @@ import valandur.webapi.api.servlet.BaseServlet;
 import valandur.webapi.api.servlet.ExplicitDetails;
 import valandur.webapi.api.servlet.Permission;
 import valandur.webapi.command.CommandSource;
+import valandur.webapi.security.SecurityContext;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -55,71 +59,28 @@ public class CmdServlet extends BaseServlet {
     @ApiOperation(
             value = "Execute a command",
             notes = "Execute a command on the server. (Almost the same as running it from the console).  \n" +
-                    "Pass a list of commands to execute them in succession, if only passing one command " +
-                    "the array is not required.")
-    public void runCommands(ExecuteCommandRequest req) {
+                    "Pass an array of commands to execute them in succession, you can also just pass a list with " +
+                    "only one command if that's all you want to execute.\n\n" +
+                    "Returns a list with each response corresponding to a command.")
+    public List<Object> runCommands(List<ExecuteCommandRequest> reqs, @Context HttpServletRequest request) {
 
-        if (req == null) {
+        if (reqs == null) {
             throw new BadRequestException("Request body is required");
         }
 
-        // TODO: Implement executing commands
-        // TODO: Check specific command permissions
-        /*final JsonNode reqJson = data.getRequestBody();
-
-        if (reqJson == null) {
-            data.sendError(HttpServletResponse.SC_BAD_REQUEST,
-                    "Invalid command data: " + data.getLastParseError().getMessage());
-            return;
-        }
-
-        if (!reqJson.isArray()) {
-            Optional<ExecuteCommandRequest> optReq = data.getRequestBody(ExecuteCommandRequest.class);
-            if (!optReq.isPresent()) {
-                data.sendError(HttpServletResponse.SC_BAD_REQUEST,
-                        "Invalid command data: " + data.getLastParseError().getMessage());
-                return;
-            }
-
-            ExecuteCommandRequest req = optReq.get();
-
-            if (req.getCommand() == null) {
-                data.sendError(HttpServletResponse.SC_BAD_REQUEST,"Command not specified");
-                return;
-            }
-
-            String cmd = req.getCommand().split(" ")[0];
-            if (!permissionService.permits(data.getPermissions(), new String[]{ cmd })) {
-                data.sendError(HttpServletResponse.SC_FORBIDDEN, "Access denied");
-                return;
-            }
-
-            data.addData("ok", true, false);
-            data.addData("result", runCommand(req), true);
-            return;
-        }
+        SecurityContext context = (SecurityContext)request.getAttribute("security");
 
         List<Object> res = new ArrayList<>();
-        Optional<ExecuteCommandRequest[]> optReqs = data.getRequestBody(ExecuteCommandRequest[].class);
-        if (!optReqs.isPresent()) {
-            data.sendError(HttpServletResponse.SC_BAD_REQUEST,
-                    "Invalid command data: " + data.getLastParseError().getMessage());
-            return;
-        }
-
-        ExecuteCommandRequest[] reqs = optReqs.get();
         for (ExecuteCommandRequest req : reqs) {
             String cmd = req.getCommand().split(" ")[0];
-            if (!permissionService.permits(data.getPermissions(), new String[]{ cmd })) {
-                res.add(new Exception("Not allowed"));
-                continue;
+            if (!context.hasPerms(cmd)) {
+                res.add(new ForbiddenException("You do not have permission to execute the " + cmd + " command"));
+            } else {
+                res.add(runCommand(req));
             }
-
-            res.add(runCommand(req));
         }
 
-        data.addData("ok", true, false);
-        data.addData("results", res, true);*/
+        return res;
     }
 
     private List<String> runCommand(ExecuteCommandRequest req) {

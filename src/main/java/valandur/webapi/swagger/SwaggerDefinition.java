@@ -34,11 +34,11 @@ import java.util.stream.Collectors;
                         "This route should show you basic information about your server, like the motd and " +
                         "player count.\n\n" +
                         "# List endpoints\n" +
-                        "Lots of endpoints offer an endpoint to list all objects belonging to the endpoint " +
-                        "(e.g. `GET: /world` to get all worlds). These endpoints return only the properties marked " +
-                        "'required' by default, because the list might be quite large. If you want to return ALL " +
-                        "data for a list endpoint add the query paramter `details`, (e.g. `GET: /world?details`).\n\n" +
-                        "Remember that in this case the data returned by the endpoint might be quite large." +
+                        "Lots of objects offer an endpoint to list all objects (e.g. `GET: /world` to get all worlds). " +
+                        "These endpoints return only the properties marked 'required' by default, because the list " +
+                        "might be quite large. If you want to return ALL data for a list endpoint add the query " +
+                        "parameter `details`, (e.g. `GET: /world?details`).\n\n" +
+                        "> Remember that in this case the data returned by the endpoint might be quite large.\n\n" +
                         "# Additional data\n" +
                         "Certain endpoints (such as `/player`, `/entity` and `/tile-entity` have additional " +
                         "properties which are not documented here, because the data depends on the concrete " +

@@ -14,6 +14,7 @@ import valandur.webapi.api.cache.command.ICachedCommand;
 import valandur.webapi.api.cache.command.ICachedCommandCall;
 import valandur.webapi.api.cache.entity.ICachedEntity;
 import valandur.webapi.api.cache.player.ICachedPlayer;
+import valandur.webapi.api.cache.player.ICachedPlayerFull;
 import valandur.webapi.api.cache.plugin.ICachedPluginContainer;
 import valandur.webapi.api.cache.tileentity.ICachedTileEntity;
 import valandur.webapi.api.cache.world.ICachedWorld;
@@ -124,7 +125,7 @@ public interface ICacheService {
      * Gets all the online players of the server.
      * @return A collection of all the online players.
      */
-    Collection<ICachedPlayer> getPlayers();
+    Collection<ICachedPlayerFull> getPlayers();
 
     /**
      * Gets a specific player by name or UUID.
@@ -133,14 +134,14 @@ public interface ICacheService {
      *                   already parsed.
      * @return An optional containing the player, or empty if not found.
      */
-    Optional<ICachedPlayer> getPlayer(String nameOrUuid);
+    Optional<ICachedPlayerFull> getPlayer(String nameOrUuid);
 
     /**
      * Gets a specific player by UUID.
      * @param uuid The UUID of the player.
      * @return An optional containing the cached player if found, or empty otherwise.
      */
-    Optional<ICachedPlayer> getPlayer(UUID uuid);
+    Optional<ICachedPlayerFull> getPlayer(UUID uuid);
 
     /**
      * Gets the passed player as a cached object. This method first tries to get the player from the cache, and if
@@ -148,7 +149,7 @@ public interface ICacheService {
      * @param player The player which is returned in it's cached form.
      * @return The cached version of the specified player.
      */
-    ICachedPlayer getPlayer(Player player);
+    ICachedPlayerFull getPlayer(Player player);
 
     /**
      * Gets the passed user as a cached object. This method first tries to get the user from the cache, and if
@@ -156,28 +157,28 @@ public interface ICacheService {
      * @param user The user which is returned in it's cached form.
      * @return The cached version of the specified user.
      */
-    ICachedPlayer getPlayer(User user);
+    ICachedPlayerFull getPlayer(User user);
 
     /**
      * Updates the internal representation of the passed player and returns it.
      * @param player The player which will be updated.
      * @return The updated cached player.
      */
-    ICachedPlayer updatePlayer(Player player);
+    ICachedPlayerFull updatePlayer(Player player);
 
     /**
      * Updates the internal representation of the passed user and returns it.
      * @param user The user which will be updated.
      * @return The updated cached user.
      */
-    ICachedPlayer updatePlayer(User user);
+    ICachedPlayerFull updatePlayer(User user);
 
     /**
      * Removes a player from the cache.
      * @param uuid The UUID of the player to remove.
      * @return The removed player representation.
      */
-    ICachedPlayer removePlayer(UUID uuid);
+    ICachedPlayerFull removePlayer(UUID uuid);
 
     /**
      * Gets a collection of all the entities on the server.

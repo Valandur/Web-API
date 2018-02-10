@@ -6,6 +6,7 @@ import org.spongepowered.api.text.action.TextActions;
 import org.spongepowered.api.text.format.TextColors;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.cache.player.ICachedPlayer;
+import valandur.webapi.api.cache.player.ICachedPlayerFull;
 import valandur.webapi.api.message.IMessage;
 import valandur.webapi.api.message.IMessageOption;
 import valandur.webapi.api.message.IMessageService;
@@ -70,7 +71,7 @@ public class MessageService implements IMessageService {
 
         List<ICachedPlayer> cachedPlayers = new ArrayList<>();
         if (msg.getTarget() != null) {
-            Optional<ICachedPlayer> player = WebAPI.getCacheService().getPlayer(msg.getTarget());
+            Optional<ICachedPlayerFull> player = WebAPI.getCacheService().getPlayer(msg.getTarget());
             player.map(cachedPlayers::add);
         } else {
             msg.getTargets().forEach(u -> WebAPI.getCacheService().getPlayer(u).map(cachedPlayers::add));

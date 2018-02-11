@@ -1,10 +1,13 @@
 package valandur.webapi.api.cache.player;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.spongepowered.api.entity.living.player.Player;
+import org.spongepowered.api.entity.living.player.User;
 import valandur.webapi.api.cache.ICachedObject;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @ApiModel("Player")
@@ -18,4 +21,7 @@ public interface ICachedPlayer extends ICachedObject<Player> {
 
     @ApiModelProperty(value = "True if the player is online, false otherwise", required = true)
     boolean isOnline();
+
+    @JsonIgnore
+    Optional<User> getUser();
 }

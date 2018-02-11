@@ -13,11 +13,14 @@ import org.spongepowered.api.util.Tuple;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 import valandur.webapi.WebAPI;
+import valandur.webapi.api.cache.player.ICachedPlayer;
 import valandur.webapi.api.cache.player.ICachedPlayerFull;
 import valandur.webapi.api.servlet.BaseServlet;
 import valandur.webapi.api.servlet.ExplicitDetails;
 import valandur.webapi.api.servlet.Permission;
-import valandur.webapi.serialize.deserialize.ExecuteMethodRequest;
+import valandur.webapi.cache.player.CachedPlayer;
+import valandur.webapi.serialize.objects.ExecuteMethodRequest;
+import valandur.webapi.serialize.objects.ExecuteMethodResponse;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -48,14 +51,9 @@ public class PlayerServlet extends BaseServlet {
             value = "Get a player",
             notes = "Get detailed information about a player.")
     public ICachedPlayerFull getPlayer(
-            @PathParam("player") @ApiParam("The uuid of the player") UUID uuid)
+            @PathParam("player") @ApiParam("The uuid of the player") ICachedPlayerFull player)
             throws NotFoundException {
-        Optional<ICachedPlayerFull> optPlayer = WebAPI.getCacheService().getPlayer(uuid);
-        if (!optPlayer.isPresent()) {
-            throw new NotFoundException("Player with UUID '" + uuid + "' could not be found");
-        }
-
-        return optPlayer.get();
+        return player;
     }
 
     @PUT
@@ -65,7 +63,7 @@ public class PlayerServlet extends BaseServlet {
             value = "Modify a player",
             notes = "Modify the properties of an existing player.")
     public ICachedPlayerFull modifyPlayer(
-            @PathParam("player") @ApiParam("The uuid of the player") UUID uuid,
+            @PathParam("player") @ApiParam("The uuid of the player") ICachedPlayer player,
             UpdatePlayerRequest req)
             throws NotFoundException {
 
@@ -73,13 +71,8 @@ public class PlayerServlet extends BaseServlet {
             throw new BadRequestException("Request body is required");
         }
 
-        Optional<ICachedPlayerFull> optPlayer = WebAPI.getCacheService().getPlayer(uuid);
-        if (!optPlayer.isPresent()) {
-            throw new NotFoundException("Player with UUID '" + uuid + "' could not be found");
-        }
-
         return WebAPI.runOnMain(() -> {
-            Optional<Player> optLive = optPlayer.get().getLive();
+            Optional<Player> optLive = player.getLive();
             if (!optLive.isPresent())
                 throw new InternalServerErrorException("Could not get live player");
 

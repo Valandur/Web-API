@@ -8,6 +8,7 @@ import org.spongepowered.api.advancement.AdvancementTree;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.item.inventory.ItemStack;
+import org.spongepowered.api.service.user.UserStorageService;
 import valandur.webapi.api.cache.CachedObject;
 import valandur.webapi.api.cache.player.ICachedAdvancement;
 import valandur.webapi.api.cache.player.ICachedPlayerFull;
@@ -16,6 +17,8 @@ import valandur.webapi.api.serialize.JsonDetails;
 import valandur.webapi.cache.misc.CachedInventory;
 import valandur.webapi.util.Constants;
 
+import javax.swing.text.html.Option;
+import javax.ws.rs.InternalServerErrorException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -161,6 +164,12 @@ public class CachedPlayer extends CachedObject<Player> implements ICachedPlayerF
     @Override
     public Optional<Player> getLive() {
         return Sponge.getServer().getPlayer(uuid);
+    }
+
+    @Override
+    public Optional<User> getUser() {
+        Optional<UserStorageService> optSrv = Sponge.getServiceManager().provide(UserStorageService.class);
+        return optSrv.flatMap(srv -> srv.get(uuid));
     }
 
     @Override

@@ -12,6 +12,7 @@ import valandur.webapi.cache.world.CachedWorld;
 import valandur.webapi.util.Util;
 
 import javax.imageio.ImageIO;
+import javax.inject.Singleton;
 import javax.ws.rs.*;
 import javax.ws.rs.core.CacheControl;
 import javax.ws.rs.core.MediaType;
@@ -25,7 +26,9 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
+@Singleton
 @Path("map")
 @Api(tags = { "Map" }, value = "Get maps of the biomes for each world on the server")
 @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
@@ -34,7 +37,7 @@ public class MapServlet extends BaseServlet {
 
     private static int TILE_SIZE = 512;
     private static int HALF_TILE_SIZE = TILE_SIZE / 2;
-    private Map<String, String> biomeColorMap = new HashMap<>();
+    private Map<String, String> biomeColorMap = new ConcurrentHashMap<>();
 
 
     public MapServlet() {

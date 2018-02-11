@@ -7,11 +7,14 @@ import org.spongepowered.api.service.permission.PermissionService;
 import org.spongepowered.api.service.permission.Subject;
 import org.spongepowered.api.service.permission.SubjectCollection;
 import valandur.webapi.api.servlet.BaseServlet;
+import valandur.webapi.api.servlet.ExplicitDetails;
 import valandur.webapi.api.servlet.Permission;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
@@ -25,14 +28,19 @@ public class PermissionServlet extends BaseServlet {
     @GET
     @Path("/collection")
     @Permission({ "collection", "list" })
+    @ExplicitDetails
     @ApiOperation(
             value = "List collections",
             notes = "Gets a list of all the subject collections, for example groups, users, etc.")
-    public Set<String> listCollections() {
+    public Set<SubjectCollection> listCollections() {
         PermissionService srv = getPermissionService();
 
         try {
-            return srv.getAllIdentifiers().get();
+            Set<SubjectCollection> colls = new HashSet<>();
+            for (String id : srv.getAllIdentifiers().get()) {
+                colls.add(srv.loadCollection(id).get());
+            }
+            return colls;
         } catch (InterruptedException e) {
             throw new ClientErrorException(e.getMessage(), Response.Status.REQUEST_TIMEOUT);
         } catch (ExecutionException e) {
@@ -64,17 +72,23 @@ public class PermissionServlet extends BaseServlet {
     @GET
     @Path("/collection/{id}/subject")
     @Permission({ "collection", "subject", "list" })
+    @ExplicitDetails
     @ApiOperation(
             value = "List subjects",
             notes = "List all subjects belonging to a certain collection")
-    public Set<String> listSubjects(@PathParam("id") String id) {
+    public Set<Subject> listSubjects(@PathParam("id") String id) {
         PermissionService srv = getPermissionService();
 
         try {
             if (!srv.hasCollection(id).get())
                 throw new NotFoundException("Collection with id " + id + " could not be found");
 
-            return srv.loadCollection(id).get().getAllIdentifiers().get();
+            Set<Subject> subjects = new HashSet<>();
+            SubjectCollection coll = srv.loadCollection(id).get();
+            for (String subId : coll.getAllIdentifiers().get()) {
+                subjects.add(coll.loadSubject(subId).get());
+            }
+            return subjects;
         } catch (InterruptedException e) {
             throw new ClientErrorException(e.getMessage(), Response.Status.REQUEST_TIMEOUT);
         } catch (ExecutionException e) {
@@ -103,84 +117,6 @@ public class PermissionServlet extends BaseServlet {
         } catch (InterruptedException e) {
             throw new ClientErrorException(e.getMessage(), Response.Status.REQUEST_TIMEOUT);
         } catch (ExecutionException e) {
-            throw new InternalServerErrorException(e.getMessage());
-        }
-    }
-
-    @GET
-    @Path("/user")
-    @Permission({ "user", "list" })
-    @ApiOperation(
-            value = "List users",
-            notes = "List all user identifiers")
-    public Set<String> listUsers() {
-        PermissionService srv = getPermissionService();
-
-        try {
-            return srv.getUserSubjects().getAllIdentifiers().get();
-        } catch (InterruptedException e) {
-            throw new ClientErrorException(e.getMessage(), Response.Status.REQUEST_TIMEOUT);
-        } catch (ExecutionException e) {
-            throw new InternalServerErrorException(e.getMessage());
-        }
-    }
-
-    @GET
-    @Path("/user/{id}")
-    @Permission({ "user", "one" })
-    @ApiOperation(
-            value = "Get a user",
-            notes = "Gets a single subject from the user subject collection")
-    public Subject getUser(@PathParam("id") String id) {
-        PermissionService srv = getPermissionService();
-
-        try {
-            if (!srv.getUserSubjects().hasSubject(id).get())
-                throw new NotFoundException("User subject with id " + id + " could not be found");
-
-            return srv.getUserSubjects().loadSubject(id).get();
-        } catch (InterruptedException e) {
-            throw new ClientErrorException(e.getMessage(), Response.Status.REQUEST_TIMEOUT);
-        } catch (ExecutionException e) {
-            throw new InternalServerErrorException(e.getMessage());
-        }
-    }
-
-    @GET
-    @Path("/group")
-    @Permission({ "group", "list" })
-    @ApiOperation(
-            value = "List groups",
-            notes = "List all group identifiers")
-    public Set<String> listGroups() {
-        PermissionService srv = getPermissionService();
-
-        try {
-            return srv.getGroupSubjects().getAllIdentifiers().get();
-        } catch (InterruptedException e) {
-            throw new ClientErrorException(e.getMessage(), Response.Status.REQUEST_TIMEOUT);
-        } catch (ExecutionException e) {
-            throw new InternalServerErrorException(e.getMessage());
-        }
-    }
-
-    @GET
-    @Path("/group/{id}")
-    @Permission({ "group", "one" })
-    @ApiOperation(
-            value = "Get a group",
-            notes = "Gets a single subject from the group subject collection")
-    public Subject getGroup(@PathParam("id") String id) {
-        PermissionService srv = getPermissionService();
-
-        try {
-            if (!srv.getGroupSubjects().hasSubject(id).get())
-                throw new NotFoundException("Group subject with id " + id + " could not be found");
-
-            return srv.getGroupSubjects().loadSubject(id).get();
-        } catch (InterruptedException e) {
-            throw new ClientErrorException(e.getMessage(), Response.Status.REQUEST_TIMEOUT);
-        } catch (Exception e) {
             throw new InternalServerErrorException(e.getMessage());
         }
     }

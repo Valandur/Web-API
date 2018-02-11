@@ -87,6 +87,7 @@ dependencies {
     compileOnly group: "io.swagger", name: "swagger-jersey2-jaxrs", version: "1.5.18"
 
     // Integrations
+    compileOnly name: "ActiveTime-s7.1-v1.4.0"
     compileOnly name: "griefprevention-1.12.2-4.3.0.511"
     compileOnly name: "HuskyCrates-v1.8.0PRE2-API7"
     compileOnly name: "MMCRestrict-1.4.0-API-7"

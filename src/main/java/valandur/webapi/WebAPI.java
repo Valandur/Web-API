@@ -80,6 +80,7 @@ import valandur.webapi.handler.ErrorHandler;
 import valandur.webapi.hook.WebHook;
 import valandur.webapi.hook.WebHookSerializer;
 import valandur.webapi.hook.WebHookService;
+import valandur.webapi.integration.activetime.ActiveTimeServlet;
 import valandur.webapi.integration.huskycrates.HuskyCratesServlet;
 import valandur.webapi.integration.mmcrestrict.MMCRestrictServlet;
 import valandur.webapi.integration.mmctickets.MMCTicketsServlet;
@@ -368,6 +369,12 @@ public class WebAPI {
 
 
         // Other plugin integrations
+        try {
+            Class.forName("com.mcsimonflash.sponge.activetime.ActiveTime");
+            logger.info("  Integrating with ActiveTime...");
+            servletService.registerServlet(ActiveTimeServlet.class);
+        } catch (ClassNotFoundException ignored) { }
+
         try {
             Class.forName("com.codehusky.huskycrates.HuskyCrates");
             logger.info("  Integrating with HuskyCrates...");

@@ -111,6 +111,7 @@ import valandur.webapi.serialize.view.player.RespawnLocationView;
 import valandur.webapi.serialize.view.tileentity.PatternLayerView;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -287,6 +288,7 @@ public class SerializeService implements ISerializeService {
         registerView(DyeColor.class, DyeColorView.class);
         registerView(Explosion.class, ExplosionView.class);
         registerView(Instant.class, InstantView.class);
+        registerView(LocalDate.class, LocalDateView.class);
         registerView(RandomObjectTable.class, RandomObjectTableView.class);
         registerView(Statistic.class, StatisticView.class);
         registerView(Text.class, TextView.class);

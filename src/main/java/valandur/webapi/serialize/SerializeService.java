@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import com.fasterxml.jackson.dataformat.xml.ser.ToXmlGenerator;
 import com.flowpowered.math.vector.Vector3d;
 import com.flowpowered.math.vector.Vector3i;
 import org.slf4j.Logger;
@@ -47,6 +48,8 @@ import org.spongepowered.api.item.inventory.ItemStackSnapshot;
 import org.spongepowered.api.item.merchant.TradeOffer;
 import org.spongepowered.api.plugin.PluginContainer;
 import org.spongepowered.api.profile.GameProfile;
+import org.spongepowered.api.service.economy.Currency;
+import org.spongepowered.api.service.economy.account.Account;
 import org.spongepowered.api.service.permission.Subject;
 import org.spongepowered.api.service.permission.SubjectCollection;
 import org.spongepowered.api.statistic.Statistic;
@@ -87,6 +90,8 @@ import valandur.webapi.serialize.deserialize.*;
 import valandur.webapi.serialize.view.block.BlockSnapshotView;
 import valandur.webapi.serialize.view.block.BlockStateView;
 import valandur.webapi.serialize.view.data.*;
+import valandur.webapi.serialize.view.economy.AccountView;
+import valandur.webapi.serialize.view.economy.CurrencyView;
 import valandur.webapi.serialize.view.entity.CareerView;
 import valandur.webapi.serialize.view.entity.EntityArchetypeView;
 import valandur.webapi.serialize.view.entity.EntitySnapshotView;
@@ -143,6 +148,10 @@ public class SerializeService implements ISerializeService {
         // Block
         registerView(BlockSnapshot.class, BlockSnapshotView.class);
         registerView(BlockState.class, BlockStateView.class);
+
+        // Economy
+        registerView(Account.class, AccountView.class);
+        registerView(Currency.class, CurrencyView.class);
 
         // Data
         registerView(AbsorptionData.class, AbsorptionDataView.class);
@@ -485,6 +494,9 @@ public class SerializeService implements ISerializeService {
         }
 
         ObjectMapper om = xml ? new XmlMapper() : new ObjectMapper();
+        if (xml) {
+            ((XmlMapper)om).configure(ToXmlGenerator.Feature.WRITE_XML_DECLARATION, true);
+        }
         om.setSerializationInclusion(JsonInclude.Include.NON_NULL);
 
         SimpleModule mod = new SimpleModule();

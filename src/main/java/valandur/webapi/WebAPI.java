@@ -350,6 +350,7 @@ public class WebAPI {
         servletService.registerServlet(BlockServlet.class);
         servletService.registerServlet(ChunkServlet.class);
         servletService.registerServlet(CmdServlet.class);
+        servletService.registerServlet(EconomyServlet.class);
         servletService.registerServlet(EntityServlet.class);
         servletService.registerServlet(HistoryServlet.class);
         servletService.registerServlet(InfoServlet.class);

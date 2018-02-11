@@ -49,8 +49,6 @@ public class Util {
                     .build();
             CommentedConfigurationNode config = loader.load();
 
-            boolean newVersion = false;
-
             if (optAsset.isPresent()) {
                 ConfigurationLoader<CommentedConfigurationNode> defLoader = HoconConfigurationLoader.builder()
                         .setURL(optAsset.get().getUrl())
@@ -59,7 +57,7 @@ public class Util {
 
                 int version = config.getNode("version").getInt(0);
                 int defVersion = defConfig.getNode("version").getInt(0);
-                newVersion = defVersion != version;
+                boolean newVersion = defVersion != version;
 
                 Util.mergeConfigs(config, defConfig, newVersion);
 

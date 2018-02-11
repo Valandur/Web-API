@@ -19,7 +19,8 @@ import valandur.webapi.api.servlet.BaseServlet;
 import valandur.webapi.api.servlet.ExplicitDetails;
 import valandur.webapi.api.servlet.Permission;
 import valandur.webapi.cache.world.CachedWorld;
-import valandur.webapi.serialize.deserialize.ExecuteMethodRequest;
+import valandur.webapi.serialize.objects.ExecuteMethodRequest;
+import valandur.webapi.serialize.objects.ExecuteMethodResponse;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -215,7 +216,7 @@ public class WorldServlet extends BaseServlet {
     @ApiOperation(
             value = "Execute a method",
             notes = "Provides direct access to the underlaying world object and can execute any method on it.")
-    public Object executeMethod(
+    public ExecuteMethodResponse executeMethod(
             @PathParam("world") @ApiParam("The uuid of the world on which to execute the method") ICachedWorldFull world,
             ExecuteMethodRequest req)
             throws BadRequestException {
@@ -230,7 +231,8 @@ public class WorldServlet extends BaseServlet {
 
         String mName = req.getMethod();
         Tuple<Class[], Object[]> params = req.getParsedParameters();
-        return cacheService.executeMethod(world, mName, params.getFirst(), params.getSecond());
+        Object res = cacheService.executeMethod(world, mName, params.getFirst(), params.getSecond());
+        return new ExecuteMethodResponse(world, res);
     }
 
 

@@ -172,19 +172,14 @@ public class PlayerServlet extends BaseServlet {
     @Permission("method")
     @ApiOperation(
             value = "Execute a method",
-            notes = "Provides direct access to the underlaying player object and can execute any method on it.")
-    public Object executeMethod(
-            @PathParam("player") @ApiParam("The uuid of the player") UUID uuid,
+            notes = "Provides direct access to the underlying player object and can execute any method on it.")
+    public ExecuteMethodResponse executeMethod(
+            @PathParam("player") @ApiParam("The uuid of the player") ICachedPlayer player,
             ExecuteMethodRequest req)
             throws NotFoundException, BadRequestException {
 
         if (req == null) {
             throw new BadRequestException("Request body is required");
-        }
-
-        Optional<ICachedPlayerFull> optPlayer = WebAPI.getCacheService().getPlayer(uuid);
-        if (!optPlayer.isPresent()) {
-            throw new NotFoundException("Player with UUID '" + uuid + "' could not be found");
         }
 
         if (req.getMethod() == null || req.getMethod().isEmpty()) {
@@ -193,7 +188,8 @@ public class PlayerServlet extends BaseServlet {
 
         String mName = req.getMethod();
         Tuple<Class[], Object[]> params = req.getParsedParameters();
-        return cacheService.executeMethod(optPlayer.get(), mName, params.getFirst(), params.getSecond());
+        Object res = cacheService.executeMethod(player, mName, params.getFirst(), params.getSecond());
+        return new ExecuteMethodResponse(player, res);
     }
 
 

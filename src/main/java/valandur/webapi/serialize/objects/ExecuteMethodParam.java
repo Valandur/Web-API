@@ -1,4 +1,4 @@
-package valandur.webapi.serialize.deserialize;
+package valandur.webapi.serialize.objects;
 
 import com.flowpowered.math.vector.Vector3d;
 import com.flowpowered.math.vector.Vector3i;

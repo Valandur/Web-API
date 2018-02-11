@@ -10,7 +10,8 @@ import valandur.webapi.api.cache.world.ICachedWorld;
 import valandur.webapi.api.servlet.BaseServlet;
 import valandur.webapi.api.servlet.ExplicitDetails;
 import valandur.webapi.api.servlet.Permission;
-import valandur.webapi.serialize.deserialize.ExecuteMethodRequest;
+import valandur.webapi.serialize.objects.ExecuteMethodRequest;
+import valandur.webapi.serialize.objects.ExecuteMethodResponse;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -72,7 +73,7 @@ public class TileEntityServlet extends BaseServlet {
     @ApiOperation(
             value = "Execute a method",
             notes = "Provides direct access to the underlaying tile entity object and can execute any method on it.")
-    public Object executeMethod(
+    public ExecuteMethodResponse executeMethod(
             @PathParam("world") @ApiParam("The world the tile entity is in") ICachedWorld world,
             @PathParam("x") @ApiParam("The x-coordinate of the tile-entity") Integer x,
             @PathParam("y") @ApiParam("The x-coordinate of the tile-entity") Integer y,
@@ -96,6 +97,7 @@ public class TileEntityServlet extends BaseServlet {
 
         String mName = req.getMethod();
         Tuple<Class[], Object[]> params = req.getParsedParameters();
-        return cacheService.executeMethod(te.get(), mName, params.getFirst(), params.getSecond());
+        Object res = cacheService.executeMethod(te.get(), mName, params.getFirst(), params.getSecond());
+        return new ExecuteMethodResponse(te.get(), res);
     }
 }

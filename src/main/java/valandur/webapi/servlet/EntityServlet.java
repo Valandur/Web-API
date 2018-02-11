@@ -20,7 +20,8 @@ import valandur.webapi.api.servlet.BaseServlet;
 import valandur.webapi.api.servlet.ExplicitDetails;
 import valandur.webapi.api.servlet.Permission;
 import valandur.webapi.cache.entity.CachedEntity;
-import valandur.webapi.serialize.deserialize.ExecuteMethodRequest;
+import valandur.webapi.serialize.objects.ExecuteMethodRequest;
+import valandur.webapi.serialize.objects.ExecuteMethodResponse;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -213,7 +214,7 @@ public class EntityServlet extends BaseServlet {
     @ApiOperation(
             value = "Execute a method",
             notes = "Provides direct access to the underlaying entity object and can execute any method on it.")
-    public Object executeMethod(
+    public ExecuteMethodResponse executeMethod(
             @PathParam("entity") @ApiParam("The uuid of the entity") UUID uuid,
             ExecuteMethodRequest req)
             throws NotFoundException, BadRequestException {
@@ -233,7 +234,8 @@ public class EntityServlet extends BaseServlet {
 
         String mName = req.getMethod();
         Tuple<Class[], Object[]> params = req.getParsedParameters();
-        return cacheService.executeMethod(optEntity.get(), mName, params.getFirst(), params.getSecond());
+        Object res = cacheService.executeMethod(optEntity.get(), mName, params.getFirst(), params.getSecond());
+        return new ExecuteMethodResponse(optEntity.get(), res);
     }
 
     @DELETE

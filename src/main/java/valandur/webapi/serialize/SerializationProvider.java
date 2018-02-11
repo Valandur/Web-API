@@ -6,6 +6,7 @@ import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.fasterxml.jackson.jaxrs.cfg.JaxRSFeature;
 import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 import com.fasterxml.jackson.jaxrs.json.JsonEndpointConfig;
+import org.eclipse.jetty.io.EofException;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.permission.IPermissionService;
 import valandur.webapi.api.util.TreeNode;
@@ -22,6 +23,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.Provider;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.Map;
@@ -100,5 +102,16 @@ public class SerializationProvider extends JacksonJsonProvider {
         if (queryParams.containsKey("pretty"))
             mapper.enable(SerializationFeature.INDENT_OUTPUT);
         return mapper;
+    }
+
+    @Override
+    public void writeTo(Object value, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType,
+                        MultivaluedMap<String, Object> httpHeaders, OutputStream entityStream) {
+        try {
+            super.writeTo(value, type, genericType, annotations, mediaType, httpHeaders, entityStream);
+        } catch (IOException e) {
+            if (e instanceof EofException) return;
+            e.printStackTrace();
+        }
     }
 }

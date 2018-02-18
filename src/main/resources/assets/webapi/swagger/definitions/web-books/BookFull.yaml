@@ -1,8 +1,0 @@
-allOf:
-  - $ref: "./Book.yaml"
-  - title: WebBookFull
-    type: object
-    properties:
-      html:
-        type: string
-        description: The html content of the book.

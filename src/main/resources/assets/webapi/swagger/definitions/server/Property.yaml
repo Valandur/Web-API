@@ -1,9 +1,0 @@
-title: ServerProperty
-type: object
-properties:
-  key:
-    type: string
-    description: The key of the property.
-  value:
-    type: string
-    description: The current value of the property.

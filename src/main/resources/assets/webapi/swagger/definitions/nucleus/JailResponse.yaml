@@ -1,9 +1,0 @@
-description: Jail
-schema:
-  title: NucleusJailResponse
-  type: object
-  properties:
-    ok:
-      $ref: "../ok.yaml"
-    jail:
-      $ref: "./JailFull.yaml"

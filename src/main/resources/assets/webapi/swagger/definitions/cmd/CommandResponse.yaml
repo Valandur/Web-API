@@ -1,8 +1,0 @@
-title: CommandResponse
-type: object
-properties:
-  result:
-    type: array
-    description: An array of messages that were sent in response to the command.
-    items:
-      type: string

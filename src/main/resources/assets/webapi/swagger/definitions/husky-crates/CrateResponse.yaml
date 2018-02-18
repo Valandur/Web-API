@@ -1,9 +1,0 @@
-description: Crate
-schema:
-  title: HuskyCratesCrateResponse
-  type: object
-  properties:
-    ok:
-      $ref: "../ok.yaml"
-    crate:
-      $ref: "./CrateFull.yaml"

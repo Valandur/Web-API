@@ -1,9 +1,0 @@
-description: Kit
-schema:
-  title: NucleusKitResponse
-  type: object
-  properties:
-    ok:
-      $ref: "../ok.yaml"
-    kit:
-      $ref: "./KitFull.yaml"

@@ -9,7 +9,7 @@ import valandur.webapi.api.cache.ICachedObject;
 import java.util.Optional;
 import java.util.UUID;
 
-@ApiModel("World")
+@ApiModel(value = "World", subTypes = ICachedWorldFull.class)
 public interface ICachedWorld extends ICachedObject<World> {
 
     @ApiModelProperty(value = "The unique UUID that identifies this world", required = true)

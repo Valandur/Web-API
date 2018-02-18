@@ -64,7 +64,7 @@ public class WorldServlet extends BaseServlet {
     @Permission("create")
     @ApiOperation(
             value = "Create a world",
-            response = ICachedWorld.class,
+            response = ICachedWorldFull.class,
             notes = "Creates a new world with the specified settings. This does not yet load the world.")
     public Response createWorld(CreateWorldRequest req)
             throws BadRequestException {
@@ -191,7 +191,7 @@ public class WorldServlet extends BaseServlet {
     @ApiOperation(
             value = "Delete a world",
             notes = "Deletes an existing world. **The world must be unloaded before deleting it**")
-    public CachedWorld deleteWorld(
+    public ICachedWorldFull deleteWorld(
             @PathParam("world") @ApiParam("The uuid of the world to delete") CachedWorld world) {
         boolean deleted = WebAPI.runOnMain(() -> {
             Optional<WorldProperties> optLive = world.getLiveProps();

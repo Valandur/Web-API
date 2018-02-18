@@ -14,14 +14,14 @@ import java.util.Optional;
 public class CachedLocation extends CachedObject<Location> {
 
     private ICachedWorld world;
-    @ApiModelProperty("The world this location refers to")
+    @ApiModelProperty(value = "The world this location refers to", required = true)
     @JsonDetails(value = false, simple = true)
     public ICachedWorld getWorld() {
         return world;
     }
 
     private Vector3d position;
-    @ApiModelProperty("The position within the world that this location refers to")
+    @ApiModelProperty(value = "The position within the world that this location refers to", required = true)
     public Vector3d getPosition() {
         return position;
     }

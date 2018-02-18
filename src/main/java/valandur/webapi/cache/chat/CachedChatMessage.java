@@ -2,6 +2,7 @@ package valandur.webapi.cache.chat;
 
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.message.MessageEvent;
+import org.spongepowered.api.text.Text;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.cache.CachedObject;
 import valandur.webapi.api.cache.chat.ICachedChatMessage;
@@ -23,9 +24,9 @@ public class CachedChatMessage extends CachedObject implements ICachedChatMessag
         return sender;
     }
 
-    private String message;
+    private Text message;
     @Override
-    public String getMessage() {
+    public Text getMessage() {
         return message;
     }
 
@@ -35,6 +36,6 @@ public class CachedChatMessage extends CachedObject implements ICachedChatMessag
 
         this.timestamp = (new Date()).toInstant().getEpochSecond();
         this.sender = WebAPI.getCacheService().getPlayer(sender);
-        this.message = event.getMessage().toPlain();
+        this.message = event.getMessage().toBuilder().build();
     }
 }

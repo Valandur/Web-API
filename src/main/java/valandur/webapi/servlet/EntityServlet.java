@@ -264,7 +264,7 @@ public class EntityServlet extends BaseServlet {
     }
 
 
-    @ApiModel("Create Entity RequesT")
+    @ApiModel("CreateEntityRequest")
     public static class CreateEntityRequest {
 
         private ICachedWorld world;
@@ -286,7 +286,7 @@ public class EntityServlet extends BaseServlet {
         }
     }
 
-    @ApiModel("Update Entity Request")
+    @ApiModel("UpdateEntityRequest")
     public static class UpdateEntityRequest {
 
         private ICachedWorld world;

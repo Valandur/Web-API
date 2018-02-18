@@ -9,7 +9,7 @@ import valandur.webapi.api.cache.world.CachedLocation;
 
 import java.util.List;
 
-@ApiModel("PlayerFull")
+@ApiModel(value = "PlayerFull", parent = ICachedPlayer.class)
 public interface ICachedPlayerFull extends ICachedPlayer {
 
     @ApiModelProperty("The player's IP address and port")

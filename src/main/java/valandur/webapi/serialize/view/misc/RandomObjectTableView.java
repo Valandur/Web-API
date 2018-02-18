@@ -1,6 +1,7 @@
 package valandur.webapi.serialize.view.misc;
 
 import com.fasterxml.jackson.annotation.JsonValue;
+import io.swagger.annotations.ApiModel;
 import org.spongepowered.api.util.weighted.NestedTableEntry;
 import org.spongepowered.api.util.weighted.RandomObjectTable;
 import org.spongepowered.api.util.weighted.TableEntry;
@@ -11,6 +12,7 @@ import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 
+@ApiModel("RandomObjectTable")
 public class RandomObjectTableView extends BaseView<RandomObjectTable> {
 
     @JsonValue

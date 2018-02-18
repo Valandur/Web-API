@@ -2,6 +2,8 @@ package valandur.webapi.serialize.view.event;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import org.spongepowered.api.event.Event;
 import org.spongepowered.api.event.advancement.AdvancementEvent;
 import org.spongepowered.api.event.block.TargetBlockEvent;
@@ -20,9 +22,11 @@ import valandur.webapi.api.serialize.BaseView;
 import java.util.HashMap;
 import java.util.Map;
 
+@ApiModel("Event")
 public class EventView extends BaseView<Event> {
 
     @JsonProperty(value = "class")
+    @ApiModelProperty(value = "The class of event", required = true)
     public String clazz;
 
     private Map<String, Object> data = new HashMap<>();

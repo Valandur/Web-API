@@ -39,7 +39,7 @@ public class CachedCrateReward extends CachedObject<CrateReward> {
     @Setting
     @JsonDetails(value = false, simple = true)
     private ItemStack displayItem;
-    @ApiModelProperty("The ItemStack that is showed in the UI")
+    @ApiModelProperty("The ItemStack that is shown in the UI")
     public ItemStack getDisplayItem() {
         return displayItem;
     }

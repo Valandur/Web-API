@@ -2,6 +2,7 @@ package valandur.webapi.serialize.view.economy;
 
 import io.swagger.annotations.ApiModel;
 import org.spongepowered.api.service.economy.account.Account;
+import org.spongepowered.api.text.Text;
 import valandur.webapi.api.serialize.BaseView;
 
 import java.math.BigDecimal;
@@ -19,8 +20,8 @@ public class AccountView extends BaseView<Account> {
         return value.getFriendlyIdentifier().orElse(null);
     }
 
-    public String getDisplayName() {
-        return value.getDisplayName().toPlain();
+    public Text getDisplayName() {
+        return value.getDisplayName();
     }
 
     public Map<String, BigDecimal> getBalances() {

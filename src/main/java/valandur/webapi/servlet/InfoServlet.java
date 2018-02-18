@@ -8,6 +8,7 @@ import org.spongepowered.api.Platform;
 import org.spongepowered.api.Server;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.resourcepack.ResourcePack;
+import org.spongepowered.api.text.Text;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.server.IServerStat;
 import valandur.webapi.api.servlet.BaseServlet;
@@ -96,9 +97,9 @@ public class InfoServlet extends BaseServlet {
     @ApiModel(value = "ServerInfo")
     public static class ServerInfo {
 
-        private String motd;
+        private Text motd;
         @ApiModelProperty(value = "The message of the day set on the server")
-        public String getMotd() {
+        public Text getMotd() {
             return motd;
         }
 
@@ -175,7 +176,7 @@ public class InfoServlet extends BaseServlet {
             Server server = Sponge.getServer();
             Platform platform = Sponge.getPlatform();
 
-            this.motd = server.getMotd().toPlain();
+            this.motd = server.getMotd().toBuilder().build();
             this.players = server.getOnlinePlayers().size();
             this.maxPlayers = server.getMaxPlayers();
             this.address = server.getBoundAddress().map(Object::toString).orElse(null);

@@ -8,7 +8,7 @@ import valandur.webapi.api.cache.ICachedObject;
 import java.util.List;
 import java.util.Set;
 
-@ApiModel("Plugin")
+@ApiModel("PluginContainer")
 public interface ICachedPluginContainer extends ICachedObject<PluginContainer> {
 
     @ApiModelProperty(value = "The unique id of this plugin", required = true)

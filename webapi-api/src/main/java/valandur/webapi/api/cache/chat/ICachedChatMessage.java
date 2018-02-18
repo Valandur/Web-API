@@ -2,6 +2,7 @@ package valandur.webapi.api.cache.chat;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import org.spongepowered.api.text.Text;
 import valandur.webapi.api.cache.ICachedObject;
 import valandur.webapi.api.cache.player.ICachedPlayer;
 
@@ -15,5 +16,5 @@ public interface ICachedChatMessage extends ICachedObject {
     ICachedPlayer getSender();
 
     @ApiModelProperty(value = "The content of the message", required = true)
-    String getMessage();
+    Text getMessage();
 }

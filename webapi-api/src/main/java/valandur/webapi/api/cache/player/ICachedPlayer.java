@@ -10,7 +10,7 @@ import valandur.webapi.api.cache.ICachedObject;
 import java.util.Optional;
 import java.util.UUID;
 
-@ApiModel("Player")
+@ApiModel(value = "Player", subTypes = ICachedPlayerFull.class)
 public interface ICachedPlayer extends ICachedObject<Player> {
 
     @ApiModelProperty(value = "The unique UUID of this player", required = true)

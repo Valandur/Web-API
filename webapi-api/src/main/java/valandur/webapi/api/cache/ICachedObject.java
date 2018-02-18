@@ -1,5 +1,6 @@
 package valandur.webapi.api.cache;
 
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.spongepowered.api.data.DataHolder;
 
@@ -9,6 +10,7 @@ import java.util.Optional;
 /**
  * The base class for all cached objects.
  */
+@ApiModel("CachedObject")
 public interface ICachedObject<T> {
 
     /**

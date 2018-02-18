@@ -150,10 +150,6 @@ public class SerializeService implements ISerializeService {
         registerView(BlockSnapshot.class, BlockSnapshotView.class);
         registerView(BlockState.class, BlockStateView.class);
 
-        // Economy
-        registerView(Account.class, AccountView.class);
-        registerView(Currency.class, CurrencyView.class);
-
         // Data
         registerView(AbsorptionData.class, AbsorptionDataView.class);
         //registerView(AchievementData.class, AchievementDataView.class);
@@ -206,13 +202,14 @@ public class SerializeService implements ISerializeService {
         registerView(FurnaceData.class, FurnaceDataView.class);
         registerView(FuseData.class, FuseDataView.class);
         registerView(GenerationData.class, GenerationDataView.class);
-        registerView(GriefingData.class, GriefingDataView.class);
         registerView(GlowingData.class, GlowingDataView.class);
+        registerView(GriefingData.class, GriefingDataView.class);
         registerView(GrowthData.class, GrowthDataView.class);
         registerView(HealthData.class, HealthDataView.class);
         registerView(HideData.class, HideDataView.class);
         registerView(HorseData.class, HorseDataView.class);
         registerView(IgniteableData.class, IgniteableDataView.class);
+        registerView(InventoryItemData.class, InventoryItemDataView.class);
         registerView(InvisibilityData.class, InvisibilityDataView.class);
         registerView(InvulnerabilityData.class, InvulnerabilityDataView.class);
         registerView(InWallData.class, InWallDataView.class);
@@ -260,6 +257,10 @@ public class SerializeService implements ISerializeService {
         registerView(WetData.class, WetDataView.class);
         registerView(WireAttachmentData.class, WireAttachmentDataView.class);
 
+        // Economy
+        registerView(Account.class, AccountView.class);
+        registerView(Currency.class, CurrencyView.class);
+
         // Entity
         registerView(Career.class, CareerView.class);
         registerView(EntityArchetype.class, EntityArchetypeView.class);
@@ -279,7 +280,6 @@ public class SerializeService implements ISerializeService {
         registerView(Enchantment.class, EnchantmentView.class);
         registerView(ItemStackSnapshot.class, ItemStackSnapshotView.class);
         registerView(ItemStack.class, ItemStackView.class);
-        registerView(PotionEffectType.class, PotionEffectTypeView.class);
         registerView(PotionEffect.class, PotionEffectView.class);
 
         // Misc.
@@ -340,8 +340,8 @@ public class SerializeService implements ISerializeService {
         supportedData.put("connectedDirection", ConnectedDirectionData.class);
         supportedData.put("cookedFish", CookedFishData.class);                      // variant
         supportedData.put("cooldown", CooldownData.class);
-        supportedData.put("customName", CustomNameVisibleData.class);
         supportedData.put("criticalHit", CriticalHitData.class);
+        supportedData.put("customName", CustomNameVisibleData.class);
         supportedData.put("damageable", DamageableData.class);
         supportedData.put("damage", DamagingData.class);
         supportedData.put("decayable", DecayableData.class);

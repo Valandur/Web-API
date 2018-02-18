@@ -26,6 +26,7 @@ public class SwaggerExtension extends SwaggerJersey2Jaxrs {
     private static Property schema500 = constructProperty(500, "Internal server error");
     private static Property schema501 = constructProperty(501, "Not implemented");
 
+
     private static Property constructProperty(int status, String error) {
         Property statusProp = new IntegerProperty()
                 .description("The status code of the error (also provided in the HTTP header)");
@@ -37,7 +38,6 @@ public class SwaggerExtension extends SwaggerJersey2Jaxrs {
 
         return new ObjectProperty().property("status", statusProp).property("error", errorProp);
     }
-
 
     @Override
     public void decorateOperation(Operation operation, Method method,

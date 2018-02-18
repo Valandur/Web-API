@@ -8,13 +8,13 @@ import valandur.webapi.api.serialize.BaseView;
 @ApiModel("Vector3i")
 public class Vector3iView extends BaseView<Vector3i> {
 
-    @ApiModelProperty("The x-coordinate")
+    @ApiModelProperty(value = "The x-coordinate", required = true)
     public int x;
 
-    @ApiModelProperty("The y-coordinate")
+    @ApiModelProperty(value = "The y-coordinate", required = true)
     public int y;
 
-    @ApiModelProperty("The z-coordinate")
+    @ApiModelProperty(value = "The z-coordinate", required = true)
     public int z;
 
 

@@ -2,6 +2,7 @@ package valandur.webapi.serialize.view.economy;
 
 import io.swagger.annotations.ApiModel;
 import org.spongepowered.api.service.economy.Currency;
+import org.spongepowered.api.text.Text;
 import valandur.webapi.api.serialize.BaseView;
 
 @ApiModel("Currency")
@@ -15,16 +16,16 @@ public class CurrencyView extends BaseView<Currency> {
         return value.getName();
     }
 
-    public String getDisplayName() {
-        return value.getDisplayName().toPlain();
+    public Text getDisplayName() {
+        return value.getDisplayName();
     }
 
-    public String getPluralDisplayName() {
-        return value.getPluralDisplayName().toPlain();
+    public Text getPluralDisplayName() {
+        return value.getPluralDisplayName();
     }
 
-    public String getSymbol() {
-        return value.getSymbol().toPlain();
+    public Text getSymbol() {
+        return value.getSymbol();
     }
 
     public Integer getDefaultFractionDigits() {

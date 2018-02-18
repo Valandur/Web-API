@@ -6,6 +6,7 @@ import net.moddedminecraft.mmctickets.data.TicketData;
 import net.moddedminecraft.mmctickets.data.ticketStatus;
 import valandur.webapi.api.cache.CachedObject;
 import valandur.webapi.api.cache.player.ICachedPlayer;
+import valandur.webapi.api.cache.player.ICachedPlayerFull;
 import valandur.webapi.api.cache.world.CachedLocation;
 import valandur.webapi.api.serialize.JsonDetails;
 import valandur.webapi.util.Constants;
@@ -37,10 +38,10 @@ public class CachedTicketData extends CachedObject<TicketData> {
         return message;
     }
 
-    private ICachedPlayer sender;
+    private ICachedPlayerFull sender;
     @JsonDetails
     @ApiModelProperty("The sender of this ticket")
-    public ICachedPlayer getSender() {
+    public ICachedPlayerFull getSender() {
         return sender;
     }
 

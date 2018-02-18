@@ -1,17 +1,24 @@
 package valandur.webapi.swagger;
 
 import io.swagger.annotations.*;
+import io.swagger.converter.ModelConverter;
+import io.swagger.converter.ModelConverterContextImpl;
+import io.swagger.converter.ModelConverters;
 import io.swagger.jaxrs.Reader;
 import io.swagger.jaxrs.config.ReaderListener;
+import io.swagger.models.ComposedModel;
 import io.swagger.models.Model;
 import io.swagger.models.Path;
 import io.swagger.models.Swagger;
 import io.swagger.models.properties.Property;
+import io.swagger.models.properties.RefProperty;
+import org.spongepowered.api.data.manipulator.DataManipulator;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.servlet.BaseServlet;
 import valandur.webapi.util.Constants;
 
 import javax.ws.rs.core.MediaType;
+import java.lang.reflect.Field;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -128,6 +135,60 @@ public class SwaggerDefinition implements ReaderListener {
             model.setProperties(props);
         }
 
+        // Dirty hack to set up our model converter, because we need access to the context,
+        // otherwise we have to do multiple calls resolving the model, which isn't worth it
+        List<ModelConverter> converters = new ArrayList<>();
+        try {
+            Field f = ModelConverters.class.getDeclaredField("converters");
+            f.setAccessible(true);
+            converters = (List<ModelConverter>) f.get(ModelConverters.getInstance());
+        } catch (IllegalAccessException | NoSuchFieldException e) {
+            e.printStackTrace();
+            WebAPI.sentryCapture(e);
+        }
+
+        // Generate types for additional properties
+        Map<String, Property> dataProps = new LinkedHashMap<>();
+        // Collect all additional properties from our serializer
+        List<Map.Entry<String, Class<? extends DataManipulator<?, ?>>>> list = WebAPI.getSerializeService()
+                .getSupportedData().entrySet().stream()
+                .sorted(Comparator.comparing(Map.Entry::getKey))
+                .collect(Collectors.toList());
+        // Iterate all the additional props
+        for (Map.Entry<String, Class<? extends DataManipulator<?, ?>>> entry : list) {
+            String key = entry.getKey();
+            // Try and get the view for this additional prop
+            Optional<Class> optView = WebAPI.getSerializeService().getViewFor(entry.getValue());
+            if (!optView.isPresent()) continue;
+
+            // Create our context and resolve the model (manually, instead of ModelConverters.getInstance().readYYY()
+            ModelConverterContextImpl context = new ModelConverterContextImpl(converters);
+            Property prop = context.resolveProperty(optView.get(), null);
+
+            // Read the view as a model, and add all the read models to the definition
+            // Also save under which key our base model is available, this might not be equal to the ViewClass,
+            // because of @JsonValue annotations
+            for (Map.Entry<String, Model> modelEntry : context.getDefinedModels().entrySet()) {
+                // TODO: We overwrite existing definitions here, maybe fix that
+                swagger.addDefinition(modelEntry.getKey(), modelEntry.getValue());
+            }
+
+            // If we had no models, then our view probably was annotated with @JsonValue for a basic type
+            // (basic types generate no models). So we'll try and read the same type as a property, to generate
+            // the basic property.
+            // Add either a ref to the model if we read models, or the basic property to the map
+            dataProps.put(key, prop);
+        }
+
+        // Add the additional properties to the required DataObjects
+        // TODO: Automate this with an annotation
+        Map<String, Model> defs = swagger.getDefinitions();
+        attachAdditionalProps(defs.get("PlayerFull"), dataProps);
+        attachAdditionalProps(defs.get("WorldFull"), dataProps);
+        attachAdditionalProps(defs.get("Entity"), dataProps);
+        attachAdditionalProps(defs.get("TileEntity"), dataProps);
+        attachAdditionalProps(defs.get("ItemStack"), dataProps);
+
         // Sort tags alphabetically
         webapiTags.sort(String::compareTo);
         integrationTags.sort(String::compareTo);
@@ -146,6 +207,20 @@ public class SwaggerDefinition implements ReaderListener {
                 new TagGroup("Web-API", webapiTags),
                 new TagGroup("Integrations", integrationTags)
         ));
+    }
+
+    private void attachAdditionalProps(Model model, Map<String, Property> dataProps) {
+        if (model instanceof ComposedModel) {
+            model = ((ComposedModel) model).getChild();
+        }
+        Map<String, Property> props = model.getProperties();
+        if (props == null) {
+            props = new HashMap<>();
+        }
+        for (Map.Entry<String, Property> entry : dataProps.entrySet()) {
+            props.put(entry.getKey(), entry.getValue());
+        }
+        model.setProperties(props);
     }
 
 

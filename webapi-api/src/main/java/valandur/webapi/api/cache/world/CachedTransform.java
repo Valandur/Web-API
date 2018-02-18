@@ -1,6 +1,7 @@
 package valandur.webapi.api.cache.world;
 
 import com.flowpowered.math.vector.Vector3d;
+import io.swagger.annotations.ApiModel;
 import org.spongepowered.api.entity.Transform;
 import org.spongepowered.api.world.World;
 import valandur.webapi.api.cache.CachedObject;
@@ -8,6 +9,7 @@ import valandur.webapi.api.serialize.JsonDetails;
 
 import java.util.Optional;
 
+@ApiModel("Transform")
 public class CachedTransform extends CachedObject<Transform> {
 
     private ICachedWorld world;

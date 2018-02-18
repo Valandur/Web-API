@@ -13,7 +13,7 @@ import valandur.webapi.api.serialize.JsonDetails;
 
 import java.util.Map;
 
-@ApiModel("WorldFull")
+@ApiModel(value = "WorldFull", parent = ICachedWorld.class)
 public interface ICachedWorldFull extends ICachedWorld {
 
     @JsonDetails

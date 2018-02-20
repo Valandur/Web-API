@@ -39,7 +39,7 @@ public class CachedCrateReward extends CachedObject<CrateReward> {
     @Setting
     @JsonDetails(value = false, simple = true)
     private ItemStack displayItem;
-    @ApiModelProperty("The ItemStack that is shown in the UI")
+    @ApiModelProperty(value = "The ItemStack that is shown in the UI", required = true)
     public ItemStack getDisplayItem() {
         return displayItem;
     }
@@ -54,7 +54,7 @@ public class CachedCrateReward extends CachedObject<CrateReward> {
     @JsonIgnore
     private List<CrateRewardObject> objects;
     @JsonGetter
-    @ApiModelProperty("The objects that are rewarded as part of this reward (can be commands and/or items)")
+    @ApiModelProperty(value = "The objects that are rewarded as part of this reward (can be commands and/or items)", required = true)
     public List<CrateRewardObject> getObjects() {
         return objects;
     }
@@ -83,5 +83,12 @@ public class CachedCrateReward extends CachedObject<CrateReward> {
         if (obj instanceof String)
             return new CommandCrateReward(obj.toString());
         return null;
+    }
+
+    @Override
+    @JsonIgnore
+    @ApiModelProperty(hidden = true)
+    public String getLink() {
+        return super.getLink();
     }
 }

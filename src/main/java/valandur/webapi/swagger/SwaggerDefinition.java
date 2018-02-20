@@ -11,7 +11,6 @@ import io.swagger.models.Model;
 import io.swagger.models.Path;
 import io.swagger.models.Swagger;
 import io.swagger.models.properties.Property;
-import io.swagger.models.properties.RefProperty;
 import org.spongepowered.api.data.manipulator.DataManipulator;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.servlet.BaseServlet;
@@ -46,6 +45,15 @@ import java.util.stream.Collectors;
                         "might be quite large. If you want to return ALL data for a list endpoint add the query " +
                         "parameter `details`, (e.g. `GET: /world?details`).\n\n" +
                         "> Remember that in this case the data returned by the endpoint might be quite large.\n\n" +
+                        "# Debugging endpoints\n" +
+                        "Apart from the `?details` flag you can also pass some other flags for debugging purposes. " +
+                        "Remember that you must include the first query parameter with `?`, and further ones with `&`:\n\n" +
+                        "`details`: Includes details for list endpoints\n\n" +
+                        "`accept=[json/xml]`: Manually set the accept content type. This is good for browser testing, " +
+                        "**BUT DON'T USE THIS IN PRODUCTION, YOU CAN SUPPLY THE `Accepts` HEADER FOR THAT**\n\n" +
+                        "`pretty`: Pretty prints the data, also good for debugging in the browser.\n\n" +
+                        "An example request might look like this: " +
+                        "`http://localhost:8080/api/v5/world?details&accpet=json&pretty&key=MY-API-KEY`\n\n" +
                         "# Additional data\n" +
                         "Certain endpoints (such as `/player`, `/entity` and `/tile-entity` have additional " +
                         "properties which are not documented here, because the data depends on the concrete " +
@@ -147,47 +155,63 @@ public class SwaggerDefinition implements ReaderListener {
             WebAPI.sentryCapture(e);
         }
 
-        // Generate types for additional properties
-        Map<String, Property> dataProps = new LinkedHashMap<>();
-        // Collect all additional properties from our serializer
-        List<Map.Entry<String, Class<? extends DataManipulator<?, ?>>>> list = WebAPI.getSerializeService()
-                .getSupportedData().entrySet().stream()
+        // Generate types for additional data
+        Map<String, Property> props = new LinkedHashMap<>();
+        // Collect all additional data from our serializer
+        List<Map.Entry<String, Class<? extends DataManipulator<?, ?>>>> dataList =
+                WebAPI.getSerializeService().getSupportedData().entrySet().stream()
                 .sorted(Comparator.comparing(Map.Entry::getKey))
                 .collect(Collectors.toList());
-        // Iterate all the additional props
-        for (Map.Entry<String, Class<? extends DataManipulator<?, ?>>> entry : list) {
+        // Iterate all the additional data
+        for (Map.Entry<String, Class<? extends DataManipulator<?, ?>>> entry : dataList) {
             String key = entry.getKey();
-            // Try and get the view for this additional prop
-            Optional<Class> optView = WebAPI.getSerializeService().getViewFor(entry.getValue());
-            if (!optView.isPresent()) continue;
 
             // Create our context and resolve the model (manually, instead of ModelConverters.getInstance().readYYY()
             ModelConverterContextImpl context = new ModelConverterContextImpl(converters);
-            Property prop = context.resolveProperty(optView.get(), null);
+            Property prop = context.resolveProperty(entry.getValue(), null);
 
             // Read the view as a model, and add all the read models to the definition
-            // Also save under which key our base model is available, this might not be equal to the ViewClass,
-            // because of @JsonValue annotations
             for (Map.Entry<String, Model> modelEntry : context.getDefinedModels().entrySet()) {
                 // TODO: We overwrite existing definitions here, maybe fix that
                 swagger.addDefinition(modelEntry.getKey(), modelEntry.getValue());
             }
 
-            // If we had no models, then our view probably was annotated with @JsonValue for a basic type
-            // (basic types generate no models). So we'll try and read the same type as a property, to generate
-            // the basic property.
-            // Add either a ref to the model if we read models, or the basic property to the map
-            dataProps.put(key, prop);
+            // Add the data we read
+            props.put(key, prop);
+        }
+
+        // Collect all additional properties from our serializer
+        List<Map.Entry<Class<? extends org.spongepowered.api.data.Property<?, ?>>, String>> propList =
+                WebAPI.getSerializeService().getSupportedProperties().entrySet().stream()
+                .sorted(Comparator.comparing(Map.Entry::getValue))
+                .collect(Collectors.toList());
+        // Iterate all the additional props
+        for (Map.Entry<Class<? extends org.spongepowered.api.data.Property<?, ?>>, String> entry : propList) {
+            String key = entry.getValue();
+
+            // Create our context and resolve the model (manually, instead of ModelConverters.getInstance().readYYY()
+            ModelConverterContextImpl context = new ModelConverterContextImpl(converters);
+            Property prop = context.resolveProperty(entry.getKey(), null);
+
+            // Read the view as a model, and add all the read models to the definition
+            for (Map.Entry<String, Model> modelEntry : context.getDefinedModels().entrySet()) {
+                // TODO: We overwrite existing definitions here, maybe fix that
+                swagger.addDefinition(modelEntry.getKey(), modelEntry.getValue());
+            }
+
+            // Add the property we read to the data props
+            props.put(key, prop);
         }
 
         // Add the additional properties to the required DataObjects
         // TODO: Automate this with an annotation
         Map<String, Model> defs = swagger.getDefinitions();
-        attachAdditionalProps(defs.get("PlayerFull"), dataProps);
-        attachAdditionalProps(defs.get("WorldFull"), dataProps);
-        attachAdditionalProps(defs.get("Entity"), dataProps);
-        attachAdditionalProps(defs.get("TileEntity"), dataProps);
-        attachAdditionalProps(defs.get("ItemStack"), dataProps);
+        attachAdditionalProps(defs.get("PlayerFull"), props);
+        attachAdditionalProps(defs.get("WorldFull"), props);
+        attachAdditionalProps(defs.get("Entity"), props);
+        attachAdditionalProps(defs.get("TileEntity"), props);
+        attachAdditionalProps(defs.get("ItemStack"), props);
+        attachAdditionalProps(defs.get("FluidStack"), props);
 
         // Sort tags alphabetically
         webapiTags.sort(String::compareTo);

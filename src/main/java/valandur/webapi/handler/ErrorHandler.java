@@ -4,18 +4,14 @@ import com.google.gson.JsonObject;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.eclipse.jetty.http.HttpStatus;
-import org.eclipse.jetty.server.Request;
-import valandur.webapi.util.Util;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 import java.io.IOException;
 import java.io.Writer;
-import java.util.Map;
 
 @Provider
 public class ErrorHandler extends org.eclipse.jetty.server.handler.ErrorHandler implements ExceptionMapper<Throwable> {

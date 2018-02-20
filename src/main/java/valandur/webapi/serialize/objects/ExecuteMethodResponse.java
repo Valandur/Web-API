@@ -1,7 +1,6 @@
 package valandur.webapi.serialize.objects;
 
 import io.swagger.annotations.ApiModel;
-import valandur.webapi.api.cache.CachedObject;
 import valandur.webapi.api.cache.ICachedObject;
 
 @ApiModel("ExecuteMethodResponse")

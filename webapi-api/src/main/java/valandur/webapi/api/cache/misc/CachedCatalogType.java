@@ -2,6 +2,7 @@ package valandur.webapi.api.cache.misc;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.spongepowered.api.CatalogType;
 import org.spongepowered.api.Sponge;
@@ -10,6 +11,7 @@ import valandur.webapi.api.cache.CachedObject;
 
 import java.util.Optional;
 
+@ApiModel("CatalogType")
 public class CachedCatalogType<T extends CatalogType> extends CachedObject<T> implements ICachedCatalogType<T> {
 
     private String id;

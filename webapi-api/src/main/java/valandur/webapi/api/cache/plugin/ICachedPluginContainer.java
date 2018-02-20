@@ -17,18 +17,18 @@ public interface ICachedPluginContainer extends ICachedObject<PluginContainer> {
     @ApiModelProperty(value = "The name of this plugin", required = true)
     String getName();
 
-    @ApiModelProperty(value = "The current version of the plugin", required = true)
+    @ApiModelProperty("The current version of the plugin")
     String getVersion();
 
-    @ApiModelProperty(value = "A description describing what this plugin does (hopefully)", required = true)
+    @ApiModelProperty("A description describing what this plugin does (hopefully)")
     String getDescription();
 
     @ApiModelProperty("The url that was added to the plugin (probably the homepage)")
     String getUrl();
 
-    @ApiModelProperty(value = "A list of authors that created this plugin")
+    @ApiModelProperty(value = "A list of authors that created this plugin", required = true)
     List<String> getAuthors();
 
-    @ApiModelProperty(value = "Other plugins that this plugin depends on")
+    @ApiModelProperty(value = "Other plugins that this plugin depends on", required = true)
     Set<ICachedPluginDependency> getDependencies();
 }

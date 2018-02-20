@@ -45,7 +45,7 @@ public class WebBook {
 
     @JsonDetails
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    @ApiModelProperty("The HTML representation of this book")
+    @ApiModelProperty(value = "The HTML representation of this book", required = true)
     public String getHtml() {
         StringBuilder html = new StringBuilder("<!DOCTYPE><html><head><title>" + title + "</title></head><body><ul class='book'>");
         for (String line : lines) {

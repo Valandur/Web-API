@@ -3,7 +3,6 @@ package valandur.webapi.integration.activetime;
 import com.mcsimonflash.sponge.activetime.objects.TimeHolder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import valandur.webapi.api.cache.CachedObject;
 import valandur.webapi.api.serialize.BaseView;
 
 @ApiModel("TimeHolder")

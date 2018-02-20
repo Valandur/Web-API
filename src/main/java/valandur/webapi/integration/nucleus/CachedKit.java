@@ -51,14 +51,14 @@ public class CachedKit extends CachedObject<Kit> {
 
     private List<String> commands;
     @JsonDetails
-    @ApiModelProperty("The commands that are executed when this kit is purchased/acquired by a player")
+    @ApiModelProperty(value = "The commands that are executed when this kit is purchased/acquired by a player", required = true)
     public List<String> getCommands() {
         return commands;
     }
 
     private List<ItemStackSnapshot> stacks;
     @JsonDetails
-    @ApiModelProperty("The ItemStacks that are awarded to the player who buys/acquires this kit")
+    @ApiModelProperty(value = "The ItemStacks that are awarded to the player who buys/acquires this kit", required = true)
     public List<ItemStackSnapshot> getStacks() {
         return stacks;
     }

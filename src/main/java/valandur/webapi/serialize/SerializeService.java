@@ -16,6 +16,7 @@ import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.block.tileentity.TileEntity;
 import org.spongepowered.api.command.CommandMapping;
 import org.spongepowered.api.command.CommandSource;
+import org.spongepowered.api.data.Property;
 import org.spongepowered.api.data.manipulator.DataManipulator;
 import org.spongepowered.api.data.manipulator.mutable.*;
 import org.spongepowered.api.data.manipulator.mutable.block.*;
@@ -23,10 +24,15 @@ import org.spongepowered.api.data.manipulator.mutable.entity.*;
 import org.spongepowered.api.data.manipulator.mutable.item.*;
 import org.spongepowered.api.data.manipulator.mutable.tileentity.*;
 import org.spongepowered.api.data.meta.PatternLayer;
+import org.spongepowered.api.data.property.AbstractProperty;
+import org.spongepowered.api.data.property.block.*;
+import org.spongepowered.api.data.property.entity.DominantHandProperty;
+import org.spongepowered.api.data.property.entity.EyeHeightProperty;
+import org.spongepowered.api.data.property.entity.EyeLocationProperty;
+import org.spongepowered.api.data.property.item.*;
 import org.spongepowered.api.data.type.Career;
 import org.spongepowered.api.data.type.DyeColor;
 import org.spongepowered.api.effect.potion.PotionEffect;
-import org.spongepowered.api.effect.potion.PotionEffectType;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.EntityArchetype;
 import org.spongepowered.api.entity.EntitySnapshot;
@@ -40,11 +46,14 @@ import org.spongepowered.api.extra.fluid.FluidStack;
 import org.spongepowered.api.extra.fluid.FluidStackSnapshot;
 import org.spongepowered.api.extra.fluid.data.manipulator.mutable.FluidItemData;
 import org.spongepowered.api.extra.fluid.data.manipulator.mutable.FluidTankData;
+import org.spongepowered.api.extra.fluid.data.property.FluidTemperatureProperty;
+import org.spongepowered.api.extra.fluid.data.property.FluidViscosityProperty;
 import org.spongepowered.api.item.FireworkEffect;
 import org.spongepowered.api.item.enchantment.Enchantment;
 import org.spongepowered.api.item.inventory.Inventory;
 import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.item.inventory.ItemStackSnapshot;
+import org.spongepowered.api.item.inventory.property.*;
 import org.spongepowered.api.item.merchant.TradeOffer;
 import org.spongepowered.api.plugin.PluginContainer;
 import org.spongepowered.api.profile.GameProfile;
@@ -110,16 +119,18 @@ import valandur.webapi.serialize.view.player.GameProfileView;
 import valandur.webapi.serialize.view.player.RespawnLocationView;
 import valandur.webapi.serialize.view.tileentity.PatternLayerView;
 
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class SerializeService implements ISerializeService {
 
     private Map<Class, BaseSerializer> serializers;
     private Map<String, Class<? extends DataManipulator<?, ?>>> supportedData;
+    private Map<Class<? extends Property<?, ?>>, String> supportedProperties;
 
 
     public void init() {
@@ -131,7 +142,7 @@ public class SerializeService implements ISerializeService {
 
         // Cached Objects
         registerCache(Advancement.class, CachedAdvancement.class);
-        _registerCache(CatalogType.class, CachedCatalogType.class);
+        _register(CatalogType.class, CachedCatalogType.class);
         registerCache(Cause.class, CachedCause.class);
         registerCache(Chunk.class, CachedChunk.class);
         registerCache(CommandMapping.class, CachedCommand.class);
@@ -217,9 +228,7 @@ public class SerializeService implements ISerializeService {
         registerView(KnockbackData.class, KnockbackDataView.class);
         registerView(LayeredData.class, LayeredDataView.class);
         registerView(LeashData.class, LeashDataView.class);
-        registerView(ListData.class, ListDataView.class);
         registerView(LockableData.class, LockableDataView.class);
-        registerView(MappedData.class, MappedDataView.class);
         registerView(MinecartBlockData.class, MinecartBlockDataView.class);
         registerView(MobSpawnerData.class, MobSpawnerDataView.class);
         registerView(MoistureData.class, MoistureDataView.class);
@@ -252,7 +261,6 @@ public class SerializeService implements ISerializeService {
         registerView(StuckArrowsData.class, StuckArrowsDataView.class);
         registerView(TameableData.class, TameableDataView.class);
         registerView(TargetedLocationData.class, TargetedLocationDataView.class);
-        registerView(VariantData.class, VariantDataView.class);
         registerView(VehicleData.class, VehicleDataView.class);
         registerView(WetData.class, WetDataView.class);
         registerView(WireAttachmentData.class, WireAttachmentDataView.class);
@@ -464,19 +472,72 @@ public class SerializeService implements ISerializeService {
         supportedData.put("wet", WetData.class);
         supportedData.put("wires", WireAttachmentData.class);
 
+
+        // Properties
+        supportedProperties = new ConcurrentHashMap<>();
+
+        supportedProperties.put(AcceptsItems.class, "acceptsItems");
+        supportedProperties.put(ApplicableEffectProperty.class, "applicableEffect");
+        supportedProperties.put(ArmorSlotType.class, "armorSlotType");
+        supportedProperties.put(ArmorTypeProperty.class, "armorType");
+        supportedProperties.put(BlastResistanceProperty.class, "blastResistance");
+        supportedProperties.put(BurningFuelProperty.class, "burningFuel");
+        supportedProperties.put(DamageAbsorptionProperty.class, "damageAbsorption");
+        supportedProperties.put(DominantHandProperty.class, "dominantHand");
+        supportedProperties.put(EfficiencyProperty.class, "efficiency");
+        supportedProperties.put(EquipmentProperty.class, "equipmentType");
+        supportedProperties.put(EquipmentSlotType.class, "equiptmentSlotType");
+        supportedProperties.put(EyeHeightProperty.class, "eyeHeight");
+        supportedProperties.put(EyeLocationProperty.class, "eyeLocation");
+        supportedProperties.put(FlammableProperty.class, "flammable");
+        supportedProperties.put(FluidTemperatureProperty.class, "fluidTemperature");
+        supportedProperties.put(FluidViscosityProperty.class, "fluidViscosity");
+        supportedProperties.put(FoodRestorationProperty.class, "foodRestoration");
+        supportedProperties.put(FullBlockSelectionBoxProperty.class, "fullBlockSelectionBox");
+        supportedProperties.put(GravityAffectedProperty.class, "gravityAffected");
+        supportedProperties.put(GroundLuminanceProperty.class, "groundLuminance");
+        supportedProperties.put(GuiIdProperty.class, "guiId");
+        supportedProperties.put(HardnessProperty.class, "hardness");
+        supportedProperties.put(HeldItemProperty.class, "heldItem");
+        supportedProperties.put(Identifiable.class, "identifiable");
+        supportedProperties.put(IndirectlyPoweredProperty.class, "indirectlyPowered");
+        supportedProperties.put(InstrumentProperty.class, "instrument");
+        supportedProperties.put(InventoryCapacity.class, "inventoryCapacity");
+        supportedProperties.put(InventoryDimension.class, "inventoryDimension");
+        supportedProperties.put(InventoryTitle.class, "inventoryTitle");
+        supportedProperties.put(LightEmissionProperty.class, "lightEmission");
+        supportedProperties.put(MatterProperty.class, "matter");
+        supportedProperties.put(PassableProperty.class, "passable");
+        supportedProperties.put(PoweredProperty.class, "powered");
+        supportedProperties.put(RecordProperty.class, "record");
+        supportedProperties.put(ReplaceableProperty.class, "replaceable");
+        supportedProperties.put(SaturationProperty.class, "saturationProperty");
+        supportedProperties.put(SkyLuminanceProperty.class, "skyLuminance");
+        supportedProperties.put(SlotIndex.class, "slotIndex");
+        supportedProperties.put(SlotPos.class, "slotPos");
+        supportedProperties.put(SlotSide.class, "slotSide");
+        supportedProperties.put(SmeltableProperty.class, "smeltable");
+        supportedProperties.put(SolidCubeProperty.class, "solidCube");
+        supportedProperties.put(StatisticsTrackedProperty.class, "statisticsTracked");
+        supportedProperties.put(SurrogateBlockProperty.class, "surrogateBlock");
+        supportedProperties.put(TemperatureProperty.class, "temperature");
+        supportedProperties.put(ToolTypeProperty.class, "toolType");
+        supportedProperties.put(UnbreakableProperty.class, "unbreakable");
+        supportedProperties.put(UseLimitProperty.class, "useLimit");
+
         logger.info("Done loading serializers");
     }
 
-    private void _registerCache(Class handledClass, Class cacheClass) {
+    private void _register(Class handledClass, Class cacheClass) {
         serializers.put(handledClass, new BaseSerializer<>(handledClass, cacheClass));
     }
     @Override
     public <T> void registerCache(Class<? extends T> handledClass, Class<? extends ICachedObject<T>> cacheClass) {
-        serializers.put(handledClass, new BaseSerializer<>(handledClass, cacheClass));
+        _register(handledClass, cacheClass);
     }
     @Override
     public <T> void registerView(Class<? extends T> handledClass, Class<? extends BaseView<T>> viewClass) {
-        serializers.put(handledClass, new BaseSerializer<>(handledClass, viewClass));
+        _register(handledClass, viewClass);
     }
 
     @Override
@@ -484,10 +545,99 @@ public class SerializeService implements ISerializeService {
         return supportedData;
     }
 
-    public Optional<Class> getViewFor(Class clazz) {
+    @Override
+    public Map<Class<? extends Property<?, ?>>, String> getSupportedProperties() {
+        return supportedProperties;
+    }
+
+    private Type[] getGenericTypes(Class baseClass, Class targetClass) {
+        Queue<Class> queue = new LinkedList<>();
+        queue.add(baseClass);
+        while (!queue.isEmpty()) {
+            Class c = queue.poll();
+            Type parent = c.getGenericSuperclass();
+            if (parent instanceof ParameterizedType && ((ParameterizedType)parent).getRawType().equals(targetClass)) {
+                return ((ParameterizedType)parent).getActualTypeArguments();
+            } else if (parent instanceof Class) {
+                queue.add((Class) parent);
+            }
+            for (Type iFace : c.getGenericInterfaces()) {
+                if (iFace instanceof ParameterizedType && ((ParameterizedType)iFace).getRawType().equals(targetClass)) {
+                    return ((ParameterizedType)iFace).getActualTypeArguments();
+                } else if (iFace instanceof Class) {
+                    queue.add((Class) iFace);
+                }
+            }
+        }
+        return new Type[0];
+    }
+
+    @Override
+    public Optional<Type> getViewFor(Class clazz) {
         BaseSerializer ser = serializers.get(clazz);
-        if (ser == null) return Optional.empty();
-        return Optional.of(ser.getCacheClass());
+        if (ser != null) {
+            return Optional.of(ser.getCacheClass());
+        }
+
+        // Check if we have a variant, list or mapped data type
+        if (VariantData.class.isAssignableFrom(clazz)) {
+            Type[] ts = getGenericTypes(clazz, VariantData.class);
+            return Optional.of(ts[0]);
+        } else if (ListData.class.isAssignableFrom(clazz)) {
+            Type elemType = getGenericTypes(clazz, ListData.class)[0];
+            return Optional.of(new ParameterizedType() {
+                @Override
+                public Type[] getActualTypeArguments() {
+                    return new Type[]{ elemType };
+                }
+
+                @Override
+                public Type getRawType() {
+                    return List.class;
+                }
+
+                @Override
+                public Type getOwnerType() {
+                    return null;
+                }
+            });
+        } else if (MappedData.class.isAssignableFrom(clazz)) {
+            Type[] ts = getGenericTypes(clazz, MappedData.class);
+            return Optional.of(new ParameterizedType() {
+                @Override
+                public Type[] getActualTypeArguments() {
+                    return new Type[]{ ts[0], ts[1] };
+                }
+
+                @Override
+                public Type getRawType() {
+                    return Map.class;
+                }
+
+                @Override
+                public Type getOwnerType() {
+                    return null;
+                }
+            });
+        } else if (AbstractProperty.class.isAssignableFrom(clazz)) {
+            Type[] ts = getGenericTypes(clazz, AbstractProperty.class);
+            return Optional.of(ts[1]);
+        }
+
+        // Try and find a parent class serializer (e.g. CatalogType) which matches closest
+        Optional<BaseSerializer> optSer = serializers.values().stream()
+                .filter(s -> s.getHandledClass().isAssignableFrom(clazz))
+                .sorted((s1, s2) -> {
+                    // Sort possibly multiple serializers by parent-child relation, if available
+                    if (s1.getHandledClass().isAssignableFrom(s2.getHandledClass()))
+                        return 1;
+                    else if (s2.getHandledClass().isAssignableFrom(s1.getHandledClass()))
+                        return -1;
+                    return 0;
+                })
+                .findFirst();
+
+        return optSer.map(BaseSerializer::getHandledClass);
     }
 
     public ObjectMapper getDefaultObjectMapper(boolean xml, boolean details, TreeNode<String, Boolean> perms) {

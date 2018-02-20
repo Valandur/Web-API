@@ -3,18 +3,17 @@ package valandur.webapi.serialize.view.data;
 import com.fasterxml.jackson.annotation.JsonValue;
 import org.spongepowered.api.data.manipulator.mutable.tileentity.NoteData;
 import org.spongepowered.api.data.type.NotePitch;
-import valandur.webapi.api.cache.misc.CachedCatalogType;
 import valandur.webapi.api.serialize.BaseView;
 
 public class NoteDataView extends BaseView<NoteData> {
 
     @JsonValue
-    public CachedCatalogType<NotePitch> note;
+    public NotePitch note;
 
 
     public NoteDataView(NoteData value) {
         super(value);
 
-        this.note = new CachedCatalogType<>(value.note().get());
+        this.note = value.note().get();
     }
 }

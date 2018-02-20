@@ -4,14 +4,13 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.spongepowered.api.effect.potion.PotionEffect;
 import org.spongepowered.api.effect.potion.PotionEffectType;
-import valandur.webapi.api.cache.misc.CachedCatalogType;
 import valandur.webapi.api.serialize.BaseView;
 
 @ApiModel("PotionEffect")
 public class PotionEffectView extends BaseView<PotionEffect> {
 
     @ApiModelProperty(value = "The type of effect this potion represents", required = true)
-    public CachedCatalogType<PotionEffectType> type;
+    public PotionEffectType type;
 
     @ApiModelProperty(value = "The aplifier of this potion (I, II, III, IV, V, ...)", required = true)
     public int amplifier;
@@ -23,7 +22,7 @@ public class PotionEffectView extends BaseView<PotionEffect> {
     public PotionEffectView(PotionEffect value) {
         super(value);
 
-        this.type = new CachedCatalogType<>(value.getType());
+        this.type = value.getType();
         this.amplifier = value.getAmplifier();
         this.duration = value.getDuration();
     }

@@ -60,6 +60,13 @@ public abstract class BlockOperation extends CachedObject<IBlockOperation> imple
         return status;
     }
 
+
+    @Override
+    @JsonDetails
+    public ICachedWorld getWorld() {
+        return world;
+    }
+
     @Override
     @JsonDetails
     public Vector3i getMin() {

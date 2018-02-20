@@ -8,10 +8,10 @@ import valandur.webapi.api.serialize.BaseView;
 @ApiModel("HealthData")
 public class HealthDataView extends BaseView<HealthData> {
 
-    @ApiModelProperty("The current health of the entity")
+    @ApiModelProperty(value = "The current health of the entity", required = true)
     public double current;
 
-    @ApiModelProperty("The maximum health of the entity")
+    @ApiModelProperty(value = "The maximum health of the entity", required = true)
     public double max;
 
 

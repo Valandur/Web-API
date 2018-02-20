@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.spongepowered.api.util.Tuple;
-import valandur.webapi.serialize.objects.ExecuteMethodParam;
 
 import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.NotFoundException;

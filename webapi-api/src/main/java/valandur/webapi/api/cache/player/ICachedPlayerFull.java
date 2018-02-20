@@ -12,22 +12,22 @@ import java.util.List;
 @ApiModel(value = "PlayerFull", parent = ICachedPlayer.class)
 public interface ICachedPlayerFull extends ICachedPlayer {
 
-    @ApiModelProperty("The player's IP address and port")
+    @ApiModelProperty(value = "The player's IP address and port", required = true)
     String getAddress();
 
-    @ApiModelProperty("The latency (in milliseconds) of the player")
+    @ApiModelProperty(value = "The latency (in milliseconds) of the player", required = true)
     int getLatency();
 
     @ApiModelProperty(value = "The current Location of the player", required = true)
     CachedLocation getLocation();
 
-    @ApiModelProperty("The current rotation of the player")
+    @ApiModelProperty(value = "The current rotation of the player", required = true)
     Vector3d getRotation();
 
-    @ApiModelProperty("The current velocity of the player")
+    @ApiModelProperty(value = "The current velocity of the player", required = true)
     Vector3d getVelocity();
 
-    @ApiModelProperty("The current scale of the player")
+    @ApiModelProperty(value = "The current scale of the player", required = true)
     Vector3d getScale();
 
     @ApiModelProperty("The item stack that the player is wearing as a helmet")
@@ -42,9 +42,9 @@ public interface ICachedPlayerFull extends ICachedPlayer {
     @ApiModelProperty("The item stack that the player is wearing as boots")
     ItemStack getBoots();
 
-    @ApiModelProperty("The current inventory of the player")
+    @ApiModelProperty(value = "The current inventory of the player", required = true)
     ICachedInventory getInventory();
 
-    @ApiModelProperty("A list of all unlocked advancements of this player")
+    @ApiModelProperty(value = "A list of all unlocked advancements of this player", required = true)
     List<ICachedAdvancement> getUnlockedAdvancements();
 }

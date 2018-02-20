@@ -23,13 +23,13 @@ public interface ICachedEntity extends ICachedObject<Entity> {
     @ApiModelProperty(value = "The current location of the entity", required = true)
     CachedLocation getLocation();
 
-    @ApiModelProperty("The current rotation of the entity")
+    @ApiModelProperty(value = "The current rotation of the entity", required = true)
     Vector3d getRotation();
 
-    @ApiModelProperty("The current velocity of the entity")
+    @ApiModelProperty(value = "The current velocity of the entity", required = true)
     Vector3d getVelocity();
 
-    @ApiModelProperty("The current scale of the entity")
+    @ApiModelProperty(value = "The current scale of the entity", required = true)
     Vector3d getScale();
 
     @ApiModelProperty("The current inventory of the entity (if any)")

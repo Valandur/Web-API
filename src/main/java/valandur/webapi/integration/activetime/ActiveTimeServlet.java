@@ -6,7 +6,6 @@ import com.mcsimonflash.sponge.activetime.objects.TimeHolder;
 import com.mcsimonflash.sponge.activetime.objects.UserReport;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
 import org.spongepowered.api.entity.living.player.User;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.WebAPIAPI;

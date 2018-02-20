@@ -17,62 +17,62 @@ import java.util.Map;
 public interface ICachedWorldFull extends ICachedWorld {
 
     @JsonDetails
-    @ApiModelProperty("True if this world is loaded when the server starts, false otherwise")
+    @ApiModelProperty(value = "True if this world is loaded when the server starts, false otherwise", required = true)
     boolean isLoadOnStartup();
 
     @JsonDetails
-    @ApiModelProperty("True if the spawn of this world is always kept loaded, false otherwise")
+    @ApiModelProperty(value = "True if the spawn of this world is always kept loaded, false otherwise", required = true)
     boolean isKeepSpawnLoaded();
 
     @JsonDetails
-    @ApiModelProperty("True if commands are allowed to be executed in this world, false otherwise")
+    @ApiModelProperty(value = "True if commands are allowed to be executed in this world, false otherwise", required = true)
     boolean isAllowCommands();
 
     @JsonDetails
-    @ApiModelProperty("True if bonus chests are generated for this world, false otherwise")
+    @ApiModelProperty(value = "True if bonus chests are generated for this world, false otherwise", required = true)
     boolean isGenerateBonusChests();
 
     @JsonDetails
-    @ApiModelProperty("True if map specific features are enabled for this world, false otherwise")
+    @ApiModelProperty(value = "True if map specific features are enabled for this world, false otherwise", required = true)
     boolean isMapFeaturesEnabled();
 
     @JsonDetails
-    @ApiModelProperty("The border of the world")
+    @ApiModelProperty(value = "The border of the world", required = true)
     ICachedWorldBorder getBorder();
 
     @JsonDetails
-    @ApiModelProperty("The difficulty of the world")
+    @ApiModelProperty(value = "The difficulty of the world", required = true)
     ICachedCatalogType<Difficulty> getDifficulty();
 
     @JsonDetails
-    @ApiModelProperty("The dimension of the world")
+    @ApiModelProperty(value = "The dimension of the world", required = true)
     ICachedCatalogType<DimensionType> getDimensionType();
 
     @JsonDetails
-    @ApiModelProperty("The game mode of the world")
+    @ApiModelProperty(value = "The game mode of the world", required = true)
     ICachedCatalogType<GameMode> getGameMode();
 
     @JsonDetails
-    @ApiModelProperty("A map of world rule names to values")
+    @ApiModelProperty(value = "A map of world rule names to values", required = true)
     Map<String, String> getGameRules();
 
     @JsonDetails
-    @ApiModelProperty("The generator type used for this world")
+    @ApiModelProperty(value = "The generator type used for this world", required = true)
     ICachedCatalogType<GeneratorType> getGeneratorType();
 
     @JsonDetails
-    @ApiModelProperty("The seed of the world")
+    @ApiModelProperty(value = "The seed of the world", required = true)
     long getSeed();
 
     @JsonDetails
-    @ApiModelProperty("The spawn point for new players")
+    @ApiModelProperty(value = "The spawn point for new players", required = true)
     Vector3i getSpawn();
 
     @JsonDetails
-    @ApiModelProperty("The current time in the world")
+    @ApiModelProperty(value = "The current time in the world", required = true)
     long getTime();
 
     @JsonDetails
-    @ApiModelProperty("The current weather in the world")
+    @ApiModelProperty(value = "The current weather in the world", required = true)
     ICachedCatalogType<Weather> getWeather();
 }

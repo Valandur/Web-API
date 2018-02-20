@@ -11,9 +11,9 @@ import java.util.Map;
 @ApiModel("Cause")
 public interface ICachedCause extends ICachedObject<Cause> {
 
-    @ApiModelProperty("The context surrounding the cause")
+    @ApiModelProperty(value = "The context surrounding the cause", required = true)
     Map<String, Object> getContext();
 
-    @ApiModelProperty("The direct sources of this cause")
+    @ApiModelProperty(value = "The direct sources of this cause", required = true)
     List<Object> getCauses();
 }

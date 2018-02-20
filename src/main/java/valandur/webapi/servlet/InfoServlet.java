@@ -98,79 +98,83 @@ public class InfoServlet extends BaseServlet {
     public static class ServerInfo {
 
         private Text motd;
-        @ApiModelProperty(value = "The message of the day set on the server")
+        @ApiModelProperty(value = "The message of the day set on the server", required = true)
         public Text getMotd() {
             return motd;
         }
 
         private int players;
-        @ApiModelProperty(value = "The amount of players currently playing on the server")
+        @ApiModelProperty(value = "The amount of players currently playing on the server", required = true)
         public int getPlayers() {
             return players;
         }
 
         private int maxPlayers;
-        @ApiModelProperty(value = "The maximum amount of players allowed on the server")
+        @ApiModelProperty(value = "The maximum amount of players allowed on the server", required = true)
         public int getMaxPlayers() {
             return maxPlayers;
         }
 
         private String address;
-        @ApiModelProperty(value = "The address that the server is bound to")
+        @ApiModelProperty("The address that the server is bound to")
         public String getAddress() {
             return address;
         }
 
         private boolean onlineMode;
-        @ApiModelProperty(value = "True if the server is in online mode and verifies connections, false otherwise")
+        @ApiModelProperty(value = "True if the server is in online mode and verifies connections, false otherwise", required = true)
         public boolean isOnlineMode() {
             return onlineMode;
         }
 
         private String resourcePack;
-        @ApiModelProperty(value = "The name of the resource pack this is used on the server")
+        @ApiModelProperty("The name of the resource pack this is used on the server")
         public String getResourcePack() {
             return resourcePack;
         }
 
         private boolean hasWhitelist;
-        @ApiModelProperty(value = "True if the server has activated the whitelist, false otherwise")
+        @ApiModelProperty(value = "True if the server has activated the whitelist, false otherwise", required = true)
         public boolean isHasWhitelist() {
             return hasWhitelist;
         }
 
         private int uptimeTicks;
-        @ApiModelProperty(value = "The number of ticks the server has been running")
+        @ApiModelProperty(value = "The number of ticks the server has been running", required = true)
         public int getUptimeTicks() {
             return uptimeTicks;
         }
 
         private double tps;
-        @ApiModelProperty(value = "The average ticks per second the server is running with")
+        @ApiModelProperty(value = "The average ticks per second the server is running with", required = true)
         public double getTps() {
             return tps;
         }
 
         private String minecraftVersion;
-        @ApiModelProperty(value = "The Minecraft version running on the server")
+        @ApiModelProperty(value = "The Minecraft version running on the server", required = true)
         public String getMinecraftVersion() {
             return minecraftVersion;
         }
 
         private CachedPluginContainer game;
+        @ApiModelProperty(required = true)
         public CachedPluginContainer getGame() {
             return game;
         }
 
         private CachedPluginContainer api;
+        @ApiModelProperty(required = true)
         public CachedPluginContainer getApi() {
             return api;
         }
 
         private CachedPluginContainer implementation;
+        @ApiModelProperty(required = true)
         public CachedPluginContainer getImplementation() {
             return implementation;
         }
+
 
         public ServerInfo() {
             Server server = Sponge.getServer();
@@ -198,34 +202,35 @@ public class InfoServlet extends BaseServlet {
     public static class ServerStats {
 
         private List<IServerStat<Double>> tps;
-        @ApiModelProperty(value = "Historic values for the average ticks per second")
+        @ApiModelProperty(value = "Historic values for the average ticks per second", required = true)
         public List<IServerStat<Double>> getTps() {
             return tps;
         }
 
         private List<IServerStat<Integer>> players;
-        @ApiModelProperty(value = "Historic values for the number of online players")
+        @ApiModelProperty(value = "Historic values for the number of online players", required = true)
         public List<IServerStat<Integer>> getPlayers() {
             return players;
         }
 
         private List<IServerStat<Double>> cpu;
-        @ApiModelProperty(value = "Historic values for the cpu load")
+        @ApiModelProperty(value = "Historic values for the cpu load", required = true)
         public List<IServerStat<Double>> getCpu() {
             return cpu;
         }
 
         private List<IServerStat<Double>> memory;
-        @ApiModelProperty(value = "Historic values for the memory load")
+        @ApiModelProperty(value = "Historic values for the memory load", required = true)
         public List<IServerStat<Double>> getMemory() {
             return memory;
         }
 
         private List<IServerStat<Double>> disk;
-        @ApiModelProperty(value = "Historic values for the disk usage")
+        @ApiModelProperty(value = "Historic values for the disk usage", required = true)
         public List<IServerStat<Double>> getDisk() {
             return disk;
         }
+
 
         public ServerStats() {
             ServerService srv = WebAPI.getServerService();

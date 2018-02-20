@@ -11,7 +11,7 @@ public interface ICachedPluginDependency extends ICachedObject<PluginDependency>
     @ApiModelProperty(value = "The id of the plugin that the original plugin depends on", required = true)
     String getId();
 
-    @ApiModelProperty(value = "The of the original plugin in relation to the dependency", required = true)
+    @ApiModelProperty(value = "The load order of the original plugin in relation to the dependency", required = true)
     PluginDependency.LoadOrder getLoadOrder();
 
     @ApiModelProperty(value = "The version of the plugin that the original plugin depends on", required = true)

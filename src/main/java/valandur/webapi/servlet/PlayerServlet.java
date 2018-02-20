@@ -18,7 +18,6 @@ import valandur.webapi.api.cache.player.ICachedPlayerFull;
 import valandur.webapi.api.servlet.BaseServlet;
 import valandur.webapi.api.servlet.ExplicitDetails;
 import valandur.webapi.api.servlet.Permission;
-import valandur.webapi.cache.player.CachedPlayer;
 import valandur.webapi.serialize.objects.ExecuteMethodRequest;
 import valandur.webapi.serialize.objects.ExecuteMethodResponse;
 
@@ -26,7 +25,6 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.util.Collection;
 import java.util.Optional;
-import java.util.UUID;
 
 @Path("player")
 @Api(tags = { "Player" }, value = "List all players and get detailed information about them.")

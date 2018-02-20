@@ -20,9 +20,9 @@ public interface ICachedCommandCall extends ICachedObject<Object> {
     @ApiModelProperty(value = "True if the command was cancelled, false otherwise", required = true)
     boolean isCancelled();
 
-    @ApiModelProperty("The cause of the command execution")
+    @ApiModelProperty(value = "The cause of the command execution", required = true)
     ICachedCause getCause();
 
-    @ApiModelProperty("The result of the command execution")
+    @ApiModelProperty(value = "The result of the command execution", required = true)
     ICachedCommandResult getResult();
 }

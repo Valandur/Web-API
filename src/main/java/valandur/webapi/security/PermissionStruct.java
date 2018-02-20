@@ -14,7 +14,7 @@ import java.security.Principal;
 public class PermissionStruct implements Principal {
 
     private String key = null;
-    @ApiModelProperty("The key used authorize with the Web-API")
+    @ApiModelProperty(value = "The key used authorize with the Web-API", required = true)
     public String getKey() {
         return key;
     }
@@ -26,13 +26,13 @@ public class PermissionStruct implements Principal {
     }
 
     private TreeNode<String, Boolean> permissions;
-    @ApiModelProperty(dataType = "object", value = "The permissions tree that this key grants access to")
+    @ApiModelProperty(dataType = "object", value = "The permissions tree that this key grants access to", required = true)
     public TreeNode<String, Boolean> getPermissions() {
         return permissions;
     }
 
     private int rateLimit;
-    @ApiModelProperty("The rate limit in requests per second that this key permits (0 = unlimited)")
+    @ApiModelProperty(value = "The rate limit in requests per second that this key permits (0 = unlimited)", required = true)
     public int getRateLimit() {
         return rateLimit;
     }

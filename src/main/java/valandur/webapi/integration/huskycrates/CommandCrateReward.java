@@ -5,7 +5,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import ninja.leaping.configurate.ConfigurationNode;
 
-@ApiModel(value = "HuskyCratesCommandCrateReward", parent = CrateRewardObject.class)
+@ApiModel(value = "HuskyCratesCommandReward", parent = CrateRewardObject.class)
 public class CommandCrateReward extends CrateRewardObject {
 
     @Override

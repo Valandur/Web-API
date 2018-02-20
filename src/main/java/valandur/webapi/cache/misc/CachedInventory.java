@@ -1,5 +1,8 @@
 package valandur.webapi.cache.misc;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import org.spongepowered.api.item.inventory.Inventory;
 import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.item.inventory.Slot;
@@ -11,6 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+@ApiModel("Inventory")
 public class CachedInventory extends CachedObject<Inventory> implements ICachedInventory {
 
     private String name;
@@ -60,5 +64,12 @@ public class CachedInventory extends CachedObject<Inventory> implements ICachedI
                 optItem.ifPresent(itemStack -> itemStacks.add(itemStack.copy()));
             }
         } catch (AbstractMethodError ignored) {}
+    }
+
+    @Override
+    @JsonIgnore
+    @ApiModelProperty(hidden = true)
+    public String getLink() {
+        return super.getLink();
     }
 }

@@ -4,18 +4,16 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.databind.type.SimpleType;
 import io.swagger.converter.ModelConverter;
 import io.swagger.converter.ModelConverterContext;
-import io.swagger.converter.ModelConverters;
 import io.swagger.models.Model;
 import io.swagger.models.properties.Property;
 import valandur.webapi.WebAPI;
-import valandur.webapi.api.cache.world.ICachedWorld;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Optional;
 
@@ -30,6 +28,8 @@ public class SwaggerModelConverter implements ModelConverter {
                 c = ((SimpleType) type).getRawClass();
             } else if (type instanceof Class) {
                 c = (Class) type;
+            } else if (type instanceof ParameterizedType) {
+                c = (Class) ((ParameterizedType)type).getRawType();
             }
 
             if (c != null) {
@@ -38,7 +38,7 @@ public class SwaggerModelConverter implements ModelConverter {
                         .filter(f -> f.getAnnotation(JsonValue.class) != null)
                         .findAny();
                 if (optField.isPresent()) {
-                    return resolveProperty(optField.get().getType(), context, annotations, chain);
+                    return resolveProperty(optField.get().getGenericType(), context, annotations, chain);
                 }
 
                 // Process @JsonValue annotation on method first if we have any
@@ -46,12 +46,12 @@ public class SwaggerModelConverter implements ModelConverter {
                         .filter(m -> m.getAnnotation(JsonValue.class) != null)
                         .findAny();
                 if (optMethod.isPresent()) {
-                    return resolveProperty(optMethod.get().getReturnType(), context, annotations, chain);
+                    return resolveProperty(optMethod.get().getGenericReturnType(), context, annotations, chain);
                 }
 
                 // If we can find a cache/view object for this type, then use that for documentation,
                 // because we can't annotate Sponge classes with @Swagger stuff
-                Optional<Class> optClass = WebAPI.getSerializeService().getViewFor(c);
+                Optional<Type> optClass = WebAPI.getSerializeService().getViewFor(c);
                 if (optClass.isPresent()) {
                     return resolveProperty(optClass.get(), context, annotations, chain);
                 }
@@ -78,7 +78,7 @@ public class SwaggerModelConverter implements ModelConverter {
                         .filter(f -> f.getAnnotation(JsonValue.class) != null)
                         .findAny();
                 if (optField.isPresent()) {
-                    return resolve(optField.get().getType(), context, chain);
+                    return resolve(optField.get().getGenericType(), context, chain);
                 }
 
                 // Process @JsonValue annotation on method first if we have any
@@ -86,12 +86,12 @@ public class SwaggerModelConverter implements ModelConverter {
                         .filter(m -> m.getAnnotation(JsonValue.class) != null)
                         .findAny();
                 if (optMethod.isPresent()) {
-                    return resolve(optMethod.get().getReturnType(), context, chain);
+                    return resolve(optMethod.get().getGenericReturnType(), context, chain);
                 }
 
                 // If we can find a cache/view object for this type, then use that for documentation,
                 // because we can't annotate Sponge classes with @Swagger stuff
-                Optional<Class> optClass = WebAPI.getSerializeService().getViewFor(c);
+                Optional<Type> optClass = WebAPI.getSerializeService().getViewFor(c);
                 if (optClass.isPresent()) {
                     return resolve(optClass.get(), context, chain);
                 }

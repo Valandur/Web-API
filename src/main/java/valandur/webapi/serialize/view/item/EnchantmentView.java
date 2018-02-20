@@ -3,7 +3,6 @@ package valandur.webapi.serialize.view.item;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.spongepowered.api.item.enchantment.Enchantment;
-import org.spongepowered.api.item.enchantment.EnchantmentType;
 import valandur.webapi.api.serialize.BaseView;
 
 @ApiModel("Enchantment")

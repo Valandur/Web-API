@@ -1,14 +1,16 @@
 package valandur.webapi.api.serialize;
 
+import org.spongepowered.api.data.Property;
 import org.spongepowered.api.data.manipulator.DataManipulator;
 import valandur.webapi.api.cache.ICachedObject;
 
+import java.lang.reflect.Type;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * The json service is used to convert java objects into json.
  * You can register your own serializers here to determine how certain objects are converted into json.
- * Custom serializers must inhert {@link BaseSerializer}.
  */
 public interface ISerializeService {
 
@@ -33,4 +35,17 @@ public interface ISerializeService {
      * @return A map from json key to DataHolder type
      */
     Map<String, Class<? extends DataManipulator<?, ?>>> getSupportedData();
+
+    /**
+     * Gets all PropertyHolder types that are supported by the Web-API
+     * @return A map from json key to PropertyHolder type
+     */
+    Map<Class<? extends Property<?, ?>>, String> getSupportedProperties();
+
+    /**
+     * Gets the View class used to represent a certain class, if present
+     * @param clazz The class which should be check for an available view
+     * @return The view class that should be used for serialization instead of the original class, if available.
+     */
+    Optional<Type> getViewFor(Class clazz);
 }

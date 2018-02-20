@@ -14,14 +14,14 @@ public interface ICachedCatalogType<T extends CatalogType> extends ICachedObject
      * Gets the unique id of the catalog type
      * @return The unique id of the catalog type
      */
-    @ApiModelProperty(value = "The unique id that indexes this catalog type")
+    @ApiModelProperty(value = "The unique id that indexes this catalog type", required = true)
     String getId();
 
     /**
      * Gets the (translated) readable name of the catalog type.
      * @return The readable name of the catalog type
      */
-    @ApiModelProperty(value = "The name of the catalog type")
+    @ApiModelProperty(value = "The name of the catalog type", required = true)
     String getName();
 
     /**

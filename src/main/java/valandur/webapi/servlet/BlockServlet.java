@@ -57,7 +57,7 @@ public class BlockServlet extends BaseServlet {
             value = "Create a block operation",
             response = IBlockOperation.class,
             notes = "Start a request to get or change blocks on the server.")
-    public Response createBlockOperation(CreateOperationRequest req)
+    public Response createBlockOperation(CreateBlockOperationRequest req)
             throws BadRequestException, NotAcceptableException {
 
         if (req == null) {
@@ -232,8 +232,8 @@ public class BlockServlet extends BaseServlet {
     }
 
 
-    @ApiModel("CreateOperationRequest")
-    public static class CreateOperationRequest {
+    @ApiModel("CreateBlockOperationRequest")
+    public static class CreateBlockOperationRequest {
 
         private IBlockOperation.BlockOperationType type;
         @ApiModelProperty(value = "The type of the block operation", required = true)

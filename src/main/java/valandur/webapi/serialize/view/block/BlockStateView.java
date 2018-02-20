@@ -7,7 +7,6 @@ import org.spongepowered.api.block.BlockType;
 import org.spongepowered.api.block.trait.BlockTrait;
 import org.spongepowered.api.data.manipulator.DataManipulator;
 import valandur.webapi.WebAPI;
-import valandur.webapi.api.cache.misc.CachedCatalogType;
 import valandur.webapi.api.serialize.BaseView;
 import valandur.webapi.api.serialize.JsonDetails;
 
@@ -18,10 +17,9 @@ import java.util.Optional;
 @ApiModel("BlockState")
 public class BlockStateView extends BaseView<BlockState> {
 
-    private BlockType type;
     @ApiModelProperty(value = "The type of block this block state is from", access = "string")
-    public CachedCatalogType<BlockType> getType() {
-        return new CachedCatalogType<>(type);
+    public BlockType getType() {
+        return value.getType();
     }
 
     public void setType(String type) { }
@@ -29,8 +27,6 @@ public class BlockStateView extends BaseView<BlockState> {
 
     public BlockStateView(BlockState value) {
         super(value);
-
-        this.type = value.getType();
     }
 
     @JsonDetails

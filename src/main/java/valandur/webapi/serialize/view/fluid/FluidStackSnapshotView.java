@@ -1,7 +1,6 @@
 package valandur.webapi.serialize.view.fluid;
 
 import com.fasterxml.jackson.annotation.JsonValue;
-import io.swagger.annotations.ApiModel;
 import org.spongepowered.api.extra.fluid.FluidStack;
 import org.spongepowered.api.extra.fluid.FluidStackSnapshot;
 import valandur.webapi.api.serialize.BaseView;

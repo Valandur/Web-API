@@ -16,6 +16,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -84,7 +85,7 @@ public class RedProtectServlet extends BaseServlet {
             response = CachedRegion.class,
             notes = "Create a new region at a specified location")
     public Response createRegion(CachedRegion req)
-            throws BadRequestException {
+            throws BadRequestException, URISyntaxException {
 
         if (req == null) {
             throw new BadRequestException("Request body is required");
@@ -174,7 +175,7 @@ public class RedProtectServlet extends BaseServlet {
             return new CachedRegion(region);
         });
 
-        return Response.created(URI.create(resRegion.getLink())).entity(resRegion).build();
+        return Response.created(new URI(null, null, resRegion.getLink(), null)).entity(resRegion).build();
     }
 
     @PUT

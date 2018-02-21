@@ -2,6 +2,7 @@ package valandur.webapi.api.cache;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.swagger.annotations.ApiModelProperty;
 import org.spongepowered.api.data.DataHolder;
 import org.spongepowered.api.data.Property;
 import org.spongepowered.api.data.manipulator.DataManipulator;
@@ -10,6 +11,7 @@ import valandur.webapi.api.WebAPIAPI;
 import valandur.webapi.api.serialize.ISerializeService;
 import valandur.webapi.api.serialize.JsonDetails;
 
+import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -76,9 +78,7 @@ public abstract class CachedObject<T> implements ICachedObject<T> {
     }
 
     @Override
-    public String getLink() {
-        return null;
-    }
+    public abstract String getLink();
 
     @JsonIgnore
     @Override

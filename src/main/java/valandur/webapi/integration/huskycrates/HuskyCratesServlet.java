@@ -18,6 +18,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -96,7 +97,7 @@ public class HuskyCratesServlet extends BaseServlet {
             value = "Create a crate",
             response = CachedVirtualCrate.class,
             notes = "Creates a new crate.")
-    public Response createCrate(CachedVirtualCrate req) {
+    public Response createCrate(CachedVirtualCrate req) throws URISyntaxException {
 
         if (req == null) {
             throw new BadRequestException("Request body is required");
@@ -115,7 +116,7 @@ public class HuskyCratesServlet extends BaseServlet {
             return new CachedVirtualCrate(vCrate);
         });
 
-        return Response.created(URI.create(crate.getLink())).entity(crate).build();
+        return Response.created(new URI(null, null, crate.getLink(), null)).entity(crate).build();
     }
 
     @PUT

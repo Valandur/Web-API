@@ -1,5 +1,7 @@
 package valandur.webapi.cache.chat;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.swagger.annotations.ApiModelProperty;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.message.MessageEvent;
 import org.spongepowered.api.text.Text;
@@ -37,5 +39,12 @@ public class CachedChatMessage extends CachedObject implements ICachedChatMessag
         this.timestamp = (new Date()).toInstant().getEpochSecond();
         this.sender = WebAPI.getCacheService().getPlayer(sender);
         this.message = event.getMessage().toBuilder().build();
+    }
+
+    @Override
+    @JsonIgnore
+    @ApiModelProperty(hidden = true)
+    public String getLink() {
+        return null;
     }
 }

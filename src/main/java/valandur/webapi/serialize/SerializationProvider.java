@@ -39,11 +39,9 @@ public class SerializationProvider extends JacksonJsonProvider {
     @Context
     HttpServletResponse response;
 
-    @Context
-    HttpHeaders headers;
-
     public SerializationProvider() {
         disable(JaxRSFeature.CACHE_ENDPOINT_WRITERS);
+        disable(JaxRSFeature.CACHE_ENDPOINT_READERS);
     }
 
     @Override

@@ -17,6 +17,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -120,7 +121,7 @@ public class WebBookServlet extends BaseServlet {
             response = WebBook.class,
             notes = "Create a new web book from the specified data.")
     public Response createWebBook(WebBook book)
-            throws BadRequestException {
+            throws BadRequestException, URISyntaxException {
 
         if (book == null) {
             throw new BadRequestException("Request body is required");
@@ -149,7 +150,7 @@ public class WebBookServlet extends BaseServlet {
         books.put(id, book);
         saveBooks();
 
-        return Response.created(URI.create(newBook.getLink())).entity(newBook).build();
+        return Response.created(new URI(null, null, newBook.getLink(), null)).entity(newBook).build();
     }
 
     @PUT

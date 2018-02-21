@@ -11,6 +11,7 @@ import org.spongepowered.api.world.weather.Weather;
 import valandur.webapi.api.cache.misc.ICachedCatalogType;
 import valandur.webapi.api.serialize.JsonDetails;
 
+import javax.xml.bind.annotation.XmlRootElement;
 import java.util.Map;
 
 @ApiModel(value = "WorldFull", parent = ICachedWorld.class)

@@ -10,6 +10,7 @@ import valandur.webapi.api.cache.world.ICachedWorld;
 import valandur.webapi.api.serialize.JsonDetails;
 import valandur.webapi.util.Constants;
 
+import java.net.URI;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -101,6 +102,6 @@ public class CachedChunk extends CachedObject<Chunk> {
 
     @Override
     public String getLink() {
-        return Constants.BASE_PATH + "/world/" + world.getUUID() + "/" + pos.getX() + "/" + pos.getZ();
+        return Constants.BASE_PATH + "/chunk/" + world.getUUID() + "/" + pos.getX() + "/" + pos.getZ();
     }
 }

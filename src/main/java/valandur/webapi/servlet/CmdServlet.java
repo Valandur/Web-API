@@ -105,7 +105,7 @@ public class CmdServlet extends BaseServlet {
 
 
     @ApiModel("ExecuteCommandRequest")
-    public static class ExecuteCommandRequest {
+        public static class ExecuteCommandRequest {
 
         private String command;
         @ApiModelProperty(value = "The command to execute", required = true)

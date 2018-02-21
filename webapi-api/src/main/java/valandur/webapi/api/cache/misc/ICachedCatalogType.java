@@ -5,6 +5,8 @@ import io.swagger.annotations.ApiModelProperty;
 import org.spongepowered.api.CatalogType;
 import valandur.webapi.api.cache.ICachedObject;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Optional;
 
 @ApiModel("CatalogType")
@@ -31,8 +33,4 @@ public interface ICachedCatalogType<T extends CatalogType> extends ICachedObject
      */
     @ApiModelProperty(hidden = true)
     Optional<T> getLive(Class<T> clazz);
-
-    @Override
-    @ApiModelProperty(hidden = true)
-    String getLink();
 }

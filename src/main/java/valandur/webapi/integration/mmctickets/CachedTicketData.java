@@ -11,6 +11,8 @@ import valandur.webapi.api.cache.world.CachedLocation;
 import valandur.webapi.api.serialize.JsonDetails;
 import valandur.webapi.util.Constants;
 
+import java.net.URI;
+
 @ApiModel("MMCTicketsTicket")
 public class CachedTicketData extends CachedObject<TicketData> {
 
@@ -93,6 +95,6 @@ public class CachedTicketData extends CachedObject<TicketData> {
 
     @Override
     public String getLink() {
-        return Constants.BASE_PATH + "/ticket/" + id;
+        return Constants.BASE_PATH + "/mmc-tickets/ticket/" + id;
     }
 }

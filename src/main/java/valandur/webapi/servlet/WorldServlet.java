@@ -27,6 +27,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
@@ -67,7 +68,7 @@ public class WorldServlet extends BaseServlet {
             response = ICachedWorldFull.class,
             notes = "Creates a new world with the specified settings. This does not yet load the world.")
     public Response createWorld(CreateWorldRequest req)
-            throws BadRequestException {
+            throws BadRequestException, URISyntaxException {
         if (req == null) {
             throw new BadRequestException("Request body is required");
         }
@@ -100,15 +101,16 @@ public class WorldServlet extends BaseServlet {
         String archTypeName = "WebAPI-" + UUID.randomUUID().toString();
         WorldArchetype archType = builder.enabled(true).build(archTypeName, archTypeName);
 
-        return WebAPI.runOnMain(() -> {
+        ICachedWorld world = WebAPI.runOnMain(() -> {
             try {
                 WorldProperties props = Sponge.getServer().createWorldProperties(req.getName(), archType);
-                ICachedWorld world = cacheService.updateWorld(props);
-                return Response.created(URI.create(world.getLink())).entity(world).build();
+                return cacheService.updateWorld(props);
             } catch (IOException e) {
                 throw new InternalServerErrorException(e.getMessage());
             }
         });
+
+        return Response.created(new URI(null, null, world.getLink(), null)).entity(world).build();
     }
 
     @PUT
@@ -237,7 +239,7 @@ public class WorldServlet extends BaseServlet {
 
 
     @ApiModel("BaseWorldRequest")
-    public static class BaseWorldRequest {
+        public static class BaseWorldRequest {
 
         private String name;
         @ApiModelProperty(value = "The name of the world", required = true)
@@ -299,7 +301,7 @@ public class WorldServlet extends BaseServlet {
     }
 
     @ApiModel("CreateWorldRequest")
-    public static class CreateWorldRequest extends BaseWorldRequest {
+        public static class CreateWorldRequest extends BaseWorldRequest {
 
         private CachedCatalogType<DimensionType> dimension;
         @ApiModelProperty(dataType = "string", value = "The the dimension that this world belongs to")
@@ -315,7 +317,7 @@ public class WorldServlet extends BaseServlet {
     }
 
     @ApiModel("UpdateWorldRequest")
-    public static class UpdateWorldRequest extends BaseWorldRequest {
+        public static class UpdateWorldRequest extends BaseWorldRequest {
 
         private Boolean loaded;
         @ApiModelProperty("True if the world should be loaded, false otherwise")

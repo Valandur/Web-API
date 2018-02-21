@@ -6,6 +6,7 @@ import org.spongepowered.api.world.World;
 import org.spongepowered.api.world.storage.WorldProperties;
 import valandur.webapi.api.cache.ICachedObject;
 
+import javax.xml.bind.annotation.XmlRootElement;
 import java.util.Optional;
 import java.util.UUID;
 

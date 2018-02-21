@@ -59,6 +59,6 @@ public class WebBook {
             required = true,
             readOnly = true)
     public String getLink() {
-        return Constants.BASE_PATH + "/book/" + id;
+        return Constants.BASE_PATH + "/web-books/book/" + id;
     }
 }

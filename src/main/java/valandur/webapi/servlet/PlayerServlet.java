@@ -184,8 +184,8 @@ public class PlayerServlet extends BaseServlet {
     }
 
 
-    @ApiModel("Update Player Request")
-    public static class UpdatePlayerRequest extends EntityServlet.UpdateEntityRequest {
+    @ApiModel("UpdatePlayerRequest")
+        public static class UpdatePlayerRequest extends EntityServlet.UpdateEntityRequest {
 
         private Integer foodLevel;
         @ApiModelProperty("The food level of the player")

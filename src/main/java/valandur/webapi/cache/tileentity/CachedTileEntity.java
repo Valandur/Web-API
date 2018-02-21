@@ -14,6 +14,7 @@ import valandur.webapi.api.serialize.JsonDetails;
 import valandur.webapi.cache.misc.CachedInventory;
 import valandur.webapi.util.Constants;
 
+import java.net.URI;
 import java.util.Optional;
 
 public class CachedTileEntity extends CachedObject<TileEntity> implements ICachedTileEntity {

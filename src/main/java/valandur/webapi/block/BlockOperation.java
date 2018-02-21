@@ -18,6 +18,7 @@ import valandur.webapi.api.cache.world.ICachedWorld;
 import valandur.webapi.api.serialize.JsonDetails;
 import valandur.webapi.util.Constants;
 
+import java.net.URI;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;

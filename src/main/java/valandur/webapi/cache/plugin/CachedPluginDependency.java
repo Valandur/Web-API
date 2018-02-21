@@ -1,5 +1,7 @@
 package valandur.webapi.cache.plugin;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.swagger.annotations.ApiModelProperty;
 import org.spongepowered.plugin.meta.PluginDependency;
 import valandur.webapi.api.cache.CachedObject;
 import valandur.webapi.api.cache.plugin.ICachedPluginDependency;
@@ -44,9 +46,15 @@ public class CachedPluginDependency extends CachedObject<PluginDependency> imple
         this.optional = dependency.isOptional();
     }
 
-
     @Override
     public Optional<PluginDependency> getLive() {
         return Optional.of(new PluginDependency(loadOrder, id, version, optional));
+    }
+
+    @Override
+    @JsonIgnore
+    @ApiModelProperty(hidden = true)
+    public String getLink() {
+        return null;
     }
 }

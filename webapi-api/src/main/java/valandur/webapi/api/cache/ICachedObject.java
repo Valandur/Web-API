@@ -4,6 +4,8 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.spongepowered.api.data.DataHolder;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Map;
 import java.util.Optional;
 
@@ -21,7 +23,7 @@ public interface ICachedObject<T> {
     Map<String, Object> getData();
 
     /**
-     * Gets a link representing a Web-API endpoint where details for the object can be retrieved..
+     * Gets a relative link representing a Web-API endpoint where details for the object can be retrieved.
      * @return The link to the details of the object, or null if not applicable.
      */
     @ApiModelProperty(

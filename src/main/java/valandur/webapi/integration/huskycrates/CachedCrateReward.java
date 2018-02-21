@@ -89,6 +89,6 @@ public class CachedCrateReward extends CachedObject<CrateReward> {
     @JsonIgnore
     @ApiModelProperty(hidden = true)
     public String getLink() {
-        return super.getLink();
+        return null;
     }
 }

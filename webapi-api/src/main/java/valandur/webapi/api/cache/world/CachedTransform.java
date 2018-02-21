@@ -1,5 +1,6 @@
 package valandur.webapi.api.cache.world;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.flowpowered.math.vector.Vector3d;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -52,5 +53,12 @@ public class CachedTransform extends CachedObject<Transform> {
     public Optional<Transform> getLive() {
         Optional<World> optWorld = world.getLive();
         return optWorld.map(w -> new Transform<>(w, position));
+    }
+
+    @Override
+    @JsonIgnore
+    @ApiModelProperty(hidden = true)
+    public String getLink() {
+        return null;
     }
 }

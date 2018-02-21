@@ -70,6 +70,6 @@ public class CachedInventory extends CachedObject<Inventory> implements ICachedI
     @JsonIgnore
     @ApiModelProperty(hidden = true)
     public String getLink() {
-        return super.getLink();
+        return null;
     }
 }

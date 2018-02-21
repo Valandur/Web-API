@@ -9,6 +9,7 @@ import valandur.webapi.api.cache.CachedObject;
 import valandur.webapi.api.serialize.JsonDetails;
 import valandur.webapi.util.Constants;
 
+import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -97,6 +98,6 @@ public class CachedVirtualCrate extends CachedObject<VirtualCrate> {
 
     @Override
     public String getLink() {
-        return Constants.BASE_PATH + "/crate/" + id;
+        return Constants.BASE_PATH + "/husky-crates/crate/" + id;
     }
 }

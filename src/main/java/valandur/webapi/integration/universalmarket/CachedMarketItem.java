@@ -7,6 +7,9 @@ import org.spongepowered.api.item.inventory.ItemStack;
 import valandur.webapi.api.WebAPIAPI;
 import valandur.webapi.api.cache.CachedObject;
 import valandur.webapi.api.cache.player.ICachedPlayer;
+import valandur.webapi.util.Constants;
+
+import java.net.URI;
 
 @ApiModel("UniversalMarketItem")
 public class CachedMarketItem extends CachedObject<MarketItem> {
@@ -50,5 +53,10 @@ public class CachedMarketItem extends CachedObject<MarketItem> {
         this.expires = value.getExpireTime() / 1000;
         this.price = value.getPrice();
         this.owner = WebAPIAPI.getCacheService().flatMap(srv -> srv.getPlayer(value.getOwnerUUID())).orElse(null);
+    }
+
+    @Override
+    public String getLink() {
+        return Constants.BASE_PATH + "/universal-market/item/" + item.getType().getId();
     }
 }

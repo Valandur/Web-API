@@ -27,6 +27,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -166,7 +167,7 @@ public class EntityServlet extends BaseServlet {
             response = ICachedEntity.class,
             notes = "Creates & Spawns a new entity with the specified properties.")
     public Response createEntity(CreateEntityRequest req)
-            throws BadRequestException {
+            throws BadRequestException, URISyntaxException {
 
         if (req == null) {
             throw new BadRequestException("Request body is required");
@@ -186,7 +187,7 @@ public class EntityServlet extends BaseServlet {
             throw new BadRequestException("No valid position provided");
         }
 
-        return WebAPI.runOnMain(() -> {
+        CachedEntity ent = WebAPI.runOnMain(() -> {
             Optional<World> optLive = optWorld.get().getLive();
             if (!optLive.isPresent())
                 throw new InternalServerErrorException("Could not get live entity");
@@ -199,13 +200,14 @@ public class EntityServlet extends BaseServlet {
             Entity e = w.createEntity(optLiveType.get(), req.getPosition());
 
             if (w.spawnEntity(e)) {
-                CachedEntity ent = new CachedEntity(e);
-                return Response.created(URI.create(ent.getLink())).entity(ent).build();
+                return new CachedEntity(e);
             } else {
                 e.remove();
                 throw new InternalServerErrorException("Could not spawn entity");
             }
         });
+
+        return Response.created(new URI(null, null, ent.getLink(), null)).entity(ent).build();
     }
 
     @POST
@@ -265,7 +267,7 @@ public class EntityServlet extends BaseServlet {
 
 
     @ApiModel("CreateEntityRequest")
-    public static class CreateEntityRequest {
+        public static class CreateEntityRequest {
 
         private ICachedWorld world;
         @ApiModelProperty(dataType = "string", value = "The world that the entity will be spawned in", required = true)
@@ -287,7 +289,7 @@ public class EntityServlet extends BaseServlet {
     }
 
     @ApiModel("UpdateEntityRequest")
-    public static class UpdateEntityRequest {
+        public static class UpdateEntityRequest {
 
         private ICachedWorld world;
         @ApiModelProperty(dataType = "string", value = "The world that the entity will be moved to")
@@ -336,7 +338,7 @@ public class EntityServlet extends BaseServlet {
     }
 
     @ApiModel("DamageRequest")
-    public static class DamageRequest {
+        public static class DamageRequest {
 
         private Integer amount;
         @ApiModelProperty("The amount of damage that should be dealt to the entity")

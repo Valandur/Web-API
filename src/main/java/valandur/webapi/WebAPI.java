@@ -362,7 +362,7 @@ public class WebAPI {
         servletService.registerServlet(PluginServlet.class);
         servletService.registerServlet(RecipeServlet.class);
         servletService.registerServlet(RegistryServlet.class);
-        servletService.registerServlet(ServletServlet.class);
+        servletService.registerServlet(ServerServlet.class);
         servletService.registerServlet(TileEntityServlet.class);
         servletService.registerServlet(UserServlet.class);
         servletService.registerServlet(WorldServlet.class);

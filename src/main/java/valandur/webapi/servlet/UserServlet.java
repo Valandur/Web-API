@@ -5,6 +5,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import io.swagger.annotations.ApiOperation;
 import valandur.webapi.api.servlet.BaseServlet;
+import valandur.webapi.api.servlet.Permission;
 import valandur.webapi.security.AuthenticationProvider;
 import valandur.webapi.security.PermissionStruct;
 import valandur.webapi.security.SecurityContext;
@@ -28,12 +29,14 @@ public class UserServlet extends BaseServlet {
     HttpServletRequest request;
 
     @GET
+    @Permission("info")
     @ApiOperation(
             value = "Check info",
             notes = "Checks to see if the passed api key is still valid and retrieves the user info and " +
                     "permissions associated with this key")
     public PermissionStruct getUserDetails() {
         SecurityContext context = (SecurityContext)request.getAttribute("security");
+        PermissionStruct struct = context.getPermissionStruct();
         return context.getPermissionStruct();
     }
 
@@ -61,8 +64,8 @@ public class UserServlet extends BaseServlet {
     }
 
 
-    @ApiModel("Authentication Request")
-    public static class AuthRequest {
+    @ApiModel("AuthenticationRequest")
+        public static class AuthRequest {
 
         private String username;
         @ApiModelProperty(value = "The username of the user", required = true)

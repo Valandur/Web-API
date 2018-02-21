@@ -18,6 +18,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.time.Duration;
 import java.util.Collection;
 import java.util.Optional;
@@ -85,7 +86,7 @@ public class NucleusServlet extends BaseServlet {
     @Permission({ "jail", "create" })
     @ApiOperation(value = "Create a jail", response = CachedJail.class, notes = "Creates a new jail.")
     public Response createJail(CachedJail req)
-            throws BadRequestException {
+            throws BadRequestException, URISyntaxException {
 
         if (req == null) {
             throw new BadRequestException("Request body is required");
@@ -110,10 +111,13 @@ public class NucleusServlet extends BaseServlet {
             Vector3d rot = req.getRotation() == null ? Vector3d.FORWARD : req.getRotation();
             srv.setJail(req.getName(), optLive.get(), rot);
             Optional<NamedLocation> optJail = srv.getJail(req.getName());
-            return optJail.map(CachedJail::new).orElse(null);
+            if (!optJail.isPresent()) {
+                throw new InternalServerErrorException("Could not get jail after creating it");
+            }
+            return new CachedJail(optJail.get());
         });
 
-        return Response.created(URI.create(jail.getLink())).entity(jail).build();
+        return Response.created(new URI(null, null, jail.getLink(), null)).entity(jail).build();
     }
 
     @PUT
@@ -199,7 +203,7 @@ public class NucleusServlet extends BaseServlet {
     @Permission({ "kit", "create" })
     @ApiOperation(value = "Create a kit", response = CachedKit.class, notes = "Creates a new kit.")
     public Response createKit(CachedKit req)
-            throws BadRequestException {
+            throws BadRequestException, URISyntaxException {
 
         if (req == null) {
             throw new BadRequestException("Request body is required");
@@ -234,7 +238,7 @@ public class NucleusServlet extends BaseServlet {
             return new CachedKit(kit);
         });
 
-        return Response.created(URI.create(resKit.getLink())).entity(resKit).build();
+        return Response.created(new URI(null, null, resKit.getLink(), null)).entity(resKit).build();
     }
 
     @PUT

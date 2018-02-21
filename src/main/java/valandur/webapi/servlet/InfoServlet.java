@@ -25,6 +25,7 @@ import javax.ws.rs.core.MediaType;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Path("info")
 @Api(tags = { "Info" }, value = "Get information and stats about the Minecraft server")
@@ -42,47 +43,6 @@ public class InfoServlet extends BaseServlet {
     }
 
     @GET
-    @Path("/properties")
-    @Permission({ "properties", "list" })
-    @ApiOperation(
-            value = "List server properties",
-            notes = "Get the main server properties (server.properties file).")
-    public Collection<ServerProperty> listProperties() {
-        ServerService srv = WebAPI.getServerService();
-        return srv.getProperties();
-    }
-
-    @PUT
-    @Path("/properties")
-    @Permission({ "properties", "modify" })
-    @Permission(value = { "properties", "modify", "[property]" }, autoCheck = false)
-    @ApiOperation(
-            value = "Modify server properties",
-            notes = "Modify settings in the server.properties file. **Note that these settings don't take effect " +
-                    "until you restart the server.")
-    public Collection<ServerProperty> modifyProperties(
-            final Map<String, String> properties,
-            @Context HttpServletRequest request)
-            throws BadRequestException {
-
-        if (properties == null) {
-            throw new BadRequestException("Request body is required");
-        }
-
-        SecurityContext context = (SecurityContext)request.getAttribute("security");
-
-        ServerService srv = WebAPI.getServerService();
-        for (Map.Entry<String, String> entry : properties.entrySet()) {
-            if (!context.hasPerms(entry.getKey())) {
-                throw new ForbiddenException("You do not have permission to change the " + entry.getKey() + " setting");
-            }
-            srv.setProperty(entry.getKey(), entry.getValue());
-        }
-
-        return srv.getProperties();
-    }
-
-    @GET
     @Path("/stats")
     @Permission("stats")
     @ApiOperation(
@@ -93,9 +53,20 @@ public class InfoServlet extends BaseServlet {
         return new ServerStats();
     }
 
+    @GET
+    @Path("/servlets")
+    @Permission("servlets")
+    @ApiOperation(
+            value = "List servlets",
+            notes = "Lists all the active servlets running in the Web-API")
+    public Map<String, String> listServlets() {
+        return servletService.getRegisteredServlets().entrySet().stream()
+                .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().getName()));
+    }
 
-    @ApiModel(value = "ServerInfo")
-    public static class ServerInfo {
+
+    @ApiModel("ServerInfo")
+        public static class ServerInfo {
 
         private Text motd;
         @ApiModelProperty(value = "The message of the day set on the server", required = true)
@@ -198,8 +169,8 @@ public class InfoServlet extends BaseServlet {
         }
     }
 
-    @ApiModel(value = "ServerStats")
-    public static class ServerStats {
+    @ApiModel("ServerStats")
+        public static class ServerStats {
 
         private List<IServerStat<Double>> tps;
         @ApiModelProperty(value = "Historic values for the average ticks per second", required = true)

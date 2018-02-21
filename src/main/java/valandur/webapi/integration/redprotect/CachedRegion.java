@@ -10,7 +10,9 @@ import valandur.webapi.api.cache.player.ICachedPlayerFull;
 import valandur.webapi.api.cache.world.CachedLocation;
 import valandur.webapi.api.cache.world.ICachedWorld;
 import valandur.webapi.api.serialize.JsonDetails;
+import valandur.webapi.util.Constants;
 
+import java.net.URI;
 import java.util.*;
 
 @ApiModel("RedProtectRegion")
@@ -150,5 +152,10 @@ public class CachedRegion extends CachedObject<Region> {
         for (Map.Entry<String, Object> entry : region.flags.entrySet()) {
             this.flags.put(entry.getKey(), cacheService.asCachedObject(entry.getValue()));
         }
+    }
+
+    @Override
+    public String getLink() {
+        return Constants.BASE_PATH + "/red-protect/region/" + id;
     }
 }

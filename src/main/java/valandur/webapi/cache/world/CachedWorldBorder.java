@@ -2,6 +2,7 @@ package valandur.webapi.cache.world;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.flowpowered.math.vector.Vector3d;
+import io.swagger.annotations.ApiModelProperty;
 import org.spongepowered.api.world.WorldBorder;
 import org.spongepowered.api.world.storage.WorldProperties;
 import valandur.webapi.api.cache.CachedObject;
@@ -75,9 +76,10 @@ public class CachedWorldBorder extends CachedObject<WorldBorder> implements ICac
         this.warningTime = properties.getWorldBorderWarningTime();
     }
 
-    @JsonIgnore
     @Override
+    @JsonIgnore
+    @ApiModelProperty(hidden = true)
     public String getLink() {
-        return super.getLink();
+        return null;
     }
 }

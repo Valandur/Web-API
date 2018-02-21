@@ -16,6 +16,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -81,8 +82,9 @@ public class ChunkServlet extends BaseServlet {
     public Response createChunkAt(
             @PathParam("world") @ApiParam("The uuid of the world in which to create the chunk") ICachedWorld world,
             @PathParam("x") @ApiParam("The x-coordinate of the chunk (in chunk coordinates)") int x,
-            @PathParam("z") @ApiParam("The z-coordinate of the chunk (in chunk coordinates)") int z) {
-        return WebAPI.runOnMain(() -> {
+            @PathParam("z") @ApiParam("The z-coordinate of the chunk (in chunk coordinates)") int z)
+            throws URISyntaxException {
+        CachedChunk chunk = WebAPI.runOnMain(() -> {
             Optional<World> optLive = world.getLive();
             if (!optLive.isPresent())
                 throw new InternalServerErrorException("Could not get live world");
@@ -91,8 +93,9 @@ public class ChunkServlet extends BaseServlet {
             Optional<Chunk> optChunk = live.loadChunk(x, 0, z, true);
             if (!optChunk.isPresent())
                 throw new InternalServerErrorException("Could not load live chunk");
-            CachedChunk chunk = new CachedChunk(optChunk.get());
-            return Response.created(URI.create(chunk.getLink())).entity(chunk).build();
+            return new CachedChunk(optChunk.get());
         });
+
+        return Response.created(new URI(null, null, chunk.getLink(), null)).entity(chunk).build();
     }
 }

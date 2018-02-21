@@ -13,6 +13,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -59,7 +60,7 @@ public class MessageServlet extends BaseServlet {
             notes = "Send an interactive message to a player. Make sure to have an event hook for " +
                     "\"custom_message\" to receive the response.")
     public Response sendMessage(Message msg)
-            throws BadRequestException {
+            throws BadRequestException, URISyntaxException {
 
         if (msg == null) {
             throw new BadRequestException("Request body is required");
@@ -70,6 +71,6 @@ public class MessageServlet extends BaseServlet {
         }
 
         messageService.sendMessage(msg);
-        return Response.created(URI.create(msg.getLink())).entity(msg).build();
+        return Response.created(new URI(null, null, msg.getLink(), null)).entity(msg).build();
     }
 }

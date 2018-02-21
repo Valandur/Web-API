@@ -16,6 +16,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.*;
 
 @Path("block")
@@ -58,7 +59,7 @@ public class BlockServlet extends BaseServlet {
             response = IBlockOperation.class,
             notes = "Start a request to get or change blocks on the server.")
     public Response createBlockOperation(CreateBlockOperationRequest req)
-            throws BadRequestException, NotAcceptableException {
+            throws BadRequestException, NotAcceptableException, URISyntaxException {
 
         if (req == null) {
             throw new BadRequestException("Request body is required");
@@ -160,7 +161,7 @@ public class BlockServlet extends BaseServlet {
             throw new BadRequestException("Unknown block operation type");
         }
 
-        return Response.created(URI.create(op.getLink())).entity(op).build();
+        return Response.created(new URI(null, null, op.getLink(), null)).entity(op).build();
     }
 
     @GET
@@ -233,7 +234,7 @@ public class BlockServlet extends BaseServlet {
 
 
     @ApiModel("CreateBlockOperationRequest")
-    public static class CreateBlockOperationRequest {
+        public static class CreateBlockOperationRequest {
 
         private IBlockOperation.BlockOperationType type;
         @ApiModelProperty(value = "The type of the block operation", required = true)
@@ -275,7 +276,7 @@ public class BlockServlet extends BaseServlet {
     }
 
     @ApiModel("ModifyBlockOperationRequest")
-    public static class ModifyBlockOperationRequest {
+        public static class ModifyBlockOperationRequest {
 
         private boolean paused;
         @ApiModelProperty("True if the operation should be paused, false otherwise")

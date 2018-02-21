@@ -18,6 +18,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -75,7 +76,7 @@ public class MMCRestrictServlet extends BaseServlet {
             response = CachedItemData.class,
             notes = "Adds a new item to the restricted item list.")
     public Response addItem(CachedItemData req)
-            throws BadRequestException {
+            throws BadRequestException, URISyntaxException {
 
         if (req == null) {
             throw new BadRequestException("Request body is required");
@@ -96,7 +97,7 @@ public class MMCRestrictServlet extends BaseServlet {
             return new CachedItemData(optData.get());
         });
 
-        return Response.created(URI.create(item.getLink())).entity(item).build();
+        return Response.created(new URI(null, null, item.getLink(), null)).entity(item).build();
     }
 
     @PUT

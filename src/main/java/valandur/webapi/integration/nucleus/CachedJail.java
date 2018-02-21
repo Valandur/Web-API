@@ -8,6 +8,8 @@ import valandur.webapi.api.cache.CachedObject;
 import valandur.webapi.api.cache.world.CachedLocation;
 import valandur.webapi.util.Constants;
 
+import java.net.URI;
+
 @ApiModel("NucleusJail")
 public class CachedJail extends CachedObject<NamedLocation> {
 
@@ -43,6 +45,6 @@ public class CachedJail extends CachedObject<NamedLocation> {
 
     @Override
     public String getLink() {
-        return Constants.BASE_PATH + "/jail/" + name;
+        return Constants.BASE_PATH + "/nucleus/jail/" + name;
     }
 }

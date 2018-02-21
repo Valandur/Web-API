@@ -2,10 +2,12 @@ package valandur.webapi.security;
 
 import com.google.common.net.HttpHeaders;
 import com.google.common.reflect.TypeToken;
+import com.sun.deploy.net.HttpResponse;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
 import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 import org.eclipse.jetty.http.HttpMethod;
+import org.eclipse.jetty.http.HttpStatus;
 import org.slf4j.Logger;
 import org.spongepowered.api.util.Tuple;
 import valandur.webapi.WebAPI;
@@ -197,6 +199,12 @@ public class AuthenticationProvider implements ContainerRequestFilter {
             throw new ForbiddenException();
         }
 
+        // Exit early on options requests
+        if (HttpMethod.OPTIONS.asString().equalsIgnoreCase(context.getMethod())) {
+            context.abortWith(Response.status(HttpStatus.OK_200).build());
+            return;
+        }
+
         String key = context.getHeaderString(API_KEY_HEADER);
         if (key == null || key.isEmpty()) {
             key = context.getUriInfo().getQueryParameters().getFirst("key");
@@ -231,21 +239,18 @@ public class AuthenticationProvider implements ContainerRequestFilter {
         request.setAttribute("security", securityContext);
 
         // Do rate limiting
-        // Don't count OPTIONS requests as actual requests
-        if (!request.getMethod().equalsIgnoreCase(HttpMethod.OPTIONS.asString())) {
-            calls.incrementAndGet();
+        calls.incrementAndGet();
 
-            if (permStruct.getRateLimit() > 0) {
-                double time = System.nanoTime() / 1000000000d;
+        if (permStruct.getRateLimit() > 0) {
+            double time = System.nanoTime() / 1000000000d;
 
-                if (lastCall.containsKey(key) && time - lastCall.get(key) < 1d / permStruct.getRateLimit()) {
-                    WebAPI.getLogger().warn(addr + " has exceeded the rate limit when requesting " +
-                            request.getRequestURI());
-                    throw new ClientErrorException("Rate limit exceeded", Response.Status.TOO_MANY_REQUESTS);
-                }
-
-                lastCall.put(key, time);
+            if (lastCall.containsKey(key) && time - lastCall.get(key) < 1d / permStruct.getRateLimit()) {
+                WebAPI.getLogger().warn(addr + " has exceeded the rate limit when requesting " +
+                        request.getRequestURI());
+                throw new ClientErrorException("Rate limit exceeded", Response.Status.TOO_MANY_REQUESTS);
             }
+
+            lastCall.put(key, time);
         }
 
         boolean details = true;
@@ -258,6 +263,7 @@ public class AuthenticationProvider implements ContainerRequestFilter {
         }
         request.setAttribute("details", details);
 
+        Class c = resourceInfo.getResourceClass();
         String basePath = resourceInfo.getResourceClass().getAnnotation(Path.class).value();
         TreeNode<String, Boolean> perms = permStruct.getPermissions();
 
@@ -268,7 +274,9 @@ public class AuthenticationProvider implements ContainerRequestFilter {
 
         // Calculate the sub-perms that apply for our endpoint
         for (Permission reqPerm : reqPerms) {
-            if (!reqPerm.autoCheck()) continue;
+            if (!reqPerm.autoCheck()) {
+                continue;
+            }
 
             List<String> reqPermList = new ArrayList<>(Arrays.asList(reqPerm.value()));
             reqPermList.add(0, basePath);

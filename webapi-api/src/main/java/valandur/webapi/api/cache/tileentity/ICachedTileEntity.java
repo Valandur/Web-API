@@ -8,6 +8,8 @@ import valandur.webapi.api.cache.misc.ICachedCatalogType;
 import valandur.webapi.api.cache.misc.ICachedInventory;
 import valandur.webapi.api.cache.world.CachedLocation;
 
+import javax.xml.bind.annotation.XmlRootElement;
+
 @ApiModel("TileEntity")
 public interface ICachedTileEntity extends ICachedObject<TileEntity> {
 

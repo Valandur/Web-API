@@ -9,6 +9,7 @@ import valandur.webapi.api.cache.CachedObject;
 import valandur.webapi.api.cache.misc.CachedCatalogType;
 import valandur.webapi.util.Constants;
 
+import java.net.URI;
 import java.util.Optional;
 
 @ApiModel("MMCRestrictItem")
@@ -98,6 +99,6 @@ public class CachedItemData extends CachedObject<ItemData> {
 
     @Override
     public String getLink() {
-        return Constants.BASE_PATH + "/item/" + item.getId();
+        return Constants.BASE_PATH + "/mmc-restrict/item/" + item.getId();
     }
 }

@@ -254,19 +254,19 @@ public class WorldServlet extends BaseServlet {
         }
 
         private CachedCatalogType<GeneratorType> generator;
-        @ApiModelProperty(dataType = "string", value = "Which generator to use for the world")
+        @ApiModelProperty(value = "Which generator to use for the world")
         public Optional<GeneratorType> getGenerator() {
             return generator != null ? generator.getLive(GeneratorType.class) : Optional.empty();
         }
 
         private CachedCatalogType<GameMode> gameMode;
-        @ApiModelProperty(dataType = "string", value = "Which game mode the world defaults to")
+        @ApiModelProperty(value = "Which game mode the world defaults to")
         public Optional<GameMode> getGameMode() {
             return gameMode != null ? gameMode.getLive(GameMode.class) : Optional.empty();
         }
 
         private CachedCatalogType<Difficulty> difficulty;
-        @ApiModelProperty(dataType = "string", value = "Which difficulty the world is set to")
+        @ApiModelProperty(value = "Which difficulty the world is set to")
         public Optional<Difficulty> getDifficulty() {
             return difficulty != null ? difficulty.getLive(Difficulty.class) : Optional.empty();
         }

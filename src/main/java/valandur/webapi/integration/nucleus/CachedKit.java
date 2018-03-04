@@ -9,7 +9,6 @@ import valandur.webapi.api.cache.CachedObject;
 import valandur.webapi.api.serialize.JsonDetails;
 import valandur.webapi.util.Constants;
 
-import java.net.URI;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;

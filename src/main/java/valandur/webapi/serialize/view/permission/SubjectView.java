@@ -23,7 +23,7 @@ public class SubjectView extends BaseView<Subject> {
     }
 
     @JsonDetails
-    @ApiModelProperty(value = "The permissions that are assigned to this subject", required = true)
+    @ApiModelProperty(value = "The permissions that are assigned to this subject")
     public Map<String, Boolean> getPermissions() {
         Map<String, Boolean> res = new HashMap<>();
         for (Map<String, Boolean> map : value.getSubjectData().getAllPermissions().values()) {

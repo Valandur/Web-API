@@ -4,8 +4,8 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.spongepowered.api.text.Text;
 
-@ApiModel("MessageOption")
-public interface IMessageOption {
+@ApiModel("InteractiveMessageOption")
+public interface IInteractiveMessageOption {
 
     /**
      * Gets the key of the message option that is returned to the server

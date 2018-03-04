@@ -2,7 +2,6 @@ package valandur.webapi.api.cache;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import io.swagger.annotations.ApiModelProperty;
 import org.spongepowered.api.data.DataHolder;
 import org.spongepowered.api.data.Property;
 import org.spongepowered.api.data.manipulator.DataManipulator;
@@ -11,7 +10,6 @@ import valandur.webapi.api.WebAPIAPI;
 import valandur.webapi.api.serialize.ISerializeService;
 import valandur.webapi.api.serialize.JsonDetails;
 
-import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -71,6 +69,9 @@ public abstract class CachedObject<T> implements ICachedObject<T> {
                 Map<Class<? extends Property<?, ?>>, String> props = serializeService.getSupportedProperties();
                 for (Property<?, ?> property : holder.getApplicableProperties()) {
                     String key = props.get(property.getClass());
+                    if (data.containsKey(key)) {
+                        key = key + "Property";
+                    }
                     data.put(key, property.getValue());
                 }
             }

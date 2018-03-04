@@ -11,8 +11,8 @@ import java.util.UUID;
 /**
  * Represents an interactive message which can be sent to players.
  */
-@ApiModel("Message")
-public interface IMessage extends ICachedObject<IMessage> {
+@ApiModel("InteractiveMessage")
+public interface IInteractiveMessage extends ICachedObject<IInteractiveMessage> {
 
     /**
      * Gets the unique id of the message. This is generated when the messages is created.
@@ -57,7 +57,7 @@ public interface IMessage extends ICachedObject<IMessage> {
      * @return A map of option keys to values.
      */
     @ApiModelProperty("Clickable options that the player can select from")
-    List<IMessageOption> getOptions();
+    List<IInteractiveMessageOption> getOptions();
 
     /**
      * True if the message object has options attached, false otherwise.

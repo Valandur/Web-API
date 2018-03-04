@@ -92,7 +92,7 @@ public interface IBlockOperation extends ICachedObject<IBlockOperation> {
      * Gets the cause which is used for the block operation.
      * @return The cause used for the block operation.
      */
-    @ApiModelProperty(value = "The cause which is used for updating the blocks", required = true)
+    @ApiModelProperty(hidden = true)
     Cause getCause();
 
     /**

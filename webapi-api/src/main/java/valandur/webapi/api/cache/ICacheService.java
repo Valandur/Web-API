@@ -9,10 +9,10 @@ import org.spongepowered.api.plugin.PluginContainer;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 import org.spongepowered.api.world.storage.WorldProperties;
-import valandur.webapi.api.cache.chat.ICachedChatMessage;
 import valandur.webapi.api.cache.command.ICachedCommand;
 import valandur.webapi.api.cache.command.ICachedCommandCall;
 import valandur.webapi.api.cache.entity.ICachedEntity;
+import valandur.webapi.api.cache.message.ICachedMessage;
 import valandur.webapi.api.cache.player.ICachedPlayerFull;
 import valandur.webapi.api.cache.plugin.ICachedPluginContainer;
 import valandur.webapi.api.cache.tileentity.ICachedTileEntity;
@@ -50,11 +50,11 @@ public interface ICacheService {
     Long getCacheDurationFor(Class clazz);
 
     /**
-     * Gets a history of all the chat messages sent on the server.
+     * Gets a history of all the messages sent on the server.
      *
-     * @return A list of cached chat messages.
+     * @return A list of cached messages.
      */
-    List<ICachedChatMessage> getChatMessages();
+    List<ICachedMessage> getMessages();
 
     /**
      * Gets a history of all the commands run on the server.

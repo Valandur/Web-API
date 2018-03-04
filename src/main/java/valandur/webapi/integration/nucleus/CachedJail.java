@@ -8,8 +8,6 @@ import valandur.webapi.api.cache.CachedObject;
 import valandur.webapi.api.cache.world.CachedLocation;
 import valandur.webapi.util.Constants;
 
-import java.net.URI;
-
 @ApiModel("NucleusJail")
 public class CachedJail extends CachedObject<NamedLocation> {
 

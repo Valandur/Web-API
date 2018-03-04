@@ -8,7 +8,6 @@ import valandur.webapi.api.cache.plugin.ICachedPluginDependency;
 import valandur.webapi.api.serialize.JsonDetails;
 import valandur.webapi.util.Constants;
 
-import java.net.URI;
 import java.util.*;
 
 public class CachedPluginContainer extends CachedObject<PluginContainer> implements ICachedPluginContainer {

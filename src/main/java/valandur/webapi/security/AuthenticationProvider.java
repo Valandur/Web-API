@@ -2,7 +2,6 @@ package valandur.webapi.security;
 
 import com.google.common.net.HttpHeaders;
 import com.google.common.reflect.TypeToken;
-import com.sun.deploy.net.HttpResponse;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
 import ninja.leaping.configurate.objectmapping.ObjectMappingException;
@@ -43,7 +42,7 @@ public class AuthenticationProvider implements ContainerRequestFilter {
 
     private static String ACCESS_CONTROL_ORIGIN = "*";
     private static final String ACCESS_CONTROL_METHODS = "GET,PUT,POST,DELETE,OPTIONS";
-    private static final String ACCESS_CONTROL_HEADERS = "Origin,Content-Type,Accept,X-Forwarded-For," + API_KEY_HEADER;
+    private static final String ACCESS_CONTROL_HEADERS = "*";
 
     private static Map<String, Double> lastCall = new ConcurrentHashMap<>();
     private static long start = System.nanoTime();
@@ -201,7 +200,7 @@ public class AuthenticationProvider implements ContainerRequestFilter {
 
         // Exit early on options requests
         if (HttpMethod.OPTIONS.asString().equalsIgnoreCase(context.getMethod())) {
-            context.abortWith(Response.status(HttpStatus.OK_200).build());
+            context.abortWith(Response.ok().build());
             return;
         }
 

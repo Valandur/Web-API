@@ -102,8 +102,26 @@ public class WebBookServlet extends BaseServlet {
     @ApiOperation(
             value = "Book HTML",
             notes = "Get the web book content as HTML.")
+    @Consumes({ MediaType.APPLICATION_FORM_URLENCODED, MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
     @Produces(MediaType.TEXT_HTML)
     public String getWebBookContent(@PathParam("id") String id)
+            throws NotFoundException {
+        WebBook book = books.get(id);
+        if (book == null) {
+            throw new NotFoundException("Book with id " + id + " not found");
+        }
+
+        return book.getHtml();
+    }
+
+    @POST
+    @Path("/book/{id}/html")
+    @ApiOperation(
+            value = "Book HTML",
+            notes = "Get the web book content as HTML.")
+    @Consumes({ MediaType.APPLICATION_FORM_URLENCODED, MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
+    @Produces(MediaType.TEXT_HTML)
+    public String getWebBookContentPost(@PathParam("id") String id)
             throws NotFoundException {
         WebBook book = books.get(id);
         if (book == null) {

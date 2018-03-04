@@ -16,7 +16,6 @@ import valandur.webapi.api.cache.world.ICachedWorldFull;
 import valandur.webapi.api.serialize.JsonDetails;
 import valandur.webapi.util.Constants;
 
-import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;

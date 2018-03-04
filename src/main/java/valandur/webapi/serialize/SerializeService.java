@@ -257,6 +257,7 @@ public class SerializeService implements ISerializeService {
         registerView(SneakingData.class, SneakingDataView.class);
         registerView(SnowedData.class, SnowedDataView.class);
         registerView(SprintData.class, SprintDataView.class);
+        registerView(StatisticData.class, StatisticDataView.class);
         registerView(StructureData.class, StructureDataView.class);
         registerView(StuckArrowsData.class, StuckArrowsDataView.class);
         registerView(TameableData.class, TameableDataView.class);

@@ -5,18 +5,17 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.serializer.TextSerializers;
 import valandur.webapi.api.cache.CachedObject;
-import valandur.webapi.api.message.IMessage;
-import valandur.webapi.api.message.IMessageOption;
+import valandur.webapi.api.message.IInteractiveMessage;
+import valandur.webapi.api.message.IInteractiveMessageOption;
 import valandur.webapi.api.serialize.JsonDetails;
 import valandur.webapi.util.Constants;
 
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-public class Message extends CachedObject<IMessage> implements IMessage {
+public class InteractiveMessage extends CachedObject<IInteractiveMessage> implements IInteractiveMessage {
 
     private UUID uuid;
     @Override
@@ -61,10 +60,10 @@ public class Message extends CachedObject<IMessage> implements IMessage {
         return once;
     }
 
-    private List<MessageOption> options;
+    private List<InteractiveMessageOption> options;
     @Override
     @JsonDetails
-    public List<IMessageOption> getOptions() {
+    public List<IInteractiveMessageOption> getOptions() {
         return new ArrayList<>(options);
     }
 
@@ -77,7 +76,7 @@ public class Message extends CachedObject<IMessage> implements IMessage {
 
 
 
-    public Message() {
+    public InteractiveMessage() {
         super(null);
 
         this.uuid = UUID.randomUUID();
@@ -89,7 +88,7 @@ public class Message extends CachedObject<IMessage> implements IMessage {
     }
 
     @Override
-    public Optional<IMessage> getLive() {
+    public Optional<IInteractiveMessage> getLive() {
         return super.getLive();
     }
 }

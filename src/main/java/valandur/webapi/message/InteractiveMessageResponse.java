@@ -1,6 +1,6 @@
 package valandur.webapi.message;
 
-public class MessageResponse {
+public class InteractiveMessageResponse {
 
     private String id;
     public String getId() {
@@ -18,7 +18,7 @@ public class MessageResponse {
     }
 
 
-    public MessageResponse(String id, String choice, String source) {
+    public InteractiveMessageResponse(String id, String choice, String source) {
         this.id  = id;
         this.choice = choice;
         this.source = source;

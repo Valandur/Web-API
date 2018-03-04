@@ -4,7 +4,7 @@ import valandur.webapi.api.WebAPIAPI;
 import valandur.webapi.api.block.IBlockService;
 import valandur.webapi.api.cache.ICacheService;
 import valandur.webapi.api.hook.IWebHookService;
-import valandur.webapi.api.message.IMessageService;
+import valandur.webapi.api.message.IInteractiveMessageService;
 import valandur.webapi.api.permission.IPermissionService;
 import valandur.webapi.api.serialize.ISerializeService;
 import valandur.webapi.api.server.IServerService;
@@ -16,7 +16,7 @@ public abstract class BaseServlet extends HttpServlet {
     protected IBlockService blockService;
     protected ICacheService cacheService;
     protected ISerializeService serializeService;
-    protected IMessageService messageService;
+    protected IInteractiveMessageService messageService;
     protected IPermissionService permissionService;
     protected IServerService serverService;
     protected IServletService servletService;

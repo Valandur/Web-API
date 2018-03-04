@@ -17,7 +17,7 @@ import java.util.Optional;
 @ApiModel("BlockState")
 public class BlockStateView extends BaseView<BlockState> {
 
-    @ApiModelProperty(value = "The type of block this block state is from", access = "string")
+    @ApiModelProperty(value = "The type of block this block state is from")
     public BlockType getType() {
         return value.getType();
     }

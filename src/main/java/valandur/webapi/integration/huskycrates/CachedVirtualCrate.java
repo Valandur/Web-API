@@ -9,7 +9,6 @@ import valandur.webapi.api.cache.CachedObject;
 import valandur.webapi.api.serialize.JsonDetails;
 import valandur.webapi.util.Constants;
 
-import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -43,22 +42,24 @@ public class CachedVirtualCrate extends CachedObject<VirtualCrate> {
 
     private boolean free;
     @JsonDetails
-    @ApiModelProperty("True if this crate is free to open, false otherwise")
+    @ApiModelProperty(value = "True if this crate is free to open, false otherwise", required = true)
     public boolean isFree() {
         return free;
     }
 
     private Integer freeDelay;
     @JsonDetails
-    @ApiModelProperty("In case this crate is free, this interval specifies the time (in seconds) after which " +
-            "this crate can be opened again")
+    @ApiModelProperty(
+            value = "In case this crate is free, this interval specifies the time (in seconds) after which " +
+                    "this crate can be opened again",
+            required = true)
     public Integer getFreeDelay() {
         return freeDelay;
     }
 
     private boolean scrambleRewards;
     @JsonDetails
-    @ApiModelProperty("True if the rewards are scrambled, false otherwise")
+    @ApiModelProperty(value = "True if the rewards are scrambled, false otherwise", required = true)
     public boolean isScrambleRewards() {
         return scrambleRewards;
     }
@@ -66,14 +67,14 @@ public class CachedVirtualCrate extends CachedObject<VirtualCrate> {
     @JsonIgnore
     private Map<String, Integer> keys;
     @JsonDetails
-    @ApiModelProperty("A map from currently pending player UUIDs to keys")
+    @ApiModelProperty(value = "A map from currently pending player UUIDs to keys", required = true)
     public Map<String, Integer> getKeys() {
         return keys;
     }
 
     private List<CachedCrateReward> rewards;
     @JsonDetails
-    @ApiModelProperty("The possible rewards awarded for opening this crate")
+    @ApiModelProperty(value = "The possible rewards awarded for opening this crate", required = true)
     public List<CachedCrateReward> getRewards() {
         return rewards;
     }

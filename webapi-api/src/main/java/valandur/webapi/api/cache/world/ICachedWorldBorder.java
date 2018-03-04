@@ -6,8 +6,6 @@ import io.swagger.annotations.ApiModelProperty;
 import org.spongepowered.api.world.WorldBorder;
 import valandur.webapi.api.cache.ICachedObject;
 
-import javax.xml.bind.annotation.XmlRootElement;
-
 @ApiModel("WorldBorder")
 public interface ICachedWorldBorder extends ICachedObject<WorldBorder> {
 

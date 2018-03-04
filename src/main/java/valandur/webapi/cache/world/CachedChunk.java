@@ -1,6 +1,7 @@
 package valandur.webapi.cache.world;
 
 import com.flowpowered.math.vector.Vector3i;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.world.Chunk;
@@ -10,10 +11,10 @@ import valandur.webapi.api.cache.world.ICachedWorld;
 import valandur.webapi.api.serialize.JsonDetails;
 import valandur.webapi.util.Constants;
 
-import java.net.URI;
 import java.util.Optional;
 import java.util.UUID;
 
+@ApiModel("Chunk")
 public class CachedChunk extends CachedObject<Chunk> {
 
     private UUID uuid;

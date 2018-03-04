@@ -4,9 +4,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.serializer.TextSerializers;
-import valandur.webapi.api.message.IMessageOption;
+import valandur.webapi.api.message.IInteractiveMessageOption;
 
-public class MessageOption implements IMessageOption {
+public class InteractiveMessageOption implements IInteractiveMessageOption {
 
     private String key;
     @Override

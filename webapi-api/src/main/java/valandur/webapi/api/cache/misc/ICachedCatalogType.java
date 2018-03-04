@@ -5,8 +5,6 @@ import io.swagger.annotations.ApiModelProperty;
 import org.spongepowered.api.CatalogType;
 import valandur.webapi.api.cache.ICachedObject;
 
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.Optional;
 
 @ApiModel("CatalogType")
@@ -23,7 +21,7 @@ public interface ICachedCatalogType<T extends CatalogType> extends ICachedObject
      * Gets the (translated) readable name of the catalog type.
      * @return The readable name of the catalog type
      */
-    @ApiModelProperty(value = "The name of the catalog type", required = true)
+    @ApiModelProperty(value = "The name of the catalog type", required = true, readOnly = true)
     String getName();
 
     /**

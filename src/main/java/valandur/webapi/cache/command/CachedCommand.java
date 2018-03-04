@@ -6,8 +6,6 @@ import valandur.webapi.api.cache.CachedObject;
 import valandur.webapi.api.cache.command.ICachedCommand;
 import valandur.webapi.util.Constants;
 
-import java.net.URI;
-
 import static valandur.webapi.command.CommandSource.instance;
 
 public class CachedCommand extends CachedObject<CommandMapping> implements ICachedCommand {

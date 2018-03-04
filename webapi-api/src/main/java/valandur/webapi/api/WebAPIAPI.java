@@ -10,7 +10,7 @@ import org.spongepowered.api.scheduler.SpongeExecutorService;
 import valandur.webapi.api.block.IBlockService;
 import valandur.webapi.api.cache.ICacheService;
 import valandur.webapi.api.hook.IWebHookService;
-import valandur.webapi.api.message.IMessageService;
+import valandur.webapi.api.message.IInteractiveMessageService;
 import valandur.webapi.api.permission.IPermissionService;
 import valandur.webapi.api.serialize.ISerializeService;
 import valandur.webapi.api.server.IServerService;
@@ -75,8 +75,8 @@ public class WebAPIAPI {
      * Gets the message service from the Web-API. Used to send interactive messages to players.
      * @return An optional containing the message service if it was loaded.
      */
-    public static Optional<IMessageService> getMessageService() {
-        return Sponge.getServiceManager().provide(IMessageService.class);
+    public static Optional<IInteractiveMessageService> getMessageService() {
+        return Sponge.getServiceManager().provide(IInteractiveMessageService.class);
     }
 
     /**

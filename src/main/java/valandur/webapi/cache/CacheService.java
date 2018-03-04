@@ -14,12 +14,13 @@ import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.cause.Cause;
 import org.spongepowered.api.event.command.SendCommandEvent;
-import org.spongepowered.api.event.message.MessageEvent;
 import org.spongepowered.api.item.inventory.Inventory;
 import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.item.inventory.ItemStackSnapshot;
 import org.spongepowered.api.plugin.PluginContainer;
 import org.spongepowered.api.service.user.UserStorageService;
+import org.spongepowered.api.text.Text;
+import org.spongepowered.api.text.channel.MessageReceiver;
 import org.spongepowered.api.util.Tuple;
 import org.spongepowered.api.world.Chunk;
 import org.spongepowered.api.world.Location;
@@ -29,10 +30,10 @@ import valandur.webapi.WebAPI;
 import valandur.webapi.api.cache.CachedObject;
 import valandur.webapi.api.cache.ICacheService;
 import valandur.webapi.api.cache.ICachedObject;
-import valandur.webapi.api.cache.chat.ICachedChatMessage;
 import valandur.webapi.api.cache.command.ICachedCommand;
 import valandur.webapi.api.cache.command.ICachedCommandCall;
 import valandur.webapi.api.cache.entity.ICachedEntity;
+import valandur.webapi.api.cache.message.ICachedMessage;
 import valandur.webapi.api.cache.misc.CachedCatalogType;
 import valandur.webapi.api.cache.player.ICachedPlayerFull;
 import valandur.webapi.api.cache.plugin.ICachedPluginContainer;
@@ -41,10 +42,11 @@ import valandur.webapi.api.cache.world.CachedLocation;
 import valandur.webapi.api.cache.world.CachedTransform;
 import valandur.webapi.api.cache.world.ICachedWorld;
 import valandur.webapi.api.cache.world.ICachedWorldFull;
-import valandur.webapi.cache.chat.CachedChatMessage;
 import valandur.webapi.cache.command.CachedCommand;
 import valandur.webapi.cache.command.CachedCommandCall;
 import valandur.webapi.cache.entity.CachedEntity;
+import valandur.webapi.cache.message.CachedChatMessage;
+import valandur.webapi.cache.message.CachedMessage;
 import valandur.webapi.cache.misc.CachedCause;
 import valandur.webapi.cache.misc.CachedInventory;
 import valandur.webapi.cache.player.CachedAdvancement;
@@ -76,16 +78,18 @@ public class CacheService implements ICacheService {
     private int numChatMessages;
     private int numCommandCalls;
 
-    private ConcurrentLinkedQueue<CachedChatMessage> chatMessages = new ConcurrentLinkedQueue<>();
+    private ConcurrentLinkedQueue<CachedMessage> messages = new ConcurrentLinkedQueue<>();
     private ConcurrentLinkedQueue<CachedCommandCall> commandCalls = new ConcurrentLinkedQueue<>();
     private Map<String, CachedCommand> commands = new ConcurrentHashMap<>();
     private Map<String, CachedPluginContainer> plugins = new ConcurrentHashMap<>();
     private Map<UUID, CachedWorld> worlds = new ConcurrentHashMap<>();
     private Map<UUID, CachedPlayer> players = new ConcurrentHashMap<>();
 
-    public List<ICachedChatMessage> getChatMessages() {
-        return Lists.reverse(Arrays.asList(chatMessages.toArray(new ICachedChatMessage[chatMessages.size()])));
+    @Override
+    public List<ICachedMessage> getMessages() {
+        return Lists.reverse(Arrays.asList(messages.toArray(new ICachedMessage[messages.size()])));
     }
+    @Override
     public List<ICachedCommandCall> getCommandCalls() {
         return Lists.reverse(Arrays.asList(commandCalls.toArray(new ICachedCommandCall[commandCalls.size()])));
     }
@@ -181,12 +185,22 @@ public class CacheService implements ICacheService {
         return dur != null ? dur : 0;
     }
 
-    public CachedChatMessage addChatMessage(Player sender, MessageEvent event) {
-        CachedChatMessage cache = new CachedChatMessage(sender, event);
-        chatMessages.add(cache);
+    public CachedMessage addMessage(Collection<MessageReceiver> receivers, Text content) {
+        CachedMessage cache = new CachedMessage(receivers, content);
+        messages.add(cache);
 
-        while (chatMessages.size() > numChatMessages) {
-            chatMessages.poll();
+        while (messages.size() > numChatMessages) {
+            messages.poll();
+        }
+
+        return cache;
+    }
+    public CachedChatMessage addChatMessage(Player sender, Collection<MessageReceiver> receivers, Text content) {
+        CachedChatMessage cache = new CachedChatMessage(sender, receivers, content);
+        messages.add(cache);
+
+        while (messages.size() > numChatMessages) {
+            messages.poll();
         }
 
         return cache;

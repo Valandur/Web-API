@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.BeanProperty;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.deser.ContextualDeserializer;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import org.spongepowered.api.CatalogType;
@@ -28,9 +29,10 @@ public class CachedCatalogTypeDeserializer<T extends CatalogType> extends StdDes
 
     @Override
     public CachedCatalogType<T> deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
-        String id = p.getValueAsString();
-        if (id == null) return null;
-        Optional<T> type = Sponge.getRegistry().getType((Class<T>) _valueClass, id);
+        JsonNode tree = p.readValueAsTree();
+        if (tree == null) return null;
+        if (tree.path("id").isMissingNode()) return null;
+        Optional<T> type = Sponge.getRegistry().getType((Class<T>) _valueClass, tree.get("id").asText());
         return type.map(CachedCatalogType::new).orElse(null);
     }
 }

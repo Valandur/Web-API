@@ -10,19 +10,18 @@ import org.spongepowered.api.Sponge;
 import org.spongepowered.api.resourcepack.ResourcePack;
 import org.spongepowered.api.text.Text;
 import valandur.webapi.WebAPI;
+import valandur.webapi.api.cache.plugin.ICachedPluginContainer;
 import valandur.webapi.api.server.IServerStat;
 import valandur.webapi.api.servlet.BaseServlet;
 import valandur.webapi.api.servlet.Permission;
 import valandur.webapi.cache.plugin.CachedPluginContainer;
-import valandur.webapi.security.SecurityContext;
-import valandur.webapi.server.ServerProperty;
 import valandur.webapi.server.ServerService;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -128,21 +127,21 @@ public class InfoServlet extends BaseServlet {
             return minecraftVersion;
         }
 
-        private CachedPluginContainer game;
+        private ICachedPluginContainer game;
         @ApiModelProperty(required = true)
-        public CachedPluginContainer getGame() {
+        public ICachedPluginContainer getGame() {
             return game;
         }
 
-        private CachedPluginContainer api;
+        private ICachedPluginContainer api;
         @ApiModelProperty(required = true)
-        public CachedPluginContainer getApi() {
+        public ICachedPluginContainer getApi() {
             return api;
         }
 
-        private CachedPluginContainer implementation;
+        private ICachedPluginContainer implementation;
         @ApiModelProperty(required = true)
-        public CachedPluginContainer getImplementation() {
+        public ICachedPluginContainer getImplementation() {
             return implementation;
         }
 

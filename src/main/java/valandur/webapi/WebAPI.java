@@ -56,12 +56,13 @@ import org.spongepowered.api.plugin.Plugin;
 import org.spongepowered.api.plugin.PluginContainer;
 import org.spongepowered.api.scheduler.SpongeExecutorService;
 import org.spongepowered.api.text.Text;
+import org.spongepowered.api.text.channel.MessageChannel;
 import org.spongepowered.api.text.format.TextColors;
 import org.spongepowered.api.util.Tuple;
 import valandur.webapi.api.block.IBlockService;
 import valandur.webapi.api.cache.ICacheService;
 import valandur.webapi.api.hook.IWebHookService;
-import valandur.webapi.api.message.IMessageService;
+import valandur.webapi.api.message.IInteractiveMessageService;
 import valandur.webapi.api.permission.IPermissionService;
 import valandur.webapi.api.serialize.ISerializeService;
 import valandur.webapi.api.server.IServerService;
@@ -71,8 +72,9 @@ import valandur.webapi.block.BlockOperation;
 import valandur.webapi.block.BlockOperationStatusChangeEvent;
 import valandur.webapi.block.BlockService;
 import valandur.webapi.cache.CacheService;
-import valandur.webapi.cache.chat.CachedChatMessage;
 import valandur.webapi.cache.command.CachedCommandCall;
+import valandur.webapi.cache.message.CachedChatMessage;
+import valandur.webapi.cache.message.CachedMessage;
 import valandur.webapi.command.CommandRegistry;
 import valandur.webapi.command.CommandSource;
 import valandur.webapi.handler.AssetHandler;
@@ -88,7 +90,7 @@ import valandur.webapi.integration.nucleus.NucleusServlet;
 import valandur.webapi.integration.redprotect.RedProtectServlet;
 import valandur.webapi.integration.universalmarket.UniversalMarketServlet;
 import valandur.webapi.integration.webbooks.WebBookServlet;
-import valandur.webapi.message.MessageService;
+import valandur.webapi.message.InteractiveMessageService;
 import valandur.webapi.security.AuthenticationProvider;
 import valandur.webapi.security.PermissionService;
 import valandur.webapi.serialize.SerializationFeature;
@@ -217,8 +219,8 @@ public class WebAPI {
         return WebAPI.getInstance().serializeService;
     }
 
-    private MessageService messageService;
-    public static MessageService getMessageService() {
+    private InteractiveMessageService messageService;
+    public static InteractiveMessageService getMessageService() {
         return WebAPI.getInstance().messageService;
     }
 
@@ -312,7 +314,7 @@ public class WebAPI {
         this.blockService = new BlockService();
         this.cacheService = new CacheService();
         this.serializeService = new SerializeService();
-        this.messageService = new MessageService();
+        this.messageService = new InteractiveMessageService();
         this.permissionService = new PermissionService();
         this.serverService = new ServerService();
         this.servletService = new ServletService();
@@ -323,7 +325,7 @@ public class WebAPI {
         Sponge.getServiceManager().setProvider(this, IBlockService.class, blockService);
         Sponge.getServiceManager().setProvider(this, ICacheService.class, cacheService);
         Sponge.getServiceManager().setProvider(this, ISerializeService.class, serializeService);
-        Sponge.getServiceManager().setProvider(this, IMessageService.class, messageService);
+        Sponge.getServiceManager().setProvider(this, IInteractiveMessageService.class, messageService);
         Sponge.getServiceManager().setProvider(this, IPermissionService.class, permissionService);
         Sponge.getServiceManager().setProvider(this, IServerService.class, serverService);
         Sponge.getServiceManager().setProvider(this, IServletService.class, servletService);
@@ -356,7 +358,7 @@ public class WebAPI {
         servletService.registerServlet(HistoryServlet.class);
         servletService.registerServlet(InfoServlet.class);
         servletService.registerServlet(MapServlet.class);
-        servletService.registerServlet(MessageServlet.class);
+        servletService.registerServlet(InteractiveMessageServlet.class);
         servletService.registerServlet(PermissionServlet.class);
         servletService.registerServlet(PlayerServlet.class);
         servletService.registerServlet(PluginServlet.class);
@@ -905,7 +907,14 @@ public class WebAPI {
 
     @Listener(order = Order.POST)
     public void onPlayerChat(MessageChannelEvent.Chat event, @First Player player) {
-        CachedChatMessage msg = cacheService.addChatMessage(player, event);
+        MessageChannel channel = event.getChannel().orElse(event.getOriginalChannel());
+        CachedChatMessage msg = cacheService.addChatMessage(player, channel.getMembers(), event.getMessage());
+        webHookService.notifyHooks(WebHookService.WebHookType.CHAT, msg);
+    }
+    @Listener(order = Order.POST)
+    public void onMessage(MessageChannelEvent event) {
+        MessageChannel channel = event.getChannel().orElse(event.getOriginalChannel());
+        CachedMessage msg = cacheService.addMessage(channel.getMembers(), event.getMessage());
         webHookService.notifyHooks(WebHookService.WebHookType.CHAT, msg);
     }
 

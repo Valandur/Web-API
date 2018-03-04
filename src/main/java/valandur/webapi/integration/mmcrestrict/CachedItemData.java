@@ -9,7 +9,6 @@ import valandur.webapi.api.cache.CachedObject;
 import valandur.webapi.api.cache.misc.CachedCatalogType;
 import valandur.webapi.util.Constants;
 
-import java.net.URI;
 import java.util.Optional;
 
 @ApiModel("MMCRestrictItem")

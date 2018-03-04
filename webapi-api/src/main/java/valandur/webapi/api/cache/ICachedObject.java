@@ -4,8 +4,6 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.spongepowered.api.data.DataHolder;
 
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.Map;
 import java.util.Optional;
 

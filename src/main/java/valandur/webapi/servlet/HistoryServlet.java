@@ -2,8 +2,8 @@ package valandur.webapi.servlet;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import valandur.webapi.api.cache.chat.ICachedChatMessage;
 import valandur.webapi.api.cache.command.ICachedCommandCall;
+import valandur.webapi.api.cache.message.ICachedMessage;
 import valandur.webapi.api.servlet.BaseServlet;
 import valandur.webapi.api.servlet.Permission;
 
@@ -31,12 +31,12 @@ public class HistoryServlet extends BaseServlet {
     }
 
     @GET
-    @Path("/chat")
-    @Permission("chat")
+    @Path("/message")
+    @Permission("message")
     @ApiOperation(
-            value = "Get chat history",
-            notes = "View a history of the server chat.")
-    public List<ICachedChatMessage> getChat() {
-        return cacheService.getChatMessages();
+            value = "Get message history",
+            notes = "View a history of the server messages.")
+    public List<ICachedMessage> getChat() {
+        return cacheService.getMessages();
     }
 }

@@ -162,6 +162,10 @@ public class SerializeService implements ISerializeService {
         registerView(BlockState.class, BlockStateView.class);
 
         // Data
+        registerView(ListData.class, ListDataView.class);
+        registerView(MappedData.class, MappedDataView.class);
+        registerView(VariantData.class, VariantDataView.class);
+
         registerView(AbsorptionData.class, AbsorptionDataView.class);
         //registerView(AchievementData.class, AchievementDataView.class);
         registerView(AgeableData.class, AgeableDataView.class);

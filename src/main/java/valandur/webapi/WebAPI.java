@@ -6,7 +6,6 @@ import com.google.common.reflect.TypeToken;
 import com.google.inject.Inject;
 import io.sentry.Sentry;
 import io.sentry.context.Context;
-import io.swagger.config.FilterFactory;
 import io.swagger.converter.ModelConverters;
 import io.swagger.jaxrs.config.BeanConfig;
 import ninja.leaping.configurate.ConfigurationNode;
@@ -99,7 +98,6 @@ import valandur.webapi.server.ServerService;
 import valandur.webapi.servlet.*;
 import valandur.webapi.servlet.base.ServletService;
 import valandur.webapi.swagger.SwaggerModelConverter;
-import valandur.webapi.swagger.SwaggerSpecFilter;
 import valandur.webapi.user.UserPermissionStruct;
 import valandur.webapi.user.UserPermissionStructConfigSerializer;
 import valandur.webapi.user.Users;
@@ -333,7 +331,6 @@ public class WebAPI {
 
         // Swagger setup stuff
         ModelConverters.getInstance().addConverter(new SwaggerModelConverter());
-        FilterFactory.setFilter(new SwaggerSpecFilter());
 
         Timings.STARTUP.stopTiming();
     }
@@ -582,16 +579,6 @@ public class WebAPI {
 
                 // Asset handlers
                 mainContext.addHandler(newContext("/docs", new AssetHandler("pages/redoc.html")));
-                mainContext.addHandler(newContext("/swagger", new AssetHandler("swagger", (path) -> {
-                    if (!path.endsWith("swagger/index.yaml"))
-                        return null;
-                    return (data) -> {
-                        String text = new String(data);
-                        text = text.replaceFirst("<host>", serverHost + ":" + serverPortHttp);
-                        text = text.replaceFirst("<version>", Constants.VERSION);
-                        return text.getBytes();
-                    };
-                })));
 
                 if (adminPanelEnabled) {
                     // Rewrite handler
@@ -639,7 +626,6 @@ public class WebAPI {
                 // Jersey servlet
                 ServletHolder jerseyServlet = new ServletHolder(new ServletContainer(config));
                 jerseyServlet.setInitOrder(1);
-                jerseyServlet.setInitParameter("swagger.filter", SwaggerSpecFilter.class.getName());
                 // jerseyServlet.setInitParameter("openApi.configuration.location", assets/webapi/swagger/config.json");                                    // This is for Swagger 3.0
                 servletsContext.addServlet(jerseyServlet, "/*");
 

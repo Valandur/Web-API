@@ -6,7 +6,7 @@ import org.spongepowered.api.text.Text;
 import valandur.webapi.api.cache.ICachedObject;
 import valandur.webapi.api.cache.player.ICachedPlayer;
 
-@ApiModel("ChatMessage")
+@ApiModel(value = "ChatMessage", parent = ICachedMessage.class)
 public interface ICachedChatMessage extends ICachedMessage {
 
     @ApiModelProperty(value = "The sender of the message", required = true)

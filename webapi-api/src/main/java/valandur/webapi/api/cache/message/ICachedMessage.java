@@ -7,7 +7,7 @@ import valandur.webapi.api.cache.ICachedObject;
 
 import java.util.Collection;
 
-@ApiModel("Message")
+@ApiModel(value = "Message", subTypes = { ICachedChatMessage.class })
 public interface ICachedMessage extends ICachedObject {
 
     @ApiModelProperty(value = "The receivers of this message", required = true)

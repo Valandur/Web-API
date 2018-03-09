@@ -5,12 +5,10 @@ import io.swagger.annotations.ApiOperation;
 import valandur.webapi.api.cache.command.ICachedCommandCall;
 import valandur.webapi.api.cache.message.ICachedMessage;
 import valandur.webapi.api.servlet.BaseServlet;
+import valandur.webapi.api.servlet.ExplicitDetails;
 import valandur.webapi.api.servlet.Permission;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.util.List;
 
@@ -21,6 +19,7 @@ import java.util.List;
 public class HistoryServlet extends BaseServlet {
 
     @GET
+    @ExplicitDetails
     @Path("/cmd")
     @Permission("cmd")
     @ApiOperation(
@@ -31,6 +30,7 @@ public class HistoryServlet extends BaseServlet {
     }
 
     @GET
+    @ExplicitDetails
     @Path("/message")
     @Permission("message")
     @ApiOperation(

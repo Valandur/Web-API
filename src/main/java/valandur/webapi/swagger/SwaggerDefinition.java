@@ -1,16 +1,20 @@
 package valandur.webapi.swagger;
 
 import io.swagger.annotations.*;
+import io.swagger.annotations.Contact;
+import io.swagger.annotations.Info;
+import io.swagger.annotations.License;
 import io.swagger.converter.ModelConverter;
 import io.swagger.converter.ModelConverterContextImpl;
 import io.swagger.converter.ModelConverters;
 import io.swagger.jaxrs.Reader;
 import io.swagger.jaxrs.config.ReaderListener;
-import io.swagger.models.ComposedModel;
-import io.swagger.models.Model;
-import io.swagger.models.Path;
-import io.swagger.models.Swagger;
+import io.swagger.models.*;
+import io.swagger.models.parameters.QueryParameter;
+import io.swagger.models.properties.IntegerProperty;
+import io.swagger.models.properties.ObjectProperty;
 import io.swagger.models.properties.Property;
+import io.swagger.models.properties.StringProperty;
 import org.spongepowered.api.data.manipulator.DataManipulator;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.servlet.BaseServlet;
@@ -89,8 +93,53 @@ import java.util.stream.Collectors;
 )
 public class SwaggerDefinition implements ReaderListener {
 
+    private static QueryParameter constructQueryParameter(String name, String description, String... values) {
+        QueryParameter param = new QueryParameter();
+        param.setName(name);
+        param.setDescription(description);
+        if (values != null && values.length > 0) {
+            param.setType("string");
+            param.setEnum(Arrays.asList(values));
+        } else {
+            param.setType("boolean");
+        }
+        return param;
+    }
+    private static Response constructResponse(int status, String error) {
+        Property statusProp = new IntegerProperty()
+                .description("The status code of the error (also provided in the HTTP header)");
+        statusProp.setExample(status);
+
+        Property errorProp = new StringProperty()
+                .description("The error message describing the error");
+        errorProp.setExample((Object)error);
+
+        return new Response()
+                .description(error)
+                .schema(new ObjectProperty()
+                        .property("status", statusProp)
+                        .property("error", errorProp));
+    }
+
     @Override
     public void beforeScan(Reader reader, Swagger swagger) {
+        swagger.addParameter("details", constructQueryParameter(
+                "details",
+                "Add to include additional details, omit or false otherwise"));
+        swagger.addParameter("accept", constructQueryParameter(
+                "accept",
+                "Override the 'Accept' request header (useful for debugging your requests)",
+                "json", "xml"));
+        swagger.addParameter("pretty", constructQueryParameter(
+                "pretty",
+                "Add to make the Web-API pretty print the response (useful for debugging your requests)"));
+
+        swagger.response("400", constructResponse(400, "Bad request"));
+        swagger.response("401", constructResponse(401, "Unauthorized"));
+        swagger.response("403", constructResponse(403, "Access denied"));
+        swagger.response("404", constructResponse(404, "Not found"));
+        swagger.response("500", constructResponse(500, "Internal server error"));
+        swagger.response("501", constructResponse(501, "Not implemented"));
     }
 
     @Override

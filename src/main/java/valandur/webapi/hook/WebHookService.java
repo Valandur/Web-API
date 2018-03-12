@@ -9,9 +9,27 @@ import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 import org.slf4j.Logger;
 import org.spongepowered.api.Platform;
 import org.spongepowered.api.Sponge;
+import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Event;
 import org.spongepowered.api.event.EventListener;
+import org.spongepowered.api.event.Listener;
+import org.spongepowered.api.event.Order;
+import org.spongepowered.api.event.advancement.AdvancementEvent;
+import org.spongepowered.api.event.block.InteractBlockEvent;
+import org.spongepowered.api.event.command.SendCommandEvent;
+import org.spongepowered.api.event.entity.DestructEntityEvent;
+import org.spongepowered.api.event.entity.ExpireEntityEvent;
+import org.spongepowered.api.event.entity.SpawnEntityEvent;
+import org.spongepowered.api.event.entity.living.humanoid.player.KickPlayerEvent;
+import org.spongepowered.api.event.filter.cause.First;
+import org.spongepowered.api.event.game.state.GameStartedServerEvent;
+import org.spongepowered.api.event.game.state.GameStoppedServerEvent;
+import org.spongepowered.api.event.item.inventory.InteractInventoryEvent;
+import org.spongepowered.api.event.message.MessageChannelEvent;
+import org.spongepowered.api.event.network.ClientConnectionEvent;
+import org.spongepowered.api.event.user.BanUserEvent;
+import org.spongepowered.api.event.world.*;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.util.Tuple;
 import valandur.webapi.WebAPI;
@@ -19,10 +37,10 @@ import valandur.webapi.api.hook.BaseWebHookFilter;
 import valandur.webapi.api.hook.IWebHook;
 import valandur.webapi.api.hook.IWebHookService;
 import valandur.webapi.api.hook.WebHookHeader;
+import valandur.webapi.block.BlockOperationStatusChangeEvent;
 import valandur.webapi.hook.filter.BlockTypeFilter;
 import valandur.webapi.hook.filter.ItemTypeFilter;
 import valandur.webapi.hook.filter.PlayerFilter;
-import valandur.webapi.serialize.SerializeService;
 import valandur.webapi.util.Constants;
 import valandur.webapi.util.Timings;
 import valandur.webapi.util.Util;
@@ -38,8 +56,6 @@ public class WebHookService implements IWebHookService {
     private static final String configFileName = "hooks.conf";
     private static String userAgent = Constants.NAME + "/" + Constants.VERSION;
 
-    private SerializeService json;
-
     private Map<String, CommandWebHook> commandHooks = new HashMap<>();
     private Map<WebHookType, List<WebHook>> eventHooks = new HashMap<>();
     private Map<Class<? extends Event>, Tuple<List<WebHook>, EventListener>> customHooks = new HashMap<>();
@@ -54,8 +70,6 @@ public class WebHookService implements IWebHookService {
         Logger logger = WebAPI.getLogger();
 
         logger.info("Initializing web hooks...");
-
-        this.json = WebAPI.getSerializeService();
 
         // Remove existing listeners to prevent multiple subscriptions on config reload
         for (Tuple<List<WebHook>, EventListener> entry : customHooks.values()) {
@@ -303,5 +317,112 @@ public class WebHookService implements IWebHookService {
                 }
             }
         });
+    }
+
+
+    // Server events
+    @Listener(order = Order.POST)
+    public void onServerStart(GameStartedServerEvent event) {
+        notifyHooks(WebHookService.WebHookType.SERVER_START, event);
+    }
+    @Listener(order = Order.PRE)
+    public void onServerStop(GameStoppedServerEvent event) {
+        notifyHooks(WebHookService.WebHookType.SERVER_STOP, event);
+    }
+
+    @Listener(order = Order.POST)
+    public void onWorldLoad(LoadWorldEvent event) {
+        notifyHooks(WebHookService.WebHookType.WORLD_LOAD, event);
+    }
+    @Listener(order = Order.POST)
+    public void onWorldUnload(UnloadWorldEvent event) {
+        notifyHooks(WebHookService.WebHookType.WORLD_UNLOAD, event);
+    }
+    @Listener(order = Order.POST)
+    public void onWorldSave(SaveWorldEvent event) {
+        notifyHooks(WebHookService.WebHookType.WORLD_SAVE, event);
+    }
+
+    @Listener(order = Order.POST)
+    public void onPlayerJoin(ClientConnectionEvent.Join event) {
+        notifyHooks(WebHookService.WebHookType.PLAYER_JOIN, event);
+    }
+    @Listener(order = Order.PRE)
+    public void onPlayerLeave(ClientConnectionEvent.Disconnect event) {
+        notifyHooks(WebHookService.WebHookType.PLAYER_LEAVE, event);
+    }
+
+    @Listener(order = Order.PRE)
+    public void onUserKick(KickPlayerEvent event) {
+        notifyHooks(WebHookService.WebHookType.PLAYER_KICK, event);
+    }
+    @Listener(order = Order.PRE)
+    public void onUserBan(BanUserEvent event) {
+        notifyHooks(WebHookService.WebHookType.PLAYER_BAN, event);
+    }
+
+    @Listener(order = Order.POST)
+    public void onEntitySpawn(SpawnEntityEvent event) {
+        notifyHooks(WebHookService.WebHookType.ENTITY_SPAWN, event);
+    }
+    @Listener(order = Order.PRE)
+    public void onEntityDespawn(DestructEntityEvent event) {
+        Entity ent = event.getTargetEntity();
+        if (ent instanceof Player) {
+            notifyHooks(WebHookService.WebHookType.PLAYER_DEATH, event);
+        } else {
+            notifyHooks(WebHookService.WebHookType.ENTITY_DESPAWN, event);
+        }
+    }
+    @Listener(order = Order.PRE)
+    public void onEntityExpire(ExpireEntityEvent event) {
+        notifyHooks(WebHookService.WebHookType.ENTITY_EXPIRE, event);
+    }
+
+    @Listener(order = Order.POST)
+    public void onPlayerChat(MessageChannelEvent.Chat event, @First Player player) {
+        notifyHooks(WebHookService.WebHookType.CHAT, event);
+    }
+    @Listener(order = Order.POST)
+    public void onMessage(MessageChannelEvent event) {
+        notifyHooks(WebHookService.WebHookType.CHAT, event);
+    }
+
+    @Listener(order = Order.POST)
+    public void onInteractBlock(InteractBlockEvent event) {
+        notifyHooks(WebHookService.WebHookType.INTERACT_BLOCK, event);
+    }
+    @Listener(order = Order.POST)
+    public void onInteractInventory(InteractInventoryEvent.Open event) {
+        notifyHooks(WebHookService.WebHookType.INVENTORY_OPEN, event);
+    }
+    @Listener(order = Order.POST)
+    public void onInteractInventory(InteractInventoryEvent.Close event) {
+        notifyHooks(WebHookService.WebHookType.INVENTORY_CLOSE, event);
+    }
+
+    @Listener(order = Order.POST)
+    public void onPlayerAdvancement(AdvancementEvent.Grant event) {
+        notifyHooks(WebHookService.WebHookType.ADVANCEMENT, event);
+    }
+
+    @Listener(order = Order.POST)
+    public void onGenerateChunk(GenerateChunkEvent event) {
+        notifyHooks(WebHookService.WebHookType.GENERATE_CHUNK, event);
+    }
+
+    @Listener(order = Order.POST)
+    public void onExplosion(ExplosionEvent event) {
+        notifyHooks(WebHookService.WebHookType.EXPLOSION, event);
+    }
+
+    @Listener(order = Order.POST)
+    public void onCommand(SendCommandEvent event) {
+        notifyHooks(WebHookService.WebHookType.COMMAND, event);
+    }
+
+    @Listener(order = Order.POST)
+    public void onBlockUpdateStatusChange(BlockOperationStatusChangeEvent event) {
+        notifyHooks(WebHookService.WebHookType.BLOCK_OPERATION_STATUS, event);
     }
 }

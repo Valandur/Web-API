@@ -12,14 +12,23 @@ import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.Transform;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.entity.living.player.User;
+import org.spongepowered.api.event.Listener;
+import org.spongepowered.api.event.Order;
 import org.spongepowered.api.event.cause.Cause;
 import org.spongepowered.api.event.command.SendCommandEvent;
+import org.spongepowered.api.event.entity.living.humanoid.player.KickPlayerEvent;
+import org.spongepowered.api.event.filter.cause.First;
+import org.spongepowered.api.event.message.MessageChannelEvent;
+import org.spongepowered.api.event.network.ClientConnectionEvent;
+import org.spongepowered.api.event.world.LoadWorldEvent;
+import org.spongepowered.api.event.world.UnloadWorldEvent;
 import org.spongepowered.api.item.inventory.Inventory;
 import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.item.inventory.ItemStackSnapshot;
 import org.spongepowered.api.plugin.PluginContainer;
 import org.spongepowered.api.service.user.UserStorageService;
 import org.spongepowered.api.text.Text;
+import org.spongepowered.api.text.channel.MessageChannel;
 import org.spongepowered.api.text.channel.MessageReceiver;
 import org.spongepowered.api.util.Tuple;
 import org.spongepowered.api.world.Chunk;
@@ -55,7 +64,6 @@ import valandur.webapi.cache.plugin.CachedPluginContainer;
 import valandur.webapi.cache.tileentity.CachedTileEntity;
 import valandur.webapi.cache.world.CachedChunk;
 import valandur.webapi.cache.world.CachedWorld;
-import valandur.webapi.serialize.SerializeService;
 import valandur.webapi.util.Timings;
 import valandur.webapi.util.Util;
 
@@ -70,8 +78,6 @@ import java.util.function.Predicate;
 public class CacheService implements ICacheService {
 
     private static final String configFileName = "cache.conf";
-
-    private SerializeService json;
 
     private List<String> censoredCommands = new ArrayList<>();
     private Map<String, Long> cacheDurations = new HashMap<>();
@@ -96,8 +102,6 @@ public class CacheService implements ICacheService {
 
 
     public void init() {
-        this.json = WebAPI.getSerializeService();
-
         Tuple<ConfigurationLoader, ConfigurationNode> tup = Util.loadWithDefaults(configFileName, "defaults/" + configFileName);
         ConfigurationNode config = tup.getSecond();
 
@@ -617,5 +621,44 @@ public class CacheService implements ICacheService {
                 throw new InternalServerErrorException(e.getMessage());
             }
         });
+    }
+
+    // Server events
+    @Listener(order = Order.POST)
+    public void onWorldLoad(LoadWorldEvent event) {
+        updateWorld(event.getTargetWorld());
+    }
+    @Listener(order = Order.POST)
+    public void onWorldUnload(UnloadWorldEvent event) {
+        updateWorld(event.getTargetWorld().getProperties());
+    }
+
+    @Listener(order = Order.POST)
+    public void onPlayerJoin(ClientConnectionEvent.Join event) {
+        updatePlayer(event.getTargetEntity());
+    }
+    @Listener(order = Order.POST)
+    public void onPlayerLeave(ClientConnectionEvent.Disconnect event) {
+        removePlayer(event.getTargetEntity().getUniqueId());
+    }
+
+    @Listener(order = Order.POST)
+    public void onUserKick(KickPlayerEvent event) {
+        removePlayer(event.getTargetEntity().getUniqueId());
+    }
+
+    @Listener(order = Order.POST)
+    public void onPlayerChat(MessageChannelEvent.Chat event, @First Player player) {
+        MessageChannel channel = event.getChannel().orElse(event.getOriginalChannel());
+        addChatMessage(player, channel.getMembers(), event.getMessage());
+    }
+    @Listener(order = Order.POST)
+    public void onMessage(MessageChannelEvent event) {
+        MessageChannel channel = event.getChannel().orElse(event.getOriginalChannel());
+        addMessage(channel.getMembers(), event.getMessage());
+    }
+    @Listener(order = Order.POST)
+    public void onCommand(SendCommandEvent event) {
+        addCommandCall(event);
     }
 }

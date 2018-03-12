@@ -7,24 +7,11 @@ import com.google.inject.Inject;
 import io.sentry.Sentry;
 import io.sentry.context.Context;
 import io.swagger.converter.ModelConverters;
-import io.swagger.jaxrs.config.BeanConfig;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
 import ninja.leaping.configurate.objectmapping.serialize.TypeSerializers;
 import org.bstats.sponge.Metrics;
-import org.eclipse.jetty.http.HttpVersion;
-import org.eclipse.jetty.rewrite.handler.RedirectPatternRule;
-import org.eclipse.jetty.rewrite.handler.RewriteHandler;
-import org.eclipse.jetty.server.*;
-import org.eclipse.jetty.server.handler.ContextHandler;
-import org.eclipse.jetty.server.handler.ContextHandlerCollection;
-import org.eclipse.jetty.servlet.ServletContextHandler;
-import org.eclipse.jetty.servlet.ServletHolder;
-import org.eclipse.jetty.util.MultiException;
 import org.eclipse.jetty.util.log.Log;
-import org.eclipse.jetty.util.ssl.SslContextFactory;
-import org.glassfish.jersey.server.ResourceConfig;
-import org.glassfish.jersey.servlet.ServletContainer;
 import org.slf4j.Logger;
 import org.spongepowered.api.Platform;
 import org.spongepowered.api.Platform.Component;
@@ -32,30 +19,15 @@ import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandManager;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.config.ConfigDir;
-import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.Order;
-import org.spongepowered.api.event.advancement.AdvancementEvent;
-import org.spongepowered.api.event.block.InteractBlockEvent;
-import org.spongepowered.api.event.command.SendCommandEvent;
-import org.spongepowered.api.event.entity.DestructEntityEvent;
-import org.spongepowered.api.event.entity.ExpireEntityEvent;
-import org.spongepowered.api.event.entity.SpawnEntityEvent;
-import org.spongepowered.api.event.entity.living.humanoid.player.KickPlayerEvent;
-import org.spongepowered.api.event.filter.cause.First;
 import org.spongepowered.api.event.game.GameReloadEvent;
 import org.spongepowered.api.event.game.state.*;
-import org.spongepowered.api.event.item.inventory.InteractInventoryEvent;
-import org.spongepowered.api.event.message.MessageChannelEvent;
-import org.spongepowered.api.event.network.ClientConnectionEvent;
-import org.spongepowered.api.event.user.BanUserEvent;
-import org.spongepowered.api.event.world.*;
 import org.spongepowered.api.plugin.Plugin;
 import org.spongepowered.api.plugin.PluginContainer;
 import org.spongepowered.api.scheduler.SpongeExecutorService;
 import org.spongepowered.api.text.Text;
-import org.spongepowered.api.text.channel.MessageChannel;
 import org.spongepowered.api.text.format.TextColors;
 import org.spongepowered.api.util.Tuple;
 import valandur.webapi.api.block.IBlockService;
@@ -71,13 +43,8 @@ import valandur.webapi.block.BlockOperation;
 import valandur.webapi.block.BlockOperationStatusChangeEvent;
 import valandur.webapi.block.BlockService;
 import valandur.webapi.cache.CacheService;
-import valandur.webapi.cache.command.CachedCommandCall;
-import valandur.webapi.cache.message.CachedChatMessage;
-import valandur.webapi.cache.message.CachedMessage;
 import valandur.webapi.command.CommandRegistry;
 import valandur.webapi.command.CommandSource;
-import valandur.webapi.handler.AssetHandler;
-import valandur.webapi.handler.ErrorHandler;
 import valandur.webapi.hook.WebHook;
 import valandur.webapi.hook.WebHookSerializer;
 import valandur.webapi.hook.WebHookService;
@@ -92,7 +59,6 @@ import valandur.webapi.integration.webbooks.WebBookServlet;
 import valandur.webapi.message.InteractiveMessageService;
 import valandur.webapi.security.AuthenticationProvider;
 import valandur.webapi.security.PermissionService;
-import valandur.webapi.serialize.SerializationFeature;
 import valandur.webapi.serialize.SerializeService;
 import valandur.webapi.server.ServerService;
 import valandur.webapi.servlet.*;
@@ -116,7 +82,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.net.SocketException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Files;
@@ -166,13 +131,7 @@ public class WebAPI {
     private static String spongeImpl;
     private static String pluginList;
 
-    private static String serverHost;
-    private static Integer serverPortHttp;
-    private static Integer serverPortHttps;
-    private String keyStoreLocation;
-    private String keyStorePassword;
-    private String keyStoreMgrPassword;
-    private Server server;
+    private static WebServer server;
 
     @Inject
     private Metrics metrics;
@@ -253,6 +212,7 @@ public class WebAPI {
 
         // Add our own jar to the system classloader classpath,
         // because some external libraries don't work otherwise.
+        // TODO: Improve adding our jar to system classloader classpath
         try {
             CodeSource src = WebAPI.class.getProtectionDomain().getCodeSource();
             if (src == null) {
@@ -318,7 +278,6 @@ public class WebAPI {
         this.servletService = new ServletService();
         this.webHookService = new WebHookService();
 
-
         // Register services
         Sponge.getServiceManager().setProvider(this, IBlockService.class, blockService);
         Sponge.getServiceManager().setProvider(this, ICacheService.class, cacheService);
@@ -365,7 +324,6 @@ public class WebAPI {
         servletService.registerServlet(TileEntityServlet.class);
         servletService.registerServlet(UserServlet.class);
         servletService.registerServlet(WorldServlet.class);
-
 
         // Other plugin integrations
         try {
@@ -432,25 +390,24 @@ public class WebAPI {
         Timings.STARTUP.stopTiming();
     }
 
+    // Re-useable setup function, for starting and reloading
     private void init(Player triggeringPlayer) {
         Timings.STARTUP.startTiming();
 
         logger.info("Loading configuration...");
 
-        Tuple<ConfigurationLoader, ConfigurationNode> tup = Util.loadWithDefaults("config.conf", "defaults/config.conf");
+        Tuple<ConfigurationLoader, ConfigurationNode> tup =
+                Util.loadWithDefaults("config.conf", "defaults/config.conf");
         ConfigurationNode config = tup.getSecond();
 
         // Save important config values to variables
         devMode = config.getNode("devMode").getBoolean();
         reportErrors = config.getNode("reportErrors").getBoolean();
-        serverHost = config.getNode("host").getString();
-        serverPortHttp = config.getNode("http").getInt(-1);
-        serverPortHttps = config.getNode("https").getInt(-1);
         adminPanelEnabled = config.getNode("adminPanel").getBoolean();
-        keyStoreLocation = config.getNode("customKeyStore").getString();
-        keyStorePassword = config.getNode("customKeyStorePassword").getString();
-        keyStoreMgrPassword = config.getNode("customKeyStoreManagerPassword").getString();
         CmdServlet.CMD_WAIT_TIME = config.getNode("cmdWaitTime").getInt();
+
+        // Create our webserver
+        server = new WebServer(logger, config);
 
         if (devMode) {
             logger.warn("Web-API IS RUNNING IN DEV MODE. USING NON-SHADOWED REFERENCES! ERROR REPORTING IS OFF!");
@@ -486,211 +443,6 @@ public class WebAPI {
         }
 
         Timings.STARTUP.stopTiming();
-    }
-    private void startWebServer(Player player) {
-        // Start web server
-        logger.info("Starting Web Server...");
-
-        asyncExecutor.execute(() -> {
-            try {
-                server = new Server();
-
-                // HTTP config
-                HttpConfiguration httpConfig = new HttpConfiguration();
-                httpConfig.setOutputBufferSize(32768);
-
-                String baseUri = null;
-
-                // HTTP
-                if (serverPortHttp >= 0) {
-                    if (serverPortHttp < 1024) {
-                        logger.warn("You are using an HTTP port < 1024 which is not recommended! \n" +
-                                "This might cause errors when not running the server as root/admin. \n" +
-                                "Running the server as root/admin is not recommended. " +
-                                "Please use a port above 1024 for HTTP."
-                        );
-                    }
-                    ServerConnector httpConn = new ServerConnector(server, new HttpConnectionFactory(httpConfig));
-                    httpConn.setHost(serverHost);
-                    httpConn.setPort(serverPortHttp);
-                    httpConn.setIdleTimeout(30000);
-                    server.addConnector(httpConn);
-
-                    baseUri = "http://" + serverHost + ":" + serverPortHttp;
-                }
-
-                // HTTPS
-                if (serverPortHttps >= 0) {
-                    if (serverPortHttps < 1024) {
-                        logger.warn("You are using an HTTPS port < 1024 which is not recommended! \n" +
-                                "This might cause errors when not running the server as root/admin. \n" +
-                                "Running the server as root/admin is not recommended. " +
-                                "Please use a port above 1024 for HTTPS."
-                        );
-                    }
-
-                    // Update http config
-                    httpConfig.setSecureScheme("https");
-                    httpConfig.setSecurePort(serverPortHttps);
-
-                    String loc = keyStoreLocation;
-                    String pw = keyStorePassword;
-                    String mgrPw = keyStoreMgrPassword;
-                    if (loc == null || loc.isEmpty()) {
-                        loc = Sponge.getAssetManager().getAsset(WebAPI.getInstance(), "keystore.jks")
-                                .map(a -> a.getUrl().toString()).orElse("");
-                        pw = "mX4z%&uJ2E6VN#5f";
-                        mgrPw = "mX4z%&uJ2E6VN#5f";
-                    }
-
-                    // SSL Factory
-                    SslContextFactory sslFactory = new SslContextFactory();
-                    sslFactory.setKeyStorePath(loc);
-                    sslFactory.setKeyStorePassword(pw);
-                    sslFactory.setKeyManagerPassword(mgrPw);
-
-                    // HTTPS config
-                    HttpConfiguration httpsConfig = new HttpConfiguration(httpConfig);
-                    SecureRequestCustomizer src = new SecureRequestCustomizer();
-                    src.setStsMaxAge(2000);
-                    src.setStsIncludeSubDomains(true);
-                    httpsConfig.addCustomizer(src);
-
-
-                    ServerConnector httpsConn = new ServerConnector(server,
-                            new SslConnectionFactory(sslFactory, HttpVersion.HTTP_1_1.asString()),
-                            new HttpConnectionFactory(httpsConfig)
-                    );
-                    httpsConn.setHost(serverHost);
-                    httpsConn.setPort(serverPortHttps);
-                    httpsConn.setIdleTimeout(30000);
-                    server.addConnector(httpsConn);
-
-                    baseUri = "https://" + serverHost + ":" + serverPortHttps;
-                }
-
-                if (baseUri == null) {
-                    logger.error("You have disabled both HTTP and HTTPS - The Web-API will be unreachable!");
-                    baseUri = ""; // for swagger
-                }
-
-                // Collection of all handlers
-                ContextHandlerCollection mainContext = new ContextHandlerCollection();
-
-                // Asset handlers
-                mainContext.addHandler(newContext("/docs", new AssetHandler("pages/redoc.html")));
-
-                if (adminPanelEnabled) {
-                    // Rewrite handler
-                    RewriteHandler rewrite = new RewriteHandler();
-                    rewrite.setRewriteRequestURI(true);
-                    rewrite.setRewritePathInfo(true);
-
-                    RedirectPatternRule redirect = new RedirectPatternRule();
-                    redirect.setPattern("/*");
-                    redirect.setLocation("/admin");
-                    rewrite.addRule(redirect);
-                    mainContext.addHandler(newContext("/", rewrite));
-
-                    mainContext.addHandler(newContext("/admin", new AssetHandler("admin")));
-                }
-
-                // Main servlet context
-                ServletContextHandler servletsContext = new ServletContextHandler();
-                servletsContext.setContextPath(Constants.BASE_PATH);
-
-                // Resource config for jersey servlet
-                ResourceConfig config = new ResourceConfig();
-                config.packages(
-                        "io.swagger.jaxrs.listing",
-                        "valandur.webapi.handler",
-                        "valandur.webapi.security",
-                        "valandur.webapi.serialize",
-                        "valandur.webapi.user"
-                        //"io.swagger.v3.jaxrs2.integration.resources"                      // This if for Swagger 3.0
-                );
-                config.property("jersey.config.server.wadl.disableWadl", true);
-
-                // Register all servlets. We use this instead of package scanning because we don't want the
-                // integrated servlets to load unless their plugin is present. Also this gives us more control/info
-                // over which servlets/endpoints are loaded.
-                StringBuilder swaggerPath = new StringBuilder();
-                for (Class<? extends BaseServlet> servletClass : servletService.getRegisteredServlets().values()) {
-                    config.register(servletClass);
-                    swaggerPath.append(",").append(servletClass.getPackage().getName());
-                }
-
-                // Register serializer
-                config.register(SerializationFeature.class);
-
-                // Jersey servlet
-                ServletHolder jerseyServlet = new ServletHolder(new ServletContainer(config));
-                jerseyServlet.setInitOrder(1);
-                // jerseyServlet.setInitParameter("openApi.configuration.location", assets/webapi/swagger/config.json");                                    // This is for Swagger 3.0
-                servletsContext.addServlet(jerseyServlet, "/*");
-
-                // Register swagger as bean
-                // TODO: We can't set scheme and host yet because Swagger 2.0 doesn't support multiple different ones
-                BeanConfig beanConfig = new BeanConfig();
-                beanConfig.setBasePath(Constants.BASE_PATH);
-                beanConfig.setResourcePackage("valandur.webapi.swagger" + swaggerPath);
-                beanConfig.setScan(true);
-                beanConfig.setPrettyPrint(true);
-                servletsContext.addBean(beanConfig);
-
-                // Add servlets to main context
-                mainContext.addHandler(servletsContext);
-
-                // Add main context to server
-                server.setHandler(mainContext);
-
-                // Add error handler to jetty (will also be picked up by jersey
-                ErrorHandler errHandler = new ErrorHandler();
-                server.setErrorHandler(errHandler);
-                server.addBean(errHandler);
-
-                server.start();
-
-                if (adminPanelEnabled)
-                    logger.info("AdminPanel: " + baseUri + "/admin");
-                logger.info("API Docs: " + baseUri + "/docs");
-            } catch (SocketException e) {
-                logger.error("Web-API webserver could not start, probably because one of the ports needed for HTTP " +
-                        "and/or HTTPS are in use or not accessible (ports below 1024 are protected)");
-            } catch (MultiException e) {
-                e.getThrowables().forEach(t -> {
-                    if (t instanceof SocketException) {
-                        logger.error("Web-API webserver could not start, probably because one of the ports needed for HTTP " +
-                                "and/or HTTPS are in use or not accessible (ports below 1024 are protected)");
-                    } else {
-                        t.printStackTrace();
-                        WebAPI.sentryCapture(t);
-                    }
-                });
-            } catch (Exception e) {
-                e.printStackTrace();
-                WebAPI.sentryCapture(e);
-            }
-
-            if (player != null) {
-                player.sendMessage(Text.builder()
-                        .color(TextColors.AQUA)
-                        .append(Text.of("[" + Constants.NAME + "] The web server has been restarted!"))
-                        .toText()
-                );
-            }
-        });
-    }
-    private void stopWebServer() {
-        if (server != null) {
-            try {
-                server.stop();
-                server = null;
-            } catch (Exception e) {
-                e.printStackTrace();
-                if (WebAPI.reportErrors()) WebAPI.sentryCapture(e);
-            }
-        }
     }
 
     private void checkForUpdates() {
@@ -762,17 +514,10 @@ public class WebAPI {
         });
     }
 
-    private ContextHandler newContext(String path, Handler handler) {
-        ContextHandler context = new ContextHandler();
-        context.setContextPath(path);
-        context.setHandler(handler);
-        return context;
-    }
-
     // Event listeners
     @Listener
     public void onServerStart(GameStartedServerEvent event) {
-        startWebServer(null);
+        server.start(null);
 
         checkForUpdates();
 
@@ -790,12 +535,6 @@ public class WebAPI {
         }));
         metrics.addCustomChart(new Metrics.SimplePie("report_errors", () -> reportErrors ? "Yes" : "No"));
         metrics.addCustomChart(new Metrics.SimplePie("admin_panel", () -> adminPanelEnabled ? "Yes" : "No"));
-        metrics.addCustomChart(new Metrics.SimpleBarChart("protocols", () -> {
-            Map<String, Integer> map = new HashMap<>();
-            map.put("HTTP", serverPortHttp >= 0 ? 1 : 0);
-            map.put("HTTPS", serverPortHttps >= 0 ? 1 : 0);
-            return map;
-        }));
         metrics.addCustomChart(new Metrics.SimpleBarChart("servlets", () -> {
             Map<String, Integer> map = new HashMap<>();
             Collection<Class<? extends BaseServlet>> servlets = servletService.getRegisteredServlets().values();
@@ -804,14 +543,10 @@ public class WebAPI {
             }
             return map;
         }));
-
-        webHookService.notifyHooks(WebHookService.WebHookType.SERVER_START, event);
     }
     @Listener
     public void onServerStop(GameStoppedServerEvent event) {
-        webHookService.notifyHooks(WebHookService.WebHookType.SERVER_STOP, event);
-
-        stopWebServer();
+        server.stop();
     }
     @Listener
     public void onReload(GameReloadEvent event) {
@@ -822,121 +557,15 @@ public class WebAPI {
         cacheService.updatePlugins();
         cacheService.updateCommands();
 
-        stopWebServer();
+        server.stop();
 
         init(p.orElse(null));
 
-        startWebServer(p.orElse(null));
+        server.start(p.orElse(null));
 
         checkForUpdates();
 
         logger.info("Reloaded " + Constants.NAME);
-    }
-
-    @Listener(order = Order.POST)
-    public void onWorldLoad(LoadWorldEvent event) {
-        cacheService.updateWorld(event.getTargetWorld());
-
-        webHookService.notifyHooks(WebHookService.WebHookType.WORLD_LOAD, event);
-    }
-    @Listener(order = Order.POST)
-    public void onWorldUnload(UnloadWorldEvent event) {
-        cacheService.updateWorld(event.getTargetWorld().getProperties());
-
-        webHookService.notifyHooks(WebHookService.WebHookType.WORLD_UNLOAD, event);
-    }
-    @Listener(order = Order.POST)
-    public void onWorldSave(SaveWorldEvent event) {
-        webHookService.notifyHooks(WebHookService.WebHookType.WORLD_SAVE, event);
-    }
-
-    @Listener(order = Order.POST)
-    public void onPlayerJoin(ClientConnectionEvent.Join event) {
-        cacheService.updatePlayer(event.getTargetEntity());
-
-        webHookService.notifyHooks(WebHookService.WebHookType.PLAYER_JOIN, event);
-    }
-    @Listener(order = Order.POST)
-    public void onPlayerLeave(ClientConnectionEvent.Disconnect event) {
-        // Send the message first because the player is removed from cache afterwards
-        webHookService.notifyHooks(WebHookService.WebHookType.PLAYER_LEAVE, event);
-
-        cacheService.removePlayer(event.getTargetEntity().getUniqueId());
-    }
-
-    @Listener(order = Order.POST)
-    public void onUserKick(KickPlayerEvent event) {
-        webHookService.notifyHooks(WebHookService.WebHookType.PLAYER_KICK, event);
-    }
-    @Listener(order = Order.POST)
-    public void onUserBan(BanUserEvent event) {
-        webHookService.notifyHooks(WebHookService.WebHookType.PLAYER_BAN, event);
-    }
-
-    @Listener(order = Order.POST)
-    public void onEntitySpawn(SpawnEntityEvent event) {
-        webHookService.notifyHooks(WebHookService.WebHookType.ENTITY_SPAWN, event);
-    }
-    @Listener(order = Order.POST)
-    public void onEntityDespawn(DestructEntityEvent event) {
-        Entity ent = event.getTargetEntity();
-        if (ent instanceof Player) {
-            webHookService.notifyHooks(WebHookService.WebHookType.PLAYER_DEATH, event);
-        } else {
-            webHookService.notifyHooks(WebHookService.WebHookType.ENTITY_DESPAWN, event);
-        }
-    }
-    @Listener(order = Order.POST)
-    public void onEntityExpire(ExpireEntityEvent event) {
-        webHookService.notifyHooks(WebHookService.WebHookType.ENTITY_EXPIRE, event);
-    }
-
-    @Listener(order = Order.POST)
-    public void onPlayerChat(MessageChannelEvent.Chat event, @First Player player) {
-        MessageChannel channel = event.getChannel().orElse(event.getOriginalChannel());
-        CachedChatMessage msg = cacheService.addChatMessage(player, channel.getMembers(), event.getMessage());
-        webHookService.notifyHooks(WebHookService.WebHookType.CHAT, msg);
-    }
-    @Listener(order = Order.POST)
-    public void onMessage(MessageChannelEvent event) {
-        MessageChannel channel = event.getChannel().orElse(event.getOriginalChannel());
-        CachedMessage msg = cacheService.addMessage(channel.getMembers(), event.getMessage());
-        webHookService.notifyHooks(WebHookService.WebHookType.CHAT, msg);
-    }
-
-    @Listener(order = Order.POST)
-    public void onInteractBlock(InteractBlockEvent event) {
-        webHookService.notifyHooks(WebHookService.WebHookType.INTERACT_BLOCK, event);
-    }
-    @Listener(order = Order.POST)
-    public void onInteractInventory(InteractInventoryEvent.Open event) {
-        webHookService.notifyHooks(WebHookService.WebHookType.INVENTORY_OPEN, event);
-    }
-    @Listener(order = Order.POST)
-    public void onInteractInventory(InteractInventoryEvent.Close event) {
-        webHookService.notifyHooks(WebHookService.WebHookType.INVENTORY_CLOSE, event);
-    }
-
-    @Listener(order = Order.POST)
-    public void onPlayerAdvancement(AdvancementEvent.Grant event) {
-        Player player = event.getTargetEntity();
-        webHookService.notifyHooks(WebHookService.WebHookType.ADVANCEMENT, event);
-    }
-
-    @Listener(order = Order.POST)
-    public void onGenerateChunk(GenerateChunkEvent event) {
-        webHookService.notifyHooks(WebHookService.WebHookType.GENERATE_CHUNK, event);
-    }
-
-    @Listener(order = Order.POST)
-    public void onExplosion(ExplosionEvent event) {
-        webHookService.notifyHooks(WebHookService.WebHookType.EXPLOSION, event);
-    }
-
-    @Listener(order = Order.POST)
-    public void onCommand(SendCommandEvent event) {
-        CachedCommandCall call = cacheService.addCommandCall(event);
-        webHookService.notifyHooks(WebHookService.WebHookType.COMMAND, call);
     }
 
     @Listener(order = Order.POST)
@@ -963,8 +592,6 @@ public class WebAPI {
                 logger.info("Block op " + on.getUUID() + " started");
                 break;
         }
-
-        webHookService.notifyHooks(WebHookService.WebHookType.BLOCK_OPERATION_STATUS, event);
     }
 
     // Execute a command
@@ -1043,9 +670,9 @@ public class WebAPI {
         context.addExtra("memory_total", Runtime.getRuntime().totalMemory());
         context.addExtra("memory_free", Runtime.getRuntime().freeMemory());
 
-        context.addExtra("server_host", serverHost);
-        context.addExtra("server_port_http", serverPortHttp);
-        context.addExtra("server_port_https", serverPortHttps);
+        context.addExtra("server_host", server.getHost());
+        context.addExtra("server_port_http", server.getHttpPort());
+        context.addExtra("server_port_https", server.getHttpsPort());
 
         context.addExtra("sponge_api", spongeApi);
         context.addExtra("sponge_game", spongeGame);

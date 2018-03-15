@@ -204,6 +204,8 @@ public class SwaggerDefinition implements ReaderListener {
             WebAPI.sentryCapture(e);
         }
 
+        Set<String> oldModels = swagger.getDefinitions().keySet();
+
         // Generate types for additional data
         Map<String, Property> props = new LinkedHashMap<>();
         // Collect all additional data from our serializer
@@ -221,7 +223,10 @@ public class SwaggerDefinition implements ReaderListener {
 
             // Read the view as a model, and add all the read models to the definition
             for (Map.Entry<String, Model> modelEntry : context.getDefinedModels().entrySet()) {
-                // TODO: We overwrite existing definitions here, maybe fix that
+                if (oldModels.contains(modelEntry.getKey())) {
+                    continue;
+                }
+
                 swagger.addDefinition(modelEntry.getKey(), modelEntry.getValue());
             }
 
@@ -244,7 +249,10 @@ public class SwaggerDefinition implements ReaderListener {
 
             // Read the view as a model, and add all the read models to the definition
             for (Map.Entry<String, Model> modelEntry : context.getDefinedModels().entrySet()) {
-                // TODO: We overwrite existing definitions here, maybe fix that
+                if (oldModels.contains(modelEntry.getKey())) {
+                    continue;
+                }
+
                 swagger.addDefinition(modelEntry.getKey(), modelEntry.getValue());
             }
 

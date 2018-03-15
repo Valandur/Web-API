@@ -9,8 +9,6 @@ import valandur.webapi.api.cache.message.ICachedChatMessage;
 import valandur.webapi.api.cache.player.ICachedPlayer;
 
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
 
 public class CachedChatMessage extends CachedMessage implements ICachedChatMessage {
 

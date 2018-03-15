@@ -2,8 +2,6 @@ package valandur.webapi.api.cache.message;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import org.spongepowered.api.text.Text;
-import valandur.webapi.api.cache.ICachedObject;
 import valandur.webapi.api.cache.player.ICachedPlayer;
 
 @ApiModel(value = "ChatMessage", parent = ICachedMessage.class)

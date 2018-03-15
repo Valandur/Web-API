@@ -3,14 +3,7 @@ package valandur.webapi.swagger;
 import io.swagger.jersey.SwaggerJersey2Jaxrs;
 import io.swagger.models.Operation;
 import io.swagger.models.RefResponse;
-import io.swagger.models.Response;
-import io.swagger.models.parameters.Parameter;
-import io.swagger.models.parameters.QueryParameter;
 import io.swagger.models.parameters.RefParameter;
-import io.swagger.models.properties.IntegerProperty;
-import io.swagger.models.properties.ObjectProperty;
-import io.swagger.models.properties.Property;
-import io.swagger.models.properties.StringProperty;
 import valandur.webapi.api.exceptions.NotImplementedException;
 import valandur.webapi.api.servlet.Permission;
 
@@ -19,7 +12,6 @@ import javax.ws.rs.NotFoundException;
 import javax.ws.rs.Path;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 
 public class SwaggerExtension extends SwaggerJersey2Jaxrs {

@@ -288,6 +288,10 @@ public class WebAPI {
         Sponge.getServiceManager().setProvider(this, IServletService.class, servletService);
         Sponge.getServiceManager().setProvider(this, IWebHookService.class, webHookService);
 
+        // Register events of services
+        Sponge.getEventManager().registerListeners(this, cacheService);
+        Sponge.getEventManager().registerListeners(this, webHookService);
+
         // Swagger setup stuff
         ModelConverters.getInstance().addConverter(new SwaggerModelConverter());
 

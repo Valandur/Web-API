@@ -32,7 +32,7 @@ public class ItemCrateReward extends CrateRewardObject {
     @Override
     public void saveToNode(ConfigurationNode node) {
         super.saveToNode(node);
-        node.getNode("overrideItem", "id").setValue(item.getItem().getId());
+        node.getNode("overrideItem", "id").setValue(item.getType().getId());
         node.getNode("overrideItem", "count").setValue(item.getQuantity());
     }
 }

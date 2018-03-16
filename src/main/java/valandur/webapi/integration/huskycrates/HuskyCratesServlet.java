@@ -202,7 +202,7 @@ public class HuskyCratesServlet extends BaseServlet {
                     ConfigurationNode rewardNode = itemsNode.getAppendedNode();
                     rewardNode.getNode("name").setValue(reward.getName());
                     if (reward.getDisplayItem() != null)
-                        rewardNode.getNode("id").setValue(reward.getDisplayItem().getItem().getId());
+                        rewardNode.getNode("id").setValue(reward.getDisplayItem().getType().getId());
                     else
                         rewardNode.getNode("id").setValue("minecraft:dirt");
                     rewardNode.getNode("count").setValue(1);

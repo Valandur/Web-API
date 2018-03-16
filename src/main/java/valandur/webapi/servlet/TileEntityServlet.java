@@ -1,5 +1,6 @@
 package valandur.webapi.servlet;
 
+import com.flowpowered.math.vector.Vector3i;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -34,15 +35,13 @@ public class TileEntityServlet extends BaseServlet {
     public Collection<ICachedTileEntity> listTileEntities(
             @QueryParam("world") @ApiParam("The world to filter tile entities by") ICachedWorld world,
             @QueryParam("type") @ApiParam("The type if of tile entities to filter by") String typeId,
+            @QueryParam("min") @ApiParam("The minimum coordinates at which the tile entity must be, min=x|y|z") Vector3i min,
+            @QueryParam("max") @ApiParam("The maximum coordinates at which the tile entity must be, max=x|y|z") Vector3i max,
             @QueryParam("limit") @ApiParam("The maximum amount of tile entities returned") int limit) {
 
         Predicate<TileEntity> filter = te -> typeId == null || te.getType().getId().equalsIgnoreCase(typeId);
 
-        if (world != null) {
-            return cacheService.getTileEntities(world, filter, limit);
-        }
-
-        return cacheService.getTileEntities(filter, limit);
+        return cacheService.getTileEntities(world, min, max, filter, limit);
     }
 
     @GET

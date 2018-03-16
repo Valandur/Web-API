@@ -1,7 +1,6 @@
 package valandur.webapi.message;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.serializer.TextSerializers;
 import valandur.webapi.api.cache.CachedObject;

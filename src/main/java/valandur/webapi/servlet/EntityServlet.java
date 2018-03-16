@@ -1,6 +1,7 @@
 package valandur.webapi.servlet;
 
 import com.flowpowered.math.vector.Vector3d;
+import com.flowpowered.math.vector.Vector3i;
 import io.swagger.annotations.*;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.EntityType;
@@ -47,14 +48,12 @@ public class EntityServlet extends BaseServlet {
     public Collection<ICachedEntity> listEntities(
             @QueryParam("world") @ApiParam("The world to filter the entities by") ICachedWorld world,
             @QueryParam("type") @ApiParam("The type id of the entities to filter by") String typeId,
+            @QueryParam("min") @ApiParam("The minimum coordinates at which the entity must be, min=x|y|z") Vector3i min,
+            @QueryParam("max") @ApiParam("The maximum coordinates at which the entity must be, max=x|y|z") Vector3i max,
             @QueryParam("limit") @ApiParam("The maximum amount of entities returned") int limit) {
         Predicate<Entity> filter = e -> typeId == null || e.getType().getId().equalsIgnoreCase(typeId);
 
-        if (world != null) {
-            return cacheService.getEntities(world, filter, limit);
-        }
-
-        return cacheService.getEntities(filter, limit);
+        return cacheService.getEntities(world, min, max, filter, limit);
     }
 
     @GET

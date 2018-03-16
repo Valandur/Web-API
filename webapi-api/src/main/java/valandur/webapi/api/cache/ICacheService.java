@@ -1,5 +1,6 @@
 package valandur.webapi.api.cache;
 
+import com.flowpowered.math.vector.Vector3i;
 import org.spongepowered.api.block.tileentity.TileEntity;
 import org.spongepowered.api.command.CommandMapping;
 import org.spongepowered.api.entity.Entity;
@@ -180,21 +181,16 @@ public interface ICacheService {
     ICachedPlayerFull removePlayer(UUID uuid);
 
     /**
-     * Gets a collection of all the entities on the server.
-     * @param predicate The predicate to filter entities by.
-     * @param limit The maximum amount of entities to return.
-     * @return All the entities on the server.
-     */
-    Collection<ICachedEntity> getEntities(Predicate<Entity> predicate, int limit);
-
-    /**
      * Gets a collection of all the entities in the specified world.
      * @param world The world for which all entities are retrieved.
+     * @param min The minimum coordinates at which to get entities.
+     * @param max The maximum coordinates at which to get entities.
      * @param predicate The predicate to filter entities by.
      * @param limit The maximum amount of entities to return.
      * @return All the entities in the specified world.
      */
-    Collection<ICachedEntity> getEntities(ICachedWorld world, Predicate<Entity> predicate, int limit);
+    Collection<ICachedEntity> getEntities(ICachedWorld world, Vector3i min, Vector3i max,
+                                          Predicate<Entity> predicate, int limit);
 
     /**
      * Gets a specific entity by UUID.
@@ -262,21 +258,16 @@ public interface ICacheService {
     ICachedCommand updateCommand(CommandMapping command);
 
     /**
-     * Gets a collection of all the tile entities on the server.
-     * @param predicate The predicate to filter tile entities by.
-     * @param limit The maximum amount of tile entities to return.
-     * @return A list of all tile entities on the server.
-     */
-    Collection<ICachedTileEntity> getTileEntities(Predicate<TileEntity> predicate, int limit);
-
-    /**
      * Gets a collection of all the tile entities in the specified world.
      * @param world The world for which all tile entities are retrieved.
+     * @param min The minimum coordinates at which to get tile entities.
+     * @param max The maximum coordinates at which to get tile entities.
      * @param predicate The predicate to filter tile entities by.
      * @param limit The maximum amount of tile entities to return.
      * @return A list of all the tile entities in the specified world.
      */
-    Collection<ICachedTileEntity> getTileEntities(ICachedWorld world, Predicate<TileEntity> predicate, int limit);
+    Collection<ICachedTileEntity> getTileEntities(ICachedWorld world, Vector3i min, Vector3i max,
+                                                  Predicate<TileEntity> predicate, int limit);
 
     /**
      * Tries to get a tile entity at the specified location.

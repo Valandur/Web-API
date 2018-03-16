@@ -1,5 +1,6 @@
 package valandur.webapi.cache;
 
+import com.flowpowered.math.vector.Vector3i;
 import com.google.common.collect.Lists;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
@@ -34,6 +35,7 @@ import org.spongepowered.api.util.Tuple;
 import org.spongepowered.api.world.Chunk;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
+import org.spongepowered.api.world.extent.Extent;
 import org.spongepowered.api.world.storage.WorldProperties;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.cache.CachedObject;
@@ -74,6 +76,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 public class CacheService implements ICacheService {
 
@@ -379,50 +382,43 @@ public class CacheService implements ICacheService {
     }
 
     @Override
-    public Collection<ICachedEntity> getEntities(Predicate<Entity> predicate, int limit) {
+    public Collection<ICachedEntity> getEntities(ICachedWorld world, Vector3i min, Vector3i max,
+                                                 Predicate<Entity> predicate, int limit) {
         return WebAPI.runOnMain(() -> {
-            Collection<ICachedEntity> entities = new LinkedList<>();
+            Stream<Extent> extents;
+            if (world == null)
+                extents = Sponge.getServer().getWorlds().stream().map(w -> (Extent)w);
+            else {
+                Optional<?> w = world.getLive();
+                if (!w.isPresent())
+                    throw new InternalServerErrorException("Could not get live world");
+                extents = Stream.of((Extent)w.get());
+            }
+
+            if (min != null) {
+                extents = extents.map(e -> e.getExtentView(min, e.getBlockMax()));
+            }
+            if (max != null) {
+                extents = extents.map(e -> e.getExtentView(e.getBlockMin(), max));
+            }
 
             int i = 0;
-            Collection<World> worlds = Sponge.getServer().getWorlds();
-            for (World world : worlds) {
-                Collection<Entity> ents = world.getEntities(predicate);
+            Collection<ICachedEntity> allEnts = new LinkedList<>();
+            Iterator<Extent> iter = extents.iterator();
+            while (iter.hasNext()) {
+                Extent ext = iter.next();
+                Collection<Entity> ents = ext.getEntities(predicate);
                 for (Entity e : ents) {
                     if (e.isRemoved()) continue;
-                    entities.add(new CachedEntity(e));
+                    allEnts.add(new CachedEntity(e));
 
                     i++;
                     if (limit > 0 && i >= limit)
                         break;
                 }
-
-                if (limit > 0 && i >= limit)
-                    break;
             }
 
-            return entities;
-        });
-    }
-    @Override
-    public Collection<ICachedEntity> getEntities(ICachedWorld world, Predicate<Entity> predicate, int limit) {
-        return WebAPI.runOnMain(() -> {
-            Optional<?> w = world.getLive();
-            if (!w.isPresent())
-                throw new InternalServerErrorException("Could not get live world");
-
-            int i = 0;
-            Collection<ICachedEntity> entities = new LinkedList<>();
-            Collection<Entity> ents = ((World)w.get()).getEntities(predicate);
-            for (Entity e : ents) {
-                if (e.isRemoved()) continue;
-                entities.add(new CachedEntity(e));
-
-                i++;
-                if (limit > 0 && i >= limit)
-                    break;
-            }
-
-            return entities;
+            return allEnts;
         });
     }
     @Override
@@ -510,50 +506,43 @@ public class CacheService implements ICacheService {
     }
 
     @Override
-    public Collection<ICachedTileEntity> getTileEntities(Predicate<TileEntity> predicate, int limit) {
+    public Collection<ICachedTileEntity> getTileEntities(ICachedWorld world, Vector3i min, Vector3i max,
+                                                         Predicate<TileEntity> predicate, int limit) {
         return WebAPI.runOnMain(() -> {
-            Collection<ICachedTileEntity> tes = new LinkedList<>();
+            Stream<Extent> extents;
+            if (world == null)
+                extents = Sponge.getServer().getWorlds().stream().map(w -> (Extent)w);
+            else {
+                Optional<?> w = world.getLive();
+                if (!w.isPresent())
+                    throw new InternalServerErrorException("Could not get live world");
+                extents = Stream.of((Extent)w.get());
+            }
+
+            if (min != null) {
+                extents = extents.map(e -> e.getExtentView(min, e.getBlockMax()));
+            }
+            if (max != null) {
+                extents = extents.map(e -> e.getExtentView(e.getBlockMin(), max));
+            }
 
             int i = 0;
-            Collection<World> worlds = Sponge.getServer().getWorlds();
-            for (World world : worlds) {
-                Collection<TileEntity> ents = world.getTileEntities(predicate);
-                for (TileEntity te : ents) {
+            Collection<ICachedTileEntity> allTes = new LinkedList<>();
+            Iterator<Extent> iter = extents.iterator();
+            while (iter.hasNext()) {
+                Extent ext = iter.next();
+                Collection<TileEntity> tes = ext.getTileEntities(predicate);
+                for (TileEntity te : tes) {
                     if (!te.isValid()) continue;
-                    tes.add(new CachedTileEntity(te));
+                    allTes.add(new CachedTileEntity(te));
 
                     i++;
                     if (limit > 0 && i >= limit)
                         break;
                 }
-
-                if (limit > 0 && i >= limit)
-                    break;
             }
 
-            return tes;
-        });
-    }
-    @Override
-    public Collection<ICachedTileEntity> getTileEntities(ICachedWorld world, Predicate<TileEntity> predicate, int limit) {
-        return WebAPI.runOnMain(() -> {
-            Optional<?> w = world.getLive();
-            if (!w.isPresent())
-                throw new InternalServerErrorException("Could not get live world");
-
-            int i = 0;
-            Collection<ICachedTileEntity> entities = new LinkedList<>();
-            Collection<TileEntity> ents = ((World)w.get()).getTileEntities(predicate);
-            for (TileEntity te : ents) {
-                if (!te.isValid()) continue;
-                entities.add(new CachedTileEntity(te));
-
-                i++;
-                if (limit > 0 && i >= limit)
-                    break;
-            }
-
-            return entities;
+            return allTes;
         });
     }
     @Override

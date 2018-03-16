@@ -31,18 +31,19 @@ public interface IInteractiveMessage extends ICachedObject<IInteractiveMessage> 
     String getId();
 
     /**
-     * The target of the message, usually a player uuid.
-     * @return The uuid of the target.
+     * The target of the message, usually a player uuid. Can be set to "server" to send to all online players.
+     * @return The uuid of the target, or "server" to send to all online players.
      */
-    @ApiModelProperty(value = "The target of the message, usually this is a player UUID", required = true)
-    UUID getTarget();
+    @ApiModelProperty(value = "The target of the message, usually this is a player UUID. " +
+            "Can be set to \"server\" to send to all online players.", required = true)
+    String getTarget();
 
     /**
      * Gets all the targets this message is sent to, in case it is sent to multiple players.
-     * @return The list of target uuids.
+     * @return The list of target UUIDs.
      */
     @ApiModelProperty("A list of targets that will receive the message. Usually a list of player UUIDs")
-    List<UUID> getTargets();
+    List<String> getTargets();
 
     /**
      * The message that is sent.

@@ -12,6 +12,7 @@ import valandur.webapi.api.message.IInteractiveMessageOption;
 import valandur.webapi.api.message.IInteractiveMessageService;
 import valandur.webapi.hook.WebHookService;
 
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.InternalServerErrorException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -71,10 +72,18 @@ public class InteractiveMessageService implements IInteractiveMessageService {
 
         List<ICachedPlayer> cachedPlayers = new ArrayList<>();
         if (msg.getTarget() != null) {
-            Optional<ICachedPlayerFull> player = WebAPI.getCacheService().getPlayer(msg.getTarget());
-            player.map(cachedPlayers::add);
+            if (msg.getTarget().equalsIgnoreCase("server")) {
+                cachedPlayers.addAll(WebAPI.getCacheService().getPlayers());
+            } else {
+                Optional<ICachedPlayerFull> player = WebAPI.getCacheService().getPlayer(msg.getTarget());
+                player.map(cachedPlayers::add);
+            }
         } else {
             msg.getTargets().forEach(u -> WebAPI.getCacheService().getPlayer(u).map(cachedPlayers::add));
+        }
+
+        if (cachedPlayers.size() == 0) {
+            throw new BadRequestException("No valid targets defined");
         }
 
         messages.put(msg.getUUID(), msg);

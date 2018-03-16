@@ -29,28 +29,23 @@ public class InteractiveMessage extends CachedObject<IInteractiveMessage> implem
         return id;
     }
 
-    private UUID target;
+    private String target;
     @Override
     @JsonDetails
-    public UUID getTarget() {
+    public String getTarget() {
         return target;
     }
 
-    private List<UUID> targets;
+    private List<String> targets;
     @Override
     @JsonDetails
-    public List<UUID> getTargets() { return targets; }
+    public List<String> getTargets() { return targets; }
 
     private String message;
     @Override
-    @JsonIgnore
+    @JsonDetails
     public Text getMessage() {
         return TextSerializers.FORMATTING_CODE.deserializeUnchecked(message);
-    }
-    @JsonProperty("message")
-    @JsonDetails
-    public String getRawMessage() {
-        return message;
     }
 
     private Boolean once;

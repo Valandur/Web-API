@@ -1,21 +1,18 @@
 package valandur.webapi.util;
 
-import ninja.leaping.configurate.ConfigurationNode;
+import com.google.common.reflect.TypeToken;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
-import org.spongepowered.api.Sponge;
-import org.spongepowered.api.asset.Asset;
-import org.spongepowered.api.util.Tuple;
+import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 import valandur.webapi.WebAPI;
+import valandur.webapi.config.BaseConfig;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.math.BigInteger;
-import java.nio.file.AccessDeniedException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.SecureRandom;
 import java.util.*;
@@ -33,55 +30,35 @@ public class Util {
 
     private static SecureRandom random = new SecureRandom();
 
-    public static Tuple<ConfigurationLoader, ConfigurationNode> loadWithDefaults(String path, String defaultPath) {
+    public static <T extends BaseConfig> T loadConfig(String path, T defaultConfig) {
+        Path filePath = WebAPI.getConfigPath().resolve(path).normalize();
+        ConfigurationLoader<CommentedConfigurationNode> loader = HoconConfigurationLoader.builder()
+                .setPath(filePath)
+                .build();
+        CommentedConfigurationNode node;
+
         try {
-            Path filePath = WebAPI.getConfigPath().resolve(path).normalize();
-            Optional<Asset> optAsset = Sponge.getAssetManager().getAsset(WebAPI.getInstance(), defaultPath);
-
-            if (!Files.exists(filePath)) {
-                filePath.getParent().toFile().mkdirs();
-                if (optAsset.isPresent())
-                    optAsset.get().copyToDirectory(WebAPI.getConfigPath());
-            }
-
-            ConfigurationLoader<CommentedConfigurationNode> loader = HoconConfigurationLoader.builder()
-                    .setPath(filePath)
-                    .build();
-            CommentedConfigurationNode config = loader.load();
-
-            if (optAsset.isPresent()) {
-                ConfigurationLoader<CommentedConfigurationNode> defLoader = HoconConfigurationLoader.builder()
-                        .setURL(optAsset.get().getUrl())
-                        .build();
-                CommentedConfigurationNode defConfig = defLoader.load();
-
-                int version = config.getNode("version").getInt(0);
-                int defVersion = defConfig.getNode("version").getInt(0);
-                boolean newVersion = defVersion != version;
-
-                Util.mergeConfigs(config, defConfig, newVersion);
-
-                if (newVersion) {
-                    WebAPI.getLogger().info("New configuration version '" + defVersion + "' for " + path);
-                    config.getNode("version").setValue(defVersion);
-                }
-            }
-
-            loader.save(config);
-
-            return new Tuple<>(loader, config);
-
-        } catch(AccessDeniedException e) {
-            WebAPI.getLogger().error("Could not access config file: " + path);
-        } catch (IOException | NoSuchElementException e) {
+            node = loader.load();
+        } catch (IOException e) {
             e.printStackTrace();
-            if (WebAPI.reportErrors()) {
-                WebAPI.sentryExtra("config", path);
-                WebAPI.sentryCapture(e);
-            }
+            node = loader.createEmptyNode();
         }
 
-        return null;
+        T config = null;
+        try {
+            config = (T)node.getValue(TypeToken.of(defaultConfig.getClass()));
+        } catch (ObjectMappingException e) {
+            e.printStackTrace();
+        }
+        if (config == null) {
+            config = defaultConfig;
+        }
+
+        config.setLoader(loader);
+        config.setNode(node);
+        config.save();
+
+        return config;
     }
 
     /**

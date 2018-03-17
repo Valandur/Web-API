@@ -61,7 +61,7 @@ public class InteractiveMessageService implements IInteractiveMessageService {
                     }
 
                     InteractiveMessageResponse response = new InteractiveMessageResponse(msg.getId(), data, source.getIdentifier());
-                    WebAPI.getWebHookService().notifyHooks(WebHookService.WebHookType.CUSTOM_MESSAGE, response);
+                    WebAPI.getWebHookService().notifyHooks(WebHookService.WebHookType.INTERACTIVE_MESSAGE, response);
                 })).build();
 
                 builder.append(opt).append(Text.of(" "));

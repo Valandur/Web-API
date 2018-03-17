@@ -4,11 +4,11 @@ import com.flowpowered.math.vector.Vector3i;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import ninja.leaping.configurate.ConfigurationNode;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.servlet.BaseServlet;
 import valandur.webapi.api.servlet.Permission;
 import valandur.webapi.cache.world.CachedWorld;
+import valandur.webapi.config.MapConfig;
 import valandur.webapi.util.Util;
 
 import javax.imageio.ImageIO;
@@ -42,12 +42,8 @@ public class MapServlet extends BaseServlet {
     public MapServlet() {
         biomeColorMap.clear();
 
-        ConfigurationNode config = Util.loadWithDefaults("map.conf", "defaults/map.conf").getSecond();
-
-        ConfigurationNode biomeColors = config.getNode("biomeColors");
-        for (Map.Entry<Object, ? extends ConfigurationNode> entry : biomeColors.getChildrenMap().entrySet()) {
-            biomeColorMap.put(entry.getKey().toString(), entry.getValue().getString());
-        }
+        MapConfig config = Util.loadConfig("map.conf", new MapConfig());
+        biomeColorMap.putAll(config.biomeColors);
     }
 
     @GET

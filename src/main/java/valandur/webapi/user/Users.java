@@ -1,17 +1,12 @@
 package valandur.webapi.user;
 
-import com.google.common.reflect.TypeToken;
-import ninja.leaping.configurate.ConfigurationNode;
-import ninja.leaping.configurate.loader.ConfigurationLoader;
-import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 import org.mindrot.jbcrypt.BCrypt;
 import org.slf4j.Logger;
-import org.spongepowered.api.util.Tuple;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.permission.IPermissionService;
+import valandur.webapi.config.UserConfig;
 import valandur.webapi.util.Util;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -21,8 +16,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class Users {
     private static final String configFileName = "user.conf";
 
-    private static ConfigurationLoader loader;
-    private static ConfigurationNode config;
+    private static UserConfig config;
     private static Map<String, UserPermissionStruct> users = new ConcurrentHashMap<>();
     public static List<UserPermissionStruct> getUsers() {
         return new ArrayList<>(users.values());
@@ -32,36 +26,12 @@ public class Users {
         Logger logger = WebAPI.getLogger();
 
         logger.info("Loading users...");
-        Tuple<ConfigurationLoader, ConfigurationNode> tup =
-                Util.loadWithDefaults(configFileName, "defaults/" + configFileName);
-        loader = tup.getFirst();
-        config = tup.getSecond();
+        config = Util.loadConfig(configFileName, new UserConfig());
 
-        users.clear();
-
-        try {
-            Map<Object, ? extends ConfigurationNode> nodes = config.getNode("users").getChildrenMap();
-            for (Map.Entry<Object, ? extends ConfigurationNode> entry : nodes.entrySet()) {
-                UserPermissionStruct perm = entry.getValue().getValue(TypeToken.of(UserPermissionStruct.class));
-                users.put(perm.getUsername(), perm);
-            }
-        } catch (ObjectMappingException e) {
-            e.printStackTrace();
-        }
+        users = config.users;
     }
     public static void save() {
-        ConfigurationNode rootNode = config.getNode("users");
-        for (UserPermissionStruct perm : users.values()) {
-            try {
-                rootNode.getNode(perm.getUsername()).setValue(TypeToken.of(UserPermissionStruct.class), perm);
-            } catch (ObjectMappingException ignored) {
-            }
-        }
-        try {
-            loader.save(config);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        config.save();
     }
 
     public static Optional<UserPermissionStruct> getUser(String username) {

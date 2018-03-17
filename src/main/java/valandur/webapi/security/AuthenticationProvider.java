@@ -1,17 +1,13 @@
 package valandur.webapi.security;
 
 import com.google.common.net.HttpHeaders;
-import com.google.common.reflect.TypeToken;
-import ninja.leaping.configurate.ConfigurationNode;
-import ninja.leaping.configurate.loader.ConfigurationLoader;
-import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 import org.eclipse.jetty.http.HttpMethod;
 import org.slf4j.Logger;
-import org.spongepowered.api.util.Tuple;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.servlet.ExplicitDetails;
 import valandur.webapi.api.servlet.Permission;
 import valandur.webapi.api.util.TreeNode;
+import valandur.webapi.config.PermissionConfig;
 import valandur.webapi.user.UserPermissionStruct;
 import valandur.webapi.util.Util;
 
@@ -47,22 +43,13 @@ public class AuthenticationProvider implements ContainerRequestFilter {
     private static long start = System.nanoTime();
     private static AtomicLong calls = new AtomicLong(0);
 
-    private static ConfigurationLoader loader;
-    private static ConfigurationNode config;
+    private static PermissionConfig config;
     private static PermissionService permissionService;
 
     private static PermissionStruct defaultPerms;
     private static Map<String, PermissionStruct> permMap = new HashMap<>();
 
     private static Map<String, UserPermissionStruct> tempPermMap = new HashMap<>();
-
-    private static boolean useWhitelist;
-    private static List<String> whitelist = new ArrayList<>();
-
-    private static boolean useBlacklist;
-    private static List<String> blacklist = new ArrayList<>();
-
-    private static List<String> allowedProxies = new ArrayList<>();
 
     @Context
     private ResourceInfo resourceInfo;
@@ -81,22 +68,12 @@ public class AuthenticationProvider implements ContainerRequestFilter {
         permissionService = WebAPI.getPermissionService();
         start = System.nanoTime();
 
-        Tuple<ConfigurationLoader, ConfigurationNode> tup =
-                Util.loadWithDefaults(configFileName, "defaults/" + configFileName);
-        loader = tup.getFirst();
-        config = tup.getSecond();
-
-        TreeNode<String, Boolean> defs = permissionService.permissionTreeFromConfig(config.getNode("default", "permissions"));
-        int defLimit = config.getNode("default", "rateLimit").getInt();
-        defaultPerms = new PermissionStruct(defs, defLimit);
+        config = Util.loadConfig(configFileName, new PermissionConfig());
+        defaultPerms = config.def;
 
         permMap.clear();
-        for (ConfigurationNode node : config.getNode("keys").getChildrenList()) {
-            String key = node.getNode("key").getString();
-            if (!node.getNode("enabled").getBoolean()) {
-                logger.info("Skipping disabled key " + key);
-                continue;
-            }
+        for (Map.Entry<String, PermissionStruct> entry : config.keys.entrySet()) {
+            String key = entry.getKey();
             if (key == null || key.isEmpty()) {
                 logger.error("SKIPPING KEY-PERMISSION MAPPING WITH INVALID KEY");
                 continue;
@@ -114,40 +91,14 @@ public class AuthenticationProvider implements ContainerRequestFilter {
                 logger.error("THE KEY '" + key + "' WILL BE SKIPPED!");
                 continue;
             }
-            TreeNode<String, Boolean> perms = permissionService.permissionTreeFromConfig(node.getNode("permissions"));
-            permMap.put(key, new PermissionStruct(key, perms, node.getNode("rateLimit").getInt()));
+            permMap.put(key, entry.getValue());
         }
 
-        try {
-            // Load whitelist
-            useWhitelist = config.getNode("useWhitelist").getBoolean();
-            whitelist = config.getNode("whitelist").getList(TypeToken.of(String.class));
-
-            // Load blacklist
-            useBlacklist = config.getNode("useBlacklist").getBoolean();
-            blacklist = config.getNode("blacklist").getList(TypeToken.of(String.class));
-
-            // Allowed proxies
-            allowedProxies = config.getNode("allowedProxies").getList(TypeToken.of(String.class));
-        } catch (ObjectMappingException e) {
-            e.printStackTrace();
-        }
-
-        ACCESS_CONTROL_ORIGIN = config.getNode("accessControlOrigin").getString(ACCESS_CONTROL_ORIGIN);
+        ACCESS_CONTROL_ORIGIN = config.accessControlOrigin;
     }
     public static double getAverageCallsPerSecond() {
         double timeDiff = (System.nanoTime() - start) / 1000000000d;
         return calls.get() / timeDiff;
-    }
-    private static void setAndSaveConfig(String node, Object value) {
-        config.getNode(node).setValue(value);
-
-        try {
-            loader.save(config);
-        } catch (IOException e) {
-            e.printStackTrace();
-            if (WebAPI.reportErrors()) WebAPI.sentryCapture(e);
-        }
     }
 
     public static void addTempPerm(String key, UserPermissionStruct perms) {
@@ -155,29 +106,29 @@ public class AuthenticationProvider implements ContainerRequestFilter {
     }
 
     public static void toggleBlacklist(boolean enable) {
-        useBlacklist = enable;
-        setAndSaveConfig("useBlacklist", enable);
+        config.useBlacklist = enable;
+        config.save();
     }
     public static void addToBlacklist(String ip) {
-        blacklist.add(ip);
-        setAndSaveConfig("blacklist", blacklist);
+        config.blacklist.add(ip);
+        config.save();
     }
     public static void removeFromBlacklist(String ip) {
-        blacklist.remove(ip);
-        setAndSaveConfig("blacklist", blacklist);
+        config.blacklist.remove(ip);
+        config.save();
     }
 
     public static void toggleWhitelist(boolean enable) {
-        useWhitelist = enable;
-        setAndSaveConfig("useWhitelist", enable);
+        config.useWhitelist = enable;
+        config.save();
     }
     public static void addToWhitelist(String ip) {
-        whitelist.add(ip);
-        setAndSaveConfig("whitelist", whitelist);
+        config.whitelist.add(ip);
+        config.save();
     }
     public static void removeFromWhitelist(String ip) {
-        whitelist.remove(ip);
-        setAndSaveConfig("whitelist", whitelist);
+        config.whitelist.remove(ip);
+        config.save();
     }
 
     @Override
@@ -189,10 +140,10 @@ public class AuthenticationProvider implements ContainerRequestFilter {
         response.setHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, ACCESS_CONTROL_METHODS);
         response.setHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_HEADERS, ACCESS_CONTROL_HEADERS);
 
-        if (useWhitelist && !whitelist.contains(addr)) {
+        if (config.useWhitelist && !config.whitelist.contains(addr)) {
             WebAPI.getLogger().warn(addr + " is not on whitelist: " + target);
             throw new ForbiddenException();
-        } else if (useBlacklist && blacklist.contains(addr)) {
+        } else if (config.useBlacklist && config.blacklist.contains(addr)) {
             WebAPI.getLogger().warn(addr + " is on blacklist: " + target);
             throw new ForbiddenException();
         }
@@ -302,7 +253,7 @@ public class AuthenticationProvider implements ContainerRequestFilter {
             return addr;
 
         // First check the actual IP that we got. If that is not a trusted proxy we're done.
-        if (!allowedProxies.contains(addr)) {
+        if (!config.allowedProxies.contains(addr)) {
             WebAPI.getLogger().warn(addr + " sent " + HttpHeaders.X_FORWARDED_FOR +
                     " header, but is not a proxy. Header will be ignored!");
             return addr;
@@ -312,7 +263,7 @@ public class AuthenticationProvider implements ContainerRequestFilter {
 
         // Traverse the X-Forwarded-For header backwards and take the first IP that we don't trust.
         for (int i = ips.length - 1; i >= 0; i--) {
-            if (!allowedProxies.contains(ips[i].trim())) {
+            if (!config.allowedProxies.contains(ips[i].trim())) {
                 if (i > 0) {
                     WebAPI.getLogger().warn(ips[i].trim() + " sent " + HttpHeaders.X_FORWARDED_FOR +
                             " header, but is not a proxy. Header will be ignored!");

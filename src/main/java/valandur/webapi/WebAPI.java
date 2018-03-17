@@ -7,8 +7,6 @@ import com.google.inject.Inject;
 import io.sentry.Sentry;
 import io.sentry.context.Context;
 import io.swagger.converter.ModelConverters;
-import ninja.leaping.configurate.ConfigurationNode;
-import ninja.leaping.configurate.loader.ConfigurationLoader;
 import ninja.leaping.configurate.objectmapping.serialize.TypeSerializers;
 import org.bstats.sponge.Metrics;
 import org.eclipse.jetty.util.log.Log;
@@ -29,7 +27,6 @@ import org.spongepowered.api.plugin.PluginContainer;
 import org.spongepowered.api.scheduler.SpongeExecutorService;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
-import org.spongepowered.api.util.Tuple;
 import valandur.webapi.api.block.IBlockService;
 import valandur.webapi.api.cache.ICacheService;
 import valandur.webapi.api.hook.IWebHookService;
@@ -45,6 +42,7 @@ import valandur.webapi.block.BlockService;
 import valandur.webapi.cache.CacheService;
 import valandur.webapi.command.CommandRegistry;
 import valandur.webapi.command.CommandSource;
+import valandur.webapi.config.MainConfig;
 import valandur.webapi.hook.WebHook;
 import valandur.webapi.hook.WebHookSerializer;
 import valandur.webapi.hook.WebHookService;
@@ -59,6 +57,8 @@ import valandur.webapi.integration.webbooks.WebBookServlet;
 import valandur.webapi.message.InteractiveMessageService;
 import valandur.webapi.security.AuthenticationProvider;
 import valandur.webapi.security.PermissionService;
+import valandur.webapi.security.PermissionStruct;
+import valandur.webapi.security.PermissionStructSerializer;
 import valandur.webapi.serialize.SerializeService;
 import valandur.webapi.server.ServerService;
 import valandur.webapi.servlet.*;
@@ -266,6 +266,8 @@ public class WebAPI {
         TypeSerializers.getDefaultSerializers().registerType(
                 TypeToken.of(WebHook.class), new WebHookSerializer());
         TypeSerializers.getDefaultSerializers().registerType(
+                TypeToken.of(PermissionStruct.class), new PermissionStructSerializer());
+        TypeSerializers.getDefaultSerializers().registerType(
                 TypeToken.of(UserPermissionStruct.class), new UserPermissionStructConfigSerializer());
 
         // Setup services
@@ -394,24 +396,22 @@ public class WebAPI {
         Timings.STARTUP.stopTiming();
     }
 
-    // Re-useable setup function, for starting and reloading
+    // Reusable setup function, for starting and reloading
     private void init(Player triggeringPlayer) {
         Timings.STARTUP.startTiming();
 
         logger.info("Loading configuration...");
 
-        Tuple<ConfigurationLoader, ConfigurationNode> tup =
-                Util.loadWithDefaults("config.conf", "defaults/config.conf");
-        ConfigurationNode config = tup.getSecond();
+        MainConfig mainConfig = Util.loadConfig("config.conf", new MainConfig());
 
         // Save important config values to variables
-        devMode = config.getNode("devMode").getBoolean();
-        reportErrors = config.getNode("reportErrors").getBoolean();
-        adminPanelEnabled = config.getNode("adminPanel").getBoolean();
-        CmdServlet.CMD_WAIT_TIME = config.getNode("cmdWaitTime").getInt();
+        devMode = mainConfig.devMode;
+        reportErrors = mainConfig.reportErrors;
+        adminPanelEnabled = mainConfig.adminPanel;
+        CmdServlet.CMD_WAIT_TIME = mainConfig.cmdWaitTime;
 
-        // Create our webserver
-        server = new WebServer(logger, config);
+        // Create our WebServer
+        server = new WebServer(logger, mainConfig);
 
         if (devMode) {
             logger.warn("Web-API IS RUNNING IN DEV MODE. USING NON-SHADOWED REFERENCES! ERROR REPORTING IS OFF!");
@@ -426,7 +426,7 @@ public class WebAPI {
 
         AuthenticationProvider.init();
 
-        blockService.init(config);
+        blockService.init(mainConfig);
 
         cacheService.init();
 

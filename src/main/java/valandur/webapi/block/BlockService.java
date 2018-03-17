@@ -1,7 +1,6 @@
 package valandur.webapi.block;
 
 import com.flowpowered.math.vector.Vector3i;
-import ninja.leaping.configurate.ConfigurationNode;
 import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.world.World;
 import org.spongepowered.api.world.extent.BiomeVolume;
@@ -9,6 +8,7 @@ import valandur.webapi.WebAPI;
 import valandur.webapi.api.block.IBlockOperation;
 import valandur.webapi.api.block.IBlockService;
 import valandur.webapi.api.cache.world.ICachedWorld;
+import valandur.webapi.config.MainConfig;
 
 import javax.ws.rs.InternalServerErrorException;
 import java.util.Collection;
@@ -28,10 +28,10 @@ public class BlockService implements IBlockService {
     private static Vector3i BIOME_INTERVAL = new Vector3i(4, 0, 4);
 
 
-    public void init(ConfigurationNode config) {
-        MAX_BLOCK_GET_SIZE = config.getNode("maxBlockGetSize").getInt();
-        MAX_BLOCK_UPDATE_SIZE = config.getNode("maxBlockUpdateSize").getInt();
-        MAX_BLOCKS_PER_SECOND = config.getNode("maxBlocksPerSecond").getInt();
+    public void init(MainConfig config) {
+        MAX_BLOCK_GET_SIZE = config.maxBlockGetSize;
+        MAX_BLOCK_UPDATE_SIZE = config.maxBlockUpdateSize;
+        MAX_BLOCKS_PER_SECOND = config.maxBlocksPerSecond;
     }
 
     @Override

@@ -2,8 +2,6 @@ package valandur.webapi.cache;
 
 import com.flowpowered.math.vector.Vector3i;
 import com.google.common.collect.Lists;
-import ninja.leaping.configurate.ConfigurationNode;
-import ninja.leaping.configurate.loader.ConfigurationLoader;
 import org.spongepowered.api.CatalogType;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.advancement.Advancement;
@@ -28,10 +26,7 @@ import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.item.inventory.ItemStackSnapshot;
 import org.spongepowered.api.plugin.PluginContainer;
 import org.spongepowered.api.service.user.UserStorageService;
-import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.channel.MessageChannel;
-import org.spongepowered.api.text.channel.MessageReceiver;
-import org.spongepowered.api.util.Tuple;
 import org.spongepowered.api.world.Chunk;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
@@ -66,6 +61,7 @@ import valandur.webapi.cache.plugin.CachedPluginContainer;
 import valandur.webapi.cache.tileentity.CachedTileEntity;
 import valandur.webapi.cache.world.CachedChunk;
 import valandur.webapi.cache.world.CachedWorld;
+import valandur.webapi.config.CacheConfig;
 import valandur.webapi.util.Timings;
 import valandur.webapi.util.Util;
 
@@ -105,25 +101,18 @@ public class CacheService implements ICacheService {
 
 
     public void init() {
-        Tuple<ConfigurationLoader, ConfigurationNode> tup = Util.loadWithDefaults(configFileName, "defaults/" + configFileName);
-        ConfigurationNode config = tup.getSecond();
-
-        ConfigurationNode amountNode = config.getNode("amount");
-        numChatMessages = amountNode.getNode("chat").getInt();
-        numCommandCalls = amountNode.getNode("command").getInt();
+        CacheConfig config = Util.loadConfig(configFileName, new CacheConfig());
 
         censoredCommands.clear();
-        for (ConfigurationNode node : config.getNode("censoredCommands").getChildrenList()) {
-            String cmd = node.getString();
+        for (String cmd : config.censoredCommands) {
             if (!cmd.startsWith("/"))
                 cmd = "/" + cmd;
             censoredCommands.add(cmd);
         }
 
         cacheDurations.clear();
-        ConfigurationNode durationNode = config.getNode("duration");
-        for (ConfigurationNode node : durationNode.getChildrenMap().values()) {
-            cacheDurations.put(node.getKey().toString(), node.getLong());
+        for (Map.Entry<String, Long> entry : config.duration.entrySet()) {
+            cacheDurations.put(entry.getKey(), entry.getValue());
         }
     }
 
@@ -190,37 +179,6 @@ public class CacheService implements ICacheService {
     public Long getCacheDurationFor(Class clazz) {
         Long dur = cacheDurations.get(clazz.getSimpleName());
         return dur != null ? dur : 0;
-    }
-
-    public CachedMessage addMessage(Collection<MessageReceiver> receivers, Text content) {
-        CachedMessage cache = new CachedMessage(receivers, content);
-        messages.add(cache);
-
-        while (messages.size() > numChatMessages) {
-            messages.poll();
-        }
-
-        return cache;
-    }
-    public CachedChatMessage addChatMessage(Player sender, Collection<MessageReceiver> receivers, Text content) {
-        CachedChatMessage cache = new CachedChatMessage(sender, receivers, content);
-        messages.add(cache);
-
-        while (messages.size() > numChatMessages) {
-            messages.poll();
-        }
-
-        return cache;
-    }
-    public CachedCommandCall addCommandCall(SendCommandEvent event) {
-        CachedCommandCall cache = new CachedCommandCall(event, censoredCommands.contains(event.getCommand()));
-        commandCalls.add(cache);
-
-        while (commandCalls.size() > numCommandCalls) {
-            commandCalls.poll();
-        }
-
-        return cache;
     }
 
     public void updateWorlds() {
@@ -639,15 +597,30 @@ public class CacheService implements ICacheService {
     @Listener(order = Order.POST)
     public void onPlayerChat(MessageChannelEvent.Chat event, @First Player player) {
         MessageChannel channel = event.getChannel().orElse(event.getOriginalChannel());
-        addChatMessage(player, channel.getMembers(), event.getMessage());
+        CachedChatMessage cache = new CachedChatMessage(player, channel.getMembers(), event.getMessage());
+        messages.add(cache);
+
+        while (messages.size() > numChatMessages) {
+            messages.poll();
+        }
     }
     @Listener(order = Order.POST)
     public void onMessage(MessageChannelEvent event) {
         MessageChannel channel = event.getChannel().orElse(event.getOriginalChannel());
-        addMessage(channel.getMembers(), event.getMessage());
+        CachedMessage cache = new CachedMessage(channel.getMembers(), event.getMessage());
+        messages.add(cache);
+
+        while (messages.size() > numChatMessages) {
+            messages.poll();
+        }
     }
     @Listener(order = Order.POST)
     public void onCommand(SendCommandEvent event) {
-        addCommandCall(event);
+        CachedCommandCall cache = new CachedCommandCall(event, censoredCommands.contains(event.getCommand()));
+        commandCalls.add(cache);
+
+        while (commandCalls.size() > numCommandCalls) {
+            commandCalls.poll();
+        }
     }
 }

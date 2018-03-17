@@ -1,7 +1,8 @@
 package valandur.webapi;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.jaxrs.config.BeanConfig;
-import ninja.leaping.configurate.ConfigurationNode;
 import org.eclipse.jetty.http.HttpVersion;
 import org.eclipse.jetty.rewrite.handler.RedirectPatternRule;
 import org.eclipse.jetty.rewrite.handler.RewriteHandler;
@@ -20,12 +21,14 @@ import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
 import valandur.webapi.api.servlet.BaseServlet;
+import valandur.webapi.config.MainConfig;
 import valandur.webapi.handler.AssetHandler;
 import valandur.webapi.handler.ErrorHandler;
 import valandur.webapi.serialize.SerializationFeature;
 import valandur.webapi.util.Constants;
 
 import java.net.SocketException;
+import java.nio.charset.Charset;
 
 public class WebServer {
 
@@ -40,6 +43,8 @@ public class WebServer {
     private String keyStoreMgrPassword;
     private Server server;
 
+    private byte[] apConfig;
+
     public String getHost() {
         return serverHost;
     }
@@ -51,16 +56,28 @@ public class WebServer {
     }
 
 
-    WebServer(Logger logger, ConfigurationNode config) {
+    WebServer(Logger logger, MainConfig config) {
         this.logger = logger;
 
-        serverHost = config.getNode("host").getString("localhost");
-        serverPortHttp = config.getNode("http").getInt(8080);
-        serverPortHttps = config.getNode("https").getInt(8081);
-        adminPanelEnabled = config.getNode("adminPanel").getBoolean(true);
-        keyStoreLocation = config.getNode("customKeyStore").getString();
-        keyStorePassword = config.getNode("customKeyStorePassword").getString();
-        keyStoreMgrPassword = config.getNode("customKeyStoreManagerPassword").getString();
+        serverHost = config.host;
+        serverPortHttp = config.http;
+        serverPortHttps = config.https;
+        adminPanelEnabled = config.adminPanel;
+        keyStoreLocation = config.customKeyStore;
+        keyStorePassword = config.customKeyStorePassword;
+        keyStoreMgrPassword = config.customKeyStoreManagerPassword;
+
+        // Process the config.js file to include data from the Web-API config files
+        try {
+            MainConfig.APConfig cfg = config.adminPanelConfig;
+            if (cfg != null) {
+                ObjectMapper om = new ObjectMapper();
+                String configStr = "window.config = " + om.writeValueAsString(cfg);
+                apConfig = configStr.getBytes(Charset.forName("utf-8"));
+            }
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
     }
 
     public void start(Player player) {
@@ -167,7 +184,13 @@ public class WebServer {
                 rewrite.addRule(redirect);
                 mainContext.addHandler(newContext("/", rewrite));
 
-                mainContext.addHandler(newContext("/admin", new AssetHandler("admin")));
+                mainContext.addHandler(newContext("/admin", new AssetHandler("admin", path -> {
+                    if (!path.endsWith("config.js") || this.apConfig == null) {
+                        return input -> input;
+                    }
+
+                    return input -> apConfig;
+                })));
             }
 
             // Main servlet context

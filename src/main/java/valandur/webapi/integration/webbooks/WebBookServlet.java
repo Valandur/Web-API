@@ -3,19 +3,15 @@ package valandur.webapi.integration.webbooks;
 import com.google.common.reflect.TypeToken;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import ninja.leaping.configurate.ConfigurationNode;
-import ninja.leaping.configurate.loader.ConfigurationLoader;
-import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 import ninja.leaping.configurate.objectmapping.serialize.TypeSerializers;
-import org.spongepowered.api.util.Tuple;
 import valandur.webapi.api.servlet.BaseServlet;
 import valandur.webapi.api.servlet.Permission;
+import valandur.webapi.config.WebBooksConfig;
 import valandur.webapi.util.Util;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -36,24 +32,12 @@ public class WebBookServlet extends BaseServlet {
 
     private Map<String, WebBook> books = new ConcurrentHashMap<>();
 
-    private static ConfigurationLoader loader;
-    private static ConfigurationNode config;
+    private static WebBooksConfig config;
 
 
     public WebBookServlet() {
-        Tuple<ConfigurationLoader, ConfigurationNode> tup =
-                Util.loadWithDefaults(configFileName, "defaults/" + configFileName);
-        loader = tup.getFirst();
-        config = tup.getSecond();
-
-        try {
-            List<WebBook> bookList = config.getNode("books").getList(TypeToken.of(WebBook.class));
-            for (WebBook book : bookList) {
-                books.put(book.getId(), book);
-            }
-        } catch (ObjectMappingException e) {
-            e.printStackTrace();
-        }
+        config = Util.loadConfig(configFileName, new WebBooksConfig());
+        books = config.books;
     }
 
     public static void onRegister() {
@@ -62,13 +46,7 @@ public class WebBookServlet extends BaseServlet {
     }
 
     private void saveBooks() {
-        try {
-            config.getNode("books").setValue(new TypeToken<List<WebBook>>() {}, new ArrayList<>(books.values()));
-            loader.save(config);
-        } catch (IOException | ObjectMappingException e) {
-            e.printStackTrace();
-            throw new InternalServerErrorException(e.getMessage());
-        }
+        config.save();
     }
 
     @GET

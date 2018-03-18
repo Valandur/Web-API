@@ -99,7 +99,7 @@ public class WorldServlet extends BaseServlet {
             builder.usesMapFeatures(req.usesMapFeatures());
 
         String archTypeName = "WebAPI-" + UUID.randomUUID().toString();
-        WorldArchetype archType = builder.enabled(true).build(archTypeName, archTypeName);
+        WorldArchetype archType = builder.generateSpawnOnLoad(true).enabled(true).build(archTypeName, archTypeName);
 
         ICachedWorld world = WebAPI.runOnMain(() -> {
             try {

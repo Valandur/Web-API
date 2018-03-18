@@ -1,19 +1,16 @@
 package valandur.webapi.api.serialize;
 
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.JsonNode;
+import org.spongepowered.api.data.Property;
 import org.spongepowered.api.data.manipulator.DataManipulator;
 import valandur.webapi.api.cache.ICachedObject;
-import valandur.webapi.api.util.TreeNode;
 
-import java.io.IOException;
-import java.io.Reader;
+import java.lang.reflect.Type;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * The json service is used to convert java objects into json.
  * You can register your own serializers here to determine how certain objects are converted into json.
- * Custom serializers must inhert {@link BaseSerializer}.
  */
 public interface ISerializeService {
 
@@ -40,57 +37,15 @@ public interface ISerializeService {
     Map<String, Class<? extends DataManipulator<?, ?>>> getSupportedData();
 
     /**
-     * Converts an object directly to a json string. Includes details if specified.
-     * @param obj The object to convert to json.
-     * @param details False if only marked properties/methods should be included, true otherwise.
-     * @return The json string representation of the object.
+     * Gets all PropertyHolder types that are supported by the Web-API
+     * @return A map from json key to PropertyHolder type
      */
-    String toString(Object obj, boolean xml, boolean details, TreeNode<String, Boolean> perms);
+    Map<Class<? extends Property<?, ?>>, String> getSupportedProperties();
 
     /**
-     * Converts an object to json using the default object mapper. Includes details if specified.
-     * @param obj The object to convert to json
-     * @param details False if only marked properties/methods should be included, true otherwise.
-     * @param perms The permissions defining which properties of the object are returned.
-     * @return The json representation of the object.
+     * Gets the View class used to represent a certain class, if present
+     * @param clazz The class which should be check for an available view
+     * @return The view class that should be used for serialization instead of the original class, if available.
      */
-    JsonNode serialize(Object obj, boolean xml, boolean details, TreeNode<String, Boolean> perms);
-
-    /**
-     * Converts data read from a reader to a json object tree.
-     * @param reader The reader from which the json data is read.
-     * @param perms The permissions defining which nodes of the tree will be included.
-     * @return A {@code JsonNode} representing the tree object that was read.
-     * @throws IOException Is thrown when parsing of the string fails.
-     */
-    JsonNode deserialize(Reader reader, boolean xml, TreeNode<String, Boolean> perms) throws IOException;
-
-    /**
-     * Converts a json string to an object of the specified java type using the object mapper.
-     * @param content The json content that is parsed into an object.
-     * @param type The type of the object.
-     * @param perms The permissions node defining which nodes can be accessed.
-     * @param <T> The type of the parsed object.
-     * @return An object of the parsed type.
-     * @throws IOException Is thrown when the provided content can't be parsed to the specified class.
-     */
-    <T> T deserialize(String content, boolean xml, JavaType type, TreeNode<String, Boolean> perms) throws IOException;
-
-    /**
-     * Converts the provided json node into an object of the specified class using the object mapper.
-     * @param content The json node that is parsed into an object.
-     * @param clazz The class of the object.
-     * @param perms The permissions node defining which nodes can be accessed.
-     * @param <T> The type of the parsed object.
-     * @return An object of the parsed type.
-     * @throws IOException Is thrown when the provided content can't be parsed to the specified class.
-     */
-    <T> T deserialize(JsonNode content, Class<T> clazz, TreeNode<String, Boolean> perms) throws IOException;
-
-    /**
-     * Converts a class structure to json. This includes all the fields and methods of the class
-     * @param c The class for which to get the json representation.
-     * @return A JsonNode representing the class.
-     */
-    JsonNode classToJson(Class c);
+    Optional<Type> getViewFor(Class clazz);
 }

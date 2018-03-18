@@ -1,8 +1,0 @@
-description: Not found
-schema:
-  title: Error404
-  type: object
-  properties:
-    error:
-      type: string
-      description: A description of the type of error that occured.

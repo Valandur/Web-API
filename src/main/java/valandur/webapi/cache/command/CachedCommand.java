@@ -4,6 +4,7 @@ import org.spongepowered.api.command.CommandMapping;
 import org.spongepowered.api.text.Text;
 import valandur.webapi.api.cache.CachedObject;
 import valandur.webapi.api.cache.command.ICachedCommand;
+import valandur.webapi.util.Constants;
 
 import static valandur.webapi.command.CommandSource.instance;
 
@@ -15,9 +16,9 @@ public class CachedCommand extends CachedObject<CommandMapping> implements ICach
         return name;
     }
 
-    private String description;
+    private Text description;
     @Override
-    public String getDescription() {
+    public Text getDescription() {
         return description;
     }
 
@@ -26,13 +27,13 @@ public class CachedCommand extends CachedObject<CommandMapping> implements ICach
         return aliases;
     }
 
-    private String usage;
-    public String getUsage() {
+    private Text usage;
+    public Text getUsage() {
         return usage;
     }
 
-    private String help;
-    public String getHelp() {
+    private Text help;
+    public Text getHelp() {
         return help;
     }
 
@@ -43,14 +44,14 @@ public class CachedCommand extends CachedObject<CommandMapping> implements ICach
         this.name = cmd.getPrimaryAlias();
         this.aliases = cmd.getAllAliases().toArray(new String[cmd.getAllAliases().size()]);
         try {
-            this.usage = cmd.getCallable().getUsage(instance).toPlain();
-            this.description = cmd.getCallable().getShortDescription(instance).orElse(Text.EMPTY).toPlain();
-            this.help = cmd.getCallable().getHelp(instance).orElse(Text.EMPTY).toPlain();
+            this.usage = cmd.getCallable().getUsage(instance).toBuilder().build();
+            this.description = cmd.getCallable().getShortDescription(instance).orElse(Text.EMPTY).toBuilder().build();
+            this.help = cmd.getCallable().getHelp(instance).orElse(Text.EMPTY).toBuilder().build();
         } catch (Exception ignored) {}
     }
 
     @Override
     public String getLink() {
-        return "/api/cmd/" + name;
+        return Constants.BASE_PATH + "/cmd/" + name;
     }
 }

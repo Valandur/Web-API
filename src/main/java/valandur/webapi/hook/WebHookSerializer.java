@@ -2,11 +2,14 @@ package valandur.webapi.hook;
 
 import com.google.common.reflect.TypeToken;
 import ninja.leaping.configurate.ConfigurationNode;
+import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 import ninja.leaping.configurate.objectmapping.serialize.TypeSerializer;
+import org.eclipse.jetty.http.HttpMethod;
 import org.slf4j.Logger;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.hook.BaseWebHookFilter;
+import valandur.webapi.api.hook.IWebHook;
 import valandur.webapi.api.hook.WebHookHeader;
 import valandur.webapi.api.permission.IPermissionService;
 import valandur.webapi.api.util.TreeNode;
@@ -33,7 +36,7 @@ public class WebHookSerializer implements TypeSerializer<WebHook> {
         logger.info("  - " + address);
 
         boolean enabled = value.getNode("enabled").getBoolean();
-        WebHook.WebHookMethod method = value.getNode("method").getValue(TypeToken.of(WebHook.WebHookMethod.class));
+        HttpMethod method = value.getNode("method").getValue(TypeToken.of(HttpMethod.class));
         WebHook.WebHookDataType dataType = value.getNode("dataType").getValue(TypeToken.of(WebHook.WebHookDataType.class));
         boolean form = value.getNode("form").getBoolean();
         List<WebHookHeader> headers = value.getNode("headers").getList(TypeToken.of(WebHookHeader.class));
@@ -53,7 +56,7 @@ public class WebHookSerializer implements TypeSerializer<WebHook> {
             }
 
             if (method == null) {
-                method = WebHook.WebHookMethod.POST;
+                method = HttpMethod.POST;
                 logger.warn("    Does not specify 'method', defaulting to 'POST'");
             }
 
@@ -94,13 +97,51 @@ public class WebHookSerializer implements TypeSerializer<WebHook> {
 
     @Override
     public void serialize(TypeToken<?> type, WebHook obj, ConfigurationNode value) throws ObjectMappingException {
-        value.getNode("address").setValue(obj.getAddress());
-        value.getNode("enabled").setValue(obj.isEnabled());
-        value.getNode("headers").setValue(obj.getHeaders());
-        value.getNode("method").setValue(obj.getMethod());
-        value.getNode("dataType").setValue(obj.getDataType());
-        value.getNode("form").setValue(obj.isForm());
-        value.getNode("details").setValue(obj.includeDetails());
+        setValueAndComment(value.getNode("address"), obj.getAddress(),
+                "This is the address of the endpoint.");
+
+        setValueAndComment(value.getNode("enabled"), obj.isEnabled(),
+                "Set to true or omit to enable the endpoint.");
+
+        setValueAndComment(value.getNode("headers"), new TypeToken<List<WebHookHeader>>() {}, obj.getHeaders(),
+                "This is a list of additional headers that is sent to the server. You can use this to e.g. specify a secret\n" +
+                        "key which ensures that the server knows the requests are coming from the Web-API.\n" +
+                        "Please note that the following headers will always be overridden by the Web-API:\n" +
+                        "X-WebAPI-Version, X-WebAPI-Event, X-WebAPI-Source, User-Agent, Content-Type, Content-Length, accept, charset");
+
+        setValueAndComment(value.getNode("method"), TypeToken.of(HttpMethod.class), obj.getMethod(),
+                "This is the http method that is used (GET, PUT, POST or DELETE)");
+
+        setValueAndComment(value.getNode("dataType"), TypeToken.of(IWebHook.WebHookDataType.class), obj.getDataType(),
+                "Choose to either send the data as:\n" +
+                        "JSON = application/json\n" +
+                        "XML = application/xml");
+
+        setValueAndComment(value.getNode("form"), obj.isForm(),
+                "Choose to send the data wrapped as application/x-www-form-urlencoded");
+
+        setValueAndComment(value.getNode("details"), obj.includeDetails(),
+                "Set to true to send detailed json data");
+
         WebAPI.getPermissionService().permissionTreeToConfig(value.getNode("permissions"), obj.getPermissions());
+        if (value.getNode("permissions") instanceof CommentedConfigurationNode) {
+            ((CommentedConfigurationNode) value.getNode("permissions")).setComment(
+                    "Permissions node same as the ones in the permissions.conf file,\n" +
+                            "use to configure which data is sent to this node");
+        }
+    }
+
+    private void setValueAndComment(ConfigurationNode node, Object value, String comment) {
+        node.setValue(value);
+        if (node instanceof CommentedConfigurationNode) {
+            ((CommentedConfigurationNode) node).setComment(comment);
+        }
+    }
+    private <T> void setValueAndComment(ConfigurationNode node, TypeToken<T> type, T value, String comment)
+            throws ObjectMappingException {
+        node.setValue(type, value);
+        if (node instanceof CommentedConfigurationNode) {
+            ((CommentedConfigurationNode) node).setComment(comment);
+        }
     }
 }

@@ -1,101 +1,86 @@
 package valandur.webapi.servlet;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import org.eclipse.jetty.http.HttpMethod;
+import io.swagger.annotations.*;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.cache.command.ICachedCommand;
 import valandur.webapi.api.servlet.BaseServlet;
-import valandur.webapi.api.servlet.Endpoint;
-import valandur.webapi.api.servlet.Servlet;
+import valandur.webapi.api.servlet.ExplicitDetails;
+import valandur.webapi.api.servlet.Permission;
 import valandur.webapi.command.CommandSource;
-import valandur.webapi.serialize.request.command.ExecuteCommandRequest;
-import valandur.webapi.servlet.base.ServletData;
+import valandur.webapi.security.SecurityContext;
 
-import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
-@Servlet(basePath = "cmd")
+@Path("cmd")
+@Api(tags = { "Command" }, value = "List all commands on the server and execute them.")
+@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+@Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 public class CmdServlet extends BaseServlet {
 
     public static int CMD_WAIT_TIME = 1000;
 
-    @Endpoint(method = HttpMethod.GET, path = "/", perm = "list")
-    public void getCommands(ServletData data) {
-        data.addData("ok", true, false);
-        data.addData("commands", cacheService.getCommands(), data.getQueryParam("details").isPresent());
+    @GET
+    @ExplicitDetails
+    @Permission("list")
+    @ApiOperation(
+            value = "List commands",
+            notes = "Gets a list of all the commands available on the server.")
+    public Collection<ICachedCommand> listCommands() {
+        return cacheService.getCommands();
     }
 
-    @Endpoint(method = HttpMethod.GET, path = "/:cmd", perm = "one")
-    public void getCommand(ServletData data, String cmdName) {
+    @GET
+    @Path("/{cmd}")
+    @Permission("one")
+    @ApiOperation(
+            value = "Get a command",
+            notes = "Get detailed information about a command.")
+    public ICachedCommand getCommand(
+            @PathParam("cmd") @ApiParam("The id of the command") String cmdName)
+            throws NotFoundException {
         Optional<ICachedCommand> cmd = cacheService.getCommand(cmdName);
         if (!cmd.isPresent()) {
-            data.sendError(HttpServletResponse.SC_NOT_FOUND, "The command '" + cmdName + "' could not be found");
-            return;
+            throw new NotFoundException("The command '" + cmdName + "' could not be found");
         }
 
-        data.addData("ok", true, false);
-        data.addData("command", cmd.get(), true);
+        return cmd.get();
     }
 
-    @Endpoint(method = HttpMethod.POST, path = "/", perm = "run")
-    public void runCommands(ServletData data) {
-        final JsonNode reqJson = data.getRequestBody();
+    @POST
+    @Permission("run")
+    @Permission(value = { "run", "[command]" }, autoCheck = false)
+    @ApiOperation(
+            value = "Execute a command",
+            notes = "Execute a command on the server. (Almost the same as running it from the console).  \n" +
+                    "Pass an array of commands to execute them in succession, you can also just pass a list with " +
+                    "only one command if that's all you want to execute.\n\n" +
+                    "Returns a list with each response corresponding to a command.")
+    public List<Object> runCommands(List<ExecuteCommandRequest> reqs, @Context HttpServletRequest request) {
 
-        if (reqJson == null) {
-            data.sendError(HttpServletResponse.SC_BAD_REQUEST,
-                    "Invalid command data: " + data.getLastParseError().getMessage());
-            return;
+        if (reqs == null) {
+            throw new BadRequestException("Request body is required");
         }
 
-        if (!reqJson.isArray()) {
-            Optional<ExecuteCommandRequest> optReq = data.getRequestBody(ExecuteCommandRequest.class);
-            if (!optReq.isPresent()) {
-                data.sendError(HttpServletResponse.SC_BAD_REQUEST,
-                        "Invalid command data: " + data.getLastParseError().getMessage());
-                return;
-            }
-
-            ExecuteCommandRequest req = optReq.get();
-
-            if (req.getCommand() == null) {
-                data.sendError(HttpServletResponse.SC_BAD_REQUEST,"Command not specified");
-                return;
-            }
-
-            String cmd = req.getCommand().split(" ")[0];
-            if (!permissionService.permits(data.getPermissions(), new String[]{ cmd })) {
-                data.sendError(HttpServletResponse.SC_FORBIDDEN, "Access denied");
-                return;
-            }
-
-            data.addData("ok", true, false);
-            data.addData("result", runCommand(req), true);
-            return;
-        }
+        SecurityContext context = (SecurityContext)request.getAttribute("security");
 
         List<Object> res = new ArrayList<>();
-        Optional<ExecuteCommandRequest[]> optReqs = data.getRequestBody(ExecuteCommandRequest[].class);
-        if (!optReqs.isPresent()) {
-            data.sendError(HttpServletResponse.SC_BAD_REQUEST,
-                    "Invalid command data: " + data.getLastParseError().getMessage());
-            return;
-        }
-
-        ExecuteCommandRequest[] reqs = optReqs.get();
         for (ExecuteCommandRequest req : reqs) {
             String cmd = req.getCommand().split(" ")[0];
-            if (!permissionService.permits(data.getPermissions(), new String[]{ cmd })) {
-                res.add(new Exception("Not allowed"));
-                continue;
+            if (!context.hasPerms(cmd)) {
+                res.add(new ForbiddenException("You do not have permission to execute the " + cmd + " command"));
+            } else {
+                res.add(runCommand(req));
             }
-
-            res.add(runCommand(req));
         }
 
-        data.addData("ok", true, false);
-        data.addData("results", res, true);
+        return res;
     }
 
     private List<String> runCommand(ExecuteCommandRequest req) {
@@ -115,6 +100,41 @@ public class CmdServlet extends BaseServlet {
             e.printStackTrace();
             if (WebAPI.reportErrors()) WebAPI.sentryCapture(e);
             return null;
+        }
+    }
+
+
+    @ApiModel("ExecuteCommandRequest")
+        public static class ExecuteCommandRequest {
+
+        private String command;
+        @ApiModelProperty(value = "The command to execute", required = true)
+        public String getCommand() {
+            return command;
+        }
+
+        private String name;
+        @ApiModelProperty("The name of the source that executes the command")
+        public String getName() {
+            return name != null ? name : "Web-API";
+        }
+
+        private Integer waitTime;
+        @ApiModelProperty("The amount of time to wait for a response")
+        public Integer getWaitTime() {
+            return waitTime != null ? waitTime : CmdServlet.CMD_WAIT_TIME;
+        }
+
+        private Integer waitLines;
+        @ApiModelProperty("The amount of text lines to wait for in the response")
+        public Integer getWaitLines() {
+            return waitLines != null ? waitLines : 0;
+        }
+
+        private Boolean hideInConsole;
+        @ApiModelProperty("True to hide the execution of the command in the console, false otherwise")
+        public Boolean isHiddenInConsole() {
+            return hideInConsole != null ? hideInConsole : false;
         }
     }
 }

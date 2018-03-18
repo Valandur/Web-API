@@ -6,21 +6,10 @@ import com.google.common.reflect.TypeToken;
 import com.google.inject.Inject;
 import io.sentry.Sentry;
 import io.sentry.context.Context;
-import ninja.leaping.configurate.ConfigurationNode;
-import ninja.leaping.configurate.loader.ConfigurationLoader;
+import io.swagger.converter.ModelConverters;
 import ninja.leaping.configurate.objectmapping.serialize.TypeSerializers;
 import org.bstats.sponge.Metrics;
-import org.eclipse.jetty.http.HttpVersion;
-import org.eclipse.jetty.rewrite.handler.RedirectPatternRule;
-import org.eclipse.jetty.rewrite.handler.RewriteHandler;
-import org.eclipse.jetty.server.*;
-import org.eclipse.jetty.server.handler.ContextHandler;
-import org.eclipse.jetty.server.handler.ContextHandlerCollection;
-import org.eclipse.jetty.server.handler.HandlerList;
-import org.eclipse.jetty.servlet.ServletContextHandler;
-import org.eclipse.jetty.util.MultiException;
 import org.eclipse.jetty.util.log.Log;
-import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.slf4j.Logger;
 import org.spongepowered.api.Platform;
 import org.spongepowered.api.Platform.Component;
@@ -28,36 +17,20 @@ import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandManager;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.config.ConfigDir;
-import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.Order;
-import org.spongepowered.api.event.advancement.AdvancementEvent;
-import org.spongepowered.api.event.block.InteractBlockEvent;
-import org.spongepowered.api.event.command.SendCommandEvent;
-import org.spongepowered.api.event.entity.DestructEntityEvent;
-import org.spongepowered.api.event.entity.ExpireEntityEvent;
-import org.spongepowered.api.event.entity.SpawnEntityEvent;
-import org.spongepowered.api.event.entity.living.humanoid.player.KickPlayerEvent;
-import org.spongepowered.api.event.filter.cause.First;
 import org.spongepowered.api.event.game.GameReloadEvent;
 import org.spongepowered.api.event.game.state.*;
-import org.spongepowered.api.event.item.inventory.InteractInventoryEvent;
-import org.spongepowered.api.event.message.MessageChannelEvent;
-import org.spongepowered.api.event.network.ClientConnectionEvent;
-import org.spongepowered.api.event.user.BanUserEvent;
-import org.spongepowered.api.event.world.*;
 import org.spongepowered.api.plugin.Plugin;
 import org.spongepowered.api.plugin.PluginContainer;
 import org.spongepowered.api.scheduler.SpongeExecutorService;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
-import org.spongepowered.api.util.Tuple;
 import valandur.webapi.api.block.IBlockService;
 import valandur.webapi.api.cache.ICacheService;
-import valandur.webapi.api.extension.IExtensionService;
 import valandur.webapi.api.hook.IWebHookService;
-import valandur.webapi.api.message.IMessageService;
+import valandur.webapi.api.message.IInteractiveMessageService;
 import valandur.webapi.api.permission.IPermissionService;
 import valandur.webapi.api.serialize.ISerializeService;
 import valandur.webapi.api.server.IServerService;
@@ -67,14 +40,13 @@ import valandur.webapi.block.BlockOperation;
 import valandur.webapi.block.BlockOperationStatusChangeEvent;
 import valandur.webapi.block.BlockService;
 import valandur.webapi.cache.CacheService;
-import valandur.webapi.cache.chat.CachedChatMessage;
-import valandur.webapi.cache.command.CachedCommandCall;
 import valandur.webapi.command.CommandRegistry;
 import valandur.webapi.command.CommandSource;
-import valandur.webapi.extension.ExtensionService;
+import valandur.webapi.config.MainConfig;
 import valandur.webapi.hook.WebHook;
 import valandur.webapi.hook.WebHookSerializer;
 import valandur.webapi.hook.WebHookService;
+import valandur.webapi.integration.activetime.ActiveTimeServlet;
 import valandur.webapi.integration.huskycrates.HuskyCratesServlet;
 import valandur.webapi.integration.mmcrestrict.MMCRestrictServlet;
 import valandur.webapi.integration.mmctickets.MMCTicketsServlet;
@@ -82,19 +54,18 @@ import valandur.webapi.integration.nucleus.NucleusServlet;
 import valandur.webapi.integration.redprotect.RedProtectServlet;
 import valandur.webapi.integration.universalmarket.UniversalMarketServlet;
 import valandur.webapi.integration.webbooks.WebBookServlet;
-import valandur.webapi.message.MessageService;
-import valandur.webapi.permission.PermissionService;
+import valandur.webapi.message.InteractiveMessageService;
+import valandur.webapi.security.AuthenticationProvider;
+import valandur.webapi.security.PermissionService;
+import valandur.webapi.security.PermissionStruct;
+import valandur.webapi.security.PermissionStructSerializer;
 import valandur.webapi.serialize.SerializeService;
 import valandur.webapi.server.ServerService;
 import valandur.webapi.servlet.*;
-import valandur.webapi.servlet.base.ApiServlet;
 import valandur.webapi.servlet.base.ServletService;
-import valandur.webapi.servlet.handler.AssetHandler;
-import valandur.webapi.servlet.handler.AuthHandler;
-import valandur.webapi.servlet.handler.ErrorHandler;
-import valandur.webapi.servlet.handler.RateLimitHandler;
-import valandur.webapi.user.UserPermission;
-import valandur.webapi.user.UserPermissionConfigSerializer;
+import valandur.webapi.swagger.SwaggerModelConverter;
+import valandur.webapi.user.UserPermissionStruct;
+import valandur.webapi.user.UserPermissionStructConfigSerializer;
 import valandur.webapi.user.Users;
 import valandur.webapi.util.Constants;
 import valandur.webapi.util.JettyLogger;
@@ -103,19 +74,23 @@ import valandur.webapi.util.Util;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.InternalServerErrorException;
+import javax.ws.rs.WebApplicationException;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.net.SocketException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.CodeSource;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Supplier;
@@ -156,13 +131,7 @@ public class WebAPI {
     private static String spongeImpl;
     private static String pluginList;
 
-    private static String serverHost;
-    private static Integer serverPortHttp;
-    private static Integer serverPortHttps;
-    private String keyStoreLocation;
-    private String keyStorePassword;
-    private String keyStoreMgrPassword;
-    private Server server;
+    private static WebServer server;
 
     @Inject
     private Metrics metrics;
@@ -191,11 +160,6 @@ public class WebAPI {
         return WebAPI.getInstance() == null || WebAPI.getInstance().reportErrors;
     }
 
-    private AuthHandler authHandler;
-    public static AuthHandler getAuthHandler() {
-        return WebAPI.getInstance().authHandler;
-    }
-
     // Services
     private BlockService blockService;
     public static BlockService getBlockService() {
@@ -207,18 +171,13 @@ public class WebAPI {
         return WebAPI.getInstance().cacheService;
     }
 
-    private ExtensionService extensionService;
-    public static ExtensionService getExtensionService() {
-        return WebAPI.getInstance().extensionService;
-    }
-
     private SerializeService serializeService;
     public static SerializeService getSerializeService() {
         return WebAPI.getInstance().serializeService;
     }
 
-    private MessageService messageService;
-    public static MessageService getMessageService() {
+    private InteractiveMessageService messageService;
+    public static InteractiveMessageService getMessageService() {
         return WebAPI.getInstance().messageService;
     }
 
@@ -253,6 +212,7 @@ public class WebAPI {
 
         // Add our own jar to the system classloader classpath,
         // because some external libraries don't work otherwise.
+        // TODO: Improve adding our jar to system classloader classpath
         try {
             CodeSource src = WebAPI.class.getProtectionDomain().getCodeSource();
             if (src == null) {
@@ -303,31 +263,39 @@ public class WebAPI {
         asyncExecutor = Sponge.getScheduler().createAsyncExecutor(this);
 
         // Register custom serializers
-        TypeSerializers.getDefaultSerializers().registerType(TypeToken.of(WebHook.class), new WebHookSerializer());
-        TypeSerializers.getDefaultSerializers().registerType(TypeToken.of(UserPermission.class), new UserPermissionConfigSerializer());
+        TypeSerializers.getDefaultSerializers().registerType(
+                TypeToken.of(WebHook.class), new WebHookSerializer());
+        TypeSerializers.getDefaultSerializers().registerType(
+                TypeToken.of(PermissionStruct.class), new PermissionStructSerializer());
+        TypeSerializers.getDefaultSerializers().registerType(
+                TypeToken.of(UserPermissionStruct.class), new UserPermissionStructConfigSerializer());
 
         // Setup services
         this.blockService = new BlockService();
         this.cacheService = new CacheService();
-        this.extensionService = new ExtensionService();
         this.serializeService = new SerializeService();
-        this.messageService = new MessageService();
+        this.messageService = new InteractiveMessageService();
         this.permissionService = new PermissionService();
         this.serverService = new ServerService();
         this.servletService = new ServletService();
         this.webHookService = new WebHookService();
 
-
         // Register services
         Sponge.getServiceManager().setProvider(this, IBlockService.class, blockService);
         Sponge.getServiceManager().setProvider(this, ICacheService.class, cacheService);
-        Sponge.getServiceManager().setProvider(this, IExtensionService.class, extensionService);
         Sponge.getServiceManager().setProvider(this, ISerializeService.class, serializeService);
-        Sponge.getServiceManager().setProvider(this, IMessageService.class, messageService);
+        Sponge.getServiceManager().setProvider(this, IInteractiveMessageService.class, messageService);
         Sponge.getServiceManager().setProvider(this, IPermissionService.class, permissionService);
         Sponge.getServiceManager().setProvider(this, IServerService.class, serverService);
         Sponge.getServiceManager().setProvider(this, IServletService.class, servletService);
         Sponge.getServiceManager().setProvider(this, IWebHookService.class, webHookService);
+
+        // Register events of services
+        Sponge.getEventManager().registerListeners(this, cacheService);
+        Sponge.getEventManager().registerListeners(this, webHookService);
+
+        // Swagger setup stuff
+        ModelConverters.getInstance().addConverter(new SwaggerModelConverter());
 
         Timings.STARTUP.stopTiming();
     }
@@ -340,30 +308,36 @@ public class WebAPI {
         logger.info("Setting up jetty logger...");
         Log.setLog(new JettyLogger());
 
-        // Create permission handler
-        authHandler = new AuthHandler();
-
         // Main init function, that is also called when reloading the plugin
         init(null);
 
         logger.info("Registering servlets...");
         servletService.registerServlet(BlockServlet.class);
+        servletService.registerServlet(ChunkServlet.class);
         servletService.registerServlet(CmdServlet.class);
+        servletService.registerServlet(EconomyServlet.class);
         servletService.registerServlet(EntityServlet.class);
         servletService.registerServlet(HistoryServlet.class);
         servletService.registerServlet(InfoServlet.class);
         servletService.registerServlet(MapServlet.class);
-        servletService.registerServlet(MessageServlet.class);
+        servletService.registerServlet(InteractiveMessageServlet.class);
+        servletService.registerServlet(PermissionServlet.class);
         servletService.registerServlet(PlayerServlet.class);
         servletService.registerServlet(PluginServlet.class);
         servletService.registerServlet(RecipeServlet.class);
         servletService.registerServlet(RegistryServlet.class);
-        servletService.registerServlet(ServletServlet.class);
+        servletService.registerServlet(ServerServlet.class);
         servletService.registerServlet(TileEntityServlet.class);
         servletService.registerServlet(UserServlet.class);
         servletService.registerServlet(WorldServlet.class);
 
         // Other plugin integrations
+        try {
+            Class.forName("com.mcsimonflash.sponge.activetime.ActiveTime");
+            logger.info("  Integrating with ActiveTime...");
+            servletService.registerServlet(ActiveTimeServlet.class);
+        } catch (ClassNotFoundException ignored) { }
+
         try {
             Class.forName("com.codehusky.huskycrates.HuskyCrates");
             logger.info("  Integrating with HuskyCrates...");
@@ -422,25 +396,22 @@ public class WebAPI {
         Timings.STARTUP.stopTiming();
     }
 
+    // Reusable setup function, for starting and reloading
     private void init(Player triggeringPlayer) {
         Timings.STARTUP.startTiming();
 
         logger.info("Loading configuration...");
 
-        Tuple<ConfigurationLoader, ConfigurationNode> tup = Util.loadWithDefaults("config.conf", "defaults/config.conf");
-        ConfigurationNode config = tup.getSecond();
+        MainConfig mainConfig = Util.loadConfig("config.conf", new MainConfig());
 
         // Save important config values to variables
-        devMode = config.getNode("devMode").getBoolean();
-        reportErrors = config.getNode("reportErrors").getBoolean();
-        serverHost = config.getNode("host").getString();
-        serverPortHttp = config.getNode("http").getInt(-1);
-        serverPortHttps = config.getNode("https").getInt(-1);
-        adminPanelEnabled = config.getNode("adminPanel").getBoolean();
-        keyStoreLocation = config.getNode("customKeyStore").getString();
-        keyStorePassword = config.getNode("customKeyStorePassword").getString();
-        keyStoreMgrPassword = config.getNode("customKeyStoreManagerPassword").getString();
-        CmdServlet.CMD_WAIT_TIME = config.getNode("cmdWaitTime").getInt();
+        devMode = mainConfig.devMode;
+        reportErrors = mainConfig.reportErrors;
+        adminPanelEnabled = mainConfig.adminPanel;
+        CmdServlet.CMD_WAIT_TIME = mainConfig.cmdWaitTime;
+
+        // Create our WebServer
+        server = new WebServer(logger, mainConfig);
 
         if (devMode) {
             logger.warn("Web-API IS RUNNING IN DEV MODE. USING NON-SHADOWED REFERENCES! ERROR REPORTING IS OFF!");
@@ -453,11 +424,9 @@ public class WebAPI {
             reportErrors = false;
         }
 
-        authHandler.init();
+        AuthenticationProvider.init();
 
-        blockService.init(config);
-
-        extensionService.init();
+        blockService.init(mainConfig);
 
         cacheService.init();
 
@@ -478,186 +447,6 @@ public class WebAPI {
         }
 
         Timings.STARTUP.stopTiming();
-    }
-    private void startWebServer(Player player) {
-        // Start web server
-        logger.info("Starting Web Server...");
-
-        asyncExecutor.execute(() -> {
-            try {
-                server = new Server();
-
-                // HTTP config
-                HttpConfiguration httpConfig = new HttpConfiguration();
-                httpConfig.setOutputBufferSize(32768);
-
-                String baseUri = null;
-
-                // HTTP
-                if (serverPortHttp >= 0) {
-                    if (serverPortHttp < 1024) {
-                        logger.warn("You are using an HTTP port < 1024 which is not recommended! \n" +
-                                "This might cause errors when not running the server as root/admin. \n" +
-                                "Running the server as root/admin is not recommended. " +
-                                "Please use a port above 1024 for HTTP."
-                        );
-                    }
-                    ServerConnector httpConn = new ServerConnector(server, new HttpConnectionFactory(httpConfig));
-                    httpConn.setHost(serverHost);
-                    httpConn.setPort(serverPortHttp);
-                    httpConn.setIdleTimeout(30000);
-                    server.addConnector(httpConn);
-
-                    baseUri = "http://" + serverHost + ":" + serverPortHttp;
-                }
-
-                // HTTPS
-                if (serverPortHttps >= 0) {
-                    if (serverPortHttps < 1024) {
-                        logger.warn("You are using an HTTPS port < 1024 which is not recommended! \n" +
-                                "This might cause errors when not running the server as root/admin. \n" +
-                                "Running the server as root/admin is not recommended. " +
-                                "Please use a port above 1024 for HTTPS."
-                        );
-                    }
-
-                    // Update http config
-                    httpConfig.setSecureScheme("https");
-                    httpConfig.setSecurePort(serverPortHttps);
-
-                    String loc = keyStoreLocation;
-                    String pw = keyStorePassword;
-                    String mgrPw = keyStoreMgrPassword;
-                    if (loc == null || loc.isEmpty()) {
-                        loc = Sponge.getAssetManager().getAsset(WebAPI.getInstance(), "keystore.jks")
-                                .map(a -> a.getUrl().toString()).orElse("");
-                        pw = "mX4z%&uJ2E6VN#5f";
-                        mgrPw = "mX4z%&uJ2E6VN#5f";
-                    }
-
-                    // SSL Factory
-                    SslContextFactory sslFactory = new SslContextFactory();
-                    sslFactory.setKeyStorePath(loc);
-                    sslFactory.setKeyStorePassword(pw);
-                    sslFactory.setKeyManagerPassword(mgrPw);
-
-                    // HTTPS config
-                    HttpConfiguration httpsConfig = new HttpConfiguration(httpConfig);
-                    SecureRequestCustomizer src = new SecureRequestCustomizer();
-                    src.setStsMaxAge(2000);
-                    src.setStsIncludeSubDomains(true);
-                    httpsConfig.addCustomizer(src);
-
-
-                    ServerConnector httpsConn = new ServerConnector(server,
-                            new SslConnectionFactory(sslFactory, HttpVersion.HTTP_1_1.asString()),
-                            new HttpConnectionFactory(httpsConfig)
-                    );
-                    httpsConn.setHost(serverHost);
-                    httpsConn.setPort(serverPortHttps);
-                    httpsConn.setIdleTimeout(30000);
-                    server.addConnector(httpsConn);
-
-                    baseUri = "https://" + serverHost + ":" + serverPortHttps;
-                }
-
-                if (baseUri == null) {
-                    logger.error("You have disabled both HTTP and HTTPS - The WebAPI will be unreachable!");
-                }
-
-                // Add error handler
-                server.addBean(new ErrorHandler(server));
-
-                // Collection of all handlers
-                List<Handler> mainHandlers = new LinkedList<>();
-
-                // Asset handlers
-                mainHandlers.add(newContext("/docs", new AssetHandler("pages/redoc.html")));
-                mainHandlers.add(newContext("/swagger", new AssetHandler("swagger", (path) -> {
-                    if (!path.endsWith("swagger/index.yaml"))
-                        return null;
-                    return (data) -> {
-                        String text = new String(data);
-                        text = text.replaceFirst("<host>", serverHost + ":" + serverPortHttp);
-                        text = text.replaceFirst("<version>", Constants.VERSION);
-                        return text.getBytes();
-                    };
-                })));
-
-                if (adminPanelEnabled) {
-                    // Rewrite handler
-                    RewriteHandler rewrite = new RewriteHandler();
-                    rewrite.setRewriteRequestURI(true);
-                    rewrite.setRewritePathInfo(true);
-
-                    RedirectPatternRule redirect = new RedirectPatternRule();
-                    redirect.setPattern("/*");
-                    redirect.setLocation("/admin");
-                    rewrite.addRule(redirect);
-                    mainHandlers.add(newContext("/", rewrite));
-
-                    mainHandlers.add(newContext("/admin", new AssetHandler("admin")));
-                }
-
-                // Setup all servlets
-                servletService.init();
-
-                // Main servlet context
-                ServletContextHandler servletsContext = new ServletContextHandler();
-                servletsContext.addServlet(ApiServlet.class, "/*");
-
-                // Use a list to make requests first go through the auth handler and rate-limit handler
-                HandlerList list = new HandlerList();
-                list.setHandlers(new Handler[]{ authHandler, new RateLimitHandler(), servletsContext });
-                mainHandlers.add(newContext("/api", list));
-
-                // Add collection of handlers to server
-                ContextHandlerCollection coll = new ContextHandlerCollection();
-                coll.setHandlers(mainHandlers.toArray(new Handler[mainHandlers.size()]));
-                server.setHandler(coll);
-
-                server.start();
-
-                if (adminPanelEnabled)
-                    logger.info("AdminPanel: " + baseUri + "/admin");
-                logger.info("API Docs: " + baseUri + "/docs");
-            } catch (SocketException e) {
-                logger.error("Web-API webserver could not start, probably because one of the ports needed for HTTP " +
-                        "and/or HTTPS are in use or not accessible (ports below 1024 are protected)");
-            } catch (MultiException e) {
-                e.getThrowables().forEach(t -> {
-                    if (t instanceof SocketException) {
-                        logger.error("Web-API webserver could not start, probably because one of the ports needed for HTTP " +
-                                "and/or HTTPS are in use or not accessible (ports below 1024 are protected)");
-                    } else {
-                        t.printStackTrace();
-                        WebAPI.sentryCapture(t);
-                    }
-                });
-            } catch (Exception e) {
-                e.printStackTrace();
-                WebAPI.sentryCapture(e);
-            }
-
-            if (player != null) {
-                player.sendMessage(Text.builder()
-                        .color(TextColors.AQUA)
-                        .append(Text.of("[" + Constants.NAME + "] The web server has been restarted!"))
-                        .toText()
-                );
-            }
-        });
-    }
-    private void stopWebServer() {
-        if (server != null) {
-            try {
-                server.stop();
-                server = null;
-            } catch (Exception e) {
-                e.printStackTrace();
-                if (WebAPI.reportErrors()) WebAPI.sentryCapture(e);
-            }
-        }
     }
 
     private void checkForUpdates() {
@@ -729,17 +518,10 @@ public class WebAPI {
         });
     }
 
-    private ContextHandler newContext(String path, Handler handler) {
-        ContextHandler context = new ContextHandler();
-        context.setContextPath(path);
-        context.setHandler(handler);
-        return context;
-    }
-
     // Event listeners
     @Listener
     public void onServerStart(GameStartedServerEvent event) {
-        startWebServer(null);
+        server.start(null);
 
         checkForUpdates();
 
@@ -757,28 +539,18 @@ public class WebAPI {
         }));
         metrics.addCustomChart(new Metrics.SimplePie("report_errors", () -> reportErrors ? "Yes" : "No"));
         metrics.addCustomChart(new Metrics.SimplePie("admin_panel", () -> adminPanelEnabled ? "Yes" : "No"));
-        metrics.addCustomChart(new Metrics.SimpleBarChart("protocols", () -> {
-            Map<String, Integer> map = new HashMap<>();
-            map.put("HTTP", serverPortHttp >= 0 ? 1 : 0);
-            map.put("HTTPS", serverPortHttps >= 0 ? 1 : 0);
-            return map;
-        }));
         metrics.addCustomChart(new Metrics.SimpleBarChart("servlets", () -> {
             Map<String, Integer> map = new HashMap<>();
-            Collection<Class<? extends BaseServlet>> servlets = servletService.getLoadedServlets().values();
+            Collection<Class<? extends BaseServlet>> servlets = servletService.getRegisteredServlets().values();
             for (Class<? extends BaseServlet> servlet : servlets) {
-                map.put(servlet.getClass().getName(), 1);
+                map.put(servlet.getName(), 1);
             }
             return map;
         }));
-
-        webHookService.notifyHooks(WebHookService.WebHookType.SERVER_START, event);
     }
     @Listener
     public void onServerStop(GameStoppedServerEvent event) {
-        webHookService.notifyHooks(WebHookService.WebHookType.SERVER_STOP, event);
-
-        stopWebServer();
+        server.stop();
     }
     @Listener
     public void onReload(GameReloadEvent event) {
@@ -789,114 +561,15 @@ public class WebAPI {
         cacheService.updatePlugins();
         cacheService.updateCommands();
 
-        stopWebServer();
+        server.stop();
 
         init(p.orElse(null));
 
-        startWebServer(p.orElse(null));
+        server.start(p.orElse(null));
 
         checkForUpdates();
 
         logger.info("Reloaded " + Constants.NAME);
-    }
-
-    @Listener(order = Order.POST)
-    public void onWorldLoad(LoadWorldEvent event) {
-        cacheService.updateWorld(event.getTargetWorld());
-
-        webHookService.notifyHooks(WebHookService.WebHookType.WORLD_LOAD, event);
-    }
-    @Listener(order = Order.POST)
-    public void onWorldUnload(UnloadWorldEvent event) {
-        cacheService.updateWorld(event.getTargetWorld().getProperties());
-
-        webHookService.notifyHooks(WebHookService.WebHookType.WORLD_UNLOAD, event);
-    }
-    @Listener(order = Order.POST)
-    public void onWorldSave(SaveWorldEvent event) {
-        webHookService.notifyHooks(WebHookService.WebHookType.WORLD_SAVE, event);
-    }
-
-    @Listener(order = Order.POST)
-    public void onPlayerJoin(ClientConnectionEvent.Join event) {
-        cacheService.updatePlayer(event.getTargetEntity());
-
-        webHookService.notifyHooks(WebHookService.WebHookType.PLAYER_JOIN, event);
-    }
-    @Listener(order = Order.POST)
-    public void onPlayerLeave(ClientConnectionEvent.Disconnect event) {
-        // Send the message first because the player is removed from cache afterwards
-        webHookService.notifyHooks(WebHookService.WebHookType.PLAYER_LEAVE, event);
-
-        cacheService.removePlayer(event.getTargetEntity().getUniqueId());
-    }
-
-    @Listener(order = Order.POST)
-    public void onUserKick(KickPlayerEvent event) {
-        webHookService.notifyHooks(WebHookService.WebHookType.PLAYER_KICK, event);
-    }
-    @Listener(order = Order.POST)
-    public void onUserBan(BanUserEvent event) {
-        webHookService.notifyHooks(WebHookService.WebHookType.PLAYER_BAN, event);
-    }
-
-    @Listener(order = Order.POST)
-    public void onEntitySpawn(SpawnEntityEvent event) {
-        webHookService.notifyHooks(WebHookService.WebHookType.ENTITY_SPAWN, event);
-    }
-    @Listener(order = Order.POST)
-    public void onEntityDespawn(DestructEntityEvent event) {
-        Entity ent = event.getTargetEntity();
-        if (ent instanceof Player) {
-            webHookService.notifyHooks(WebHookService.WebHookType.PLAYER_DEATH, event);
-        } else {
-            webHookService.notifyHooks(WebHookService.WebHookType.ENTITY_DESPAWN, event);
-        }
-    }
-    @Listener(order = Order.POST)
-    public void onEntityExpire(ExpireEntityEvent event) {
-        webHookService.notifyHooks(WebHookService.WebHookType.ENTITY_EXPIRE, event);
-    }
-
-    @Listener(order = Order.POST)
-    public void onPlayerChat(MessageChannelEvent.Chat event, @First Player player) {
-        CachedChatMessage msg = cacheService.addChatMessage(player, event);
-        webHookService.notifyHooks(WebHookService.WebHookType.CHAT, msg);
-    }
-
-    @Listener(order = Order.POST)
-    public void onInteractBlock(InteractBlockEvent event) {
-        webHookService.notifyHooks(WebHookService.WebHookType.INTERACT_BLOCK, event);
-    }
-    @Listener(order = Order.POST)
-    public void onInteractInventory(InteractInventoryEvent.Open event) {
-        webHookService.notifyHooks(WebHookService.WebHookType.INVENTORY_OPEN, event);
-    }
-    @Listener(order = Order.POST)
-    public void onInteractInventory(InteractInventoryEvent.Close event) {
-        webHookService.notifyHooks(WebHookService.WebHookType.INVENTORY_CLOSE, event);
-    }
-
-    @Listener(order = Order.POST)
-    public void onPlayerAdvancement(AdvancementEvent.Grant event) {
-        Player player = event.getTargetEntity();
-        webHookService.notifyHooks(WebHookService.WebHookType.ADVANCEMENT, event);
-    }
-
-    @Listener(order = Order.POST)
-    public void onGenerateChunk(GenerateChunkEvent event) {
-        webHookService.notifyHooks(WebHookService.WebHookType.GENERATE_CHUNK, event);
-    }
-
-    @Listener(order = Order.POST)
-    public void onExplosion(ExplosionEvent event) {
-        webHookService.notifyHooks(WebHookService.WebHookType.EXPLOSION, event);
-    }
-
-    @Listener(order = Order.POST)
-    public void onCommand(SendCommandEvent event) {
-        CachedCommandCall call = cacheService.addCommandCall(event);
-        webHookService.notifyHooks(WebHookService.WebHookType.COMMAND, call);
     }
 
     @Listener(order = Order.POST)
@@ -923,8 +596,6 @@ public class WebAPI {
                 logger.info("Block op " + on.getUUID() + " started");
                 break;
         }
-
-        webHookService.notifyHooks(WebHookService.WebHookType.BLOCK_OPERATION_STATUS, event);
     }
 
     // Execute a command
@@ -934,38 +605,45 @@ public class WebAPI {
     }
 
     // Run functions on the main server thread
-    public static void runOnMain(Runnable runnable) {
+    public static void runOnMain(Runnable runnable) throws WebApplicationException {
         if (Sponge.getServer().isMainThread()) {
             runnable.run();
         } else {
             CompletableFuture future = CompletableFuture.runAsync(runnable, WebAPI.syncExecutor);
             try {
                 future.get();
-            } catch (InterruptedException | ExecutionException e) {
+            } catch (InterruptedException ignored) {
+            } catch (ExecutionException e) {
+                // Rethrow any web application exceptions we get, because they're handled by the servlets
+                if (e.getCause() instanceof WebApplicationException)
+                    throw (WebApplicationException)e.getCause();
+
                 e.printStackTrace();
                 if (WebAPI.reportErrors()) WebAPI.sentryCapture(e);
+                throw new InternalServerErrorException(e.getMessage());
             }
         }
     }
-    public static <T> Optional<T> runOnMain(Supplier<T> supplier) {
+    public static <T> T runOnMain(Supplier<T> supplier) throws WebApplicationException {
         if (Sponge.getServer().isMainThread()) {
             Timings.RUN_ON_MAIN.startTiming();
             T obj = supplier.get();
             Timings.RUN_ON_MAIN.stopTiming();
-            return obj == null ? Optional.empty() : Optional.of(obj);
+            return obj;
         } else {
             CompletableFuture<T> future = CompletableFuture.supplyAsync(supplier, WebAPI.syncExecutor);
             try {
-                T obj = future.get();
-                if (obj == null)
-                    return Optional.empty();
-                return Optional.of(obj);
-            } catch (InterruptedException ignored) {
-                return Optional.empty();
+                return future.get();
+            } catch (InterruptedException e) {
+                throw new InternalServerErrorException(e.getMessage());
             } catch (ExecutionException e) {
+                // Rethrow any web application exceptions we get, because they're handled by the servlets
+                if (e.getCause() instanceof WebApplicationException)
+                    throw (WebApplicationException)e.getCause();
+
                 e.printStackTrace();
                 if (WebAPI.reportErrors()) WebAPI.sentryCapture(e);
-                return Optional.empty();
+                throw new InternalServerErrorException(e.getMessage());
             }
         }
     }
@@ -996,9 +674,9 @@ public class WebAPI {
         context.addExtra("memory_total", Runtime.getRuntime().totalMemory());
         context.addExtra("memory_free", Runtime.getRuntime().freeMemory());
 
-        context.addExtra("server_host", serverHost);
-        context.addExtra("server_port_http", serverPortHttp);
-        context.addExtra("server_port_https", serverPortHttps);
+        context.addExtra("server_host", server.getHost());
+        context.addExtra("server_port_http", server.getHttpPort());
+        context.addExtra("server_port_https", server.getHttpsPort());
 
         context.addExtra("sponge_api", spongeApi);
         context.addExtra("sponge_game", spongeGame);

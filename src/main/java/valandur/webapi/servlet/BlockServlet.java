@@ -1,74 +1,83 @@
 package valandur.webapi.servlet;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.flowpowered.math.vector.Vector3i;
-import org.eclipse.jetty.http.HttpMethod;
+import io.swagger.annotations.*;
 import org.spongepowered.api.block.BlockState;
 import valandur.webapi.api.block.IBlockOperation;
+import valandur.webapi.api.cache.world.ICachedWorld;
 import valandur.webapi.api.servlet.BaseServlet;
-import valandur.webapi.api.servlet.Endpoint;
-import valandur.webapi.api.servlet.Servlet;
+import valandur.webapi.api.servlet.ExplicitDetails;
+import valandur.webapi.api.servlet.Permission;
 import valandur.webapi.block.BlockChangeOperation;
 import valandur.webapi.block.BlockGetOperation;
-import valandur.webapi.cache.world.CachedWorld;
-import valandur.webapi.serialize.request.block.CreateOperationRequest;
-import valandur.webapi.servlet.base.ServletData;
+import valandur.webapi.serialize.view.block.BlockStateView;
 
-import javax.servlet.http.HttpServletResponse;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.*;
 
-@Servlet(basePath = "block")
+@Path("block")
+@Api(tags = { "Block" }, value = "Get information about blocks and manipulate them.")
+@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+@Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 public class BlockServlet extends BaseServlet {
 
-    @Endpoint(method = HttpMethod.GET, path = "/:world/:x/:y/:z", perm = "one")
-    public void getBlock(ServletData data, CachedWorld world, int x, int y, int z) {
+    @GET
+    @Path("/{world}/{x}/{y}/{z}")
+    @Permission("one")
+    @ApiOperation(
+            value = "Get a block",
+            notes = "Gets information about one block in the world.")
+    public BlockStateView getBlock(
+            @PathParam("world") @ApiParam("The uuid of the world to get the block from") ICachedWorld world,
+            @PathParam("x") @ApiParam("The x-coordinate of the block") int x,
+            @PathParam("y") @ApiParam("The y-coordinate of the block") int y,
+            @PathParam("z") @ApiParam("The z-coordinate of the block") int z) {
         Vector3i pos = new Vector3i(x, y, z);
-        Optional<BlockState> state = blockService.getBlockAt(world, pos);
-        if (!state.isPresent()) {
-            data.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not get world " + world.getName());
-            return;
-        }
-
-        data.addData("ok", true, false);
-        data.addData("position", pos, false);
-        data.addData("block", state.get(), true);
+        return new BlockStateView(blockService.getBlockAt(world, pos));
     }
 
-    @Endpoint(method = HttpMethod.GET, path = "/op", perm = "op.list")
-    public void getBlockOperations(ServletData data) {
-        data.addData("ok", true, false);
-        data.addData("operations", blockService.getBlockOperations(), data.getQueryParam("details").isPresent());
+    @GET
+    @Path("/op")
+    @ExplicitDetails
+    @Permission({ "op", "list" })
+    @ApiOperation(
+            value = "List block operations",
+            notes = "Returns a list of all the currently running block operations.")
+    public Collection<IBlockOperation> listBlockOperations() {
+        return blockService.getBlockOperations();
     }
 
-    @Endpoint(method = HttpMethod.POST, path = "/op", perm = "op.create")
-    public void createBlockOperation(ServletData data) {
-        Optional<CreateOperationRequest> optReq = data.getRequestBody(CreateOperationRequest.class);
-        if (!optReq.isPresent()) {
-            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid block data: " + data.getLastParseError().getMessage());
-            return;
-        }
+    @POST
+    @Path("/op")
+    @Permission({ "op", "create" })
+    @ApiOperation(
+            value = "Create a block operation",
+            response = IBlockOperation.class,
+            notes = "Start a request to get or change blocks on the server.")
+    public Response createBlockOperation(CreateBlockOperationRequest req)
+            throws BadRequestException, NotAcceptableException, URISyntaxException {
 
-        CreateOperationRequest req = optReq.get();
+        if (req == null) {
+            throw new BadRequestException("Request body is required");
+        }
 
         // Check world
         if (!req.getWorld().isPresent()) {
-            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "No valid world provided");
-            return;
+            throw new BadRequestException("No valid world provided");
         }
 
         // Check min
         if (req.getMin() == null) {
-            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Min coordinates missing");
-            return;
+            throw new BadRequestException("Min coordinates missing");
         }
 
         // Check max
         if (req.getMax() == null) {
-            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Max coordinates missing");
-            return;
+            throw new BadRequestException("Max coordinates missing");
         }
 
         // Swap around min & max if needed
@@ -83,18 +92,18 @@ public class BlockServlet extends BaseServlet {
         if (req.getType() == IBlockOperation.BlockOperationType.GET) {
             // Check volume size
             if (blockService.getMaxGetBlocks() > 0 && numBlocks > blockService.getMaxGetBlocks()) {
-                data.sendError(HttpServletResponse.SC_NOT_ACCEPTABLE, "Size is " + numBlocks +
-                        " blocks, which is larger than the maximum of " + blockService.getMaxGetBlocks() + " blocks");
-                return;
+                throw new NotAcceptableException("Size is " + numBlocks +
+                        " blocks, which is larger than the maximum of " +
+                        blockService.getMaxGetBlocks() + " blocks");
             }
 
             op = blockService.startBlockOperation(new BlockGetOperation(req.getWorld().get(), min, max));
         } else if (req.getType() == IBlockOperation.BlockOperationType.CHANGE) {
             // Check volume size
             if (blockService.getMaxUpdateBlocks() > 0 && numBlocks > blockService.getMaxUpdateBlocks()) {
-                data.sendError(HttpServletResponse.SC_NOT_ACCEPTABLE, "Area size is " + numBlocks +
-                        " blocks, which is larger than the maximum of " + blockService.getMaxUpdateBlocks() + " blocks");
-                return;
+                throw new NotAcceptableException("Size is " + numBlocks +
+                        " blocks, which is larger than the maximum of " +
+                        blockService.getMaxUpdateBlocks() + " blocks");
             }
 
             // Collect a list of blocks we want to update
@@ -112,13 +121,11 @@ public class BlockServlet extends BaseServlet {
                         }
                     }
                 } catch (Exception e) {
-                    data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Could not process block state: " + e.getMessage());
-                    return;
+                    throw new BadRequestException("Could not process block state: " + e.getMessage());
                 }
             } else {
                 if (req.getBlocks() == null) {
-                    data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Either 'block' or 'blocks' has to be defined on each area");
-                    return;
+                    throw new BadRequestException("Either 'block' or 'blocks' has to be defined on each area");
                 }
 
                 for (int x = 0; x < size.getX(); x++) {
@@ -142,9 +149,7 @@ public class BlockServlet extends BaseServlet {
                             try {
                                 blocks.put(new Vector3i(min.getX() + x, min.getY() + y, min.getZ() + z), block);
                             } catch (Exception e) {
-                                data.sendError(HttpServletResponse.SC_BAD_REQUEST,
-                                        "Could not process block state: " + e.getMessage());
-                                return;
+                                throw new BadRequestException("Could not process block state: " + e.getMessage());
                             }
                         }
                     }
@@ -153,66 +158,130 @@ public class BlockServlet extends BaseServlet {
 
             op = blockService.startBlockOperation(new BlockChangeOperation(req.getWorld().get(), min, max, blocks));
         } else {
-            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Unknown block operation type");
-            return;
+            throw new BadRequestException("Unknown block operation type");
         }
 
-        data.setStatus(HttpServletResponse.SC_CREATED);
-        data.setHeader("Location", op.getLink());
-
-        data.addData("ok", true, false);
-        data.addData("operation", op, false);
+        return Response.created(new URI(null, null, op.getLink(), null)).entity(op).build();
     }
 
-    @Endpoint(method = HttpMethod.GET, path = "/op/:uuid", perm = "op.one")
-    public void getBlockOperation(ServletData data, UUID uuid) {
+    @GET
+    @Path("/op/{uuid}")
+    @Permission({ "op", "one" })
+    @ApiOperation(
+            value = "Get a block operation",
+            notes = "Gets details about a specific block operation")
+    public IBlockOperation getBlockOperation(
+            @PathParam("uuid") @ApiParam("The uuid of the block operation") UUID uuid)
+            throws NotFoundException {
         // Check block op
         Optional<IBlockOperation> op = blockService.getBlockOperation(uuid);
         if (!op.isPresent()) {
-            data.sendError(HttpServletResponse.SC_NOT_FOUND, "Block operation with UUID '" +
-                    uuid + "' could not be found");
-            return;
+            throw new NotFoundException("Block operation with UUID '" + uuid + "' could not be found");
         }
 
-        data.addData("ok", true, false);
-        data.addData("operation", op.get(), true);
+        return op.get();
     }
 
-    @Endpoint(method = HttpMethod.PUT, path = "/op/:uuid", perm = "op.change")
-    public void modifyBlockOperation(ServletData data, UUID uuid) {
-        JsonNode reqJson = data.getRequestBody();
+    @PUT
+    @Path("/op/{uuid}")
+    @Permission({ "op", "modify" })
+    @ApiOperation(
+            value = "Modify a block operation",
+            notes = "Modify an existing block operation to either pause or continue it.")
+    public IBlockOperation modifyBlockOperation(
+            @PathParam("uuid") @ApiParam("The uuid of the block operation") UUID uuid,
+            ModifyBlockOperationRequest req)
+            throws NotFoundException {
+
+        if (req == null) {
+            throw new BadRequestException("Request body is required");
+        }
 
         // Check block op
         Optional<IBlockOperation> op = blockService.getBlockOperation(uuid);
         if (!op.isPresent()) {
-            data.sendError(HttpServletResponse.SC_NOT_FOUND, "Block opeartion with UUID '" +
-                    uuid + "' could not be found");
-            return;
+            throw new NotFoundException("Block opeartion with UUID '" + uuid + "' could not be found");
         }
 
-        if (reqJson.get("pause").asBoolean()) {
+        if (req.isPaused()) {
             op.get().pause();
         } else {
             op.get().start();
         }
 
-        data.addData("ok", true, false);
-        data.addData("operation", op, true);
+        return op.get();
     }
 
-    @Endpoint(method = HttpMethod.DELETE, path = "/op/:uuid", perm = "op.delete")
-    public void deleteBlockOperation(ServletData data, UUID uuid) {
+    @DELETE
+    @Path("/op/{uuid}")
+    @Permission({ "op", "delete" })
+    @ApiOperation(
+            value = "Stop a block operation",
+            notes = "Cancel a pending or running block operation. **THIS DOES NOT UNDO THE BLOCK CHANGES**")
+    public IBlockOperation deleteBlockOperation(
+            @PathParam("uuid") @ApiParam("The uuid of the block operation") UUID uuid)
+            throws NotFoundException {
         // Check block op
         Optional<IBlockOperation> op = blockService.getBlockOperation(uuid);
         if (!op.isPresent()) {
-            data.sendError(HttpServletResponse.SC_NOT_FOUND, "Block operation with UUID '" +
-                    uuid + "' could not be found");
-            return;
+            throw new NotFoundException("Block operation with UUID '" + uuid + "' could not be found");
         }
 
         op.get().stop(null);
 
-        data.addData("ok", true, false);
-        data.addData("operation", op.get(), true);
+        return op.get();
+    }
+
+
+    @ApiModel("CreateBlockOperationRequest")
+        public static class CreateBlockOperationRequest {
+
+        private IBlockOperation.BlockOperationType type;
+        @ApiModelProperty(value = "The type of the block operation", required = true)
+        public IBlockOperation.BlockOperationType getType() {
+            return type;
+        }
+
+        private ICachedWorld world;
+        @ApiModelProperty(dataType = "string", value = "The world that the operation is run in", required = true)
+        public Optional<ICachedWorld> getWorld() {
+            return world != null ? Optional.of(world) : Optional.empty();
+        }
+
+        private Vector3i min;
+        @ApiModelProperty(value = "The minimum world coordinates spanning the cube where the operation is run",
+                required = true)
+        public Vector3i getMin() {
+            return min;
+        }
+
+        private Vector3i max;
+        @ApiModelProperty(value = "The maximum world coordinates spanning the cube where the operation is run",
+                required = true)
+        public Vector3i getMax() {
+            return max;
+        }
+
+        private BlockState block;
+        @ApiModelProperty("The block that we want to change all other blocks into (when using an UPDATE operation")
+        public BlockState getBlock() {
+            return block;
+        }
+
+        private BlockState[][][] blocks;
+        @ApiModelProperty("An array of blocks defining what each block in the spanned cube")
+        public BlockState[][][] getBlocks() {
+            return blocks;
+        }
+    }
+
+    @ApiModel("ModifyBlockOperationRequest")
+        public static class ModifyBlockOperationRequest {
+
+        private boolean paused;
+        @ApiModelProperty("True if the operation should be paused, false otherwise")
+        public boolean isPaused() {
+            return paused;
+        }
     }
 }

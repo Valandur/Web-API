@@ -1,9 +1,11 @@
 package valandur.webapi.servlet;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import org.eclipse.jetty.http.HttpMethod;
+import com.flowpowered.math.vector.Vector3d;
+import com.flowpowered.math.vector.Vector3i;
+import io.swagger.annotations.*;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.EntityType;
+import org.spongepowered.api.event.cause.entity.damage.DamageType;
 import org.spongepowered.api.event.cause.entity.damage.source.DamageSource;
 import org.spongepowered.api.item.inventory.Carrier;
 import org.spongepowered.api.item.inventory.Inventory;
@@ -13,98 +15,95 @@ import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.cache.entity.ICachedEntity;
+import valandur.webapi.api.cache.misc.CachedCatalogType;
 import valandur.webapi.api.cache.world.ICachedWorld;
 import valandur.webapi.api.servlet.BaseServlet;
-import valandur.webapi.api.servlet.Endpoint;
-import valandur.webapi.api.servlet.Servlet;
+import valandur.webapi.api.servlet.ExplicitDetails;
+import valandur.webapi.api.servlet.Permission;
 import valandur.webapi.cache.entity.CachedEntity;
-import valandur.webapi.serialize.request.entity.CreateEntityRequest;
-import valandur.webapi.serialize.request.entity.UpdateEntityRequest;
-import valandur.webapi.serialize.request.misc.DamageRequest;
-import valandur.webapi.servlet.base.ServletData;
-import valandur.webapi.util.Util;
+import valandur.webapi.serialize.objects.ExecuteMethodRequest;
+import valandur.webapi.serialize.objects.ExecuteMethodResponse;
 
-import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.function.Predicate;
 
-@Servlet(basePath = "entity")
+@Path("entity")
+@Api(tags = { "Entity" }, value = "List all entities and get detailed information about them.")
+@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+@Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 public class EntityServlet extends BaseServlet {
 
-    @Endpoint(method = HttpMethod.GET, path = "/", perm = "list")
-    public void getEntities(ServletData data) {
-        Optional<String> worldUuid = data.getQueryParam("world");
-        Optional<String> typeId = data.getQueryParam("type");
-        Optional<String> limitString = data.getQueryParam("limit");
-        Predicate<Entity> filter = e -> !typeId.isPresent() || e.getType().getId().equalsIgnoreCase(typeId.get());
-        int limit = Integer.parseInt(limitString.orElse("0"));
+    @GET
+    @ExplicitDetails
+    @Permission("list")
+    @ApiOperation(value = "List entities", notes = "Get a list of all entities on the server (in all worlds).")
+    public Collection<ICachedEntity> listEntities(
+            @QueryParam("world") @ApiParam("The world to filter the entities by") ICachedWorld world,
+            @QueryParam("type") @ApiParam("The type id of the entities to filter by") String typeId,
+            @QueryParam("min") @ApiParam("The minimum coordinates at which the entity must be, min=x|y|z") Vector3i min,
+            @QueryParam("max") @ApiParam("The maximum coordinates at which the entity must be, max=x|y|z") Vector3i max,
+            @QueryParam("limit") @ApiParam("The maximum amount of entities returned") int limit) {
+        Predicate<Entity> filter = e -> typeId == null || e.getType().getId().equalsIgnoreCase(typeId);
 
-        if (worldUuid.isPresent()) {
-            Optional<ICachedWorld> world = cacheService.getWorld(worldUuid.get());
-            if (!world.isPresent()) {
-                data.sendError(HttpServletResponse.SC_BAD_REQUEST, "World with UUID '" + worldUuid + "' could not be found");
-                return;
-            }
-
-            Optional<Collection<ICachedEntity>> entities = cacheService.getEntities(world.get(), filter, limit);
-            if (!entities.isPresent()) {
-                data.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not get entities");
-                return;
-            }
-
-            data.addData("ok", true, false);
-            data.addData("entities", entities.get(), data.getQueryParam("details").isPresent());
-            return;
-        }
-
-        Optional<Collection<ICachedEntity>> coll = cacheService.getEntities(filter, limit);
-        if (!coll.isPresent()) {
-            data.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not get entities");
-            return;
-        }
-
-        data.addData("ok", true, false);
-        data.addData("entities", coll.get(), data.getQueryParam("details").isPresent());
+        return cacheService.getEntities(world, min, max, filter, limit);
     }
 
-    @Endpoint(method = HttpMethod.GET, path = "/:entity", perm = "one")
-    public void getEntity(ServletData data, CachedEntity entity) {
-        Optional<String> strFields = data.getQueryParam("fields");
-        Optional<String> strMethods = data.getQueryParam("methods");
-        if (strFields.isPresent() || strMethods.isPresent()) {
-            String[] fields = strFields.map(s -> s.split(",")).orElse(new String[]{});
-            String[] methods = strMethods.map(s -> s.split(",")).orElse(new String[]{});
-            Tuple extra = cacheService.getExtraData(entity, data.responseIsXml(), fields, methods);
-            data.addData("fields", extra.getFirst(), true);
-            data.addData("methods", extra.getSecond(), true);
+    @GET
+    @Path("/{entity}")
+    @Permission("one")
+    @ApiOperation(
+            value = "Get entity",
+            notes = "Get detailed information about an entity.")
+    public ICachedEntity getEntity(
+            @PathParam("entity") @ApiParam("The uuid of the entity") UUID uuid)
+            throws NotFoundException {
+        Optional<ICachedEntity> optEntity = WebAPI.getCacheService().getEntity(uuid);
+        if (!optEntity.isPresent()) {
+            throw new NotFoundException("Entity with UUID '" + uuid + "' could not be found");
         }
 
-        data.addData("ok", true, false);
-        data.addData("entity", entity, true);
+        return optEntity.get();
     }
 
-    @Endpoint(method = HttpMethod.PUT, path = "/:entity", perm = "change")
-    public void updateEntity(ServletData data, CachedEntity entity) {
-        Optional<UpdateEntityRequest> optReq = data.getRequestBody(UpdateEntityRequest.class);
-        if (!optReq.isPresent()) {
-            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid entity data: " + data.getLastParseError().getMessage());
-            return;
+    @PUT
+    @Path("/{entity}")
+    @Permission("modify")
+    @ApiOperation(
+            value = "Modify an entity",
+            notes = "Modify the properties of an existing entity.")
+    public ICachedEntity modifyEntity(
+            @PathParam("entity") @ApiParam("The uuid of the entity") UUID uuid,
+            UpdateEntityRequest req)
+            throws NotFoundException, BadRequestException {
+
+        if (req == null) {
+            throw new BadRequestException("Request body is required");
         }
 
-        final UpdateEntityRequest req = optReq.get();
+        Optional<ICachedEntity> optEntity = WebAPI.getCacheService().getEntity(uuid);
+        if (!optEntity.isPresent()) {
+            throw new NotFoundException("Entity with UUID '" + uuid + "' could not be found");
+        }
 
-        Optional<ICachedEntity> resEntity = WebAPI.runOnMain(() -> {
-            Optional<Entity> optLive = entity.getLive();
+        return WebAPI.runOnMain(() -> {
+            Optional<Entity> optLive = optEntity.get().getLive();
             if (!optLive.isPresent())
-                return null;
+                throw new InternalServerErrorException("Could not get live entity");
 
             Entity live = optLive.get();
 
             if (req.getWorld().isPresent()) {
                 Optional<World> optWorld = req.getWorld().get().getLive();
                 if (!optWorld.isPresent())
-                    return null;
+                    throw new InternalServerErrorException("Could not get live world");
 
                 if (req.getPosition() != null) {
                     live.transferToWorld(optWorld.get(), req.getPosition());
@@ -128,16 +127,21 @@ public class EntityServlet extends BaseServlet {
             if (req.getDamage() != null) {
                 DamageRequest dmgReq = req.getDamage();
                 DamageSource.Builder builder = DamageSource.builder();
-                if (dmgReq.getDamageType().isPresent())
-                    builder.type(dmgReq.getDamageType().get());
+
+                if (dmgReq.getType().isPresent()) {
+                    Optional<DamageType> optDmgType = dmgReq.getType().get().getLive(DamageType.class);
+                    if (!optDmgType.isPresent())
+                        throw new InternalServerErrorException("Could not get live damage type");
+
+                    builder.type(optDmgType.get());
+                }
 
                 live.damage(req.getDamage().getAmount(), builder.build());
             }
 
             if (req.hasInventory()) {
                 if (!(live instanceof Carrier)) {
-                    data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Entity does not have an inventory!");
-                    return null;
+                    throw new BadRequestException("Entity does not have an inventory!");
                 }
 
                 try {
@@ -147,115 +151,204 @@ public class EntityServlet extends BaseServlet {
                         inv.offer(stack);
                     }
                 } catch (Exception e) {
-                    return null;
+                    throw new InternalServerErrorException(e.getMessage());
                 }
             }
 
             return new CachedEntity(live);
         });
-
-        data.addData("ok", resEntity.isPresent(), false);
-        data.addData("entity", resEntity.orElse(null), true);
     }
 
-    @Endpoint(method = HttpMethod.POST, path = "/", perm = "create")
-    public void createEntity(ServletData data) {
-        Optional<CreateEntityRequest> optReq = data.getRequestBody(CreateEntityRequest.class);
-        if (!optReq.isPresent()) {
-            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid entity data: " + data.getLastParseError().getMessage());
-            return;
-        }
+    @POST
+    @Permission("create")
+    @ApiOperation(
+            value = "Spawn an entity",
+            response = ICachedEntity.class,
+            notes = "Creates & Spawns a new entity with the specified properties.")
+    public Response createEntity(CreateEntityRequest req)
+            throws BadRequestException, URISyntaxException {
 
-        CreateEntityRequest req = optReq.get();
+        if (req == null) {
+            throw new BadRequestException("Request body is required");
+        }
 
         Optional<ICachedWorld> optWorld = req.getWorld();
         if (!optWorld.isPresent()) {
-            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "No valid world provided");
-            return;
+            throw new BadRequestException("No valid world provided");
         }
 
-        Optional<EntityType> optEntType = req.getEntityType();
+        Optional<CachedCatalogType<EntityType>> optEntType = req.getType();
         if (!optEntType.isPresent()) {
-            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "No valid entity type provided");
-            return;
+            throw new BadRequestException("No valid entity type provided");
         }
 
         if (req.getPosition() == null) {
-            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "No valid position provided");
-            return;
+            throw new BadRequestException("No valid position provided");
         }
 
-        Optional<ICachedEntity> resEntity = WebAPI.runOnMain(() -> {
+        CachedEntity ent = WebAPI.runOnMain(() -> {
             Optional<World> optLive = optWorld.get().getLive();
             if (!optLive.isPresent())
-                return null;
+                throw new InternalServerErrorException("Could not get live entity");
+
+            Optional<EntityType> optLiveType = optEntType.get().getLive(EntityType.class);
+            if (!optLiveType.isPresent())
+                throw new InternalServerErrorException("Could not get live entity type");
 
             World w = optLive.get();
-            Entity e = w.createEntity(optEntType.get(), req.getPosition());
+            Entity e = w.createEntity(optLiveType.get(), req.getPosition());
 
             if (w.spawnEntity(e)) {
                 return new CachedEntity(e);
             } else {
                 e.remove();
-                return null;
+                throw new InternalServerErrorException("Could not spawn entity");
             }
         });
 
-        if (!resEntity.isPresent()) {
-            data.addData("ok", false, false);
-            return;
-        }
-
-        data.setStatus(HttpServletResponse.SC_CREATED);
-        data.setHeader("Location", resEntity.get().getLink());
-        data.addData("ok", true, false);
-        data.addData("entity", resEntity.get(), true);
+        return Response.created(new URI(null, null, ent.getLink(), null)).entity(ent).build();
     }
 
-    @Endpoint(method = HttpMethod.POST, path = "/:entity/method", perm = "method")
-    public void executeMethod(ServletData data, CachedEntity entity) {
-        final JsonNode reqJson = data.getRequestBody();
-        if (!reqJson.has("method")) {
-            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Request must define the 'method' property");
-            return;
+    @POST
+    @Path("/{entity}/method")
+    @Permission("method")
+    @ApiOperation(
+            value = "Execute a method",
+            notes = "Provides direct access to the underlaying entity object and can execute any method on it.")
+    public ExecuteMethodResponse executeMethod(
+            @PathParam("entity") @ApiParam("The uuid of the entity") UUID uuid,
+            ExecuteMethodRequest req)
+            throws NotFoundException, BadRequestException {
+
+        if (req == null) {
+            throw new BadRequestException("Request body is required");
         }
 
-        String mName = reqJson.get("method").asText();
-        Optional<Tuple<Class[], Object[]>> params = Util.parseParams(reqJson.get("params"));
-
-        if (!params.isPresent()) {
-            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid parameters");
-            return;
+        Optional<ICachedEntity> optEntity = WebAPI.getCacheService().getEntity(uuid);
+        if (!optEntity.isPresent()) {
+            throw new NotFoundException("Entity with UUID '" + uuid + "' could not be found");
         }
 
-        Optional<Object> res = cacheService.executeMethod(entity, mName, params.get().getFirst(), params.get().getSecond());
-        if (!res.isPresent()) {
-            data.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not get entity");
-            return;
+        if (req.getMethod() == null || req.getMethod().isEmpty()) {
+            throw new BadRequestException("Method must be specified");
         }
 
-        data.addData("ok", true, false);
-        data.addData("entity", entity, true);
-        data.addData("result", res.get(), true);
+        String mName = req.getMethod();
+        Tuple<Class[], Object[]> params = req.getParsedParameters();
+        Object res = cacheService.executeMethod(optEntity.get(), mName, params.getFirst(), params.getSecond());
+        return new ExecuteMethodResponse(optEntity.get(), res);
     }
 
-    @Endpoint(method = HttpMethod.DELETE, path = "/:entity", perm = "delete")
-    public void removeEntity(ServletData data, CachedEntity entity) {
-        Optional<Boolean> deleted = WebAPI.runOnMain(() -> {
-            Optional<Entity> live = entity.getLive();
+    @DELETE
+    @Path("/{entity}")
+    @Permission("delete")
+    @ApiOperation(
+            value = "Destroy an entity",
+            notes = "Destroys an entity.")
+    public ICachedEntity removeEntity(
+            @PathParam("entity") @ApiParam("The uuid of the entity") UUID uuid)
+            throws NotFoundException {
+        Optional<ICachedEntity> optEntity = WebAPI.getCacheService().getEntity(uuid);
+        if (!optEntity.isPresent()) {
+            throw new NotFoundException("Entity with UUID '" + uuid + "' could not be found");
+        }
+
+        WebAPI.runOnMain(() -> {
+            Optional<Entity> live = optEntity.get().getLive();
             if (!live.isPresent())
-                return false;
+                throw new InternalServerErrorException("Could not get live entity");
 
             live.get().remove();
-            return true;
         });
 
-        if (!deleted.isPresent() || !deleted.get()) {
-            data.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not delete entity " + entity.getUUID());
-            return;
+        return optEntity.get();
+    }
+
+
+    @ApiModel("CreateEntityRequest")
+        public static class CreateEntityRequest {
+
+        private ICachedWorld world;
+        @ApiModelProperty(dataType = "string", value = "The world that the entity will be spawned in", required = true)
+        public Optional<ICachedWorld> getWorld() {
+            return world != null ? Optional.of(world) : Optional.empty();
         }
 
-        data.addData("ok", true, false);
-        data.addData("entity", entity, true);
+        private Vector3d position;
+        @ApiModelProperty(value = "The position where the entity is spawned", required = true)
+        public Vector3d getPosition() {
+            return position;
+        }
+
+        private CachedCatalogType<EntityType> type;
+        @ApiModelProperty(dataType = "string", value = "The type of entity that will be spawned", required = true)
+        public Optional<CachedCatalogType<EntityType>> getType() {
+            return type != null ? Optional.of(type) : Optional.empty();
+        }
+    }
+
+    @ApiModel("UpdateEntityRequest")
+        public static class UpdateEntityRequest {
+
+        private ICachedWorld world;
+        @ApiModelProperty(dataType = "string", value = "The world that the entity will be moved to")
+        public Optional<ICachedWorld> getWorld() {
+            return world != null ? Optional.of(world) : Optional.empty();
+        }
+
+        private Vector3d position;
+        @ApiModelProperty("The position that the entity will be moved to")
+        public Vector3d getPosition() {
+            return position;
+        }
+
+        private Vector3d velocity;
+        @ApiModelProperty("The new speed of the entity")
+        public Vector3d getVelocity() {
+            return velocity;
+        }
+
+        private Vector3d rotation;
+        @ApiModelProperty("The new rotation of the entity")
+        public Vector3d getRotation() {
+            return rotation;
+        }
+
+        private Vector3d scale;
+        @ApiModelProperty("The new scale of the entity")
+        public Vector3d getScale() {
+            return scale;
+        }
+
+        private DamageRequest damage;
+        @ApiModelProperty("The damage the entity will take")
+        public DamageRequest getDamage() {
+            return damage;
+        }
+
+        private List<ItemStack> inventory;
+        @ApiModelProperty("The ItemStacks in the inventory of the entity")
+        public List<ItemStack> getInventory() throws Exception {
+            return inventory;
+        }
+        public boolean hasInventory() {
+            return inventory != null;
+        }
+    }
+
+    @ApiModel("DamageRequest")
+        public static class DamageRequest {
+
+        private Integer amount;
+        @ApiModelProperty("The amount of damage that should be dealt to the entity")
+        public Integer getAmount() {
+            return amount;
+        }
+
+        private CachedCatalogType<DamageType> type;
+        @ApiModelProperty(dataType = "string", value = "The type of damage that should be dealt")
+        public Optional<CachedCatalogType<DamageType>> getType() {
+            return type != null ? Optional.of(type) : Optional.empty();
+        }
     }
 }

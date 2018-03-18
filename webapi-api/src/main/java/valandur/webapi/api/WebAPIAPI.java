@@ -9,15 +9,16 @@ import org.spongepowered.api.plugin.Plugin;
 import org.spongepowered.api.scheduler.SpongeExecutorService;
 import valandur.webapi.api.block.IBlockService;
 import valandur.webapi.api.cache.ICacheService;
-import valandur.webapi.api.extension.IExtensionService;
 import valandur.webapi.api.hook.IWebHookService;
-import valandur.webapi.api.message.IMessageService;
+import valandur.webapi.api.message.IInteractiveMessageService;
 import valandur.webapi.api.permission.IPermissionService;
 import valandur.webapi.api.serialize.ISerializeService;
 import valandur.webapi.api.server.IServerService;
 import valandur.webapi.api.servlet.IServletService;
 import valandur.webapi.api.util.Constants;
 
+import javax.ws.rs.InternalServerErrorException;
+import javax.ws.rs.WebApplicationException;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -63,14 +64,6 @@ public class WebAPIAPI {
     }
 
     /**
-     * Gets the extension service from the Web-API. Used to load extensions to the Web-API
-     * @return An optional containing the extension service if it was loaded.
-     */
-    public static Optional<IExtensionService> getExtensionService() {
-        return Sponge.getServiceManager().provide(IExtensionService.class);
-    }
-
-    /**
      * Gets the json service from the Web-API. Used to convert objects into json.
      * @return An optional containing the json service if it was loaded.
      */
@@ -82,8 +75,8 @@ public class WebAPIAPI {
      * Gets the message service from the Web-API. Used to send interactive messages to players.
      * @return An optional containing the message service if it was loaded.
      */
-    public static Optional<IMessageService> getMessageService() {
-        return Sponge.getServiceManager().provide(IMessageService.class);
+    public static Optional<IInteractiveMessageService> getMessageService() {
+        return Sponge.getServiceManager().provide(IInteractiveMessageService.class);
     }
 
     /**
@@ -121,32 +114,43 @@ public class WebAPIAPI {
 
     // Run functions on the main server thread
     private static SpongeExecutorService syncExecutor;
-    public static void runOnMain(Runnable runnable) {
+    public static void runOnMain(Runnable runnable) throws WebApplicationException {
         if (Sponge.getServer().isMainThread()) {
             runnable.run();
         } else {
             CompletableFuture future = CompletableFuture.runAsync(runnable, syncExecutor);
             try {
                 future.get();
-            } catch (InterruptedException | ExecutionException e) {
+            } catch (InterruptedException ignored) {
+            } catch (ExecutionException e) {
+                // Rethrow any web application exceptions we get, because they're handled by the servlets
+                if (e.getCause() instanceof WebApplicationException)
+                    throw (WebApplicationException)e.getCause();
+
                 e.printStackTrace();
+                throw new InternalServerErrorException(e.getMessage());
             }
         }
     }
-    public static <T> Optional<T> runOnMain(Supplier<T> supplier) {
+    public static <T> T runOnMain(Supplier<T> supplier) throws WebApplicationException {
         if (Sponge.getServer().isMainThread()) {
+            //Timings.RUN_ON_MAIN.startTiming();
             T obj = supplier.get();
-            return obj == null ? Optional.empty() : Optional.of(obj);
+            //Timings.RUN_ON_MAIN.stopTiming();
+            return obj;
         } else {
             CompletableFuture<T> future = CompletableFuture.supplyAsync(supplier, syncExecutor);
             try {
-                T obj = future.get();
-                if (obj == null)
-                    return Optional.empty();
-                return Optional.of(obj);
-            } catch (InterruptedException | ExecutionException e) {
+                return future.get();
+            } catch (InterruptedException e) {
+                throw new InternalServerErrorException(e.getMessage());
+            } catch (ExecutionException e) {
+                // Rethrow any web application exceptions we get, because they're handled by the servlets
+                if (e.getCause() instanceof WebApplicationException)
+                    throw (WebApplicationException)e.getCause();
+
                 e.printStackTrace();
-                return Optional.empty();
+                throw new InternalServerErrorException(e.getMessage());
             }
         }
     }

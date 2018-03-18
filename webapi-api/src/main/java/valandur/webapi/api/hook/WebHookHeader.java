@@ -17,4 +17,11 @@ public class WebHookHeader {
     public String getValue() {
         return value;
     }
+
+    
+    public WebHookHeader() {}
+    public WebHookHeader(String name, String value) {
+        this.name = name;
+        this.value = value;
+    }
 }

@@ -4,32 +4,71 @@ import org.spongepowered.api.advancement.Advancement;
 import org.spongepowered.api.advancement.AdvancementTree;
 import org.spongepowered.api.advancement.DisplayInfo;
 import org.spongepowered.api.text.Text;
+import valandur.webapi.api.cache.misc.CachedCatalogType;
+import valandur.webapi.api.cache.player.ICachedAdvancement;
 import valandur.webapi.api.serialize.JsonDetails;
-import valandur.webapi.cache.misc.CachedCatalogType;
 
-public class CachedAdvancement extends CachedCatalogType<Advancement> {
+public class CachedAdvancement extends CachedCatalogType<Advancement> implements ICachedAdvancement {
 
-    public String id;
-    public String name;
-    public Text title;
+    private String id;
+    @Override
+    public String getId() {
+        return id;
+    }
 
+    private String name;
+    @Override
+    public String getName() {
+        return name;
+    }
+
+    private Text title;
+    @Override
+    public Text getTitle() {
+        return title;
+    }
+
+    private Text description;
+    @Override
     @JsonDetails
-    public Text description;
+    public Text getDescription() {
+        return description;
+    }
 
+    private boolean announceToChat;
+    @Override
     @JsonDetails
-    public boolean announceToChat;
+    public boolean isAnnounceToChat() {
+        return announceToChat;
+    }
 
+    private boolean showToast;
+    @Override
     @JsonDetails
-    public boolean showToast;
+    public boolean isShowToast() {
+        return showToast;
+    }
 
+    private boolean hidden;
+    @Override
     @JsonDetails
-    public boolean hidden;
+    public boolean isHidden() {
+        return hidden;
+    }
 
+    private CachedAdvancement parent;
+    @Override
     @JsonDetails(simple = true)
-    public CachedAdvancement parent;
+    public CachedAdvancement getParent() {
+        return parent;
+    }
 
+    private CachedCatalogType<AdvancementTree> tree;
+    @Override
     @JsonDetails
-    public AdvancementTree tree;
+    public CachedCatalogType<AdvancementTree> getTree() {
+        return tree;
+    }
 
 
     public CachedAdvancement(Advancement value) {
@@ -38,7 +77,7 @@ public class CachedAdvancement extends CachedCatalogType<Advancement> {
         this.id = value.getId();
         this.name = value.getName();
         this.parent = value.getParent().map(CachedAdvancement::new).orElse(null);
-        this.tree = value.getTree().orElse(null);
+        this.tree = value.getTree().map(CachedCatalogType::new).orElse(null);
 
         if (value.getDisplayInfo().isPresent()) {
             DisplayInfo info = value.getDisplayInfo().get();

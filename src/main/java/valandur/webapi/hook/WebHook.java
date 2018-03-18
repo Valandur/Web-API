@@ -1,9 +1,9 @@
 package valandur.webapi.hook;
 
+import org.eclipse.jetty.http.HttpMethod;
 import valandur.webapi.api.hook.BaseWebHookFilter;
 import valandur.webapi.api.hook.IWebHook;
 import valandur.webapi.api.hook.WebHookHeader;
-import valandur.webapi.api.permission.IPermissionService;
 import valandur.webapi.api.util.TreeNode;
 
 import java.util.List;
@@ -28,9 +28,9 @@ public class WebHook implements IWebHook {
         return form;
     }
 
-    private WebHookMethod method;
+    private HttpMethod method;
     @Override
-    public WebHookMethod getMethod() { return method; }
+    public HttpMethod getMethod() { return method; }
 
     private WebHookDataType dataType;
     @Override
@@ -61,7 +61,7 @@ public class WebHook implements IWebHook {
         return details;
     }
 
-    private TreeNode<String, Boolean> permissions = IPermissionService.emptyNode();
+    private TreeNode<String, Boolean> permissions;
     @Override
     public TreeNode<String, Boolean> getPermissions() {
         return permissions;
@@ -77,7 +77,7 @@ public class WebHook implements IWebHook {
     }
 
 
-    public WebHook(String address, boolean enabled, WebHookMethod method, WebHookDataType dataType, boolean form,
+    public WebHook(String address, boolean enabled, HttpMethod method, WebHookDataType dataType, boolean form,
                    List<WebHookHeader> headers, boolean details, TreeNode<String, Boolean> permissions) {
         this.address = address;
         this.enabled = enabled;

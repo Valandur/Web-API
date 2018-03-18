@@ -1,125 +1,180 @@
 package valandur.webapi.integration.webbooks;
 
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.type.TypeFactory;
-import org.eclipse.jetty.http.HttpMethod;
-import valandur.webapi.api.permission.IPermissionService;
+import com.google.common.reflect.TypeToken;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import ninja.leaping.configurate.objectmapping.serialize.TypeSerializers;
 import valandur.webapi.api.servlet.BaseServlet;
-import valandur.webapi.api.servlet.Endpoint;
-import valandur.webapi.api.servlet.IServletData;
-import valandur.webapi.api.servlet.Servlet;
+import valandur.webapi.api.servlet.Permission;
+import valandur.webapi.config.WebBooksConfig;
+import valandur.webapi.util.Util;
 
-import javax.servlet.http.HttpServletResponse;
-import java.io.File;
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.StandardOpenOption;
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-@Servlet(basePath = "webbooks")
+@Path("web-books")
+@Api(
+        tags = { "Web Books" },
+        value = "Create, edit and delete web books that have unique links which work on your server in-game.")
+@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+@Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 public class WebBookServlet extends BaseServlet {
+
+    private static final String configFileName = "web-books.conf";
 
     private Map<String, WebBook> books = new ConcurrentHashMap<>();
 
+    private static WebBooksConfig config;
+
 
     public WebBookServlet() {
-        File dir = new File("webapi/data");
-        dir.mkdirs();
+        config = Util.loadConfig(configFileName, new WebBooksConfig());
+        books = config.books;
+    }
 
-        try {
-            File file = new File("webapi/data/webbooks.json");
-            if (file.exists()) {
-                String content = new String(Files.readAllBytes(file.toPath()));
-                JavaType mapType = TypeFactory.defaultInstance()
-                        .constructMapType(ConcurrentHashMap.class, String.class, WebBook.class);
-                books = serializeService.deserialize(content, false, mapType, IPermissionService.permitAllNode());
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    public static void onRegister() {
+        TypeSerializers.getDefaultSerializers().registerType(
+                TypeToken.of(WebBook.class), new WebBookConfigSerializer());
     }
 
     private void saveBooks() {
-        File file = new File("webapi/data/webbooks.json");
-        String json = serializeService.toString(books, false, false, IPermissionService.permitAllNode());
-
-        try {
-            Files.write(file.toPath(), json.getBytes(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        config.save();
     }
 
-    @Endpoint(method = HttpMethod.GET, path = "/book", perm = "book.list")
-    public void listWebBooks(IServletData data) {
-        data.addData("ok", true, false);
-        data.addData("books", books.values(), data.getQueryParam("details").isPresent());
+    @GET
+    @Path("/book")
+    @Permission({ "book", "list" })
+    @ApiOperation(
+            value = "List books",
+            notes = "Get a list of all the web books on the server.")
+    public Collection<WebBook> listWebBooks() {
+        return books.values();
     }
 
-    @Endpoint(method = HttpMethod.GET, path = "/book/:id", perm = "book.one")
-    public void getWebBook(IServletData data, String id) {
+    @GET
+    @Path("/book/{id}")
+    @Permission({ "book", "one" })
+    @ApiOperation(
+            value = "Get a book",
+            notes = "Get detailed information about a web book.")
+    public WebBook getWebBook(@PathParam("id") String id)
+            throws NotFoundException {
         WebBook book = books.get(id);
         if (book == null) {
-            data.sendError(HttpServletResponse.SC_NOT_FOUND, "Book not found");
-            return;
+            throw new NotFoundException("Book with id " + id + " not found");
         }
 
-        data.addData("ok", true, false);
-        data.addData("book", book, true);
+        return book;
     }
 
-    @Endpoint(method = HttpMethod.GET, path = "/book/:id/html")
-    @Endpoint(method = HttpMethod.POST, path = "/book/:id/html")
-    public void getWebBookContent(IServletData data, String id) {
+    @GET
+    @Path("/book/{id}/html")
+    @ApiOperation(
+            value = "Book HTML",
+            notes = "Get the web book content as HTML.")
+    @Consumes({ MediaType.APPLICATION_FORM_URLENCODED, MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
+    @Produces(MediaType.TEXT_HTML)
+    public String getWebBookContent(@PathParam("id") String id)
+            throws NotFoundException {
         WebBook book = books.get(id);
         if (book == null) {
-            data.sendError(HttpServletResponse.SC_NOT_FOUND, "Book not found");
-            return;
+            throw new NotFoundException("Book with id " + id + " not found");
         }
 
-        try {
-            data.setContentType("text/html; charset=utf-8");
-            data.getOutputStream().write(book.getHtml().getBytes(Charset.forName("UTF-8")));
-            data.setDone();
-        } catch (IOException e) {
-            e.printStackTrace();
-            data.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not display web book");
-        }
+        return book.getHtml();
     }
 
-    @Endpoint(method = HttpMethod.POST, path = "/book", perm = "book.create")
-    public void createWebBook(IServletData data) {
-        JsonNode body = data.getRequestBody();
-
-        if (!body.has("id")) {
-            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "A book needs at least an id");
-            return;
+    @POST
+    @Path("/book/{id}/html")
+    @ApiOperation(
+            value = "Book HTML",
+            notes = "Get the web book content as HTML.")
+    @Consumes({ MediaType.APPLICATION_FORM_URLENCODED, MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
+    @Produces(MediaType.TEXT_HTML)
+    public String getWebBookContentPost(@PathParam("id") String id)
+            throws NotFoundException {
+        WebBook book = books.get(id);
+        if (book == null) {
+            throw new NotFoundException("Book with id " + id + " not found");
         }
 
-        String id = body.get("id").asText();
-        if (id.isEmpty()) {
-            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "A book needs a non-empty id");
-            return;
+        return book.getHtml();
+    }
+
+    @POST
+    @Path("/book")
+    @Permission({ "book", "create" })
+    @ApiOperation(
+            value = "Create a book",
+            response = WebBook.class,
+            notes = "Create a new web book from the specified data.")
+    public Response createWebBook(WebBook book)
+            throws BadRequestException, URISyntaxException {
+
+        if (book == null) {
+            throw new BadRequestException("Request body is required");
+        }
+
+        String id = book.getId();
+        if (id == null || id.isEmpty()) {
+            throw new BadRequestException("The book needs an id");
         }
 
         if (books.containsKey(id)) {
-            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "A book with this id already exists");
-            return;
+            throw new BadRequestException("A book with this id already exists");
         }
 
         String title = "";
-        if (body.has("title")) {
-            title = body.get("title").asText();
-        }
+        if (book.getTitle() != null)
+            title = book.getTitle();
 
         List<String> lines = new ArrayList<>();
-        if (body.has("lines")) {
-            body.get("lines").forEach(n -> lines.add(n.asText()));
+        if (book.getLines() != null) {
+            lines = book.getLines();
+        }
+
+        WebBook newBook = new WebBook(id, title, lines);
+
+        books.put(id, book);
+        saveBooks();
+
+        return Response.created(new URI(null, null, newBook.getLink(), null)).entity(newBook).build();
+    }
+
+    @PUT
+    @Path("/book/{id}")
+    @Permission({ "book", "modify" })
+    @ApiOperation(
+            value = "Modify a book",
+            notes = "Modify an existing book.")
+    public WebBook modifyWebBook(@PathParam("id") String id, WebBook newBook)
+            throws NotFoundException {
+
+        if (newBook == null) {
+            throw new BadRequestException("Request body is required");
+        }
+
+        WebBook oldBook = books.get(id);
+        if (oldBook == null) {
+            throw new NotFoundException("Book with id " + id + " not found");
+        }
+
+        String title = oldBook.getTitle();
+        if (newBook.getTitle() != null) {
+            title = newBook.getTitle();
+        }
+
+        List<String> lines = oldBook.getLines();
+        if (newBook.getLines() != null) {
+            lines = newBook.getLines();
         }
 
         WebBook book = new WebBook(id, title, lines);
@@ -127,51 +182,25 @@ public class WebBookServlet extends BaseServlet {
         books.put(id, book);
         saveBooks();
 
-        data.addData("ok", true, false);
-        data.addData("book", book, true);
+        return book;
     }
 
-    @Endpoint(method = HttpMethod.PUT, path = "/book/:id", perm = "book.change")
-    public void changeWebBook(IServletData data, String id) {
+    @DELETE
+    @Path("/book/{id}")
+    @Permission({ "book", "delete" })
+    @ApiOperation(
+            value = "Delete a book",
+            notes = "Delete a web book.")
+    public WebBook deleteWebBook(@PathParam("id") String id)
+            throws NotFoundException {
         WebBook book = books.get(id);
         if (book == null) {
-            data.sendError(HttpServletResponse.SC_NOT_FOUND, "Book not found");
-            return;
-        }
-
-        JsonNode body = data.getRequestBody();
-
-        String title = book.getTitle();
-        if (body.has("title")) {
-            title = body.get("title").asText();
-        }
-
-        List<String> lines = new ArrayList<>();
-        if (body.has("lines")) {
-            body.get("lines").forEach(n -> lines.add(n.asText()));
-        }
-
-        book = new WebBook(id, title, lines);
-
-        books.put(id, book);
-        saveBooks();
-
-        data.addData("ok", true, false);
-        data.addData("book", book, true);
-    }
-
-    @Endpoint(method = HttpMethod.DELETE, path = "/book/:id", perm = "book.delete")
-    public void deleteWebBook(IServletData data, String id) {
-        WebBook book = books.get(id);
-        if (book == null) {
-            data.sendError(HttpServletResponse.SC_NOT_FOUND, "Book not found");
-            return;
+            throw new NotFoundException("Book with id " + id + " not found");
         }
 
         books.remove(book.getId());
         saveBooks();
 
-        data.addData("ok", true, false);
-        data.addData("book", book, true);
+        return book;
     }
 }

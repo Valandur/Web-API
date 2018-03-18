@@ -4,7 +4,8 @@ import com.codehusky.huskycrates.crate.config.CrateReward;
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSetter;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import ninja.leaping.configurate.objectmapping.Setting;
 import ninja.leaping.configurate.objectmapping.serialize.ConfigSerializable;
 import org.spongepowered.api.item.inventory.ItemStack;
@@ -14,20 +15,23 @@ import valandur.webapi.api.serialize.JsonDetails;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@JsonDeserialize
 @ConfigSerializable
+@ApiModel("HuskyCratesCrateReward")
 public class CachedCrateReward extends CachedObject<CrateReward> {
 
-    @JsonDeserialize
     @Setting
     private String name;
+    @ApiModelProperty(value = "The name of this reward", required = true)
     public String getName() {
         return name;
     }
 
-    @JsonDeserialize
     @Setting
     private double chance;
+    @ApiModelProperty(
+            value = "The chance to aquire this reward. This is relative to the chances of the other " +
+                    "rewards in this crate",
+            required = true)
     public double getChance() {
         return chance;
     }
@@ -35,13 +39,14 @@ public class CachedCrateReward extends CachedObject<CrateReward> {
     @Setting
     @JsonDetails(value = false, simple = true)
     private ItemStack displayItem;
+    @ApiModelProperty(value = "The ItemStack that is shown in the UI", required = true)
     public ItemStack getDisplayItem() {
         return displayItem;
     }
 
-    @JsonDeserialize
     @Setting
     private boolean announce;
+    @ApiModelProperty(value = "True if this reward is announced in chat, false otherwise", required = true)
     public boolean isAnnounce() {
         return announce;
     }
@@ -49,6 +54,7 @@ public class CachedCrateReward extends CachedObject<CrateReward> {
     @JsonIgnore
     private List<CrateRewardObject> objects;
     @JsonGetter
+    @ApiModelProperty(value = "The objects that are rewarded as part of this reward (can be commands and/or items)", required = true)
     public List<CrateRewardObject> getObjects() {
         return objects;
     }
@@ -76,6 +82,13 @@ public class CachedCrateReward extends CachedObject<CrateReward> {
             return new ItemCrateReward(((ItemStack)obj).copy());
         if (obj instanceof String)
             return new CommandCrateReward(obj.toString());
+        return null;
+    }
+
+    @Override
+    @JsonIgnore
+    @ApiModelProperty(hidden = true)
+    public String getLink() {
         return null;
     }
 }

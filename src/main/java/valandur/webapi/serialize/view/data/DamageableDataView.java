@@ -1,12 +1,18 @@
 package valandur.webapi.serialize.view.data;
 
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import org.spongepowered.api.data.manipulator.mutable.entity.DamageableData;
 import org.spongepowered.api.entity.EntitySnapshot;
 import valandur.webapi.api.serialize.BaseView;
 
+@ApiModel("DamageableData")
 public class DamageableDataView extends BaseView<DamageableData> {
 
+    @ApiModelProperty("The entity which last attacked this entity")
     public EntitySnapshot lastAttacker;
+
+    @ApiModelProperty("The amount of damage inflicted by the last attacker")
     public Double lastDamage;
 
 

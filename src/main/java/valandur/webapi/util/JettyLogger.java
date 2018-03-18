@@ -5,7 +5,7 @@ import valandur.webapi.WebAPI;
 
 public class JettyLogger implements Logger {
     private org.slf4j.Logger logger;
-    private boolean enableDebug = false;
+    private boolean enableDebug = true;
 
     public JettyLogger() {
         logger = WebAPI.getLogger();
@@ -22,13 +22,13 @@ public class JettyLogger implements Logger {
         logger.warn(msg, thrown);
     }
     @Override public void info(String msg, Object... args) {
-        logger.debug(msg, args);
+        logger.info(msg, args);
     }
     @Override public void info(Throwable thrown) {
-        logger.debug("THROWN: " + thrown);
+        logger.info("THROWN: " + thrown);
     }
     @Override public void info(String msg, Throwable thrown) {
-        logger.debug(msg, thrown);
+        logger.info(msg, thrown);
     }
     @Override public boolean isDebugEnabled() { return enableDebug; }
     @Override public void setDebugEnabled(boolean enabled) {

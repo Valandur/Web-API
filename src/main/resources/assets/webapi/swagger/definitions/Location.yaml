@@ -1,8 +1,0 @@
-title: Location
-type: object
-description: Describes a location in a world.
-properties:
-  world:
-    $ref: "./world/World.yaml"
-  position:
-    $ref: "./Vector3.yaml"

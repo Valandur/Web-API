@@ -1,118 +1,118 @@
 package valandur.webapi.cache;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.TextNode;
-import ninja.leaping.configurate.ConfigurationNode;
-import ninja.leaping.configurate.loader.ConfigurationLoader;
+import com.flowpowered.math.vector.Vector3i;
+import com.google.common.collect.Lists;
 import org.spongepowered.api.CatalogType;
 import org.spongepowered.api.Sponge;
+import org.spongepowered.api.advancement.Advancement;
 import org.spongepowered.api.block.tileentity.TileEntity;
 import org.spongepowered.api.command.CommandMapping;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.Transform;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.entity.living.player.User;
+import org.spongepowered.api.event.Listener;
+import org.spongepowered.api.event.Order;
 import org.spongepowered.api.event.cause.Cause;
 import org.spongepowered.api.event.command.SendCommandEvent;
-import org.spongepowered.api.event.message.MessageEvent;
+import org.spongepowered.api.event.entity.living.humanoid.player.KickPlayerEvent;
+import org.spongepowered.api.event.filter.cause.First;
+import org.spongepowered.api.event.message.MessageChannelEvent;
+import org.spongepowered.api.event.network.ClientConnectionEvent;
+import org.spongepowered.api.event.world.LoadWorldEvent;
+import org.spongepowered.api.event.world.UnloadWorldEvent;
 import org.spongepowered.api.item.inventory.Inventory;
 import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.item.inventory.ItemStackSnapshot;
 import org.spongepowered.api.plugin.PluginContainer;
 import org.spongepowered.api.service.user.UserStorageService;
-import org.spongepowered.api.util.Tuple;
+import org.spongepowered.api.text.channel.MessageChannel;
 import org.spongepowered.api.world.Chunk;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
+import org.spongepowered.api.world.extent.Extent;
 import org.spongepowered.api.world.storage.WorldProperties;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.cache.CachedObject;
 import valandur.webapi.api.cache.ICacheService;
 import valandur.webapi.api.cache.ICachedObject;
-import valandur.webapi.api.cache.chat.ICachedChatMessage;
 import valandur.webapi.api.cache.command.ICachedCommand;
 import valandur.webapi.api.cache.command.ICachedCommandCall;
 import valandur.webapi.api.cache.entity.ICachedEntity;
-import valandur.webapi.api.cache.player.ICachedPlayer;
+import valandur.webapi.api.cache.message.ICachedMessage;
+import valandur.webapi.api.cache.misc.CachedCatalogType;
+import valandur.webapi.api.cache.player.ICachedPlayerFull;
 import valandur.webapi.api.cache.plugin.ICachedPluginContainer;
 import valandur.webapi.api.cache.tileentity.ICachedTileEntity;
 import valandur.webapi.api.cache.world.CachedLocation;
 import valandur.webapi.api.cache.world.CachedTransform;
 import valandur.webapi.api.cache.world.ICachedWorld;
-import valandur.webapi.api.permission.IPermissionService;
-import valandur.webapi.cache.chat.CachedChatMessage;
+import valandur.webapi.api.cache.world.ICachedWorldFull;
 import valandur.webapi.cache.command.CachedCommand;
 import valandur.webapi.cache.command.CachedCommandCall;
 import valandur.webapi.cache.entity.CachedEntity;
-import valandur.webapi.cache.misc.CachedCatalogType;
+import valandur.webapi.cache.message.CachedChatMessage;
+import valandur.webapi.cache.message.CachedMessage;
 import valandur.webapi.cache.misc.CachedCause;
 import valandur.webapi.cache.misc.CachedInventory;
+import valandur.webapi.cache.player.CachedAdvancement;
 import valandur.webapi.cache.player.CachedPlayer;
 import valandur.webapi.cache.plugin.CachedPluginContainer;
 import valandur.webapi.cache.tileentity.CachedTileEntity;
 import valandur.webapi.cache.world.CachedChunk;
 import valandur.webapi.cache.world.CachedWorld;
-import valandur.webapi.serialize.SerializeService;
+import valandur.webapi.config.CacheConfig;
 import valandur.webapi.util.Timings;
 import valandur.webapi.util.Util;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
+import javax.ws.rs.InternalServerErrorException;
+import javax.ws.rs.NotFoundException;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 public class CacheService implements ICacheService {
 
     private static final String configFileName = "cache.conf";
-
-    private SerializeService json;
 
     private List<String> censoredCommands = new ArrayList<>();
     private Map<String, Long> cacheDurations = new HashMap<>();
     private int numChatMessages;
     private int numCommandCalls;
 
-    private ConcurrentLinkedQueue<CachedChatMessage> chatMessages = new ConcurrentLinkedQueue<>();
+    private ConcurrentLinkedQueue<CachedMessage> messages = new ConcurrentLinkedQueue<>();
     private ConcurrentLinkedQueue<CachedCommandCall> commandCalls = new ConcurrentLinkedQueue<>();
     private Map<String, CachedCommand> commands = new ConcurrentHashMap<>();
     private Map<String, CachedPluginContainer> plugins = new ConcurrentHashMap<>();
     private Map<UUID, CachedWorld> worlds = new ConcurrentHashMap<>();
     private Map<UUID, CachedPlayer> players = new ConcurrentHashMap<>();
-    private Map<Class, JsonNode> classes = new ConcurrentHashMap<>();
 
-    public List<ICachedChatMessage> getChatMessages() {
-        return Arrays.asList(chatMessages.toArray(new ICachedChatMessage[0]));
+    @Override
+    public List<ICachedMessage> getMessages() {
+        return Lists.reverse(Arrays.asList(messages.toArray(new ICachedMessage[messages.size()])));
     }
+    @Override
     public List<ICachedCommandCall> getCommandCalls() {
-        return Arrays.asList(commandCalls.toArray(new ICachedCommandCall[0]));
+        return Lists.reverse(Arrays.asList(commandCalls.toArray(new ICachedCommandCall[commandCalls.size()])));
     }
 
 
     public void init() {
-        this.json = WebAPI.getSerializeService();
-
-        Tuple<ConfigurationLoader, ConfigurationNode> tup = Util.loadWithDefaults(configFileName, "defaults/" + configFileName);
-        ConfigurationNode config = tup.getSecond();
-
-        ConfigurationNode amountNode = config.getNode("amount");
-        numChatMessages = amountNode.getNode("chat").getInt();
-        numCommandCalls = amountNode.getNode("command").getInt();
+        CacheConfig config = Util.loadConfig(configFileName, new CacheConfig());
 
         censoredCommands.clear();
-        for (ConfigurationNode node : config.getNode("censoredCommands").getChildrenList()) {
-            String cmd = node.getString();
+        for (String cmd : config.censoredCommands) {
             if (!cmd.startsWith("/"))
                 cmd = "/" + cmd;
             censoredCommands.add(cmd);
         }
 
         cacheDurations.clear();
-        ConfigurationNode durationNode = config.getNode("duration");
-        for (ConfigurationNode node : durationNode.getChildrenMap().values()) {
-            cacheDurations.put(node.getKey().toString(), node.getLong());
+        for (Map.Entry<String, Long> entry : config.duration.entrySet()) {
+            cacheDurations.put(entry.getKey(), entry.getValue());
         }
     }
 
@@ -153,6 +153,8 @@ public class CacheService implements ICacheService {
             return new CachedInventory((Inventory)obj);
         if (obj instanceof CommandMapping)
             return getCommand((CommandMapping)obj);
+        if (obj instanceof Advancement)
+            return new CachedAdvancement((Advancement)obj);
 
         if (obj instanceof ItemStack)
             return ((ItemStack)obj).copy();
@@ -179,45 +181,12 @@ public class CacheService implements ICacheService {
         return dur != null ? dur : 0;
     }
 
-    public Map<Class, JsonNode> getClasses() {
-        return classes;
-    }
-    @Override
-    public JsonNode getClass(Class type) {
-        if (classes.containsKey(type))
-            return classes.get(type);
-
-        JsonNode e = json.classToJson(type);
-        classes.put(type, e);
-        return e;
-    }
-
-    public CachedChatMessage addChatMessage(Player sender, MessageEvent event) {
-        CachedChatMessage cache = new CachedChatMessage(sender, event);
-        chatMessages.add(cache);
-
-        while (chatMessages.size() > numChatMessages) {
-            chatMessages.poll();
-        }
-
-        return cache;
-    }
-    public CachedCommandCall addCommandCall(SendCommandEvent event) {
-        CachedCommandCall cache = new CachedCommandCall(event, censoredCommands.contains(event.getCommand()));
-        commandCalls.add(cache);
-
-        while (commandCalls.size() > numCommandCalls) {
-            commandCalls.poll();
-        }
-
-        return cache;
-    }
-
     public void updateWorlds() {
         WebAPI.runOnMain(() -> {
             worlds.clear();
 
             // The worlds that are loaded on server start are overwritten by the world load event later
+            // TODO: Sponge has a bug that makes the "getAllWorldProperties" method cache the world properties
             Collection<WorldProperties> unloadedWorlds = Sponge.getServer().getAllWorldProperties();
             for (WorldProperties world : unloadedWorlds) {
                 updateWorld(world);
@@ -225,11 +194,11 @@ public class CacheService implements ICacheService {
         });
     }
     @Override
-    public Collection<ICachedWorld> getWorlds() {
+    public Collection<ICachedWorldFull> getWorlds() {
         return new ArrayList<>(worlds.values());
     }
     @Override
-    public Optional<ICachedWorld> getWorld(String nameOrUuid) {
+    public Optional<ICachedWorldFull> getWorld(String nameOrUuid) {
         if (Util.isValidUUID(nameOrUuid)) {
             return getWorld(UUID.fromString(nameOrUuid));
         }
@@ -239,31 +208,33 @@ public class CacheService implements ICacheService {
 
     }
     @Override
-    public Optional<ICachedWorld> getWorld(UUID uuid) {
+    public Optional<ICachedWorldFull> getWorld(UUID uuid) {
         if (!worlds.containsKey(uuid)) {
             return Optional.empty();
         }
 
         final CachedWorld res = worlds.get(uuid);
         if (res.isExpired()) {
-            return WebAPI.runOnMain(() -> {
+            return Optional.of(WebAPI.runOnMain(() -> {
                 Optional<World> world = Sponge.getServer().getWorld(uuid);
                 if (world.isPresent())
                     return updateWorld(world.get());
                 Optional<WorldProperties> props = Sponge.getServer().getWorldProperties(uuid);
-                return props.map(this::updateWorld).orElse(null);
-            });
+                if (!props.isPresent())
+                    throw new InternalServerErrorException("Could not get world properties");
+                return updateWorld(props.get());
+            }));
         } else {
             return Optional.of(res);
         }
     }
     @Override
-    public ICachedWorld getWorld(World world) {
-        Optional<ICachedWorld> w = getWorld(world.getUniqueId());
+    public ICachedWorldFull getWorld(World world) {
+        Optional<ICachedWorldFull> w = getWorld(world.getUniqueId());
         return w.orElseGet(() -> updateWorld(world));
     }
     @Override
-    public ICachedWorld updateWorld(World world) {
+    public ICachedWorldFull updateWorld(World world) {
         assert Sponge.getServer().isMainThread();
 
         Timings.CACHE_WORLD.startTiming();
@@ -273,7 +244,7 @@ public class CacheService implements ICacheService {
         return w;
     }
     @Override
-    public ICachedWorld updateWorld(WorldProperties world) {
+    public ICachedWorldFull updateWorld(WorldProperties world) {
         assert Sponge.getServer().isMainThread();
 
         Timings.CACHE_WORLD.startTiming();
@@ -283,16 +254,16 @@ public class CacheService implements ICacheService {
         return w;
     }
     @Override
-    public ICachedWorld removeWorld(UUID worldUuid) {
+    public ICachedWorldFull removeWorld(UUID worldUuid) {
         return worlds.remove(worldUuid);
     }
 
     @Override
-    public Collection<ICachedPlayer> getPlayers() {
+    public Collection<ICachedPlayerFull> getPlayers() {
         return new ArrayList<>(players.values());
     }
     @Override
-    public Optional<ICachedPlayer> getPlayer(String nameOrUuid) {
+    public Optional<ICachedPlayerFull> getPlayer(String nameOrUuid) {
         if (Util.isValidUUID(nameOrUuid)) {
             return getPlayer(UUID.fromString(nameOrUuid));
         }
@@ -304,22 +275,22 @@ public class CacheService implements ICacheService {
         return WebAPI.runOnMain(() -> {
             Optional<UserStorageService> optSrv = Sponge.getServiceManager().provide(UserStorageService.class);
             if (!optSrv.isPresent())
-                return null;
+                throw new InternalServerErrorException("User storage service is not available");
 
             Optional<User> optUser = optSrv.get().get(nameOrUuid);
-            return optUser.<ICachedPlayer>map(CachedPlayer::new).orElse(null);
+            return optUser.<ICachedPlayerFull>map(CachedPlayer::new);
         });
     }
     @Override
-    public Optional<ICachedPlayer> getPlayer(UUID uuid) {
+    public Optional<ICachedPlayerFull> getPlayer(UUID uuid) {
         if (!players.containsKey(uuid)) {
             return WebAPI.runOnMain(() -> {
                 Optional<UserStorageService> optSrv = Sponge.getServiceManager().provide(UserStorageService.class);
                 if (!optSrv.isPresent())
-                    return null;
+                    throw new InternalServerErrorException("User storage service is not available");
 
                 Optional<User> optUser = optSrv.get().get(uuid);
-                return optUser.<ICachedPlayer>map(CachedPlayer::new).orElse(null);
+                return optUser.<ICachedPlayerFull>map(CachedPlayer::new);
             });
         }
 
@@ -327,24 +298,24 @@ public class CacheService implements ICacheService {
         if (res.isExpired()) {
             return WebAPI.runOnMain(() -> {
                 Optional<Player> player = Sponge.getServer().getPlayer(uuid);
-                return player.map(this::updatePlayer).orElse(null);
+                return player.map(this::updatePlayer);
             });
         } else {
             return Optional.of(res);
         }
     }
     @Override
-    public ICachedPlayer getPlayer(Player player) {
-        Optional<ICachedPlayer> p = getPlayer(player.getUniqueId());
+    public ICachedPlayerFull getPlayer(Player player) {
+        Optional<ICachedPlayerFull> p = getPlayer(player.getUniqueId());
         return p.orElseGet(() -> updatePlayer(player));
     }
     @Override
-    public ICachedPlayer getPlayer(User user) {
-        Optional<ICachedPlayer> p = getPlayer(user.getUniqueId());
+    public ICachedPlayerFull getPlayer(User user) {
+        Optional<ICachedPlayerFull> p = getPlayer(user.getUniqueId());
         return p.orElseGet(() -> updatePlayer(user));
     }
     @Override
-    public ICachedPlayer updatePlayer(Player player) {
+    public ICachedPlayerFull updatePlayer(Player player) {
         assert Sponge.getServer().isMainThread();
 
         Timings.CACHE_PLAYER.startTiming();
@@ -354,7 +325,7 @@ public class CacheService implements ICacheService {
         return p;
     }
     @Override
-    public ICachedPlayer updatePlayer(User user) {
+    public ICachedPlayerFull updatePlayer(User user) {
         assert Sponge.getServer().isMainThread();
 
         Timings.CACHE_PLAYER.startTiming();
@@ -364,55 +335,48 @@ public class CacheService implements ICacheService {
         return p;
     }
     @Override
-    public ICachedPlayer removePlayer(UUID uuid) {
+    public ICachedPlayerFull removePlayer(UUID uuid) {
         return players.remove(uuid);
     }
 
     @Override
-    public Optional<Collection<ICachedEntity>> getEntities(Predicate<Entity> predicate, int limit) {
+    public Collection<ICachedEntity> getEntities(ICachedWorld world, Vector3i min, Vector3i max,
+                                                 Predicate<Entity> predicate, int limit) {
         return WebAPI.runOnMain(() -> {
-            Collection<ICachedEntity> entities = new LinkedList<>();
+            Stream<Extent> extents;
+            if (world == null)
+                extents = Sponge.getServer().getWorlds().stream().map(w -> (Extent)w);
+            else {
+                Optional<?> w = world.getLive();
+                if (!w.isPresent())
+                    throw new InternalServerErrorException("Could not get live world");
+                extents = Stream.of((Extent)w.get());
+            }
+
+            if (min != null) {
+                extents = extents.map(e -> e.getExtentView(min, e.getBlockMax()));
+            }
+            if (max != null) {
+                extents = extents.map(e -> e.getExtentView(e.getBlockMin(), max));
+            }
 
             int i = 0;
-            Collection<World> worlds = Sponge.getServer().getWorlds();
-            for (World world : worlds) {
-                Collection<Entity> ents = world.getEntities(predicate);
+            Collection<ICachedEntity> allEnts = new LinkedList<>();
+            Iterator<Extent> iter = extents.iterator();
+            while (iter.hasNext()) {
+                Extent ext = iter.next();
+                Collection<Entity> ents = ext.getEntities(predicate);
                 for (Entity e : ents) {
                     if (e.isRemoved()) continue;
-                    entities.add(new CachedEntity(e));
+                    allEnts.add(new CachedEntity(e));
 
                     i++;
                     if (limit > 0 && i >= limit)
                         break;
                 }
-
-                if (limit > 0 && i >= limit)
-                    break;
             }
 
-            return entities;
-        });
-    }
-    @Override
-    public Optional<Collection<ICachedEntity>> getEntities(ICachedWorld world, Predicate<Entity> predicate, int limit) {
-        return WebAPI.runOnMain(() -> {
-            Optional<?> w = world.getLive();
-            if (!w.isPresent())
-                return null;
-
-            int i = 0;
-            Collection<ICachedEntity> entities = new LinkedList<>();
-            Collection<Entity> ents = ((World)w.get()).getEntities(predicate);
-            for (Entity e : ents) {
-                if (e.isRemoved()) continue;
-                entities.add(new CachedEntity(e));
-
-                i++;
-                if (limit > 0 && i >= limit)
-                    break;
-            }
-
-            return entities;
+            return allEnts;
         });
     }
     @Override
@@ -422,10 +386,10 @@ public class CacheService implements ICacheService {
             for (World world : worlds) {
                 Optional<Entity> optEnt = world.getEntity(uuid);
                 if (optEnt.isPresent()) {
-                    return new CachedEntity(optEnt.get());
+                    return Optional.of(new CachedEntity(optEnt.get()));
                 }
             }
-            return null;
+            return Optional.empty();
         });
     }
 
@@ -500,55 +464,48 @@ public class CacheService implements ICacheService {
     }
 
     @Override
-    public Optional<Collection<ICachedTileEntity>> getTileEntities(Predicate<TileEntity> predicate, int limit) {
+    public Collection<ICachedTileEntity> getTileEntities(ICachedWorld world, Vector3i min, Vector3i max,
+                                                         Predicate<TileEntity> predicate, int limit) {
         return WebAPI.runOnMain(() -> {
-            Collection<ICachedTileEntity> entities = new LinkedList<>();
+            Stream<Extent> extents;
+            if (world == null)
+                extents = Sponge.getServer().getWorlds().stream().map(w -> (Extent)w);
+            else {
+                Optional<?> w = world.getLive();
+                if (!w.isPresent())
+                    throw new InternalServerErrorException("Could not get live world");
+                extents = Stream.of((Extent)w.get());
+            }
+
+            if (min != null) {
+                extents = extents.map(e -> e.getExtentView(min, e.getBlockMax()));
+            }
+            if (max != null) {
+                extents = extents.map(e -> e.getExtentView(e.getBlockMin(), max));
+            }
 
             int i = 0;
-            Collection<World> worlds = Sponge.getServer().getWorlds();
-            for (World world : worlds) {
-                Collection<TileEntity> ents = world.getTileEntities(predicate);
-                for (TileEntity te : ents) {
+            Collection<ICachedTileEntity> allTes = new LinkedList<>();
+            Iterator<Extent> iter = extents.iterator();
+            while (iter.hasNext()) {
+                Extent ext = iter.next();
+                Collection<TileEntity> tes = ext.getTileEntities(predicate);
+                for (TileEntity te : tes) {
                     if (!te.isValid()) continue;
-                    entities.add(new CachedTileEntity(te));
+                    allTes.add(new CachedTileEntity(te));
 
                     i++;
                     if (limit > 0 && i >= limit)
                         break;
                 }
-
-                if (limit > 0 && i >= limit)
-                    break;
             }
 
-            return entities;
-        });
-    }
-    @Override
-    public Optional<Collection<ICachedTileEntity>> getTileEntities(ICachedWorld world, Predicate<TileEntity> predicate, int limit) {
-        return WebAPI.runOnMain(() -> {
-            Optional<?> w = world.getLive();
-            if (!w.isPresent())
-                return null;
-
-            int i = 0;
-            Collection<ICachedTileEntity> entities = new LinkedList<>();
-            Collection<TileEntity> ents = ((World)w.get()).getTileEntities(predicate);
-            for (TileEntity te : ents) {
-                if (!te.isValid()) continue;
-                entities.add(new CachedTileEntity(te));
-
-                i++;
-                if (limit > 0 && i >= limit)
-                    break;
-            }
-
-            return entities;
+            return allTes;
         });
     }
     @Override
     public Optional<ICachedTileEntity> getTileEntity(Location<World> location) {
-        Optional<ICachedWorld> w = this.getWorld(location.getExtent().getUniqueId());
+        Optional<ICachedWorldFull> w = this.getWorld(location.getExtent().getUniqueId());
         if (!w.isPresent())
             return Optional.empty();
 
@@ -559,24 +516,24 @@ public class CacheService implements ICacheService {
         return WebAPI.runOnMain(() -> {
             Optional<?> w = world.getLive();
             if (!w.isPresent())
-                return null;
+                throw new InternalServerErrorException("Could not get live world");
 
             Optional<TileEntity> ent = ((World)w.get()).getTileEntity(x, y, z);
             if (!ent.isPresent() || !ent.get().isValid()) {
-                return null;
+                return Optional.empty();
             }
 
-            return new CachedTileEntity(ent.get());
+            return Optional.of(new CachedTileEntity(ent.get()));
         });
     }
 
     @Override
-    public Optional<Object> executeMethod(ICachedObject cache, String methodName, Class[] paramTypes, Object[] paramValues) {
+    public Object executeMethod(ICachedObject cache, String methodName, Class[] paramTypes, Object[] paramValues) {
         return WebAPI.runOnMain(() -> {
             Optional<?> obj = cache.getLive();
 
             if (!obj.isPresent())
-                return null;
+                throw new InternalServerErrorException("Could not get live version of object");
 
             Object o = obj.get();
             Method[] ms = Arrays.stream(Util.getAllMethods(o.getClass())).filter(m -> {
@@ -597,7 +554,7 @@ public class CacheService implements ICacheService {
             }).toArray(Method[]::new);
 
             if (ms.length == 0) {
-                return new Exception("Method not found");
+                throw new NotFoundException("Could not find requested method");
             }
 
             try {
@@ -608,69 +565,62 @@ public class CacheService implements ICacheService {
                     return true;
                 return res;
             } catch (Exception e) {
-                return e;
+                throw new InternalServerErrorException(e.getMessage());
             }
         });
     }
-    @Override
-    public Tuple<Map<String, JsonNode>, Map<String, JsonNode>> getExtraData(ICachedObject cache, boolean xml,
-                                                                            String[] reqFields, String[] reqMethods) {
-        return WebAPI.runOnMain(() -> {
-            Map<String, JsonNode> fields = new HashMap<>();
-            Map<String, JsonNode> methods = new HashMap<>();
 
-            Optional<?> opt = cache.getLive();
-            if (!opt.isPresent()) return null;
+    // Server events
+    @Listener(order = Order.POST)
+    public void onWorldLoad(LoadWorldEvent event) {
+        updateWorld(event.getTargetWorld());
+    }
+    @Listener(order = Order.POST)
+    public void onWorldUnload(UnloadWorldEvent event) {
+        updateWorld(event.getTargetWorld().getProperties());
+    }
 
-            Object obj = opt.get();
-            Class c = obj.getClass();
+    @Listener(order = Order.POST)
+    public void onPlayerJoin(ClientConnectionEvent.Join event) {
+        updatePlayer(event.getTargetEntity());
+    }
+    @Listener(order = Order.POST)
+    public void onPlayerLeave(ClientConnectionEvent.Disconnect event) {
+        removePlayer(event.getTargetEntity().getUniqueId());
+    }
 
-            List<Field> allFields = Arrays.asList(Util.getAllFields(c));
-            List<Method> allMethods = Arrays.asList(Util.getAllMethods(c));
-            for (String fieldName : reqFields) {
-                Optional<Field> field = allFields.stream().filter(f -> f.getName().equalsIgnoreCase(fieldName)).findAny();
-                if (!field.isPresent()) {
-                    fields.put(fieldName, TextNode.valueOf("ERROR: Field not found"));
-                    continue;
-                }
+    @Listener(order = Order.POST)
+    public void onUserKick(KickPlayerEvent event) {
+        removePlayer(event.getTargetEntity().getUniqueId());
+    }
 
-                field.get().setAccessible(true);
+    @Listener(order = Order.POST)
+    public void onPlayerChat(MessageChannelEvent.Chat event, @First Player player) {
+        MessageChannel channel = event.getChannel().orElse(event.getOriginalChannel());
+        CachedChatMessage cache = new CachedChatMessage(player, channel.getMembers(), event.getMessage());
+        messages.add(cache);
 
-                try {
-                    Object res = field.get().get(obj);
-                    fields.put(fieldName, json.serialize(res, xml, true, IPermissionService.permitAllNode()));
-                } catch (IllegalAccessException e) {
-                    fields.put(fieldName, TextNode.valueOf("ERROR: " + e.toString()));
-                }
-            }
-            for (String methodName : reqMethods) {
-                Optional<Method> method = allMethods.stream().filter(f -> f.getName().equalsIgnoreCase(methodName)).findAny();
-                if (!method.isPresent()) {
-                    methods.put(methodName, TextNode.valueOf("ERROR: Method not found"));
-                    continue;
-                }
+        while (messages.size() > numChatMessages) {
+            messages.poll();
+        }
+    }
+    @Listener(order = Order.POST)
+    public void onMessage(MessageChannelEvent event) {
+        MessageChannel channel = event.getChannel().orElse(event.getOriginalChannel());
+        CachedMessage cache = new CachedMessage(channel.getMembers(), event.getMessage());
+        messages.add(cache);
 
-                if (method.get().getParameterCount() > 0) {
-                    methods.put(methodName, TextNode.valueOf("ERROR: Method must not have parameters"));
-                    continue;
-                }
+        while (messages.size() > numChatMessages) {
+            messages.poll();
+        }
+    }
+    @Listener(order = Order.POST)
+    public void onCommand(SendCommandEvent event) {
+        CachedCommandCall cache = new CachedCommandCall(event, censoredCommands.contains(event.getCommand()));
+        commandCalls.add(cache);
 
-                if (method.get().getReturnType().equals(Void.TYPE) || method.get().getReturnType().equals(Void.class)) {
-                    methods.put(methodName, TextNode.valueOf("ERROR: Method must not return void"));
-                    continue;
-                }
-
-                method.get().setAccessible(true);
-
-                try {
-                    Object res = method.get().invoke(obj);
-                    methods.put(methodName, json.serialize(res, xml, true, IPermissionService.permitAllNode()));
-                } catch (IllegalAccessException | InvocationTargetException e) {
-                    methods.put(methodName, TextNode.valueOf("ERROR: " + e.toString()));
-                }
-            }
-
-            return new Tuple<>(fields, methods);
-        }).orElse(null);
+        while (commandCalls.size() > numCommandCalls) {
+            commandCalls.poll();
+        }
     }
 }

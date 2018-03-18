@@ -2,22 +2,28 @@ package valandur.webapi.integration.redprotect;
 
 import br.net.fabiozumbi12.RedProtect.Sponge.RedProtect;
 import br.net.fabiozumbi12.RedProtect.Sponge.Region;
-import org.eclipse.jetty.http.HttpMethod;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 import valandur.webapi.api.WebAPIAPI;
 import valandur.webapi.api.cache.world.ICachedWorld;
 import valandur.webapi.api.servlet.BaseServlet;
-import valandur.webapi.api.servlet.Endpoint;
-import valandur.webapi.api.servlet.IServletData;
-import valandur.webapi.api.servlet.Servlet;
+import valandur.webapi.api.servlet.Permission;
 
-import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.*;
 import java.util.stream.Collectors;
 
-@Servlet(basePath = "redprotect")
+@Path("red-protect")
+@Api(tags = { "Red Protect"}, value = "Create, edit and delete protected regions on your server")
+@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+@Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 public class RedProtectServlet extends BaseServlet {
 
     public static void onRegister() {
@@ -27,20 +33,16 @@ public class RedProtectServlet extends BaseServlet {
     }
 
 
-    @Endpoint(method = HttpMethod.GET, path = "region", perm = "list")
-    public void getRegions(IServletData data) {
-        Optional<String> worldUuid = data.getQueryParam("world");
-
-        Optional<Set<CachedRegion>> optRegions;
-        if (worldUuid.isPresent()) {
-            Optional<ICachedWorld> optWorld = cacheService.getWorld(worldUuid.get());
-            if (!optWorld.isPresent()) {
-                data.sendError(HttpServletResponse.SC_NOT_FOUND, "Could not find world " + worldUuid.get());
-                return;
-            }
-
-            ICachedWorld world = optWorld.get();
-            optRegions = WebAPIAPI.runOnMain(() -> {
+    @GET
+    @Path("/region")
+    @Permission({ "region", "list" })
+    @ApiOperation(
+            value = "List regions",
+            notes = "Lists all the regions being protected")
+    public Collection<CachedRegion> listRegions(@QueryParam("world") ICachedWorld world) {
+        Set<CachedRegion> regions;
+        if (world != null) {
+            regions = WebAPIAPI.runOnMain(() -> {
                 Optional<World> optLive = world.getLive();
                 if (!optLive.isPresent()) {
                     return null;
@@ -52,67 +54,66 @@ public class RedProtectServlet extends BaseServlet {
                         .collect(Collectors.toSet());
             });
         } else {
-            optRegions = WebAPIAPI.runOnMain(() -> RedProtect.get().rm.getAllRegions().stream()
+            regions = WebAPIAPI.runOnMain(() -> RedProtect.get().rm.getAllRegions().stream()
                     .map(CachedRegion::new)
                     .collect(Collectors.toSet()));
         }
 
-        data.addData("ok", optRegions.isPresent(), false);
-        data.addData("regions", optRegions.orElse(null), data.getQueryParam("details").isPresent());
+        return regions;
     }
 
-    @Endpoint(method = HttpMethod.GET, path = "region/:id", perm = "one")
-    public void getRegion(IServletData data, String id) {
+    @GET
+    @Path("/region/{id}")
+    @Permission({ "region", "one" })
+    @ApiOperation(
+            value = "Get a region",
+            notes = "Get details for a specific protected region")
+    public CachedRegion getRegion(@PathParam("id") String id)
+            throws BadRequestException {
         if (!id.contains("@")) {
-            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid region id");
-            return;
+            throw new BadRequestException("Invalid region id");
         }
 
-        Optional<CachedRegion> optRegion = WebAPIAPI.runOnMain(() -> new CachedRegion(RedProtect.get().rm.getRegionById(id)));
-
-        data.addData("ok", optRegion.isPresent(), false);
-        data.addData("region", optRegion.orElse(null), true);
+        return WebAPIAPI.runOnMain(() -> new CachedRegion(RedProtect.get().rm.getRegionById(id)));
     }
 
-    @Endpoint(method = HttpMethod.POST, path = "region", perm = "create")
-    public void createRegion(IServletData data) {
-        Optional<CachedRegion> optReq = data.getRequestBody(CachedRegion.class);
-        if (!optReq.isPresent()) {
-            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid region data: " +
-                    data.getLastParseError().getMessage());
-            return;
+    @POST
+    @Path("/region")
+    @Permission({ "region", "create" })
+    @ApiOperation(
+            value = "Create a region",
+            response = CachedRegion.class,
+            notes = "Create a new region at a specified location")
+    public Response createRegion(CachedRegion req)
+            throws BadRequestException, URISyntaxException {
+
+        if (req == null) {
+            throw new BadRequestException("Request body is required");
         }
 
-        CachedRegion req = optReq.get();
-
-        Optional<CachedRegion> optRegion = WebAPIAPI.runOnMain(() -> {
+        CachedRegion resRegion = WebAPIAPI.runOnMain(() -> {
             String name = req.getName();
             if (name == null) {
-                data.sendError(HttpServletResponse.SC_BAD_REQUEST, "The region needs a name");
-                return null;
+                throw new BadRequestException("The region needs a name");
             }
 
             if (req.getWorld() == null) {
-                data.sendError(HttpServletResponse.SC_BAD_REQUEST, "The region needs a world");
-                return null;
+                throw new BadRequestException("The region needs a world");
             }
             Optional<World> optLive = req.getWorld().getLive();
             if (!optLive.isPresent()) {
-                data.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not get live world");
-                return null;
+                throw new InternalServerErrorException("Could not get live world");
             }
 
             World world = optLive.get();
 
             if (req.getMin() == null) {
-                data.sendError(HttpServletResponse.SC_BAD_REQUEST, "The region needs min coordinates");
-                return null;
+                throw new BadRequestException("The region needs min coordinates");
             }
             Location<World> minLoc = new Location<>(world, req.getMin());
 
             if (req.getMax() == null) {
-                data.sendError(HttpServletResponse.SC_BAD_REQUEST, "The region needs max coordinates");
-                return null;
+                throw new BadRequestException("The region needs max coordinates");
             }
             Location<World> maxLoc = new Location<>(world, req.getMax());
 
@@ -160,13 +161,11 @@ public class RedProtectServlet extends BaseServlet {
             int priority = req.getPriority() != null ? req.getPriority() : 0;
 
             if (req.getTpPoint() == null) {
-                data.sendError(HttpServletResponse.SC_BAD_REQUEST, "The region needs a tpPoint");
-                return null;
+                throw new BadRequestException("The region needs a tpPoint");
             }
             Optional<Location> optLiveTpPoint = req.getTpPoint().getLive();
             if (!optLiveTpPoint.isPresent()) {
-                data.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not get live world");
-                return null;
+                throw new InternalServerErrorException("Could not get live world");
             }
 
             Region region = new Region(name, admins, members, leaders, maxLoc.getBlockX(), minLoc.getBlockX(),
@@ -176,31 +175,29 @@ public class RedProtectServlet extends BaseServlet {
             return new CachedRegion(region);
         });
 
-        data.addData("ok", optRegion.isPresent(), false);
-        data.addData("region", optRegion.orElse(null), true);
+        return Response.created(new URI(null, null, resRegion.getLink(), null)).entity(resRegion).build();
     }
 
-    @Endpoint(method = HttpMethod.PUT, path = "region/:id", perm = "change")
-    public void changeRegion(IServletData data, String id) {
+    @PUT
+    @Path("/region/{id}")
+    @Permission({ "region", "modify" })
+    @ApiOperation(
+            value = "Modify a region",
+            notes = "Update the details for a specific protected region")
+    public CachedRegion modifyRegion(@PathParam("id") String id, CachedRegion req)
+            throws BadRequestException {
         if (!id.contains("@")) {
-            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid region id");
-            return;
+            throw new BadRequestException("Invalid region id");
         }
 
-        Optional<CachedRegion> optReq = data.getRequestBody(CachedRegion.class);
-        if (!optReq.isPresent()) {
-            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid region data: " +
-                    data.getLastParseError().getMessage());
-            return;
+        if (req == null) {
+            throw new BadRequestException("Request body is required");
         }
 
-        CachedRegion req = optReq.get();
-
-        Optional<CachedRegion> optRegion = WebAPIAPI.runOnMain(() -> {
+        return WebAPIAPI.runOnMain(() -> {
             Region region = RedProtect.get().rm.getRegionById(id);
             if (region == null) {
-                data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Could not find region with id " + id);
-                return null;
+                throw new BadRequestException("Could not find region with id " + id);
             }
 
             if (req.getLeaders() != null) {
@@ -257,23 +254,24 @@ public class RedProtectServlet extends BaseServlet {
 
             return new CachedRegion(region);
         });
-
-        data.addData("ok", optRegion.isPresent(), false);
-        data.addData("region", optRegion.orElse(null), true);
     }
 
-    @Endpoint(method = HttpMethod.DELETE, path = "region/:id", perm = "delete")
-    public void deleteRegion(IServletData data, String id) {
+    @DELETE
+    @Path("/region/{id}")
+    @Permission({ "region", "delete" })
+    @ApiOperation(
+            value = "Delete a region",
+            notes = "Remove the specified protected region")
+    public CachedRegion deleteRegion(@PathParam("id") String id)
+            throws NotFoundException, BadRequestException {
         if (!id.contains("@")) {
-            data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid region id");
-            return;
+            throw new BadRequestException("Invalid region id");
         }
 
-        Optional<CachedRegion> optRegion = WebAPIAPI.runOnMain(() -> {
+        return WebAPIAPI.runOnMain(() -> {
             Region region = RedProtect.get().rm.getRegionById(id);
             if (region == null) {
-                data.sendError(HttpServletResponse.SC_BAD_REQUEST, "Could not find region with id " + id);
-                return null;
+                throw new NotFoundException("Could not find region with id " + id);
             }
 
             World world = Sponge.getServer().getWorld(region.getWorld()).orElse(null);
@@ -281,8 +279,5 @@ public class RedProtectServlet extends BaseServlet {
 
             return new CachedRegion(region);
         });
-
-        data.addData("ok", optRegion.isPresent(), false);
-        data.addData("region", optRegion.orElse(null), true);
     }
 }

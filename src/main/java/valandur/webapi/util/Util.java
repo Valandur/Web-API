@@ -1,30 +1,18 @@
 package valandur.webapi.util;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.flowpowered.math.vector.Vector3d;
-import com.flowpowered.math.vector.Vector3i;
-import ninja.leaping.configurate.ConfigurationNode;
+import com.google.common.reflect.TypeToken;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
-import org.spongepowered.api.Sponge;
-import org.spongepowered.api.asset.Asset;
-import org.spongepowered.api.entity.living.player.Player;
-import org.spongepowered.api.item.ItemType;
-import org.spongepowered.api.item.inventory.ItemStack;
-import org.spongepowered.api.text.Text;
-import org.spongepowered.api.util.Tuple;
-import org.spongepowered.api.world.World;
+import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 import valandur.webapi.WebAPI;
+import valandur.webapi.config.BaseConfig;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.math.BigInteger;
-import java.nio.file.AccessDeniedException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.SecureRandom;
 import java.util.*;
@@ -32,61 +20,45 @@ import java.util.stream.Collectors;
 
 public class Util {
 
+    public enum ParameterType {
+        INT, INTEGER, FLOAT, DOUBLE, BOOL, BOOLEAN, BYTE, CHAR, LONG, SHORT, STRING, CLASS, ENUM,
+        VECTOR3D, VECTOR3I, TEXT, WORLD, PLAYER, ITEMSTACK, STATIC,
+    }
+
     private static Map<Class, Field[]> fields = new HashMap<>();
     private static Map<Class, Method[]> methods = new HashMap<>();
 
     private static SecureRandom random = new SecureRandom();
 
-    public static Tuple<ConfigurationLoader, ConfigurationNode> loadWithDefaults(String path, String defaultPath) {
+    public static <T extends BaseConfig> T loadConfig(String path, T defaultConfig) {
+        Path filePath = WebAPI.getConfigPath().resolve(path).normalize();
+        ConfigurationLoader<CommentedConfigurationNode> loader = HoconConfigurationLoader.builder()
+                .setPath(filePath)
+                .build();
+        CommentedConfigurationNode node;
+
         try {
-            Path filePath = WebAPI.getConfigPath().resolve(path).normalize();
-            Optional<Asset> optAsset = Sponge.getAssetManager().getAsset(WebAPI.getInstance(), defaultPath);
-            if (!optAsset.isPresent()) {
-                throw new IOException("Could not find default asset " + defaultPath);
-            }
-            Asset asset = optAsset.get();
-
-            if (!Files.exists(filePath)) {
-                filePath.getParent().toFile().mkdirs();
-                asset.copyToDirectory(WebAPI.getConfigPath());
-            }
-
-            ConfigurationLoader<CommentedConfigurationNode> loader = HoconConfigurationLoader.builder()
-                    .setPath(filePath)
-                    .build();
-            CommentedConfigurationNode config = loader.load();
-
-            ConfigurationLoader<CommentedConfigurationNode> defLoader = HoconConfigurationLoader.builder()
-                    .setURL(asset.getUrl())
-                    .build();
-            CommentedConfigurationNode defConfig = defLoader.load();
-
-            int version = config.getNode("version").getInt(0);
-            int defVersion = defConfig.getNode("version").getInt(0);
-            boolean newVersion = defVersion != version;
-
-            Util.mergeConfigs(config, defConfig, newVersion);
-            loader.save(config);
-
-            if (newVersion) {
-                WebAPI.getLogger().info("New configuration version '" + defVersion + "' for " + path);
-                config.getNode("version").setValue(defVersion);
-                loader.save(config);
-            }
-
-            return new Tuple<>(loader, config);
-
-        } catch(AccessDeniedException e) {
-            WebAPI.getLogger().error("Could not access config file: " + path);
-        } catch (IOException | NoSuchElementException e) {
+            node = loader.load();
+        } catch (IOException e) {
             e.printStackTrace();
-            if (WebAPI.reportErrors()) {
-                WebAPI.sentryExtra("config", path);
-                WebAPI.sentryCapture(e);
-            }
+            node = loader.createEmptyNode();
         }
 
-        return null;
+        T config = null;
+        try {
+            config = (T)node.getValue(TypeToken.of(defaultConfig.getClass()));
+        } catch (ObjectMappingException e) {
+            e.printStackTrace();
+        }
+        if (config == null) {
+            config = defaultConfig;
+        }
+
+        config.setLoader(loader);
+        config.setNode(node);
+        config.save();
+
+        return config;
     }
 
     /**
@@ -128,7 +100,7 @@ public class Util {
         String query = req.getQueryString();
         if (query == null) return map;
 
-        String[] splits = query.split("&");
+        String[] splits = query.split("\\&");
         for (String split : splits) {
             String[] subSplits = split.split("=");
             map.put(subSplits[0], subSplits.length == 2 ? subSplits[1] : "");
@@ -143,106 +115,6 @@ public class Util {
      */
     public static String lowerFirst(String text) {
         return Character.toLowerCase(text.charAt(0)) + text.substring(1);
-    }
-
-    /**
-     * Parse a json node as an array of method parameters
-     * @param node The json node that contains the information about the method parameters.
-     * @return An optional which is empty on failure. On success it contains a tuple with the method parameters types and values.
-     */
-    public static Optional<Tuple<Class[], Object[]>> parseParams(JsonNode node) {
-        if (node == null)
-            return Optional.of(new Tuple<>(new Class[0], new Object[0]));
-
-        if (!node.isArray())
-            return Optional.empty();
-
-        ArrayNode arr = (ArrayNode)node;
-        Class[] paramTypes = new Class[arr.size()];
-        Object[] paramValues = new Object[arr.size()];
-
-        try {
-            for (int i = 0; i < arr.size(); i++) {
-                Tuple<Class, Object> tup = getParamFromJson(arr.get(i));
-                paramTypes[i] = tup.getFirst();
-                paramValues[i] = tup.getSecond();
-            }
-        } catch (ClassNotFoundException | NoSuchFieldException | IllegalAccessException e) {
-            return Optional.empty();
-        }
-
-        return Optional.of(new Tuple<>(paramTypes, paramValues));
-    }
-    private static Tuple<Class, Object> getParamFromJson(JsonNode node) throws ClassNotFoundException, NoSuchFieldException, IllegalAccessException {
-        if (!node.isObject())
-            throw new ClassNotFoundException(node.toString());
-
-        String type = node.get("type").asText().toLowerCase();
-        JsonNode e = node.get("value");
-
-        switch (type) {
-            case "int":
-            case "integer":
-                return new Tuple<>(Integer.class, e.asInt());
-            case "float":
-                return new Tuple<>(Float.class, (float)e.asDouble());
-            case "double":
-                return new Tuple<>(Double.class, e.asDouble());
-            case "bool":
-            case "boolean":
-                return new Tuple<>(Boolean.class, e.asBoolean());
-            case "byte":
-                return new Tuple<>(Byte.class, (byte)e.asInt());
-            case "char":
-                return new Tuple<>(Character.class, e.asText().charAt(0));
-            case "long":
-                return new Tuple<>(Long.class, e.asLong());
-            case "short":
-                return new Tuple<>(Short.class, (short)e.asInt());
-            case "string":
-                return new Tuple<>(String.class, e.asText());
-            case "class":
-                return new Tuple<>(Class.class, Class.forName(type));
-            case "enum":
-                Class c = Class.forName(e.get("type").asText());
-                String name = e.get("value").asText();
-                return new Tuple<Class, Object>(c, Enum.valueOf(c, name));
-
-            case "vector3d":
-                return new Tuple<>(Vector3d.class, new Vector3d(e.get("x").asDouble(), e.get("y").asDouble(), e.get("z").asDouble()));
-
-            case "vector3i":
-                return new Tuple<>(Vector3i.class, new Vector3i(e.get("x").asInt(), e.get("y").asInt(), e.get("z").asInt()));
-
-            case "text":
-                return new Tuple<>(Text.class, Text.of(e.asText()));
-
-            case "world":
-                Optional<World> w = Sponge.getServer().getWorld(UUID.fromString(e.asText()));
-                return new Tuple<>(World.class, w.orElse(null));
-
-            case "player":
-                Optional<Player> p = Sponge.getServer().getPlayer(UUID.fromString(e.asText()));
-                return new Tuple<>(Player.class, p.orElse(null));
-
-            case "itemstack":
-                String cName = e.get("itemType").asText();
-                Optional<ItemType> t = Sponge.getRegistry().getType(ItemType.class, cName);
-                int amount = e.get("amount").asInt();
-
-                if (!t.isPresent())
-                    throw new ClassNotFoundException(cName);
-
-                return new Tuple<>(ItemStack.class, ItemStack.of(t.get(), amount));
-
-            case "static":
-                Class clazz = Class.forName(e.get("class").asText());
-                Field f = clazz.getField(e.get("field").asText());
-                return new Tuple<>(f.getType(), f.get(null));
-
-            default:
-                return null;
-        }
     }
 
     /**
@@ -289,7 +161,9 @@ public class Util {
      * @param def The default configuration
      * @param restoreDefaults True if missing values in the config marked with _DEFAULT_ in the comment of the default config should be added.
      */
-    public static void mergeConfigs(CommentedConfigurationNode node, CommentedConfigurationNode def, boolean restoreDefaults) {
+    public static void mergeConfigs(CommentedConfigurationNode node,
+                                    CommentedConfigurationNode def,
+                                    boolean restoreDefaults) {
         if (def.getComment().isPresent() && def.getComment().get().contains("_EXAMPLE_") && !restoreDefaults) {
             return;
         }

@@ -62,6 +62,10 @@ When accessing the docs site (by default http://localhost:8080/docs) a documenta
 all the methods will show up. This can be used as a starting point to explore the 
 supported routes. You can also find the same documentation [here](https://valandur.github.io/Web-API/redoc.html).
 
+## Features / Progress
+You can check out [this Trello board](https://trello.com/b/5b10FfSS/web-api) if you want to
+know how a certain feature is coming along, or what's going to be in the next release.
+
 ## Contributors & Special thanks
 - [johnfg10](https://github.com/johnfg10)
 - [r15ch13](https://github.com/r15ch13)

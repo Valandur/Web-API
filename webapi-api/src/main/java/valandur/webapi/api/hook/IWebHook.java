@@ -1,14 +1,11 @@
 package valandur.webapi.api.hook;
 
+import org.eclipse.jetty.http.HttpMethod;
 import valandur.webapi.api.util.TreeNode;
 
 import java.util.List;
 
 public interface IWebHook {
-
-    enum WebHookMethod {
-        GET, PUT, POST, DELETE
-    }
 
     enum WebHookDataType {
         JSON, XML
@@ -19,7 +16,7 @@ public interface IWebHook {
 
     boolean isEnabled();
 
-    WebHookMethod getMethod();
+    HttpMethod getMethod();
 
     WebHookDataType getDataType();
 

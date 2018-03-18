@@ -4,6 +4,7 @@ import com.flowpowered.math.vector.Vector3i;
 import org.spongepowered.api.block.BlockState;
 import valandur.webapi.api.cache.world.ICachedWorld;
 
+import javax.ws.rs.InternalServerErrorException;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.UUID;
@@ -55,9 +56,9 @@ public interface IBlockService {
      * Gets the block in the specified world at the specified position.
      * @param world The world to get the block from.
      * @param pos The position of the block.
-     * @return An optional containing the block if it was found.
+     * @return The block state of the block that was requested
      */
-    Optional<BlockState> getBlockAt(ICachedWorld world, Vector3i pos);
+    BlockState getBlockAt(ICachedWorld world, Vector3i pos) throws InternalServerErrorException;
 
     /**
      * Gets the interval at which blocks are checked in the {@link #getBiomes(ICachedWorld, Vector3i, Vector3i)}
@@ -82,5 +83,5 @@ public interface IBlockService {
      * @param max The highest point that defines the region.
      * @return A matrix containing the biome ids for every n-th block, indexed by x-coordinate first.
      */
-    Optional<String[][]> getBiomes(ICachedWorld world, Vector3i min, Vector3i max);
+    String[][] getBiomes(ICachedWorld world, Vector3i min, Vector3i max) throws InternalServerErrorException;
 }

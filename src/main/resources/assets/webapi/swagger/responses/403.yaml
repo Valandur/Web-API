@@ -1,8 +1,0 @@
-description: Access denied
-schema:
-  title: Error403
-  type: object
-  properties:
-    error:
-      type: string
-      description: A description of the type of error that occured.

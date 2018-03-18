@@ -1,8 +1,0 @@
-title: Chunk
-type: object
-properties:
-  uuid:
-    type: string
-    description: The unique identifier of the chunk.
-  position:
-    $ref: "../Vector3.yaml"

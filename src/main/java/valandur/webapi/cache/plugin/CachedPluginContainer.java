@@ -4,6 +4,9 @@ import org.spongepowered.api.Sponge;
 import org.spongepowered.api.plugin.PluginContainer;
 import valandur.webapi.api.cache.CachedObject;
 import valandur.webapi.api.cache.plugin.ICachedPluginContainer;
+import valandur.webapi.api.cache.plugin.ICachedPluginDependency;
+import valandur.webapi.api.serialize.JsonDetails;
+import valandur.webapi.util.Constants;
 
 import java.util.*;
 
@@ -35,17 +38,22 @@ public class CachedPluginContainer extends CachedObject<PluginContainer> impleme
 
     private String url;
     @Override
+    @JsonDetails
     public String getUrl() {
         return url;
     }
 
     private List<String> authors;
+    @Override
+    @JsonDetails
     public List<String> getAuthors() {
         return authors;
     }
 
-    private Set<CachedPluginDependency> dependencies = new HashSet<>();
-    public Set<CachedPluginDependency> getDependencies() {
+    private Set<ICachedPluginDependency> dependencies = new HashSet<>();
+    @Override
+    @JsonDetails
+    public Set<ICachedPluginDependency> getDependencies() {
         return new HashSet<>(dependencies);
     }
 
@@ -69,6 +77,6 @@ public class CachedPluginContainer extends CachedObject<PluginContainer> impleme
 
     @Override
     public String getLink() {
-        return "/api/plugin/" + id;
+        return Constants.BASE_PATH + "/plugin/" + id;
     }
 }

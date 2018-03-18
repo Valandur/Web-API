@@ -1,18 +1,27 @@
 package valandur.webapi.servlet;
 
-import org.eclipse.jetty.http.HttpMethod;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import valandur.webapi.api.exceptions.NotImplementedException;
 import valandur.webapi.api.servlet.BaseServlet;
-import valandur.webapi.api.servlet.Endpoint;
-import valandur.webapi.api.servlet.Servlet;
-import valandur.webapi.servlet.base.ServletData;
+import valandur.webapi.api.servlet.Permission;
 
-import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
 
-@Servlet(basePath = "recipe")
+@Path("recipe")
+@Api(tags = { "Recipe" }, value = "List all recipes available on the server")
+@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+@Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 public class RecipeServlet extends BaseServlet {
 
-    @Endpoint(method = HttpMethod.GET, path = "/", perm = "list")
-    public void get(ServletData data) {
-        data.sendError(HttpServletResponse.SC_NOT_IMPLEMENTED, "Recipes have not yet been implemented in Sponge");
+    @GET
+    @Permission("list")
+    @ApiOperation("List recipes")
+    public Object listRecipes() {
+        throw new NotImplementedException();
     }
 }

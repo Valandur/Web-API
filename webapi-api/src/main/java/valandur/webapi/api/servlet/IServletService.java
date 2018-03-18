@@ -5,7 +5,7 @@ import java.util.Map;
 /**
  * This service allows registering servlets with the Web-API, which it will serve for clients.
  * Your servlet must inherit from {@link BaseServlet} and have the
- * {@link Servlet} annotation specifying the base path at which the servlet will
+ * {@link javax.ws.rs.Path} annotation specifying the base path at which the servlet will
  * be accessible.
  */
 public interface IServletService {
@@ -21,5 +21,10 @@ public interface IServletService {
      * Gets a map of all available base paths mapped to the servlets that implement them.
      * @return A map from base path to implementing servlet class.
      */
-    Map<String, Class<? extends BaseServlet>> getLoadedServlets();
+    Map<String, Class<? extends BaseServlet>> getRegisteredServlets();
+
+
+    class ServletInfo {
+
+    }
 }

@@ -1,9 +1,12 @@
 package valandur.webapi.cache.misc;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.swagger.annotations.ApiModelProperty;
 import org.spongepowered.api.event.cause.Cause;
 import org.spongepowered.api.event.cause.EventContextKey;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.cache.CachedObject;
+import valandur.webapi.api.cache.misc.ICachedCause;
 import valandur.webapi.util.Util;
 
 import java.util.ArrayList;
@@ -11,7 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class CachedCause extends CachedObject<Cause> {
+public class CachedCause extends CachedObject<Cause> implements ICachedCause {
 
     private Map<String, Object> context = new HashMap<>();
     public Map<String, Object> getContext() {
@@ -35,5 +38,12 @@ public class CachedCause extends CachedObject<Cause> {
         for (Object entry : cause.all()) {
             causes.add(WebAPI.getCacheService().asCachedObject(entry));
         }
+    }
+
+    @Override
+    @JsonIgnore
+    @ApiModelProperty(hidden = true)
+    public String getLink() {
+        return null;
     }
 }

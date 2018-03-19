@@ -56,7 +56,8 @@ configurations {
 
 configurations.all {
     resolutionStrategy {
-        force "com.google.guava:guava:23.0"
+        force "com.google.guava:guava:23.0"             // Worst library ever
+        force "org.reflections:reflections:0.9.10"      // Fixes some logging issues in 0.9.11
     }
 }
 
@@ -70,9 +71,7 @@ dependencies {
     compile group: "org.glassfish.jersey.containers", name: "jersey-container-servlet", version: "2.26"
     compile group: "org.glassfish.jersey.inject", name: "jersey-hk2", version: "2.26"
     compile group: "com.fasterxml.jackson.jaxrs", name: "jackson-jaxrs-json-provider", version: project.jacksonVersion
-    //compile group: "org.reflections", name: "reflections", version: "0.9.11"
-    //compile group: "io.swagger.core.v3", name: "swagger-jaxrs2", version: "2.0.0-rc3"
-
+    // compile group: "io.swagger.core.v3", name: "swagger-jaxrs2", version: "2.0.0-rc3"    // This if for Swagger 3.0
 
     compileOnly group: "com.fasterxml.jackson.core", name: "jackson-core", version: project.jacksonVersion
     compileOnly group: "com.fasterxml.jackson.core", name: "jackson-databind", version: project.jacksonVersion
@@ -105,45 +104,122 @@ shadowJar {
 
     mergeServiceFiles()
 
-    //relocate "com.sun.jna", "valandur.webapi.shadow.com.sun.jna"
-    relocate "co.aikar.timings.lib", "valandur.webapi.shadow.co.aikar.timingslib"
-    relocate "edu.umd", "valandur.webapi.shadow.edu.umd"
+    relocate "co.aikar.timings.lib", "valandur.webapi.shadow.co.aikar.timings.lib"
+    relocate "edu.umd.cs.findbugs.annotations", "valandur.webapi.shadow.edu.umd.cs.findbugs.annotations"
     relocate "io.sentry", "valandur.webapi.shadow.io.sentry"
-    relocate "javassist", "valandur.webapi.shadow.javassist"
-    relocate "net.jodah", "valandur.webapi.shadow.net.jodah"
-    relocate "net.jcip", "valandur.webapi.shadow.net.jcip"
-    relocate "org.bstats", "valandur.webapi.shadow.org.bstats"
-    relocate "org.mindrot", "valandur.webapi.shadow.org.mindrot"
-    relocate "org.intellij", "valandur.webapi.shadow.org.intellij"
-    relocate "org.jetbrains", "valandur.webapi.shadow.org.jetbrains"
+    relocate "net.jcip.annotations", "valandur.webapi.shadow.net.jcip.annotations"
     relocate "org.threeten", "valandur.webapi.shadow.org.threeten"
+    relocate "org.bstats", "valandur.webapi.shadow.org.bstats"
     relocate "oshi", "valandur.webapi.shadow.oshi"
 
-    exclude "/about.html"
-    exclude "/jetty-dir.css"
 
     // We need to relocate these dependencies, even though they're excluded because
     // we need the references in our code to be changed to the shadowed dependencies
     // These dependencies are already included by WebAPI-API
     relocate "com.ctc", "valandur.webapi.shadow.com.ctc"
     relocate "com.fasterxml", "valandur.webapi.shadow.com.fasterxml"
-    relocate "javax.servlet", "valandur.webapi.shadow.javax.servlet"
-    relocate "javax.xml", "valandur.webapi.shadow.javax.xml"
-    relocate "org.codehaus", "valandur.webapi.shadow.org.codehaus"
-    relocate "org.eclipse", "valandur.webapi.shadow.org.eclipse"
 
-    // Exclude the dependencies already included by WebAPI-API
+    // relocate "com.google.common", "valandur.webapi.shadow.com.google.common"
+    relocate "com.google.errorprone", "valandur.webapi.shadow.com.google.errorprone"
+    relocate "com.google.j2objc", "valandur.webapi.shadow.com.google.j2objc"
+    relocate "com.google.thirdparty", "valandur.webapi.shadow.com.google.thirdparty"
+
+    relocate "com.sun.research", "valandur.webapi.shadow.com.sun.research"
+
+    relocate("io.swagger", "valandur.webapi.shadow.io.swagger") {
+        exclude "io.swagger.jaxrs.ext.SwaggerExtension"
+    }
+
+    relocate "javassist", "valandur.webapi.shadow.javassist"
+
+    relocate "javax.annotation", "valandur.webapi.shadow.javax.annotation"
+    relocate "javax.inject", "valandur.webapi.shadow.javax.inject"
+    relocate "javax.servlet", "valandur.webapi.shadow.javax.servlet"
+    relocate "javax.validation", "valandur.webapi.shadow.javax.validation"
+    relocate "javax.ws", "valandur.webapi.shadow.javax.ws"
+    relocate "javax.xml.stream", "valandur.webapi.shadow.javax.xml.stream"
+
+    relocate "jersey.repackaged", "valandur.webapi.shadow.jersey.repackaged"
+
+    relocate "org.aopalliance", "valandur.webapi.shadow.org.aopalliance"
+    relocate "org.apache", "valandur.webapi.shadow.org.apache"
+    relocate "org.codehaus", "valandur.webapi.shadow.org.codehaus"
+
+    relocate "org.eclipse.jetty.http", "valandur.webapi.shadow.org.eclipse.jetty.http"
+    relocate "org.eclipse.jetty.io", "valandur.webapi.shadow.org.eclipse.jetty.io"
+    relocate "org.eclipse.jetty.rewrite", "valandur.webapi.shadow.org.eclipse.jetty.rewrite"
+    relocate "org.eclipse.jetty.security", "valandur.webapi.shadow.org.eclipse.jetty.security"
+    relocate "org.eclipse.jetty.server", "valandur.webapi.shadow.org.eclipse.jetty.server"
+    relocate "org.eclipse.jetty.servlet", "valandur.webapi.shadow.org.eclipse.jetty.servlet"
+    relocate "org.eclipse.jetty.util", "valandur.webapi.shadow.org.eclipse.jetty.util"
+    relocate "org.eclipse.jetty.version", "valandur.webapi.shadow.org.eclipse.jetty.version"
+
+    relocate "org.glassfish", "valandur.webapi.shadow.org.glassfish"
+    relocate "org.intellij", "valandur.webapi.shadow.org.intellij"
+    relocate "org.jetbrains", "valandur.webapi.shadow.org.jetbrains"
+    relocate "org.jvnet", "valandur.webapi.shadow.org.jvnet"
+    relocate "org.mindrot", "valandur.webapi.shadow.org.mindrot"
+    relocate "org.reflections", "valandur.webapi.shadow.org.reflections"
+
+    relocate "org.slf4j.event", "valandur.webapi.shadow.org.slf4j.event"
+    relocate "org.slf4j.helpers", "valandur.webapi.shadow.org.slf4j.helpers"
+    relocate "org.slf4j.spi", "valandur.webapi.shadow.org.slf4j.spi"
+
+    relocate "org.yaml", "valandur.webapi.shadow.org.yaml"
+
     dependencies {
+        // Exclude the dependencies already included by WebAPI-API
         exclude(dependency("com.ctc.*:"))
         exclude(dependency("com.fasterxml.*:"))
+
+        exclude(dependency("com.google.common.*:"))
+        exclude(dependency("com.google.errorprone.*:"))
+        exclude(dependency("com.google.j2objc.*:"))
+        exclude(dependency("com.google.thirdparty.*:"))
+
+        exclude(dependency("com.sun.research.*:"))
+
+        exclude(dependency("io.swagger.*:"))
+
+        exclude(dependency("javassist.*:"))
+
+        exclude(dependency("javax.annotation.*:"))
+        exclude(dependency("javax.inject.*:"))
         exclude(dependency("javax.servlet.*:"))
-        exclude(dependency("javax.xml.*:"))
+        exclude(dependency("javax.validation.*:"))
+        exclude(dependency("javax.ws.*:"))
+        exclude(dependency("javax.xml.stream.*:"))
+
+        exclude(dependency("jersey.repackaged.*:"))
+
+        exclude(dependency("org.aopalliance.*:"))
+        exclude(dependency("org.apache.*:"))
         exclude(dependency("org.codehaus.*:"))
-        exclude(dependency("org.eclipse.*:"))
+
+        exclude(dependency("org.eclipse.jetty.http.*:"))
+        exclude(dependency("org.eclipse.jetty.io.*:"))
+        exclude(dependency("org.eclipse.jetty.rewrite.*:"))
+        exclude(dependency("org.eclipse.jetty.security.*:"))
+        exclude(dependency("org.eclipse.jetty.server.*:"))
+        exclude(dependency("org.eclipse.jetty.servlet.*:"))
+        exclude(dependency("org.eclipse.jetty.util.*:"))
+        exclude(dependency("org.eclipse.jetty.version.*:"))
+
+        exclude(dependency("org.glassfish.*:"))
+        exclude(dependency("org.intellij.*:"))
+        exclude(dependency("org.jetbrains.*:"))
+        exclude(dependency("org.jvnet.*:"))
+        exclude(dependency("org.mindrot.*:"))
+        exclude(dependency("org.yaml.*:"))
 
         // Provided by sponge/forge
         exclude(dependency("org.slf4j.*:"))
     }
+
+    exclude "/about.html"
+    exclude "/jetty-dir.css"
+    exclude "/org/eclipse/jetty/favicon.ico"
+    exclude "/io/swagger/jaxrs/ext/SwaggerExtension.class"   // We overwrite this class using services, so let's remove it
 
     archiveName = "webapi-${version}.jar"
 }

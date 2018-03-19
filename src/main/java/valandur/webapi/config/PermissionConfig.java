@@ -27,7 +27,8 @@ public class PermissionConfig extends BaseConfig {
     public List<String> blacklist = new ArrayList<>();
 
     @Setting(comment = "The servers which are allowed to pass the X-Forwarded-For header indicating that they are\n" +
-            "forwarding a request for a client and are themselves a proxy")
+            "forwarding a request for a client and are themselves a proxy. You can use IP addresses or\n" +
+            "CIDR notation IP blocks (e.g. \"192.168.0.0/18\")")
     public List<String> allowedProxies = Lists.newArrayList("127.0.0.1", "::1");
 
     @Setting(comment = "The access control origin header that is sent with each request.\n" +

@@ -65,6 +65,7 @@ dependencies {
     compile project(":webapi-api")
     compile group: "co.aikar", name: "minecraft-timings", version: "1.0.4"
     compile group: "io.sentry", name: "sentry", version: "1.6.4"
+    compile group: "commons-net", name: "commons-net", version: "3.6"
     compile group: "org.mindrot", name: "jbcrypt", version: "0.4"
     compile group: "org.bstats", name: "bstats-sponge", version: "1.2"
     compile group: "com.github.oshi", name: "oshi-core", version: "3.4.4"

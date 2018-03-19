@@ -1,6 +1,7 @@
 package valandur.webapi.security;
 
 import com.google.common.net.HttpHeaders;
+import org.apache.commons.net.util.SubnetUtils;
 import org.eclipse.jetty.http.HttpMethod;
 import org.slf4j.Logger;
 import valandur.webapi.WebAPI;
@@ -39,6 +40,9 @@ public class AuthenticationProvider implements ContainerRequestFilter {
     private static final String ACCESS_CONTROL_METHODS = "GET,PUT,POST,DELETE,OPTIONS";
     private static final String ACCESS_CONTROL_HEADERS = "*";
 
+    private static Set<String> allowedProxyIps = new HashSet<>();
+    private static Set<SubnetUtils.SubnetInfo> allowedProxyCidrs = new HashSet<>();
+
     private static Map<String, Double> lastCall = new ConcurrentHashMap<>();
     private static long start = System.nanoTime();
     private static AtomicLong calls = new AtomicLong(0);
@@ -70,6 +74,16 @@ public class AuthenticationProvider implements ContainerRequestFilter {
 
         config = Util.loadConfig(configFileName, new PermissionConfig());
         defaultPerms = config.def;
+
+        for (String proxy : config.allowedProxies) {
+            if (proxy.contains("/")) {
+                SubnetUtils utils = new SubnetUtils(proxy);
+                utils.setInclusiveHostCount(true);
+                allowedProxyCidrs.add(utils.getInfo());
+            } else {
+                allowedProxyIps.add(proxy);
+            }
+        }
 
         permMap.clear();
         for (Map.Entry<String, PermissionStruct> entry : config.keys.entrySet()) {
@@ -263,13 +277,26 @@ public class AuthenticationProvider implements ContainerRequestFilter {
 
         // Traverse the X-Forwarded-For header backwards and take the first IP that we don't trust.
         for (int i = ips.length - 1; i >= 0; i--) {
-            if (!config.allowedProxies.contains(ips[i].trim())) {
-                if (i > 0) {
-                    WebAPI.getLogger().warn(ips[i].trim() + " sent " + HttpHeaders.X_FORWARDED_FOR +
-                            " header, but is not a proxy. Header will be ignored!");
-                }
-                return ips[i];
+            String ip = ips[i].trim();
+            if (allowedProxyIps.contains(ip)) {
+                continue;
             }
+            boolean found = false;
+            for (SubnetUtils.SubnetInfo cidr : allowedProxyCidrs) {
+                if (cidr.isInRange(ip)) {
+                    found = true;
+                    break;
+                }
+            }
+            if (found) {
+                continue;
+            }
+
+            if (i > 0) {
+                WebAPI.getLogger().warn(ips[i].trim() + " sent " + HttpHeaders.X_FORWARDED_FOR +
+                        " header, but is not a proxy. Header will be ignored!");
+            }
+            return ips[i];
         }
 
         // We usually shouldn't get here, but if we don't it means we trusted all proxy ips, so just

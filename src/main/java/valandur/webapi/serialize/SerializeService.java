@@ -673,7 +673,7 @@ public class SerializeService implements ISerializeService {
         filterProvider.addFilter(BaseFilter.ID, new BaseFilter(details, perms));
         om.setFilterProvider(filterProvider);
 
-        om.setAnnotationIntrospector(new AnnotationIntrospector(details));
+        om.setAnnotationIntrospector(new AnnotationIntrospector());
 
         return om;
     }

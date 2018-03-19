@@ -29,43 +29,33 @@ import valandur.webapi.util.Constants;
 
 import java.net.SocketException;
 import java.nio.charset.Charset;
+import java.util.HashSet;
+import java.util.Set;
 
 public class WebServer {
 
     private Logger logger;
 
-    private boolean adminPanelEnabled;
-    private String serverHost;
-    private Integer serverPortHttp;
-    private Integer serverPortHttps;
-    private String keyStoreLocation;
-    private String keyStorePassword;
-    private String keyStoreMgrPassword;
     private Server server;
+
+    private MainConfig config;
 
     private byte[] apConfig;
 
     public String getHost() {
-        return serverHost;
+        return config.host;
     }
     public int getHttpPort() {
-        return serverPortHttp;
+        return config.http;
     }
     public int getHttpsPort() {
-        return serverPortHttps;
+        return config.https;
     }
 
 
     WebServer(Logger logger, MainConfig config) {
         this.logger = logger;
-
-        serverHost = config.host;
-        serverPortHttp = config.http;
-        serverPortHttps = config.https;
-        adminPanelEnabled = config.adminPanel;
-        keyStoreLocation = config.customKeyStore;
-        keyStorePassword = config.customKeyStorePassword;
-        keyStoreMgrPassword = config.customKeyStoreManagerPassword;
+        this.config = config;
 
         // Process the config.js file to include data from the Web-API config files
         try {
@@ -94,8 +84,8 @@ public class WebServer {
             String baseUri = null;
 
             // HTTP
-            if (serverPortHttp >= 0) {
-                if (serverPortHttp < 1024) {
+            if (config.http >= 0) {
+                if (config.http < 1024) {
                     logger.warn("You are using an HTTP port < 1024 which is not recommended! \n" +
                             "This might cause errors when not running the server as root/admin. \n" +
                             "Running the server as root/admin is not recommended. " +
@@ -103,17 +93,17 @@ public class WebServer {
                     );
                 }
                 ServerConnector httpConn = new ServerConnector(server, new HttpConnectionFactory(httpConfig));
-                httpConn.setHost(serverHost);
-                httpConn.setPort(serverPortHttp);
+                httpConn.setHost(config.host);
+                httpConn.setPort(config.http);
                 httpConn.setIdleTimeout(30000);
                 server.addConnector(httpConn);
 
-                baseUri = "http://" + serverHost + ":" + serverPortHttp;
+                baseUri = "http://" + config.host + ":" + config.http;
             }
 
             // HTTPS
-            if (serverPortHttps >= 0) {
-                if (serverPortHttps < 1024) {
+            if (config.https >= 0) {
+                if (config.https < 1024) {
                     logger.warn("You are using an HTTPS port < 1024 which is not recommended! \n" +
                             "This might cause errors when not running the server as root/admin. \n" +
                             "Running the server as root/admin is not recommended. " +
@@ -123,11 +113,11 @@ public class WebServer {
 
                 // Update http config
                 httpConfig.setSecureScheme("https");
-                httpConfig.setSecurePort(serverPortHttps);
+                httpConfig.setSecurePort(config.https);
 
-                String loc = keyStoreLocation;
-                String pw = keyStorePassword;
-                String mgrPw = keyStoreMgrPassword;
+                String loc = config.customKeyStore;
+                String pw = config.customKeyStorePassword;
+                String mgrPw = config.customKeyStoreManagerPassword;
                 if (loc == null || loc.isEmpty()) {
                     loc = Sponge.getAssetManager().getAsset(WebAPI.getInstance(), "keystore.jks")
                             .map(a -> a.getUrl().toString()).orElse("");
@@ -153,12 +143,12 @@ public class WebServer {
                         new SslConnectionFactory(sslFactory, HttpVersion.HTTP_1_1.asString()),
                         new HttpConnectionFactory(httpsConfig)
                 );
-                httpsConn.setHost(serverHost);
-                httpsConn.setPort(serverPortHttps);
+                httpsConn.setHost(config.host);
+                httpsConn.setPort(config.https);
                 httpsConn.setIdleTimeout(30000);
                 server.addConnector(httpsConn);
 
-                baseUri = "https://" + serverHost + ":" + serverPortHttps;
+                baseUri = "https://" + config.host + ":" + config.https;
             }
 
             if (baseUri == null) {
@@ -172,7 +162,7 @@ public class WebServer {
             // Asset handlers
             mainContext.addHandler(newContext("/docs", new AssetHandler("pages/redoc.html")));
 
-            if (adminPanelEnabled) {
+            if (config.adminPanel) {
                 // Rewrite handler
                 RewriteHandler rewrite = new RewriteHandler();
                 rewrite.setRewriteRequestURI(true);
@@ -198,33 +188,38 @@ public class WebServer {
             servletsContext.setContextPath(Constants.BASE_PATH);
 
             // Resource config for jersey servlet
-            ResourceConfig config = new ResourceConfig();
-            config.packages(
+            ResourceConfig conf = new ResourceConfig();
+            conf.packages(
                     "io.swagger.jaxrs.listing",
+                    "valandur.webapi.shadow.io.swagger.jaxrs.listing",
                     "valandur.webapi.handler",
                     "valandur.webapi.security",
                     "valandur.webapi.serialize",
                     "valandur.webapi.user"
                     //"io.swagger.v3.jaxrs2.integration.resources"                      // This if for Swagger 3.0
             );
-            config.property("jersey.config.server.wadl.disableWadl", true);
+            conf.property("jersey.config.server.wadl.disableWadl", true);
 
             // Register all servlets. We use this instead of package scanning because we don't want the
             // integrated servlets to load unless their plugin is present. Also this gives us more control/info
             // over which servlets/endpoints are loaded.
-            StringBuilder swaggerPath = new StringBuilder();
+            Set<String> servlets = new HashSet<>();
             for (Class<? extends BaseServlet> servletClass :
                     WebAPI.getServletService().getRegisteredServlets().values()) {
-                config.register(servletClass);
-                swaggerPath.append(",").append(servletClass.getPackage().getName());
+                conf.register(servletClass);
+                String pkg = servletClass.getPackage().getName();
+                if (!servlets.contains(pkg)) {
+                    servlets.add(pkg);
+                }
             }
 
             // Register serializer
-            config.register(SerializationFeature.class);
+            conf.register(SerializationFeature.class);
 
             // Jersey servlet
-            ServletHolder jerseyServlet = new ServletHolder(new ServletContainer(config));
+            ServletHolder jerseyServlet = new ServletHolder(new ServletContainer(conf));
             jerseyServlet.setInitOrder(1);
+            // This if for Swagger 3.0
             // jerseyServlet.setInitParameter("openApi.configuration.location", assets/webapi/swagger/config.json");                                    // This is for Swagger 3.0
             servletsContext.addServlet(jerseyServlet, "/*");
 
@@ -232,9 +227,11 @@ public class WebServer {
             // TODO: We can't set scheme and host yet because Swagger 2.0 doesn't support multiple different ones
             BeanConfig beanConfig = new BeanConfig();
             beanConfig.setBasePath(Constants.BASE_PATH);
-            beanConfig.setResourcePackage("valandur.webapi.swagger" + swaggerPath);
+            beanConfig.setResourcePackage("valandur.webapi.swagger," + String.join(",", servlets));
             beanConfig.setScan(true);
-            beanConfig.setPrettyPrint(true);
+            if (config.devMode) {
+                beanConfig.setPrettyPrint(true);
+            }
             servletsContext.addBean(beanConfig);
 
             // Add servlets to main context
@@ -250,7 +247,7 @@ public class WebServer {
 
             server.start();
 
-            if (adminPanelEnabled)
+            if (config.adminPanel)
                 logger.info("AdminPanel: " + baseUri + "/admin");
             logger.info("API Docs: " + baseUri + "/docs");
         } catch (SocketException e) {

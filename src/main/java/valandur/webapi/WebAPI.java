@@ -210,13 +210,15 @@ public class WebAPI {
 
         Sentry.init();
 
-        // Add our own jar to the system classloader classpath,
-        // because some external libraries don't work otherwise.
-        // TODO: Improve adding our jar to system classloader classpath
+        // Add our own jar to the system classloader classpath, because some external libraries don't work otherwise.
+        // (I'm looking at you jna)
+        registerInSystemClasspath(WebAPI.class);
+    }
+    private void registerInSystemClasspath(Class clazz) {
         try {
-            CodeSource src = WebAPI.class.getProtectionDomain().getCodeSource();
+            CodeSource src = clazz.getProtectionDomain().getCodeSource();
             if (src == null) {
-                throw new IOException("Could not get code source!");
+                throw new IOException("Could not get code source for " + clazz.getName() + "!");
             }
 
             URL jar = src.getLocation();
@@ -414,7 +416,7 @@ public class WebAPI {
         server = new WebServer(logger, mainConfig);
 
         if (devMode) {
-            logger.warn("Web-API IS RUNNING IN DEV MODE. USING NON-SHADOWED REFERENCES! ERROR REPORTING IS OFF!");
+            logger.warn("Web-API IS RUNNING IN DEV MODE. ERROR REPORTING IS OFF!");
             reportErrors = false;
         }
 

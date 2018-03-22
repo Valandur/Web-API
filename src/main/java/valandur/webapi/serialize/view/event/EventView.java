@@ -19,7 +19,9 @@ import org.spongepowered.api.event.world.ExplosionEvent;
 import org.spongepowered.api.event.world.GenerateChunkEvent;
 import org.spongepowered.api.event.world.TargetWorldEvent;
 import valandur.webapi.api.block.IBlockOperationEvent;
+import valandur.webapi.api.cache.misc.CachedCatalogType;
 import valandur.webapi.api.serialize.BaseView;
+import valandur.webapi.api.serialize.JsonDetails;
 import valandur.webapi.cache.command.CachedCommandResult;
 
 import java.util.HashMap;
@@ -108,10 +110,6 @@ public class EventView extends BaseView<Event> {
 
         try {
             data.put("cause", value.getCause());
-        } catch (AbstractMethodError ignored) {}
-
-        try {
-            data.put("context", value.getContext());
         } catch (AbstractMethodError ignored) {}
     }
 }

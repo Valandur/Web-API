@@ -19,6 +19,7 @@ import org.spongepowered.api.event.world.ExplosionEvent;
 import org.spongepowered.api.event.world.GenerateChunkEvent;
 import org.spongepowered.api.event.world.TargetWorldEvent;
 import valandur.webapi.api.block.IBlockOperationEvent;
+import valandur.webapi.api.cache.misc.CachedCatalogType;
 import valandur.webapi.api.serialize.BaseView;
 import valandur.webapi.api.serialize.JsonDetails;
 import valandur.webapi.cache.command.CachedCommandResult;

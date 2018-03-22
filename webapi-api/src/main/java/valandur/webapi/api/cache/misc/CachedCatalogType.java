@@ -7,6 +7,7 @@ import io.swagger.annotations.ApiModelProperty;
 import org.spongepowered.api.CatalogType;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.text.translation.Translatable;
+import org.spongepowered.api.text.translation.Translation;
 import valandur.webapi.api.cache.CachedObject;
 
 import java.util.Optional;
@@ -35,7 +36,7 @@ public class CachedCatalogType<T extends CatalogType> extends CachedObject<T> im
         if (value instanceof Translatable) {
             try {
                 this.name = ((Translatable) value).getTranslation().get();
-            } catch (AbstractMethodError ignored) {
+            } catch (AbstractMethodError | NullPointerException ignored) {
                 this.name = value.getName();
             }
         } else {

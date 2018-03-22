@@ -190,10 +190,12 @@ public class WebHookService implements IWebHookService {
 
         String stringData = "";
         try {
-            stringData = WebAPI.getSerializeService().getDefaultObjectMapper(
+            ObjectMapper om = WebAPI.getSerializeService().getDefaultObjectMapper(
                     hook.getDataType() == IWebHook.WebHookDataType.XML,
                     hook.includeDetails(),
-                    hook.getPermissions()).writeValueAsString(data);
+                    hook.getPermissions()
+            );
+            stringData = om.writeValueAsString(data);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }

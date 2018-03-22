@@ -48,48 +48,46 @@ public class WebHookSerializer implements TypeSerializer<WebHook> {
 
         TreeNode<String, Boolean> permissions = IPermissionService.permitAllNode();
 
-        if (!enabled) {
-            logger.info("    -> Disabled");
+        if (headers == null) {
+            headers = new ArrayList<>();
+        }
+
+        if (method == null) {
+            method = HttpMethod.POST;
+            logger.warn("    Does not specify 'method', defaulting to 'POST'");
+        }
+
+        if (dataType == null) {
+            dataType = WebHook.WebHookDataType.JSON;
+            logger.warn("    Does not specify 'dataType', defaulting to 'JSON'");
+        }
+
+        if (value.getNode("permissions").isVirtual()) {
+            logger.warn("    Does not specify 'permissions', defaulting to '*'");
         } else {
-            if (headers == null) {
-                headers = new ArrayList<>();
-            }
-
-            if (method == null) {
-                method = HttpMethod.POST;
-                logger.warn("    Does not specify 'method', defaulting to 'POST'");
-            }
-
-            if (dataType == null) {
-                dataType = WebHook.WebHookDataType.JSON;
-                logger.warn("    Does not specify 'dataType', defaulting to 'JSON'");
-            }
-
-            if (value.getNode("permissions").isVirtual()) {
-                logger.warn("    Does not specify 'permissions', defaulting to '*'");
-            } else {
-                permissions = WebAPI.getPermissionService().permissionTreeFromConfig(value.getNode("permissions"));
-            }
+            permissions = WebAPI.getPermissionService().permissionTreeFromConfig(value.getNode("permissions"));
         }
 
         WebHook hook = new WebHook(address, enabled, method, dataType, form, headers, details, permissions);
 
-        if (enabled) {
-            if (filterName != null) {
-                Optional<Class<? extends BaseWebHookFilter>> opt = WebAPI.getWebHookService().getFilter(filterName);
-                if (!opt.isPresent()) {
-                    logger.error("    Could not find filter with name '" + filterName + "'");
-                } else {
-                    try {
-                        Constructor ctor = opt.get().getConstructor(WebHook.class, ConfigurationNode.class);
-                        hook.setFilter((BaseWebHookFilter) ctor.newInstance(hook, filterConfig));
-                    } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
-                        logger.error("    Could not setup filter '" + filterName + "': " + e.getMessage());
-                    }
+        if (filterName != null) {
+            Optional<Class<? extends BaseWebHookFilter>> opt = WebAPI.getWebHookService().getFilter(filterName);
+            if (!opt.isPresent()) {
+                logger.error("    Could not find filter with name '" + filterName + "'");
+            } else {
+                try {
+                    Constructor ctor = opt.get().getConstructor(WebHook.class, ConfigurationNode.class);
+                    hook.setFilter((BaseWebHookFilter) ctor.newInstance(hook, filterConfig));
+                } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
+                    logger.error("    Could not setup filter '" + filterName + "': " + e.getMessage());
                 }
             }
+        }
 
+        if (enabled) {
             logger.info("    -> Ok");
+        } else {
+            logger.info("    -> Disabled");
         }
 
         return hook;
@@ -122,6 +120,17 @@ public class WebHookSerializer implements TypeSerializer<WebHook> {
 
         setValueAndComment(value.getNode("details"), obj.includeDetails(),
                 "Set to true to send detailed json data");
+
+        if (obj.getFilter() != null) {
+            ConfigurationNode filterNode = value.getNode("filter");
+            obj.getFilter().writeToConfig(filterNode);
+            if (filterNode instanceof CommentedConfigurationNode) {
+                ((CommentedConfigurationNode) filterNode).setComment(
+                        "Filters are used to only send certain events to certain endpoints\n" +
+                                "Use the 'name' property to select a filter and pass additional options in the 'config' property"
+                );
+            }
+        }
 
         WebAPI.getPermissionService().permissionTreeToConfig(value.getNode("permissions"), obj.getPermissions());
         if (value.getNode("permissions") instanceof CommentedConfigurationNode) {

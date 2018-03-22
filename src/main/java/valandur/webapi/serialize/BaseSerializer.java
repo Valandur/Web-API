@@ -45,6 +45,7 @@ public class BaseSerializer<T, U> extends StdSerializer<T> {
             if (gen.isClosed()) return; // Don't try and write the error if the stream is already closed
             if (value instanceof Throwable) return; // Don't throw an exception if we're already processing an exception
             if (e instanceof EofException) return; // Don't throw on EofExceptions, because likely the remote stream was closed
+            e.printStackTrace();
             throw new InternalServerErrorException(e.getMessage());
         }
     }

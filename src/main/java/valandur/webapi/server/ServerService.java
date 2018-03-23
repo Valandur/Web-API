@@ -11,7 +11,9 @@ import valandur.webapi.api.server.IServerStat;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -129,5 +131,20 @@ public class ServerService implements IServerService {
     }
     public void setProperty(String key, String value) {
         newProperties.put(key, new ServerProperty(key, value));
+    }
+    public void saveProperties() throws IOException {
+        Path path = Paths.get("./server.properties");
+        Path backupPath = Paths.get("./server.properties.bck");
+        if (!Files.exists(backupPath)) {
+            Files.copy(path, backupPath);
+        }
+
+        StringBuilder text = new StringBuilder("#Minecraft server properties\n");
+        text.append("#Modified by Web-API\n");
+        text.append("#").append((new Date()).toString()).append("\n");
+        for (ServerProperty prop : newProperties.values()) {
+            text.append(prop.getKey()).append("=").append(prop.getValue()).append("\n");
+        }
+        Files.write(path, text.toString().getBytes(Charset.forName("utf-8")));
     }
 }

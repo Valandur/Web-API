@@ -13,6 +13,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
 
@@ -58,6 +59,13 @@ public class ServerServlet extends BaseServlet {
                 throw new ForbiddenException("You do not have permission to change the " + entry.getKey() + " setting");
             }
             srv.setProperty(entry.getKey(), entry.getValue());
+        }
+
+        try {
+            srv.saveProperties();
+        } catch (IOException e) {
+            WebAPI.sentryCapture(e);
+            throw new InternalServerErrorException(e.getMessage());
         }
 
         return srv.getProperties();

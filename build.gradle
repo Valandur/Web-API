@@ -127,9 +127,7 @@ shadowJar {
 
     relocate "com.sun.research", "valandur.webapi.shadow.com.sun.research"
 
-    relocate("io.swagger", "valandur.webapi.shadow.io.swagger") {
-        exclude "io.swagger.jaxrs.ext.SwaggerExtension"
-    }
+    relocate "io.swagger", "valandur.webapi.shadow.io.swagger"
 
     relocate "javassist", "valandur.webapi.shadow.javassist"
 
@@ -207,10 +205,7 @@ shadowJar {
         exclude(dependency("org.eclipse.jetty.version.*:"))
 
         exclude(dependency("org.glassfish.*:"))
-        exclude(dependency("org.intellij.*:"))
-        exclude(dependency("org.jetbrains.*:"))
         exclude(dependency("org.jvnet.*:"))
-        exclude(dependency("org.mindrot.*:"))
         exclude(dependency("org.yaml.*:"))
 
         // Provided by sponge/forge
@@ -220,7 +215,7 @@ shadowJar {
     exclude "/about.html"
     exclude "/jetty-dir.css"
     exclude "/org/eclipse/jetty/favicon.ico"
-    exclude "/io/swagger/jaxrs/ext/SwaggerExtension.class"   // We overwrite this class using services, so let's remove it
+    // exclude "/io/swagger/jaxrs/ext/SwaggerExtension.class"   // We overwrite this class using services, so let's remove it
 
     archiveName = "webapi-${version}.jar"
 }

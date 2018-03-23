@@ -1,7 +1,6 @@
 package valandur.webapi.security;
 
 import com.google.common.net.HttpHeaders;
-import org.apache.commons.net.util.SubnetUtils;
 import org.eclipse.jetty.http.HttpMethod;
 import org.slf4j.Logger;
 import valandur.webapi.WebAPI;
@@ -10,6 +9,7 @@ import valandur.webapi.api.servlet.Permission;
 import valandur.webapi.api.util.TreeNode;
 import valandur.webapi.config.PermissionConfig;
 import valandur.webapi.user.UserPermissionStruct;
+import valandur.webapi.util.SubnetUtils;
 import valandur.webapi.util.Util;
 
 import javax.annotation.Priority;
@@ -22,7 +22,6 @@ import javax.ws.rs.container.ResourceInfo;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.Provider;
-import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -146,7 +145,7 @@ public class AuthenticationProvider implements ContainerRequestFilter {
     }
 
     @Override
-    public void filter(ContainerRequestContext context) throws IOException {
+    public void filter(ContainerRequestContext context) {
         String addr = getRealAddr(request);
         String target = context.getUriInfo().getPath();
 
@@ -177,7 +176,7 @@ public class AuthenticationProvider implements ContainerRequestFilter {
             if (key != null) key = key.substring(key.indexOf(" ") + 1);
         }
 
-        PermissionStruct permStruct = null;
+        PermissionStruct permStruct;
         if (key != null) {
             permStruct = permMap.get(key);
             if (permStruct == null) {
@@ -226,7 +225,6 @@ public class AuthenticationProvider implements ContainerRequestFilter {
         }
         request.setAttribute("details", details);
 
-        Class c = resourceInfo.getResourceClass();
         String basePath = resourceInfo.getResourceClass().getAnnotation(Path.class).value();
         TreeNode<String, Boolean> perms = permStruct.getPermissions();
 

@@ -38,9 +38,7 @@ shadowJar {
 
     relocate "com.sun.research", "valandur.webapi.shadow.com.sun.research"
 
-    relocate("io.swagger", "valandur.webapi.shadow.io.swagger") {
-        exclude "io.swagger.jaxrs.ext.SwaggerExtension"
-    }
+    relocate "io.swagger", "valandur.webapi.shadow.io.swagger"
 
     relocate "javassist", "valandur.webapi.shadow.javassist"
 
@@ -67,10 +65,7 @@ shadowJar {
     relocate "org.eclipse.jetty.version", "valandur.webapi.shadow.org.eclipse.jetty.version"
 
     relocate "org.glassfish", "valandur.webapi.shadow.org.glassfish"
-    relocate "org.intellij", "valandur.webapi.shadow.org.intellij"
-    relocate "org.jetbrains", "valandur.webapi.shadow.org.jetbrains"
     relocate "org.jvnet", "valandur.webapi.shadow.org.jvnet"
-    relocate "org.mindrot", "valandur.webapi.shadow.org.mindrot"
     relocate "org.reflections", "valandur.webapi.shadow.org.reflections"
 
     relocate "org.slf4j.event", "valandur.webapi.shadow.org.slf4j.event"
@@ -82,7 +77,7 @@ shadowJar {
     exclude "/about.html"
     exclude "/jetty-dir.css"
     exclude "/org/eclipse/jetty/favicon.ico"
-    exclude "/io/swagger/jaxrs/ext/SwaggerExtension.class"   // We overwrite this class using services, so let's remove it
+    // exclude "/io/swagger/jaxrs/ext/SwaggerExtension.class"   // We overwrite this class using services, so let's remove it
 
     archiveName = "webapi-api-${version}.jar"
 }

@@ -9,9 +9,7 @@ import valandur.webapi.api.permission.IPermissionService;
 import valandur.webapi.api.serialize.ISerializeService;
 import valandur.webapi.api.server.IServerService;
 
-import javax.servlet.http.HttpServlet;
-
-public abstract class BaseServlet extends HttpServlet {
+public abstract class BaseServlet {
 
     protected IBlockService blockService;
     protected ICacheService cacheService;

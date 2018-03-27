@@ -2,7 +2,6 @@ package valandur.webapi.hook;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.eclipse.jetty.http.HttpMethod;
 import org.slf4j.Logger;
 import org.spongepowered.api.Platform;
 import org.spongepowered.api.Sponge;
@@ -216,7 +215,7 @@ public class WebHookService implements IWebHookService {
                 //Create connection
                 URL url = new URL(address);
                 connection = (HttpURLConnection) url.openConnection();
-                connection.setRequestMethod(hook.getMethod().toString());
+                connection.setRequestMethod(hook.getMethod());
                 for (WebHookHeader header : hook.getHeaders()) {
                     connection.setRequestProperty(header.getName(), header.getValue());
                 }
@@ -226,7 +225,7 @@ public class WebHookService implements IWebHookService {
                 if (source != null) connection.setRequestProperty("X-WebAPI-Source", source);
                 connection.setRequestProperty("accept", "application/json");
                 connection.setRequestProperty("charset", "utf-8");
-                if (finalData != null && hook.getMethod() != HttpMethod.GET) {
+                if (finalData != null) {
                     connection.setRequestProperty("Content-Type", hook.getDataTypeHeader());
                     connection.setRequestProperty("Content-Length", Integer.toString(finalData.getBytes().length));
                 }
@@ -234,15 +233,11 @@ public class WebHookService implements IWebHookService {
 
                 //Send request
                 if (finalData != null) {
-                    if (hook.getMethod() != HttpMethod.GET) {
-                        connection.setDoOutput(true);
+                    connection.setDoOutput(true);
 
-                        DataOutputStream wr = new DataOutputStream(connection.getOutputStream());
-                        wr.writeBytes(finalData);
-                        wr.close();
-                    } else {
-                        logger.warn("Hook '" + hook.getAddress() + " will not receive data because it uses 'GET' method");
-                    }
+                    DataOutputStream wr = new DataOutputStream(connection.getOutputStream());
+                    wr.writeBytes(finalData);
+                    wr.close();
                 }
 
                 //Get Response

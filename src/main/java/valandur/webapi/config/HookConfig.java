@@ -3,7 +3,6 @@ package valandur.webapi.config;
 import com.google.common.collect.Lists;
 import ninja.leaping.configurate.objectmapping.Setting;
 import ninja.leaping.configurate.objectmapping.serialize.ConfigSerializable;
-import org.eclipse.jetty.http.HttpMethod;
 import valandur.webapi.api.hook.IWebHook;
 import valandur.webapi.api.hook.IWebHookService.WebHookType;
 import valandur.webapi.api.hook.WebHookHeader;
@@ -12,6 +11,7 @@ import valandur.webapi.hook.CommandWebHook;
 import valandur.webapi.hook.WebHook;
 import valandur.webapi.hook.WebHookParam;
 
+import javax.ws.rs.HttpMethod;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;

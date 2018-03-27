@@ -5,7 +5,6 @@ import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 import ninja.leaping.configurate.objectmapping.serialize.TypeSerializer;
-import org.eclipse.jetty.http.HttpMethod;
 import org.slf4j.Logger;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.hook.BaseWebHookFilter;
@@ -14,6 +13,7 @@ import valandur.webapi.api.hook.WebHookHeader;
 import valandur.webapi.api.permission.IPermissionService;
 import valandur.webapi.api.util.TreeNode;
 
+import javax.ws.rs.HttpMethod;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -36,7 +36,7 @@ public class WebHookSerializer implements TypeSerializer<WebHook> {
         logger.info("  - " + address);
 
         boolean enabled = value.getNode("enabled").getBoolean();
-        HttpMethod method = value.getNode("method").getValue(TypeToken.of(HttpMethod.class));
+        String method = value.getNode("method").getString();
         WebHook.WebHookDataType dataType = value.getNode("dataType").getValue(TypeToken.of(WebHook.WebHookDataType.class));
         boolean form = value.getNode("form").getBoolean();
         List<WebHookHeader> headers = value.getNode("headers").getList(TypeToken.of(WebHookHeader.class));
@@ -107,7 +107,7 @@ public class WebHookSerializer implements TypeSerializer<WebHook> {
                         "Please note that the following headers will always be overridden by the Web-API:\n" +
                         "X-WebAPI-Version, X-WebAPI-Event, X-WebAPI-Source, User-Agent, Content-Type, Content-Length, accept, charset");
 
-        setValueAndComment(value.getNode("method"), TypeToken.of(HttpMethod.class), obj.getMethod(),
+        setValueAndComment(value.getNode("method"), obj.getMethod(),
                 "This is the http method that is used (GET, PUT, POST or DELETE)");
 
         setValueAndComment(value.getNode("dataType"), TypeToken.of(IWebHook.WebHookDataType.class), obj.getDataType(),

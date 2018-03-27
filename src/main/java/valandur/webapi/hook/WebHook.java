@@ -1,6 +1,5 @@
 package valandur.webapi.hook;
 
-import org.eclipse.jetty.http.HttpMethod;
 import valandur.webapi.api.hook.BaseWebHookFilter;
 import valandur.webapi.api.hook.IWebHook;
 import valandur.webapi.api.hook.WebHookHeader;
@@ -28,9 +27,9 @@ public class WebHook implements IWebHook {
         return form;
     }
 
-    private HttpMethod method;
+    private String method;
     @Override
-    public HttpMethod getMethod() { return method; }
+    public String getMethod() { return method; }
 
     private WebHookDataType dataType;
     @Override
@@ -77,7 +76,7 @@ public class WebHook implements IWebHook {
     }
 
 
-    public WebHook(String address, boolean enabled, HttpMethod method, WebHookDataType dataType, boolean form,
+    public WebHook(String address, boolean enabled, String method, WebHookDataType dataType, boolean form,
                    List<WebHookHeader> headers, boolean details, TreeNode<String, Boolean> permissions) {
         this.address = address;
         this.enabled = enabled;

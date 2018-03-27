@@ -1,12 +1,7 @@
 package valandur.webapi.api;
 
-import com.google.inject.Inject;
-import org.slf4j.Logger;
 import org.spongepowered.api.Sponge;
-import org.spongepowered.api.event.Listener;
-import org.spongepowered.api.event.game.state.GamePreInitializationEvent;
-import org.spongepowered.api.plugin.Plugin;
-import org.spongepowered.api.scheduler.SpongeExecutorService;
+import valandur.webapi.WebAPI;
 import valandur.webapi.api.block.IBlockService;
 import valandur.webapi.api.cache.ICacheService;
 import valandur.webapi.api.hook.IWebHookService;
@@ -15,37 +10,12 @@ import valandur.webapi.api.permission.IPermissionService;
 import valandur.webapi.api.serialize.ISerializeService;
 import valandur.webapi.api.server.IServerService;
 import valandur.webapi.api.servlet.IServletService;
-import valandur.webapi.api.util.Constants;
 
-import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.WebApplicationException;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.function.Supplier;
 
-@Plugin(
-        id = Constants.ID,
-        version = Constants.VERSION,
-        name = Constants.NAME,
-        url = Constants.URL,
-        description = Constants.DESCRIPTION,
-        authors = {
-                "Valandur"
-        }
-)
 public class WebAPIAPI {
-
-    @Inject
-    private Logger logger;
-
-    @Listener
-    public void onPreInitialization(GamePreInitializationEvent event) {
-        logger.info(Constants.NAME + " v" + Constants.VERSION + " is loading...");
-
-        // Reusable sync executor to run code on main server thread
-        syncExecutor = Sponge.getScheduler().createSyncExecutor(this);
-    }
 
     /**
      * Gets the block service from the Web-API. Used to fetch and manipulate blocks.
@@ -112,46 +82,10 @@ public class WebAPIAPI {
     }
 
 
-    // Run functions on the main server thread
-    private static SpongeExecutorService syncExecutor;
     public static void runOnMain(Runnable runnable) throws WebApplicationException {
-        if (Sponge.getServer().isMainThread()) {
-            runnable.run();
-        } else {
-            CompletableFuture future = CompletableFuture.runAsync(runnable, syncExecutor);
-            try {
-                future.get();
-            } catch (InterruptedException ignored) {
-            } catch (ExecutionException e) {
-                // Rethrow any web application exceptions we get, because they're handled by the servlets
-                if (e.getCause() instanceof WebApplicationException)
-                    throw (WebApplicationException)e.getCause();
-
-                e.printStackTrace();
-                throw new InternalServerErrorException(e.getMessage());
-            }
-        }
+        WebAPI.runOnMain(runnable);
     }
     public static <T> T runOnMain(Supplier<T> supplier) throws WebApplicationException {
-        if (Sponge.getServer().isMainThread()) {
-            //Timings.RUN_ON_MAIN.startTiming();
-            T obj = supplier.get();
-            //Timings.RUN_ON_MAIN.stopTiming();
-            return obj;
-        } else {
-            CompletableFuture<T> future = CompletableFuture.supplyAsync(supplier, syncExecutor);
-            try {
-                return future.get();
-            } catch (InterruptedException e) {
-                throw new InternalServerErrorException(e.getMessage());
-            } catch (ExecutionException e) {
-                // Rethrow any web application exceptions we get, because they're handled by the servlets
-                if (e.getCause() instanceof WebApplicationException)
-                    throw (WebApplicationException)e.getCause();
-
-                e.printStackTrace();
-                throw new InternalServerErrorException(e.getMessage());
-            }
-        }
+        return WebAPI.runOnMain(supplier);
     }
 }

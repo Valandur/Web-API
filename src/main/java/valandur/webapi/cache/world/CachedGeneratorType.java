@@ -3,7 +3,7 @@ package valandur.webapi.cache.world;
 import org.spongepowered.api.data.DataQuery;
 import org.spongepowered.api.world.GeneratorType;
 import valandur.webapi.WebAPI;
-import valandur.webapi.cache.misc.CachedCatalogType;
+import valandur.webapi.api.cache.misc.CachedCatalogType;
 
 import java.util.HashMap;
 import java.util.Map;

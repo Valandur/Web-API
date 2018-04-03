@@ -112,4 +112,11 @@ public class WebHookParam {
 
         return Optional.empty();
     }
+
+    public WebHookParam() {}
+    public WebHookParam(String name, WebHookParamType type, boolean optional) {
+        this.name = name;
+        this.type = type;
+        this.optional = optional;
+    }
 }

@@ -13,6 +13,10 @@ import java.util.List;
 public class ItemTypeFilter extends BaseWebHookFilter {
 
     public static String name = "WebAPI-Item";
+    @Override
+    public String getName() {
+        return name;
+    }
 
     private List<ItemType> items;
 
@@ -25,6 +29,11 @@ public class ItemTypeFilter extends BaseWebHookFilter {
         } catch (ObjectMappingException e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    protected void _writeToConfig(ConfigurationNode node) throws ObjectMappingException {
+        node.getNode("config").setValue(new TypeToken<List<ItemType>>() {}, this.items);
     }
 
     @Override

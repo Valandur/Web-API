@@ -9,7 +9,7 @@ import org.spongepowered.api.service.pagination.PaginationList;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.action.TextActions;
 import org.spongepowered.api.text.format.TextColors;
-import valandur.webapi.user.UserPermission;
+import valandur.webapi.user.UserPermissionStruct;
 import valandur.webapi.user.Users;
 
 import java.util.Collection;
@@ -19,7 +19,7 @@ public class CmdUserList implements CommandExecutor {
 
     @Override
     public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
-        Collection<UserPermission> users = Users.getUsers();
+        Collection<UserPermissionStruct> users = Users.getUsers();
         PaginationList.builder()
                 .title(Text.of("Web-API users"))
                 .contents(users.stream().map(u -> {

@@ -6,7 +6,7 @@ import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.command.args.CommandContext;
 import org.spongepowered.api.command.spec.CommandExecutor;
 import org.spongepowered.api.text.Text;
-import valandur.webapi.WebAPI;
+import valandur.webapi.security.AuthenticationProvider;
 
 public class CmdAuthListAdd implements CommandExecutor {
     private boolean whitelist = false;
@@ -20,10 +20,10 @@ public class CmdAuthListAdd implements CommandExecutor {
         String ip = args.getOne("ip").get().toString();
 
         if (whitelist) {
-            WebAPI.getAuthHandler().addToWhitelist(ip);
+            AuthenticationProvider.addToWhitelist(ip);
             src.sendMessage(Text.of("Added " + ip + " to whitelist"));
         } else {
-            WebAPI.getAuthHandler().addToBlacklist(ip);
+            AuthenticationProvider.addToBlacklist(ip);
             src.sendMessage(Text.of("Added " + ip + " to blacklist"));
         }
 

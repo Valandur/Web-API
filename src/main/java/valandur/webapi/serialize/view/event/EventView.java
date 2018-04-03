@@ -2,27 +2,36 @@ package valandur.webapi.serialize.view.event;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import org.spongepowered.api.event.Event;
 import org.spongepowered.api.event.achievement.GrantAchievementEvent;
 import org.spongepowered.api.event.block.TargetBlockEvent;
+import org.spongepowered.api.event.command.SendCommandEvent;
 import org.spongepowered.api.event.entity.TargetEntityEvent;
 import org.spongepowered.api.event.entity.living.humanoid.HandInteractEvent;
 import org.spongepowered.api.event.entity.living.humanoid.player.KickPlayerEvent;
 import org.spongepowered.api.event.item.inventory.InteractInventoryEvent;
+import org.spongepowered.api.event.message.MessageChannelEvent;
 import org.spongepowered.api.event.user.BanUserEvent;
 import org.spongepowered.api.event.user.TargetUserEvent;
 import org.spongepowered.api.event.world.ExplosionEvent;
 import org.spongepowered.api.event.world.GenerateChunkEvent;
 import org.spongepowered.api.event.world.TargetWorldEvent;
 import valandur.webapi.api.block.IBlockOperationEvent;
+import valandur.webapi.api.cache.misc.CachedCatalogType;
 import valandur.webapi.api.serialize.BaseView;
+import valandur.webapi.api.serialize.JsonDetails;
+import valandur.webapi.cache.command.CachedCommandResult;
 
 import java.util.HashMap;
 import java.util.Map;
 
+@ApiModel("Event")
 public class EventView extends BaseView<Event> {
 
     @JsonProperty(value = "class")
+    @ApiModelProperty(value = "The class of event", required = true)
     public String clazz;
 
     private Map<String, Object> data = new HashMap<>();
@@ -41,6 +50,19 @@ public class EventView extends BaseView<Event> {
             data.put("target", ((TargetEntityEvent)value).getTargetEntity());
         } else if (value instanceof TargetUserEvent) {
             data.put("target", ((TargetUserEvent)value).getTargetUser());
+        }
+
+        if (value instanceof MessageChannelEvent) {
+            MessageChannelEvent event = (MessageChannelEvent)value;
+            data.put("message", event.getMessage());
+            data.put("receivers", event.getChannel().orElse(event.getOriginalChannel()).getMembers());
+        }
+
+        if (value instanceof SendCommandEvent) {
+            SendCommandEvent event = (SendCommandEvent)value;
+            data.put("command", event.getCommand());
+            data.put("arguments", event.getArguments());
+            data.put("result", new CachedCommandResult(event.getResult()));
         }
 
         if (value instanceof KickPlayerEvent) {

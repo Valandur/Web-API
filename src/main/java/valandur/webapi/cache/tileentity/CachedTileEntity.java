@@ -6,12 +6,13 @@ import org.spongepowered.api.block.tileentity.carrier.TileEntityCarrier;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 import valandur.webapi.api.cache.CachedObject;
+import valandur.webapi.api.cache.misc.CachedCatalogType;
 import valandur.webapi.api.cache.misc.ICachedCatalogType;
 import valandur.webapi.api.cache.tileentity.ICachedTileEntity;
 import valandur.webapi.api.cache.world.CachedLocation;
 import valandur.webapi.api.serialize.JsonDetails;
-import valandur.webapi.cache.misc.CachedCatalogType;
 import valandur.webapi.cache.misc.CachedInventory;
+import valandur.webapi.util.Constants;
 
 import java.util.Optional;
 
@@ -24,11 +25,13 @@ public class CachedTileEntity extends CachedObject<TileEntity> implements ICache
     }
 
     private CachedLocation location;
+    @Override
     public CachedLocation getLocation() {
         return location;
     }
 
     protected CachedInventory inventory;
+    @Override
     @JsonDetails
     public CachedInventory getInventory() {
         return inventory;
@@ -54,7 +57,10 @@ public class CachedTileEntity extends CachedObject<TileEntity> implements ICache
 
     @Override
     public String getLink() {
-        return "/api/tile-entity/" + location.getWorld().getUUID() + "/" + location.getPosition().getFloorX() + "/" +
-                location.getPosition().getFloorY() + "/" + location.getPosition().getFloorZ();
+        return Constants.BASE_PATH + "/tile-entity/" +
+                location.getWorld().getUUID() + "/" +
+                location.getPosition().getFloorX() + "/" +
+                location.getPosition().getFloorY() + "/" +
+                location.getPosition().getFloorZ();
     }
 }

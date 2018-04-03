@@ -51,7 +51,7 @@ const req = require("request");
 2. Save the base route to our Web-API server (change this if your Minecraft/Web-API 
 server is running on another server)
 ```javascript
-const BASE_API_URL = "http://localhost:8080/api";
+const BASE_API_URL = "http://localhost:8080/api/v5";
 ```
 
 3. Create a callback function which will get executed when the Web-API returns a response (or the 
@@ -75,7 +75,7 @@ info.js
 ```javascript
 const req = require("request");
 
-const BASE_API_URL = "http://localhost:8080/api";
+const BASE_API_URL = "http://localhost:8080/api/v5";
 
 const callback = (err, response, body) => {
     console.log(err);
@@ -137,7 +137,7 @@ world-info.js
 const req = require("request");
 const _   = require("lodash");
 
-const BASE_API_URL = "http://localhost:8080/api";
+const BASE_API_URL = "http://localhost:8080/api/v5";
 
 const HEADERS = {
     "x-webapi-key": "ADMIN",
@@ -299,7 +299,7 @@ commands.js
 const request = require("request");
 const _ = require("lodash");
 
-const BASE_API_URL = "http://localhost:8080/api";
+const BASE_API_URL = "http://localhost:8080/api/v5";
 const HEADERS = {
     "x-webapi-key": "ADMIN",
 };

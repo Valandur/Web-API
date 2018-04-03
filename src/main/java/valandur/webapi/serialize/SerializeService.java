@@ -1,16 +1,11 @@
 package valandur.webapi.serialize;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import com.fasterxml.jackson.dataformat.xml.ser.ToXmlGenerator;
 import com.flowpowered.math.vector.Vector3d;
 import com.flowpowered.math.vector.Vector3i;
 import org.slf4j.Logger;
@@ -18,7 +13,9 @@ import org.spongepowered.api.CatalogType;
 import org.spongepowered.api.block.BlockSnapshot;
 import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.block.tileentity.TileEntity;
+import org.spongepowered.api.command.CommandMapping;
 import org.spongepowered.api.command.CommandSource;
+import org.spongepowered.api.data.Property;
 import org.spongepowered.api.data.manipulator.DataManipulator;
 import org.spongepowered.api.data.manipulator.mutable.*;
 import org.spongepowered.api.data.manipulator.mutable.block.*;
@@ -27,10 +24,15 @@ import org.spongepowered.api.data.manipulator.mutable.item.*;
 import org.spongepowered.api.data.manipulator.mutable.tileentity.*;
 import org.spongepowered.api.data.meta.ItemEnchantment;
 import org.spongepowered.api.data.meta.PatternLayer;
+import org.spongepowered.api.data.property.AbstractProperty;
+import org.spongepowered.api.data.property.block.*;
+import org.spongepowered.api.data.property.entity.DominantHandProperty;
+import org.spongepowered.api.data.property.entity.EyeHeightProperty;
+import org.spongepowered.api.data.property.entity.EyeLocationProperty;
+import org.spongepowered.api.data.property.item.*;
 import org.spongepowered.api.data.type.Career;
 import org.spongepowered.api.data.type.DyeColor;
 import org.spongepowered.api.effect.potion.PotionEffect;
-import org.spongepowered.api.effect.potion.PotionEffectType;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.EntityArchetype;
 import org.spongepowered.api.entity.EntitySnapshot;
@@ -44,14 +46,20 @@ import org.spongepowered.api.extra.fluid.FluidStack;
 import org.spongepowered.api.extra.fluid.FluidStackSnapshot;
 import org.spongepowered.api.extra.fluid.data.manipulator.mutable.FluidItemData;
 import org.spongepowered.api.extra.fluid.data.manipulator.mutable.FluidTankData;
+import org.spongepowered.api.extra.fluid.data.property.FluidTemperatureProperty;
+import org.spongepowered.api.extra.fluid.data.property.FluidViscosityProperty;
 import org.spongepowered.api.item.FireworkEffect;
-import org.spongepowered.api.item.ItemType;
 import org.spongepowered.api.item.inventory.Inventory;
 import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.item.inventory.ItemStackSnapshot;
+import org.spongepowered.api.item.inventory.property.*;
 import org.spongepowered.api.item.merchant.TradeOffer;
 import org.spongepowered.api.plugin.PluginContainer;
 import org.spongepowered.api.profile.GameProfile;
+import org.spongepowered.api.service.economy.Currency;
+import org.spongepowered.api.service.economy.account.Account;
+import org.spongepowered.api.service.permission.Subject;
+import org.spongepowered.api.service.permission.SubjectCollection;
 import org.spongepowered.api.statistic.Statistic;
 import org.spongepowered.api.statistic.achievement.Achievement;
 import org.spongepowered.api.text.Text;
@@ -59,11 +67,14 @@ import org.spongepowered.api.util.Color;
 import org.spongepowered.api.util.RespawnLocation;
 import org.spongepowered.api.util.ban.Ban;
 import org.spongepowered.api.util.weighted.RandomObjectTable;
+import org.spongepowered.api.world.Chunk;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
+import org.spongepowered.api.world.WorldBorder;
 import org.spongepowered.api.world.explosion.Explosion;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.cache.ICachedObject;
+import valandur.webapi.api.cache.misc.CachedCatalogType;
 import valandur.webapi.api.cache.player.ICachedPlayer;
 import valandur.webapi.api.cache.world.CachedLocation;
 import valandur.webapi.api.cache.world.CachedTransform;
@@ -71,18 +82,22 @@ import valandur.webapi.api.cache.world.ICachedWorld;
 import valandur.webapi.api.serialize.BaseView;
 import valandur.webapi.api.serialize.ISerializeService;
 import valandur.webapi.api.util.TreeNode;
+import valandur.webapi.cache.command.CachedCommand;
 import valandur.webapi.cache.entity.CachedEntity;
-import valandur.webapi.cache.misc.CachedCatalogType;
 import valandur.webapi.cache.misc.CachedCause;
 import valandur.webapi.cache.misc.CachedInventory;
 import valandur.webapi.cache.player.CachedPlayer;
 import valandur.webapi.cache.plugin.CachedPluginContainer;
 import valandur.webapi.cache.tileentity.CachedTileEntity;
+import valandur.webapi.cache.world.CachedChunk;
 import valandur.webapi.cache.world.CachedWorld;
+import valandur.webapi.cache.world.CachedWorldBorder;
 import valandur.webapi.serialize.deserialize.*;
 import valandur.webapi.serialize.view.block.BlockSnapshotView;
 import valandur.webapi.serialize.view.block.BlockStateView;
 import valandur.webapi.serialize.view.data.*;
+import valandur.webapi.serialize.view.economy.AccountView;
+import valandur.webapi.serialize.view.economy.CurrencyView;
 import valandur.webapi.serialize.view.entity.CareerView;
 import valandur.webapi.serialize.view.entity.EntityArchetypeView;
 import valandur.webapi.serialize.view.entity.EntitySnapshotView;
@@ -93,24 +108,23 @@ import valandur.webapi.serialize.view.fluid.FluidStackSnapshotView;
 import valandur.webapi.serialize.view.fluid.FluidStackView;
 import valandur.webapi.serialize.view.item.*;
 import valandur.webapi.serialize.view.misc.*;
+import valandur.webapi.serialize.view.permission.SubjectCollectionView;
+import valandur.webapi.serialize.view.permission.SubjectView;
 import valandur.webapi.serialize.view.player.*;
 import valandur.webapi.serialize.view.tileentity.PatternLayerView;
-import valandur.webapi.util.Util;
 
-import java.io.IOException;
-import java.io.Reader;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.lang.reflect.Parameter;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.time.Instant;
-import java.util.Map;
+import java.time.LocalDate;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class SerializeService implements ISerializeService {
 
     private Map<Class, BaseSerializer> serializers;
     private Map<String, Class<? extends DataManipulator<?, ?>>> supportedData;
+    private Map<Class<? extends Property<?, ?>>, String> supportedProperties;
 
 
     public void init() {
@@ -121,22 +135,30 @@ public class SerializeService implements ISerializeService {
         serializers = new ConcurrentHashMap<>();
 
         // Cached Objects
-        registerCache(Entity.class, CachedEntity.class);
+        _register(CatalogType.class, CachedCatalogType.class);
         registerCache(Cause.class, CachedCause.class);
+        registerCache(Chunk.class, CachedChunk.class);
+        registerCache(CommandMapping.class, CachedCommand.class);
+        registerCache(Entity.class, CachedEntity.class);
         registerCache(Inventory.class, CachedInventory.class);
-        _registerCache(CatalogType.class, CachedCatalogType.class);
         registerCache(Location.class, CachedLocation.class);
         registerCache(Player.class, CachedPlayer.class);
         registerCache(PluginContainer.class, CachedPluginContainer.class);
+        //registerCache(PluginDependency.class, CachedPluginDependency.class);
         registerCache(TileEntity.class, CachedTileEntity.class);
         registerCache(Transform.class, CachedTransform.class);
         registerCache(World.class, CachedWorld.class);
+        registerCache(WorldBorder.class, CachedWorldBorder.class);
 
         // Block
         registerView(BlockSnapshot.class, BlockSnapshotView.class);
         registerView(BlockState.class, BlockStateView.class);
 
         // Data
+        registerView(ListData.class, ListDataView.class);
+        registerView(MappedData.class, MappedDataView.class);
+        registerView(VariantData.class, VariantDataView.class);
+
         //registerView(AbsorptionData.class, AbsorptionDataView.class);
         registerView(AchievementData.class, AchievementDataView.class);
         registerView(AgeableData.class, AgeableDataView.class);
@@ -188,13 +210,14 @@ public class SerializeService implements ISerializeService {
         registerView(FurnaceData.class, FurnaceDataView.class);
         registerView(FuseData.class, FuseDataView.class);
         registerView(GenerationData.class, GenerationDataView.class);
-        registerView(GriefingData.class, GriefingDataView.class);
         registerView(GlowingData.class, GlowingDataView.class);
+        registerView(GriefingData.class, GriefingDataView.class);
         registerView(GrowthData.class, GrowthDataView.class);
         registerView(HealthData.class, HealthDataView.class);
         registerView(HideData.class, HideDataView.class);
         registerView(HorseData.class, HorseDataView.class);
         registerView(IgniteableData.class, IgniteableDataView.class);
+        registerView(InventoryItemData.class, InventoryItemDataView.class);
         registerView(InvisibilityData.class, InvisibilityDataView.class);
         registerView(InvulnerabilityData.class, InvulnerabilityDataView.class);
         registerView(InWallData.class, InWallDataView.class);
@@ -202,9 +225,7 @@ public class SerializeService implements ISerializeService {
         registerView(KnockbackData.class, KnockbackDataView.class);
         registerView(LayeredData.class, LayeredDataView.class);
         registerView(LeashData.class, LeashDataView.class);
-        registerView(ListData.class, ListDataView.class);
         registerView(LockableData.class, LockableDataView.class);
-        registerView(MappedData.class, MappedDataView.class);
         registerView(MinecartBlockData.class, MinecartBlockDataView.class);
         registerView(MobSpawnerData.class, MobSpawnerDataView.class);
         registerView(MoistureData.class, MoistureDataView.class);
@@ -233,14 +254,18 @@ public class SerializeService implements ISerializeService {
         registerView(SneakingData.class, SneakingDataView.class);
         registerView(SnowedData.class, SnowedDataView.class);
         registerView(SprintData.class, SprintDataView.class);
+        registerView(StatisticData.class, StatisticDataView.class);
         //registerView(StructureData.class, StructureDataView.class);
         registerView(StuckArrowsData.class, StuckArrowsDataView.class);
         registerView(TameableData.class, TameableDataView.class);
         registerView(TargetedLocationData.class, TargetedLocationDataView.class);
-        registerView(VariantData.class, VariantDataView.class);
         registerView(VehicleData.class, VehicleDataView.class);
         registerView(WetData.class, WetDataView.class);
         registerView(WireAttachmentData.class, WireAttachmentDataView.class);
+
+        // Economy
+        registerView(Account.class, AccountView.class);
+        registerView(Currency.class, CurrencyView.class);
 
         // Entity
         registerView(Career.class, CareerView.class);
@@ -261,8 +286,6 @@ public class SerializeService implements ISerializeService {
         registerView(ItemEnchantment.class, ItemEnchantmentView.class);
         registerView(ItemStackSnapshot.class, ItemStackSnapshotView.class);
         registerView(ItemStack.class, ItemStackView.class);
-        registerView(ItemType.class, ItemTypeView.class);
-        registerView(PotionEffectType.class, PotionEffectTypeView.class);
         registerView(PotionEffect.class, PotionEffectView.class);
 
         // Misc.
@@ -271,11 +294,16 @@ public class SerializeService implements ISerializeService {
         registerView(DyeColor.class, DyeColorView.class);
         registerView(Explosion.class, ExplosionView.class);
         registerView(Instant.class, InstantView.class);
+        registerView(LocalDate.class, LocalDateView.class);
         registerView(RandomObjectTable.class, RandomObjectTableView.class);
         registerView(Statistic.class, StatisticView.class);
         registerView(Text.class, TextView.class);
         registerView(Vector3d.class, Vector3dView.class);
         registerView(Vector3i.class, Vector3iView.class);
+
+        // Permission
+        registerView(SubjectCollection.class, SubjectCollectionView.class);
+        registerView(Subject.class, SubjectView.class);
 
         // Player
         registerView(Achievement.class, AchievementView.class);
@@ -318,8 +346,8 @@ public class SerializeService implements ISerializeService {
         supportedData.put("connectedDirection", ConnectedDirectionData.class);
         supportedData.put("cookedFish", CookedFishData.class);                      // variant
         supportedData.put("cooldown", CooldownData.class);
-        supportedData.put("customName", CustomNameVisibleData.class);
         supportedData.put("criticalHit", CriticalHitData.class);
+        supportedData.put("customName", CustomNameVisibleData.class);
         supportedData.put("damageable", DamageableData.class);
         supportedData.put("damage", DamagingData.class);
         supportedData.put("decayable", DecayableData.class);
@@ -442,19 +470,69 @@ public class SerializeService implements ISerializeService {
         supportedData.put("wet", WetData.class);
         supportedData.put("wires", WireAttachmentData.class);
 
+
+        // Properties
+        supportedProperties = new ConcurrentHashMap<>();
+
+        supportedProperties.put(AcceptsItems.class, "acceptsItems");
+        supportedProperties.put(ApplicableEffectProperty.class, "applicableEffect");
+        supportedProperties.put(ArmorSlotType.class, "armorSlotType");
+        supportedProperties.put(ArmorTypeProperty.class, "armorType");
+        supportedProperties.put(BlastResistanceProperty.class, "blastResistance");
+        supportedProperties.put(BurningFuelProperty.class, "burningFuel");
+        supportedProperties.put(DamageAbsorptionProperty.class, "damageAbsorption");
+        supportedProperties.put(DominantHandProperty.class, "dominantHand");
+        supportedProperties.put(EfficiencyProperty.class, "efficiency");
+        supportedProperties.put(EquipmentProperty.class, "equipmentType");
+        supportedProperties.put(EquipmentSlotType.class, "equiptmentSlotType");
+        supportedProperties.put(EyeHeightProperty.class, "eyeHeight");
+        supportedProperties.put(EyeLocationProperty.class, "eyeLocation");
+        supportedProperties.put(FlammableProperty.class, "flammable");
+        supportedProperties.put(FluidTemperatureProperty.class, "fluidTemperature");
+        supportedProperties.put(FluidViscosityProperty.class, "fluidViscosity");
+        supportedProperties.put(FoodRestorationProperty.class, "foodRestoration");
+        supportedProperties.put(FullBlockSelectionBoxProperty.class, "fullBlockSelectionBox");
+        supportedProperties.put(GravityAffectedProperty.class, "gravityAffected");
+        supportedProperties.put(GroundLuminanceProperty.class, "groundLuminance");
+        supportedProperties.put(HardnessProperty.class, "hardness");
+        supportedProperties.put(HeldItemProperty.class, "heldItem");
+        supportedProperties.put(Identifiable.class, "identifiable");
+        supportedProperties.put(IndirectlyPoweredProperty.class, "indirectlyPowered");
+        supportedProperties.put(InventoryCapacity.class, "inventoryCapacity");
+        supportedProperties.put(InventoryDimension.class, "inventoryDimension");
+        supportedProperties.put(InventoryTitle.class, "inventoryTitle");
+        supportedProperties.put(LightEmissionProperty.class, "lightEmission");
+        supportedProperties.put(MatterProperty.class, "matter");
+        supportedProperties.put(PassableProperty.class, "passable");
+        supportedProperties.put(PoweredProperty.class, "powered");
+        supportedProperties.put(ReplaceableProperty.class, "replaceable");
+        supportedProperties.put(SaturationProperty.class, "saturationProperty");
+        supportedProperties.put(SkyLuminanceProperty.class, "skyLuminance");
+        supportedProperties.put(SlotIndex.class, "slotIndex");
+        supportedProperties.put(SlotPos.class, "slotPos");
+        supportedProperties.put(SlotSide.class, "slotSide");
+        supportedProperties.put(SmeltableProperty.class, "smeltable");
+        supportedProperties.put(SolidCubeProperty.class, "solidCube");
+        supportedProperties.put(StatisticsTrackedProperty.class, "statisticsTracked");
+        supportedProperties.put(SurrogateBlockProperty.class, "surrogateBlock");
+        supportedProperties.put(TemperatureProperty.class, "temperature");
+        supportedProperties.put(ToolTypeProperty.class, "toolType");
+        supportedProperties.put(UnbreakableProperty.class, "unbreakable");
+        supportedProperties.put(UseLimitProperty.class, "useLimit");
+
         logger.info("Done loading serializers");
     }
 
-    private void _registerCache(Class handledClass, Class cacheClass) {
+    private void _register(Class handledClass, Class cacheClass) {
         serializers.put(handledClass, new BaseSerializer<>(handledClass, cacheClass));
     }
     @Override
     public <T> void registerCache(Class<? extends T> handledClass, Class<? extends ICachedObject<T>> cacheClass) {
-        serializers.put(handledClass, new BaseSerializer<>(handledClass, cacheClass));
+        _register(handledClass, cacheClass);
     }
     @Override
     public <T> void registerView(Class<? extends T> handledClass, Class<? extends BaseView<T>> viewClass) {
-        serializers.put(handledClass, new BaseSerializer<>(handledClass, viewClass));
+        _register(handledClass, viewClass);
     }
 
     @Override
@@ -463,125 +541,109 @@ public class SerializeService implements ISerializeService {
     }
 
     @Override
-    public String toString(Object obj, boolean xml, boolean details, TreeNode<String, Boolean> perms) {
-        ObjectMapper mapper = getDefaultObjectMapper(xml, details, perms);
-
-        try {
-            return mapper.writeValueAsString(obj);
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-            return "{\"error\":\"" + e.getMessage() + "\"}";
-        }
+    public Map<Class<? extends Property<?, ?>>, String> getSupportedProperties() {
+        return supportedProperties;
     }
 
-    @Override
-    public JsonNode serialize(Object obj, boolean xml, boolean details, TreeNode<String, Boolean> perms) {
-        ObjectMapper mapper = getDefaultObjectMapper(xml, details, perms);
-        return mapper.valueToTree(obj);
-    }
-    @Override
-    public JsonNode deserialize(Reader reader, boolean xml, TreeNode<String, Boolean> perms) throws IOException {
-        ObjectMapper mapper = getDefaultObjectMapper(xml, true, perms);
-        return mapper.readTree(reader);
-    }
-
-    @Override
-    public <T> T deserialize(String content, boolean xml, JavaType type, TreeNode<String, Boolean> perms) throws IOException {
-        ObjectMapper mapper = getDefaultObjectMapper(xml, true, perms);
-        return mapper.readValue(content, type);
-    }
-    @Override
-    public <T> T deserialize(JsonNode content, Class<T> clazz, TreeNode<String, Boolean> perms) throws IOException {
-        ObjectMapper mapper = getDefaultObjectMapper(false, true, perms);
-        return mapper.treeToValue(content, clazz);
-    }
-
-    @Override
-    public JsonNode classToJson(Class c) {
-        ObjectNode json = JsonNodeFactory.instance.objectNode();
-
-        json.put("name", c.getName());
-        json.put("parent", c.getSuperclass() != null ? c.getSuperclass().getName() : null);
-
-        ObjectNode jsonFields = JsonNodeFactory.instance.objectNode();
-        Field[] fs = Util.getAllFields(c);
-        for (Field f : fs) {
-            ObjectNode jsonField = JsonNodeFactory.instance.objectNode();
-
-            f.setAccessible(true);
-
-            jsonField.put("type", f.getType().getName());
-
-            ArrayNode arr = JsonNodeFactory.instance.arrayNode();
-            int mod = f.getModifiers();
-            if (Modifier.isAbstract(mod)) arr.add("abstract");
-            if (Modifier.isFinal(mod)) arr.add("final");
-            if (Modifier.isInterface(mod)) arr.add("interface");
-            if (Modifier.isNative(mod)) arr.add("native");
-            if (Modifier.isPrivate(mod)) arr.add("private");
-            if (Modifier.isProtected(mod)) arr.add("protected");
-            if (Modifier.isPublic(mod)) arr.add("public");
-            if (Modifier.isStatic(mod)) arr.add("static");
-            if (Modifier.isStrict(mod)) arr.add("strict");
-            if (Modifier.isSynchronized(mod)) arr.add("synchronized");
-            if (Modifier.isTransient(mod)) arr.add("transient");
-            if (Modifier.isVolatile(mod)) arr.add("volatile");
-            jsonField.set("modifiers", arr);
-
-            if (f.getDeclaringClass() != c) {
-                jsonField.put("from", f.getDeclaringClass().getName());
+    private Type[] getGenericTypes(Class baseClass, Class targetClass) {
+        Queue<Class> queue = new LinkedList<>();
+        queue.add(baseClass);
+        while (!queue.isEmpty()) {
+            Class c = queue.poll();
+            Type parent = c.getGenericSuperclass();
+            if (parent instanceof ParameterizedType && ((ParameterizedType)parent).getRawType().equals(targetClass)) {
+                return ((ParameterizedType)parent).getActualTypeArguments();
+            } else if (parent instanceof Class) {
+                queue.add((Class) parent);
             }
-
-            jsonFields.set(f.getName(), jsonField);
-        }
-        json.set("fields", jsonFields);
-
-        ObjectNode jsonMethods = JsonNodeFactory.instance.objectNode();
-        Method[] ms = Util.getAllMethods(c);
-        for (Method m : ms) {
-            ObjectNode jsonMethod = JsonNodeFactory.instance.objectNode();
-
-            ArrayNode arr = JsonNodeFactory.instance.arrayNode();
-            int mod = m.getModifiers();
-            if (Modifier.isAbstract(mod)) arr.add("abstract");
-            if (Modifier.isFinal(mod)) arr.add("final");
-            if (Modifier.isInterface(mod)) arr.add("interface");
-            if (Modifier.isNative(mod)) arr.add("native");
-            if (Modifier.isPrivate(mod)) arr.add("private");
-            if (Modifier.isProtected(mod)) arr.add("protected");
-            if (Modifier.isPublic(mod)) arr.add("public");
-            if (Modifier.isStatic(mod)) arr.add("static");
-            if (Modifier.isStrict(mod)) arr.add("strict");
-            if (Modifier.isSynchronized(mod)) arr.add("synchronized");
-            if (Modifier.isTransient(mod)) arr.add("transient");
-            if (Modifier.isVolatile(mod)) arr.add("volatile");
-            jsonMethod.set("modifiers", arr);
-
-            ArrayNode arr2 = JsonNodeFactory.instance.arrayNode();
-            for (Parameter p : m.getParameters()) {
-                arr2.add(p.getType().getName());
+            for (Type iFace : c.getGenericInterfaces()) {
+                if (iFace instanceof ParameterizedType && ((ParameterizedType)iFace).getRawType().equals(targetClass)) {
+                    return ((ParameterizedType)iFace).getActualTypeArguments();
+                } else if (iFace instanceof Class) {
+                    queue.add((Class) iFace);
+                }
             }
-            jsonMethod.set("params", arr2);
-
-            jsonMethod.put("return", m.getReturnType().getName());
-
-            if (m.getDeclaringClass() != c) {
-                jsonMethod.put("from", m.getDeclaringClass().getName());
-            }
-
-            jsonMethods.set(m.getName(), jsonMethod);
         }
-        json.set("methods", jsonMethods);
-
-        return json;
+        return new Type[0];
     }
 
-    private ObjectMapper getDefaultObjectMapper(boolean xml, boolean details, TreeNode<String, Boolean> perms) {
+    @Override
+    public Optional<Type> getViewFor(Class clazz) {
+        BaseSerializer ser = serializers.get(clazz);
+        if (ser != null) {
+            return Optional.of(ser.getCacheClass());
+        }
+
+        // Check if we have a variant, list or mapped data type
+        if (VariantData.class.isAssignableFrom(clazz)) {
+            Type[] ts = getGenericTypes(clazz, VariantData.class);
+            return Optional.of(ts[0]);
+        } else if (ListData.class.isAssignableFrom(clazz)) {
+            Type elemType = getGenericTypes(clazz, ListData.class)[0];
+            return Optional.of(new ParameterizedType() {
+                @Override
+                public Type[] getActualTypeArguments() {
+                    return new Type[]{ elemType };
+                }
+
+                @Override
+                public Type getRawType() {
+                    return List.class;
+                }
+
+                @Override
+                public Type getOwnerType() {
+                    return null;
+                }
+            });
+        } else if (MappedData.class.isAssignableFrom(clazz)) {
+            Type[] ts = getGenericTypes(clazz, MappedData.class);
+            return Optional.of(new ParameterizedType() {
+                @Override
+                public Type[] getActualTypeArguments() {
+                    return new Type[]{ ts[0], ts[1] };
+                }
+
+                @Override
+                public Type getRawType() {
+                    return Map.class;
+                }
+
+                @Override
+                public Type getOwnerType() {
+                    return null;
+                }
+            });
+        } else if (AbstractProperty.class.isAssignableFrom(clazz)) {
+            Type[] ts = getGenericTypes(clazz, AbstractProperty.class);
+            return Optional.of(ts[1]);
+        }
+
+        // Try and find a parent class serializer (e.g. CatalogType) which matches closest
+        Optional<BaseSerializer> optSer = serializers.values().stream()
+                .filter(s -> s.getHandledClass().isAssignableFrom(clazz))
+                .sorted((s1, s2) -> {
+                    // Sort possibly multiple serializers by parent-child relation, if available
+                    if (s1.getHandledClass().isAssignableFrom(s2.getHandledClass()))
+                        return 1;
+                    else if (s2.getHandledClass().isAssignableFrom(s1.getHandledClass()))
+                        return -1;
+                    return 0;
+                })
+                .findFirst();
+
+        return optSer.map(BaseSerializer::getHandledClass);
+    }
+
+    public ObjectMapper getDefaultObjectMapper(boolean xml, boolean details, TreeNode<String, Boolean> perms) {
         if (perms == null) {
             throw new NullPointerException("Permissions may not be null");
         }
 
         ObjectMapper om = xml ? new XmlMapper() : new ObjectMapper();
+        if (xml) {
+            ((XmlMapper)om).configure(ToXmlGenerator.Feature.WRITE_XML_DECLARATION, true);
+        }
         om.setSerializationInclusion(JsonInclude.Include.NON_NULL);
 
         SimpleModule mod = new SimpleModule();
@@ -601,7 +663,7 @@ public class SerializeService implements ISerializeService {
         filterProvider.addFilter(BaseFilter.ID, new BaseFilter(details, perms));
         om.setFilterProvider(filterProvider);
 
-        om.setAnnotationIntrospector(new AnnotationIntrospector(details));
+        om.setAnnotationIntrospector(new AnnotationIntrospector());
 
         return om;
     }

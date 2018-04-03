@@ -5,16 +5,18 @@ import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.item.inventory.ItemStack;
+import org.spongepowered.api.service.user.UserStorageService;
 import valandur.webapi.api.cache.CachedObject;
-import valandur.webapi.api.cache.player.ICachedPlayer;
+import valandur.webapi.api.cache.player.ICachedPlayerFull;
 import valandur.webapi.api.cache.world.CachedLocation;
 import valandur.webapi.api.serialize.JsonDetails;
 import valandur.webapi.cache.misc.CachedInventory;
+import valandur.webapi.util.Constants;
 
 import java.util.Optional;
 import java.util.UUID;
 
-public class CachedPlayer extends CachedObject<Player> implements ICachedPlayer {
+public class CachedPlayer extends CachedObject<Player> implements ICachedPlayerFull {
 
     protected UUID uuid;
     @Override
@@ -135,7 +137,13 @@ public class CachedPlayer extends CachedObject<Player> implements ICachedPlayer 
     }
 
     @Override
+    public Optional<User> getUser() {
+        Optional<UserStorageService> optSrv = Sponge.getServiceManager().provide(UserStorageService.class);
+        return optSrv.flatMap(srv -> srv.get(uuid));
+    }
+
+    @Override
     public String getLink() {
-        return "/api/player/" + uuid;
+        return Constants.BASE_PATH + "/player/" + uuid;
     }
 }

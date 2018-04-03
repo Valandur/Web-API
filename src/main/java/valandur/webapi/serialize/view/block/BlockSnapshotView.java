@@ -1,5 +1,7 @@
 package valandur.webapi.serialize.view.block;
 
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import org.spongepowered.api.block.BlockSnapshot;
 import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.world.Location;
@@ -8,10 +10,16 @@ import valandur.webapi.api.serialize.BaseView;
 
 import java.util.UUID;
 
+@ApiModel("BlockSnapshot")
 public class BlockSnapshotView extends BaseView<BlockSnapshot> {
 
+    @ApiModelProperty("The creator of this snapshot")
     public UUID creator;
+
+    @ApiModelProperty("The location of the snapshot")
     public Location<World> location;
+
+    @ApiModelProperty(value = "The block state that was captured", required = true)
     public BlockState state;
 
 

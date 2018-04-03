@@ -25,11 +25,11 @@ public class BlockStateDeserializer extends StdDeserializer<BlockState> {
     @Override
     public BlockState deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
         JsonNode root = p.readValueAsTree();
-        if (root.path("type").isMissingNode()) {
+        if (root.path("type").path("id").isMissingNode()) {
             return null;
         }
 
-        String typeStr = root.path("type").asText();
+        String typeStr = root.path("type").path("id").asText();
         Optional<BlockType> optType = Sponge.getRegistry().getType(BlockType.class, typeStr);
         if (!optType.isPresent()) {
             throw new IOException("Invalid block type " + typeStr);

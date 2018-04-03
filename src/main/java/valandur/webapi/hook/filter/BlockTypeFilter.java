@@ -13,6 +13,10 @@ import java.util.List;
 public class BlockTypeFilter extends BaseWebHookFilter {
 
     public static String name = "WebAPI-BlockType";
+    @Override
+    public String getName() {
+        return name;
+    }
 
     private List<BlockType> types;
 
@@ -25,6 +29,11 @@ public class BlockTypeFilter extends BaseWebHookFilter {
         } catch (ObjectMappingException e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    protected void _writeToConfig(ConfigurationNode node) throws ObjectMappingException {
+        node.getNode("config").setValue(new TypeToken<List<BlockType>>() {}, this.types);
     }
 
     @Override

@@ -1,8 +1,0 @@
-description: Invalid parameter
-schema:
-  title: Error400
-  type: object
-  properties:
-    error:
-      type: string
-      description: A description of the type of error that occured.

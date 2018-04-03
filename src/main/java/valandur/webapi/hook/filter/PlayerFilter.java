@@ -12,6 +12,10 @@ import java.util.List;
 public class PlayerFilter extends BaseWebHookFilter {
 
     public static String name = "WebAPI-Player";
+    @Override
+    public String getName() {
+        return name;
+    }
 
     private List<String> players;
 
@@ -24,6 +28,11 @@ public class PlayerFilter extends BaseWebHookFilter {
         } catch (ObjectMappingException e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    protected void _writeToConfig(ConfigurationNode node) throws ObjectMappingException {
+        node.getNode("config").setValue(new TypeToken<List<String>>() {}, this.players);
     }
 
     @Override

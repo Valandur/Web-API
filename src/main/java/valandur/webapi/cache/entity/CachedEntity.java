@@ -7,11 +7,12 @@ import org.spongepowered.api.item.inventory.Carrier;
 import org.spongepowered.api.world.World;
 import valandur.webapi.api.cache.CachedObject;
 import valandur.webapi.api.cache.entity.ICachedEntity;
+import valandur.webapi.api.cache.misc.CachedCatalogType;
 import valandur.webapi.api.cache.misc.ICachedCatalogType;
 import valandur.webapi.api.cache.world.CachedLocation;
 import valandur.webapi.api.serialize.JsonDetails;
-import valandur.webapi.cache.misc.CachedCatalogType;
 import valandur.webapi.cache.misc.CachedInventory;
+import valandur.webapi.util.Constants;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -31,29 +32,34 @@ public class CachedEntity extends CachedObject<Entity> implements ICachedEntity 
     }
 
     private CachedLocation location;
+    @Override
     public CachedLocation getLocation() {
         return location;
     }
 
     private Vector3d rotation;
+    @Override
     @JsonDetails
     public Vector3d getRotation() {
         return rotation;
     }
 
     private Vector3d velocity;
+    @Override
     @JsonDetails
     public Vector3d getVelocity() {
         return velocity;
     }
 
     private Vector3d scale;
+    @Override
     @JsonDetails
     public Vector3d getScale() {
         return scale;
     }
 
     private CachedInventory inventory;
+    @Override
     @JsonDetails
     public CachedInventory getInventory() {
         return inventory;
@@ -90,6 +96,6 @@ public class CachedEntity extends CachedObject<Entity> implements ICachedEntity 
 
     @Override
     public String getLink() {
-        return "/api/entity/" + uuid;
+        return Constants.BASE_PATH + "/entity/" + uuid;
     }
 }

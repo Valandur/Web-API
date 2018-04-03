@@ -6,7 +6,7 @@ import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.command.args.CommandContext;
 import org.spongepowered.api.command.spec.CommandExecutor;
 import org.spongepowered.api.text.Text;
-import valandur.webapi.WebAPI;
+import valandur.webapi.security.AuthenticationProvider;
 
 public class CmdAuthListEnable implements CommandExecutor {
     private boolean whitelist = false;
@@ -18,10 +18,10 @@ public class CmdAuthListEnable implements CommandExecutor {
     @Override
     public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
         if (whitelist) {
-            WebAPI.getAuthHandler().toggleWhitelist(true);
+            AuthenticationProvider.toggleWhitelist(true);
             src.sendMessage(Text.of("Enabled whitelist"));
         } else {
-            WebAPI.getAuthHandler().toggleBlacklist(true);
+            AuthenticationProvider.toggleBlacklist(true);
             src.sendMessage(Text.of("Enabled blacklist"));
         }
 

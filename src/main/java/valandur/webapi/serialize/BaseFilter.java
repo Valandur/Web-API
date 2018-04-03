@@ -1,15 +1,13 @@
 package valandur.webapi.serialize;
 
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.PropertyWriter;
 import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
 import valandur.webapi.WebAPI;
-import valandur.webapi.api.permission.IPermissionService;
 import valandur.webapi.api.serialize.JsonDetails;
 import valandur.webapi.api.util.TreeNode;
-import valandur.webapi.permission.PermissionService;
+import valandur.webapi.security.PermissionService;
 
 import java.util.ArrayList;
 
@@ -18,9 +16,9 @@ public class BaseFilter extends SimpleBeanPropertyFilter {
     public static String ID = "WEBAPI-BASE-FILTER";
 
     private PermissionService permissionService;
-    private TreeNode<String, Boolean> perms = IPermissionService.emptyNode();
-    private ArrayList<String> path = new ArrayList<>();
-    private boolean details = false;
+    private TreeNode<String, Boolean> perms;
+    private ArrayList<String> path;
+    private boolean details;
 
 
     public BaseFilter(boolean details, TreeNode<String, Boolean> perms) {
@@ -28,13 +26,6 @@ public class BaseFilter extends SimpleBeanPropertyFilter {
         this.details = details;
         this.path = new ArrayList<>();
         this.perms = perms;
-    }
-
-    @Override
-    public void serializeAsElement(Object elementValue, JsonGenerator jgen, SerializerProvider provider, PropertyWriter writer) throws Exception {
-        JsonSerializer ser = provider.findValueSerializer(writer.getType());
-        WebAPI.getLogger().info(writer.getName() + ": " + (ser != null ? ser.getClass().getName() : ""));
-        super.serializeAsElement(elementValue, jgen, provider, writer);
     }
 
     @Override

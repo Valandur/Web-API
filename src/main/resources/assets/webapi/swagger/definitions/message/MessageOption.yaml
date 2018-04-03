@@ -1,9 +1,0 @@
-title: MessageOption
-type: object
-properties:
-  key:
-    type: string
-    description: The key that is returned to the message hook.
-  value:
-    type: string
-    description: The value that is displayed to the user.

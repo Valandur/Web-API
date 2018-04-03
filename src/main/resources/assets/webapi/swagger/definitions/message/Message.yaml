@@ -1,9 +1,0 @@
-title: Message
-type: object
-properties:
-  uuid:
-    type: string
-    description: The unique UUID assigned to the message by the Web-API.
-  id:
-    type: string
-    description: The id of the message. This will be sent back in the reply, so you can identify the request.

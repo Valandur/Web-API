@@ -1,9 +1,0 @@
-title: LoginRequest
-type: object
-properties:
-  username:
-    type: string
-    description: The username to log in with
-  password:
-    type: string
-    description: The password to log in with.

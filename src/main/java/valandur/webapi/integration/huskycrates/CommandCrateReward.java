@@ -1,9 +1,11 @@
 package valandur.webapi.integration.huskycrates;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import ninja.leaping.configurate.ConfigurationNode;
 
-@JsonDeserialize
+@ApiModel(value = "HuskyCratesCommandReward", parent = CrateRewardObject.class)
 public class CommandCrateReward extends CrateRewardObject {
 
     @Override
@@ -13,6 +15,7 @@ public class CommandCrateReward extends CrateRewardObject {
 
     @JsonDeserialize
     private String command;
+    @ApiModelProperty(value = "The command executed for the player", required = true)
     public String getCommand() {
         return command;
     }

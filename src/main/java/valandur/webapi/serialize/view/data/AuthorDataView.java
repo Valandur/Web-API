@@ -8,12 +8,12 @@ import valandur.webapi.api.serialize.BaseView;
 public class AuthorDataView extends BaseView<AuthorData> {
 
     @JsonValue
-    public Text author;
+    public Text getAuthor() {
+        return value.author().get();
+    }
 
 
     public AuthorDataView(AuthorData value) {
         super(value);
-
-        this.author = value.author().get();
     }
 }

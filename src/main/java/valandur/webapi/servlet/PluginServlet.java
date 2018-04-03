@@ -1,59 +1,71 @@
 package valandur.webapi.servlet;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
-import org.eclipse.jetty.http.HttpMethod;
-import valandur.webapi.WebAPI;
 import valandur.webapi.api.cache.plugin.ICachedPluginContainer;
 import valandur.webapi.api.servlet.BaseServlet;
-import valandur.webapi.api.servlet.Endpoint;
-import valandur.webapi.api.servlet.Servlet;
-import valandur.webapi.servlet.base.ServletData;
+import valandur.webapi.api.servlet.ExplicitDetails;
+import valandur.webapi.api.servlet.Permission;
 
-import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 
-@Servlet(basePath = "plugin")
+@Path("plugin")
+@Api(tags = { "Plugin" }, value = "List all plugins and get detailed information about them.")
+@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+@Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 public class PluginServlet extends BaseServlet {
 
-    @Endpoint(method = HttpMethod.GET, path = "/", perm = "list")
-    public void getPlugins(ServletData data) {
-        data.addData("ok", true, false);
-        data.addData("plugins", cacheService.getPlugins(), data.getQueryParam("details").isPresent());
+    @GET
+    @ExplicitDetails
+    @Permission("list")
+    @ApiOperation(value = "List plugins", notes = "Get a list of all the plugins running on the server.")
+    public Collection<ICachedPluginContainer> listPlugins() {
+        return cacheService.getPlugins();
     }
 
-    @Endpoint(method = HttpMethod.GET, path = "/:plugin", perm = "one")
-    public void getPlugin(ServletData data, String pluginName) {
+    @GET
+    @Path("/{plugin}")
+    @Permission("one")
+    @ApiOperation(value = "Get a plugin", notes = "Gets detailed information about a plugin.")
+    public ICachedPluginContainer getPlugin(
+            @PathParam("plugin") @ApiParam("The id of the plugin") String pluginName)
+            throws NotFoundException {
         Optional<ICachedPluginContainer> optPlugin = cacheService.getPlugin(pluginName);
         if (!optPlugin.isPresent()) {
-            data.sendError(HttpServletResponse.SC_NOT_FOUND, "Plugin with id '" + pluginName + "' could not be found");
-            return;
+            throw new NotFoundException("Plugin with id '" + pluginName + "' could not be found");
         }
 
-        data.addData("ok", true, false);
-        data.addData("plugin", optPlugin.get(), true);
+        return optPlugin.get();
     }
 
-    @Endpoint(method = HttpMethod.GET, path = "/:plugin/config", perm = "config.one")
-    public void getPluginConfig(ServletData data, String pluginName) {
+    @GET
+    @Path("/{plugin}/config")
+    @Permission({ "config", "get" })
+    @ApiOperation(value = "Get plugin configs", notes = "Gets a map containing the plugin config file names as keys, " +
+            "and their config file contents as their values.")
+    public Map<String, Object> getPluginConfig(
+            @PathParam("plugin") @ApiParam("The id of the plugin") String pluginName)
+            throws NotFoundException {
         Optional<ICachedPluginContainer> optPlugin = cacheService.getPlugin(pluginName);
         if (!optPlugin.isPresent()) {
-            data.sendError(HttpServletResponse.SC_NOT_FOUND, "Plugin with id '" + pluginName + "' could not be found");
-            return;
+            throw new NotFoundException("Plugin with id '" + pluginName + "' could not be found");
         }
 
-        List<Path> paths = getConfigFiles(optPlugin.get());
+        List<java.nio.file.Path> paths = getConfigFiles(optPlugin.get());
 
         Map<String, Object> configs = new HashMap<>();
-        for (Path path : paths) {
+        for (java.nio.file.Path path : paths) {
             String key = path.getFileName().toString();
 
             try {
@@ -66,28 +78,36 @@ public class PluginServlet extends BaseServlet {
             }
         }
 
-        data.addData("ok", true, false);
-        data.addData("configs", configs, true);
+        return configs;
     }
 
-    @Endpoint(method = HttpMethod.POST, path = ":plugin/config", perm = "config.change")
-    public void changePluginConfig(ServletData data, String pluginName) {
-        Optional<ICachedPluginContainer> optPlugin = cacheService.getPlugin(pluginName);
-        if (!optPlugin.isPresent()) {
-            data.sendError(HttpServletResponse.SC_NOT_FOUND, "Plugin with id '" + pluginName + "' could not be found");
-            return;
+    @POST
+    @Path("/{plugin}/config")
+    @Permission({ "config", "change" })
+    @ApiOperation(value = "Change plugin configs", notes = "Allows changing the config files of plugin. Send a map " +
+            "from config filename to file contents. **This does not reload the plugin**, you can do that with " +
+            "`sponge plugins reload`, but not all plugins implement the reload event.")
+    public Map<String, Object> changePluginConfig(
+            @PathParam("plugin") @ApiParam("The id of the plugin") String pluginName,
+            Map<String, Object> configs)
+            throws NotFoundException {
+
+        if (configs == null) {
+            throw new BadRequestException("Request body is required");
         }
 
-        JsonNode configs = data.getRequestBody();
+        Optional<ICachedPluginContainer> optPlugin = cacheService.getPlugin(pluginName);
+        if (!optPlugin.isPresent()) {
+            throw new NotFoundException("Plugin with id '" + pluginName + "' could not be found");
+        }
 
-        List<Path> paths = getConfigFiles(optPlugin.get());
-        for (Path path : paths) {
-            JsonNode node = configs.get(path.getFileName().toString());
+        List<java.nio.file.Path> paths = getConfigFiles(optPlugin.get());
+        for (java.nio.file.Path path : paths) {
+            Object node = configs.get(path.getFileName().toString());
             if (node == null) continue;
 
             try {
-                Path newPath = path.getParent().resolve(path.getFileName().toString() + ".bck");
-                WebAPI.getLogger().info(newPath.toString());
+                java.nio.file.Path newPath = path.getParent().resolve(path.getFileName().toString() + ".bck");
                 if (!Files.exists(newPath)) {
                     Files.copy(path, newPath);
                 }
@@ -100,12 +120,11 @@ public class PluginServlet extends BaseServlet {
             }
         }
 
-        data.addData("ok", true, false);
-        data.addData("configs", configs, true);
+        return configs;
     }
 
-    private List<Path> getConfigFiles(ICachedPluginContainer plugin) {
-        List<Path> paths = new ArrayList<>();
+    private List<java.nio.file.Path> getConfigFiles(ICachedPluginContainer plugin) {
+        List<java.nio.file.Path> paths = new ArrayList<>();
         paths.add(Paths.get("config/" + plugin.getId() + ".conf"));
         try {
             Files.walk(Paths.get("config/" + plugin.getId() + "/")).filter(Files::isRegularFile)

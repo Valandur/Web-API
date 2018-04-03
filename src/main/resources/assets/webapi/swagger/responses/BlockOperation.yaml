@@ -1,9 +1,0 @@
-description: Block operation
-schema:
-  title: BlockOperationResponse
-  type: object
-  properties:
-    ok:
-      $ref: "../definitions/ok.yaml"
-    operation:
-      $ref: "../definitions/block/BlockOperationFull.yaml"

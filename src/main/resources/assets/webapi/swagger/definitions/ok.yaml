@@ -1,2 +1,0 @@
-type: boolean
-description: True if the request was successful, false otherwise

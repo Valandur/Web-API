@@ -248,7 +248,8 @@ public class WebAPI {
         spongeGame = platform.getContainer(Component.GAME).getVersion().orElse(null);
         spongeImpl = platform.getContainer(Component.IMPLEMENTATION).getVersion().orElse(null);
         pluginList = Sponge.getPluginManager().getPlugins().stream()
-                .map(PluginContainer::getId).collect(Collectors.joining(","));
+                .map(p -> p.getId() + ": " + p.getVersion().orElse(null))
+                .collect(Collectors.joining("; \n"));
 
         // Create our config directory if it doesn't exist
         if (!Files.exists(configPath)) {

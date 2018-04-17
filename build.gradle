@@ -40,7 +40,12 @@ repositories {
 }
 
 configurations.all {
+    // Exclude because included by Sponge/Minecraft
+    exclude group: "org.apache.commons"
+    exclude group: "com.google.common"
+
     resolutionStrategy {
+        force "com.google.guava:guava:23.0"
         force "org.reflections:reflections:0.9.10"      // Fixes some logging issues in 0.9.11
         force "net.java.dev.jna:jna:4.5.1"
     }
@@ -153,10 +158,10 @@ shadowJar {
 
     relocate "oshi", "valandur.webapi.shadow.oshi"
 
-    // Provided by sponge/forge/minecraft
+    // Provided by Sponge/Minecraft
     dependencies {
+        exclude(dependency("org.apache.commons.*:"))
         exclude(dependency("com.google.common.*:"))
-        exclude(dependency("com.google.guava.*:"))
         exclude(dependency("org.slf4j.*:"))
     }
 

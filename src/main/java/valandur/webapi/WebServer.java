@@ -168,18 +168,22 @@ public class WebServer {
                 rewrite.setRewriteRequestURI(true);
                 rewrite.setRewritePathInfo(true);
 
+                String panelPath = config.adminPanelConfig.basePath;
+                if (!panelPath.startsWith("/")) {
+                    panelPath = "/" + panelPath;
+                }
                 RedirectPatternRule redirect = new RedirectPatternRule();
                 redirect.setPattern("/*");
-                redirect.setLocation("/admin");
+                redirect.setLocation(panelPath);
                 rewrite.addRule(redirect);
                 mainContext.addHandler(newContext("/", rewrite));
 
-                mainContext.addHandler(newContext("/admin", new AssetHandler("admin", path -> {
-                    if (!path.endsWith("config.js") || this.apConfig == null) {
-                        return input -> input;
+                mainContext.addHandler(newContext(panelPath, new AssetHandler("admin", path -> {
+                    if (path.endsWith("config.js") && this.apConfig != null) {
+                        return input -> apConfig;
                     }
 
-                    return input -> apConfig;
+                    return input -> input;
                 })));
             }
 
@@ -208,9 +212,7 @@ public class WebServer {
                     WebAPI.getServletService().getRegisteredServlets().values()) {
                 conf.register(servletClass);
                 String pkg = servletClass.getPackage().getName();
-                if (!servlets.contains(pkg)) {
-                    servlets.add(pkg);
-                }
+                servlets.add(pkg);
             }
 
             // Register serializer

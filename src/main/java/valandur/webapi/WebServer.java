@@ -162,15 +162,16 @@ public class WebServer {
             // Asset handlers
             mainContext.addHandler(newContext("/docs", new AssetHandler("pages/redoc.html")));
 
+            String panelPath = null;
             if (config.adminPanel) {
                 // Rewrite handler
                 RewriteHandler rewrite = new RewriteHandler();
                 rewrite.setRewriteRequestURI(true);
                 rewrite.setRewritePathInfo(true);
 
-                String panelPath = config.adminPanelConfig.basePath;
+                panelPath = config.adminPanelConfig.basePath;
                 if (!panelPath.startsWith("/")) {
-                    panelPath = "/" + panelPath;
+                    panelPath = "/" + config.adminPanelConfig.basePath;
                 }
                 RedirectPatternRule redirect = new RedirectPatternRule();
                 redirect.setPattern("/*");
@@ -178,9 +179,14 @@ public class WebServer {
                 rewrite.addRule(redirect);
                 mainContext.addHandler(newContext("/", rewrite));
 
+                final String pPath = panelPath;
                 mainContext.addHandler(newContext(panelPath, new AssetHandler("admin", path -> {
                     if (path.endsWith("config.js") && this.apConfig != null) {
                         return input -> apConfig;
+                    }
+                    if (path.endsWith("index.html")) {
+                        return input -> new String(input).replace("<base href=\"/\">",
+                                "<base href=\"" + pPath + "\">").getBytes();
                     }
 
                     return input -> input;
@@ -249,8 +255,9 @@ public class WebServer {
 
             server.start();
 
-            if (config.adminPanel)
-                logger.info("AdminPanel: " + baseUri + "/admin");
+            if (config.adminPanel) {
+                logger.info("AdminPanel: " + baseUri + panelPath);
+            }
             logger.info("API Docs: " + baseUri + "/docs");
         } catch (SocketException e) {
             logger.error("Web-API webserver could not start, probably because one of the ports needed for HTTP " +

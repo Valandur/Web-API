@@ -3,13 +3,17 @@ package valandur.webapi.integration.nucleus;
 import com.flowpowered.math.vector.Vector3d;
 import io.github.nucleuspowered.nucleus.api.NucleusAPI;
 import io.github.nucleuspowered.nucleus.api.nucleusdata.Kit;
+import io.github.nucleuspowered.nucleus.api.nucleusdata.MailMessage;
 import io.github.nucleuspowered.nucleus.api.nucleusdata.NamedLocation;
-import io.github.nucleuspowered.nucleus.api.service.NucleusJailService;
-import io.github.nucleuspowered.nucleus.api.service.NucleusKitService;
+import io.github.nucleuspowered.nucleus.api.service.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.world.Location;
 import valandur.webapi.api.WebAPIAPI;
+import valandur.webapi.api.cache.player.ICachedPlayer;
+import valandur.webapi.api.cache.world.CachedLocation;
 import valandur.webapi.api.exceptions.NotImplementedException;
 import valandur.webapi.api.servlet.BaseServlet;
 import valandur.webapi.api.servlet.Permission;
@@ -22,6 +26,7 @@ import java.net.URISyntaxException;
 import java.time.Duration;
 import java.util.Collection;
 import java.util.Optional;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @Path("nucleus")
@@ -32,7 +37,8 @@ public class NucleusServlet extends BaseServlet {
 
     public static void onRegister() {
         WebAPIAPI.getJsonService().ifPresent(srv -> {
-            srv.registerCache(NamedLocation.class, CachedJail.class);
+            srv.registerCache(NamedLocation.class, CachedNamedLocation.class);
+            srv.registerCache(MailMessage.class, CachedMailMessage.class);
             srv.registerCache(Kit.class, CachedKit.class);
         });
     }
@@ -43,7 +49,7 @@ public class NucleusServlet extends BaseServlet {
     @Path("/jail")
     @Permission({ "jail", "list" })
     @ApiOperation(value = "List jails", notes = "Get a list of all the jails on the server.")
-    public Collection<CachedJail> listJails() {
+    public Collection<CachedNamedLocation> listJails() {
         Optional<NucleusJailService> optSrv = NucleusAPI.getJailService();
         if (!optSrv.isPresent()) {
             throw new InternalServerErrorException("Nuclues jail service not available");
@@ -53,7 +59,7 @@ public class NucleusServlet extends BaseServlet {
 
         return WebAPIAPI.runOnMain(
                 () -> srv.getJails().values().stream()
-                        .map(CachedJail::new)
+                        .map(CachedNamedLocation::new)
                         .collect(Collectors.toList())
         );
     }
@@ -62,7 +68,7 @@ public class NucleusServlet extends BaseServlet {
     @Path("/jail/{name}")
     @Permission({ "jail", "one" })
     @ApiOperation(value = "Get a jail", notes = "Get detailed information about a jail.")
-    public CachedJail getJail(@PathParam("name") String name)
+    public CachedNamedLocation getJail(@PathParam("name") String name)
             throws NotFoundException {
         Optional<NucleusJailService> optSrv = NucleusAPI.getJailService();
         if (!optSrv.isPresent()) {
@@ -77,15 +83,15 @@ public class NucleusServlet extends BaseServlet {
                 throw new NotFoundException("Jail with name " + name + " not found");
             }
 
-            return new CachedJail(optJail.get());
+            return new CachedNamedLocation(optJail.get());
         });
     }
 
     @POST
     @Path("/jail")
     @Permission({ "jail", "create" })
-    @ApiOperation(value = "Create a jail", response = CachedJail.class, notes = "Creates a new jail.")
-    public Response createJail(CachedJail req)
+    @ApiOperation(value = "Create a jail", response = CachedNamedLocation.class, notes = "Creates a new jail.")
+    public Response createJail(CachedNamedLocation req)
             throws BadRequestException, URISyntaxException {
 
         if (req == null) {
@@ -103,7 +109,7 @@ public class NucleusServlet extends BaseServlet {
             throw new BadRequestException("A location is required");
         }
 
-        CachedJail jail = WebAPIAPI.runOnMain(() -> {
+        CachedNamedLocation jail = WebAPIAPI.runOnMain(() -> {
             Optional<Location> optLive = req.getLocation().getLive();
             if (!optLive.isPresent()) {
                 throw new InternalServerErrorException("Could not get live location");
@@ -114,7 +120,7 @@ public class NucleusServlet extends BaseServlet {
             if (!optJail.isPresent()) {
                 throw new InternalServerErrorException("Could not get jail after creating it");
             }
-            return new CachedJail(optJail.get());
+            return new CachedNamedLocation(optJail.get());
         });
 
         return Response.created(new URI(null, null, jail.getLink(), null)).entity(jail).build();
@@ -124,7 +130,7 @@ public class NucleusServlet extends BaseServlet {
     @Path("/jail/{name}")
     @Permission({ "jail", "modify" })
     @ApiOperation(value = "Modify a jail", notes = "Modify an existing jail.")
-    public CachedJail modifyJail()
+    public CachedNamedLocation modifyJail()
             throws NotImplementedException {
         throw new NotImplementedException();
     }
@@ -133,7 +139,7 @@ public class NucleusServlet extends BaseServlet {
     @Path("/jail/{name}")
     @Permission({ "jail", "delete" })
     @ApiOperation(value = "Delete a jail", notes = "Delete an existing jail.")
-    public CachedJail deleteJail(@PathParam("name") String name)
+    public CachedNamedLocation deleteJail(@PathParam("name") String name)
             throws NotFoundException {
         Optional<NucleusJailService> optSrv = NucleusAPI.getJailService();
         if (!optSrv.isPresent()) {
@@ -150,12 +156,12 @@ public class NucleusServlet extends BaseServlet {
 
             srv.removeJail(name);
 
-            return new CachedJail(optJail.get());
+            return new CachedNamedLocation(optJail.get());
         });
     }
 
 
-    // Tickets
+    // Kits
     @GET
     @Path("/kit")
     @Permission({ "kit", "list" })
@@ -311,5 +317,70 @@ public class NucleusServlet extends BaseServlet {
             srv.removeKit(name);
             return new CachedKit(optKit.get());
         });
+    }
+
+
+    // Home
+    @GET
+    @Path("/home/{player}")
+    @Permission({ "home", "list" })
+    @ApiOperation(value = "List homes", notes = "Get a list of all the homes of a player.")
+    public Collection<CachedNamedLocation> listHomes(
+            @PathParam("player") @ApiParam("The uuid of the player") ICachedPlayer player)
+            throws NotFoundException {
+
+        Optional<NucleusHomeService> optSrv = NucleusAPI.getHomeService();
+        if (!optSrv.isPresent()) {
+            throw new InternalServerErrorException("Nuclues home service not available");
+        }
+
+        NucleusHomeService srv = optSrv.get();
+
+        return WebAPIAPI.runOnMain(
+                () -> srv.getHomes(player.getUUID()).stream()
+                        .map(CachedNamedLocation::new)
+                        .collect(Collectors.toList())
+        );
+    }
+
+
+    // Mail
+    @GET
+    @Path("/mail/{player}")
+    @Permission({ "mail", "list" })
+    @ApiOperation(value = "List mail", notes = "Get a list of all mail messages of a player.")
+    public Collection<CachedMailMessage> listMail(
+            @PathParam("player") @ApiParam("The uuid of the player") ICachedPlayer player)
+            throws NotFoundException {
+
+        Optional<NucleusMailService> optSrv = NucleusAPI.getMailService();
+        if (!optSrv.isPresent()) {
+            throw new InternalServerErrorException("Nuclues mail service not available");
+        }
+
+        NucleusMailService srv = optSrv.get();
+
+        Optional<User> optUser = player.getUser();
+        if (!optUser.isPresent()) {
+            throw new InternalServerErrorException("Could not get user");
+        }
+
+        return WebAPIAPI.runOnMain(
+                () -> srv.getMail(optUser.get(), mailMessage -> { return true; }).stream()
+                        .map(CachedMailMessage::new)
+                        .collect(Collectors.toList())
+        );
+    }
+
+
+    // Modules
+    @GET
+    @Path("/module")
+    @Permission({ "module", "list" })
+    @ApiOperation(value = "List modules", notes = "Get a list of loaded Nucleus modules.")
+    public Collection<String> listMail() {
+
+        NucleusModuleService srv = NucleusAPI.getModuleService();
+        return WebAPIAPI.runOnMain(srv::getModulesToLoad);
     }
 }

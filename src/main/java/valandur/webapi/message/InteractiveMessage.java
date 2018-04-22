@@ -44,7 +44,10 @@ public class InteractiveMessage extends CachedObject<IInteractiveMessage> implem
     @Override
     @JsonDetails
     public Text getMessage() {
-        return TextSerializers.FORMATTING_CODE.deserializeUnchecked(message);
+        if (message == null) {
+            return null;
+        }
+        return TextSerializers.FORMATTING_CODE.deserialize(message);
     }
 
     private Boolean once;

@@ -68,6 +68,7 @@ import valandur.webapi.util.Util;
 import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.NotFoundException;
 import java.lang.reflect.Method;
+import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -118,8 +119,6 @@ public class CacheService implements ICacheService {
 
     @Override
     public Object asCachedObject(Object obj) {
-        Class c = obj.getClass();
-
         // If the object is already clearly a cached object then just return it
         if (obj instanceof CachedObject)
             return obj;
@@ -135,6 +134,10 @@ public class CacheService implements ICacheService {
             return obj;
         if (obj instanceof String)
             return obj;
+
+        // Other POJOs
+        if (obj instanceof Instant)
+            return Instant.ofEpochMilli(((Instant)obj).toEpochMilli());
 
         // If the object is of a type that we have a cached version for, then create one of those
         if (obj instanceof Player)
@@ -170,7 +173,7 @@ public class CacheService implements ICacheService {
         if (obj instanceof CatalogType)
             return new CachedCatalogType((CatalogType)obj);
 
-        // If this is an unkown object type then we can't create a cached version of it, so we better not try
+        // If this is an unknown object type then we can't create a cached version of it, so we better not try
         // and save it because we don't know if it's thread safe or not.
         return obj.getClass().getName();
     }

@@ -8,8 +8,8 @@ import valandur.webapi.api.cache.CachedObject;
 import valandur.webapi.api.cache.world.CachedLocation;
 import valandur.webapi.util.Constants;
 
-@ApiModel("NucleusJail")
-public class CachedJail extends CachedObject<NamedLocation> {
+@ApiModel("NucleusNamedLocation")
+public class CachedNamedLocation extends CachedObject<NamedLocation> {
 
     private String name;
     @ApiModelProperty(value = "The unique name of this jail", required = true)
@@ -30,10 +30,7 @@ public class CachedJail extends CachedObject<NamedLocation> {
     }
 
 
-    public CachedJail() {
-        super(null);
-    }
-    public CachedJail(NamedLocation value) {
+    public CachedNamedLocation(NamedLocation value) {
         super(value);
 
         this.name = value.getName();

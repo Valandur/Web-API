@@ -19,8 +19,8 @@ blossom {
 spongestart {
     eula true
     minecraft project.minecraftVersion
-    //spongeForgeVersion "1.12.2-2555-7.1.0-BETA-2831"
-    //spongeVanillaVersion "1.12.2-7.1.0-BETA-9"
+    spongeForgeVersion "1.12.2-2611-7.1.0-BETA-3002"
+    spongeVanillaVersion "1.12.2-7.1.0-BETA-33"
 }
 
 repositories {
@@ -40,7 +40,12 @@ repositories {
 }
 
 configurations.all {
+    // Exclude because included by Sponge/Minecraft
+    exclude group: "org.apache.commons"
+    exclude group: "com.google.common"
+
     resolutionStrategy {
+        force "com.google.guava:guava:23.0"
         force "org.reflections:reflections:0.9.10"      // Fixes some logging issues in 0.9.11
         force "net.java.dev.jna:jna:4.5.1"
     }
@@ -78,7 +83,7 @@ dependencies {
     compileOnly name: "ActiveTime-s7.1-v1.4.0"
     compileOnly name: "griefprevention-1.12.2-4.3.0.511"
     compileOnly name: "HuskyCrates-v1.8.0PRE2-API7"
-    compileOnly name: "MMCRestrict-1.4.0-API-7"
+    compileOnly name: "MMCRestrict-1.4.2-API-7"
     compileOnly name: "MMCTickets-1.4.1-API-7"
     compileOnly name: "Nucleus-1.3.3-S7.0-api"
     compileOnly name: "RedProtect-7.3.0-b68-Universal"
@@ -153,10 +158,10 @@ shadowJar {
 
     relocate "oshi", "valandur.webapi.shadow.oshi"
 
-    // Provided by sponge/forge/minecraft
+    // Provided by Sponge/Minecraft
     dependencies {
+        exclude(dependency("org.apache.commons.*:"))
         exclude(dependency("com.google.common.*:"))
-        exclude(dependency("com.google.guava.*:"))
         exclude(dependency("org.slf4j.*:"))
     }
 

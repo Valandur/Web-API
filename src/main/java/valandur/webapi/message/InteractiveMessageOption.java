@@ -18,10 +18,17 @@ public class InteractiveMessageOption implements IInteractiveMessageOption {
     @Override
     @JsonIgnore
     public Text getValue() {
-        return TextSerializers.FORMATTING_CODE.deserializeUnchecked(value);
+        if (value == null) {
+            return null;
+        }
+        return TextSerializers.FORMATTING_CODE.deserialize(value);
     }
     @JsonProperty("value")
     public String getRawValue() {
         return value;
+    }
+    @JsonProperty("value")
+    public void setValue(String value) {
+        this.value = value;
     }
 }

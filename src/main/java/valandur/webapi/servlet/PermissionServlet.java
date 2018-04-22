@@ -46,7 +46,7 @@ public class PermissionServlet extends BaseServlet {
     @ApiOperation(
             value = "Get collection",
             notes = "Gets a specific subject collection")
-    public SubjectCollection getCollection(@PathParam("id") String id) {
+    public SubjectCollection getCollection(@PathParam("id") String id) throws NotFoundException {
         PermissionService srv = getPermissionService();
         return srv.getSubjects(id);
     }
@@ -58,7 +58,7 @@ public class PermissionServlet extends BaseServlet {
     @ApiOperation(
             value = "List subjects",
             notes = "List all subjects belonging to a certain collection")
-    public Set<Subject> listSubjects(@PathParam("id") String id) {
+    public Set<Subject> listSubjects(@PathParam("id") String id) throws NotFoundException {
         PermissionService srv = getPermissionService();
 
         SubjectCollection coll = srv.getSubjects(id);
@@ -78,7 +78,7 @@ public class PermissionServlet extends BaseServlet {
     @ApiOperation(
             value = "Get subject",
             notes = "Gets one specific subject belonging to a certain collection")
-    public Subject getSubject(@PathParam("id") String id, @PathParam("subId") String subId) {
+    public Subject getSubject(@PathParam("id") String id, @PathParam("subId") String subId) throws NotFoundException {
         PermissionService srv = getPermissionService();
         SubjectCollection coll = srv.getSubjects(id);
         if (coll == null)

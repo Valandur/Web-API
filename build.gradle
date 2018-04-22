@@ -161,14 +161,13 @@ shadowJar {
     // Provided by Sponge/Minecraft
     dependencies {
         exclude(dependency("org.apache.commons.*:"))
-        exclude(dependency("com.google.common.*:"))
+        exclude(dependency("com.google.guava.*:"))
         exclude(dependency("org.slf4j.*:"))
     }
 
     exclude "/about.html"
     exclude "/jetty-dir.css"
     exclude "/org/eclipse/jetty/favicon.ico"
-    // exclude "/io/swagger/jaxrs/ext/SwaggerExtension.class"   // We overwrite this class using services, so let's remove it
 
     archiveName = "webapi-${version}.jar"
 }

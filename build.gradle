@@ -129,7 +129,6 @@ shadowJar {
     relocate "net.jcip.annotations", "valandur.webapi.shadow.net.jcip.annotations"
 
     relocate "org.aopalliance", "valandur.webapi.shadow.org.aopalliance"
-    relocate "org.apache", "valandur.webapi.shadow.org.apache"
     relocate "org.bstats", "valandur.webapi.shadow.org.bstats"
     relocate "org.codehaus", "valandur.webapi.shadow.org.codehaus"
     relocate "org.threeten", "valandur.webapi.shadow.org.threeten"

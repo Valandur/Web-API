@@ -1,5 +1,6 @@
 package valandur.webapi.api.cache.misc;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.spongepowered.api.CatalogType;
@@ -31,4 +32,9 @@ public interface ICachedCatalogType<T extends CatalogType> extends ICachedObject
      */
     @ApiModelProperty(hidden = true)
     Optional<T> getLive(Class<T> clazz);
+
+    @Override
+    @JsonIgnore
+    @ApiModelProperty(hidden = true)
+    String getLink();
 }

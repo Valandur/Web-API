@@ -8,6 +8,12 @@ import java.util.List;
 public interface IServerService {
 
     /**
+     * Gets the number of data entries currently recorded.
+     * @return The number of data entries that are available.
+     */
+    int getNumEntries();
+
+    /**
      * Gets a history of the average TPS of the minecraft server.
      * @return A list containing measurements of the TPS.
      */

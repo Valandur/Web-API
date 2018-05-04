@@ -15,14 +15,14 @@ import java.security.Principal;
 @ConfigSerializable
 public class PermissionStruct implements Principal {
 
-    private String key = null;
+    protected String key = null;
     @ApiModelProperty(value = "The key used authorize with the Web-API", required = true)
     public String getKey() {
         return key;
     }
 
-    @JsonIgnore
     @Override
+    @ApiModelProperty(value = "The human readable name of this permssions struct. Only useful for users.", required = true)
     public String getName() {
         return key;
     }

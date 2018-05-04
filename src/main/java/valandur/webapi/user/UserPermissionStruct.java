@@ -12,11 +12,7 @@ public class UserPermissionStruct extends PermissionStruct {
     private static final int MAX_REQUESTS_PER_SECOND = 0;
 
     private String username;
-    @ApiModelProperty("The username of this user")
-    public String getUsername() {
-        return username;
-    }
-    @JsonIgnore
+
     @Override
     public String getName() {
         return username;
@@ -40,5 +36,11 @@ public class UserPermissionStruct extends PermissionStruct {
     @JsonIgnore
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    @Override
+    public PermissionStruct withKey(String key) {
+        this.key = key;
+        return this;
     }
 }

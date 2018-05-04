@@ -25,15 +25,15 @@ public class CmdUserList implements CommandExecutor {
                 .contents(users.stream().map(u -> {
                     Text editUser = Text.builder("[Change pw]")
                             .color(TextColors.YELLOW)
-                            .onClick(TextActions.suggestCommand("/webapi users changepw " + u.getUsername() + " "))
+                            .onClick(TextActions.suggestCommand("/webapi users changepw " + u.getName() + " "))
                             .build();
 
                     Text rmvUser = Text.builder(" [Remove]")
                             .color(TextColors.RED)
-                            .onClick(TextActions.suggestCommand("/webapi users remove " + u.getUsername()))
+                            .onClick(TextActions.suggestCommand("/webapi users remove " + u.getName()))
                             .build();
 
-                    return Text.builder(u.getUsername() + " ").append(editUser, rmvUser).build();
+                    return Text.builder(u.getName() + " ").append(editUser, rmvUser).build();
                 }).collect(Collectors.toList()))
                 .sendTo(src);
         return CommandResult.success();

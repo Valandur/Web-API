@@ -17,10 +17,7 @@ import valandur.webapi.api.servlet.Permission;
 import valandur.webapi.cache.plugin.CachedPluginContainer;
 import valandur.webapi.server.ServerService;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.util.List;
 import java.util.Map;
@@ -48,7 +45,10 @@ public class InfoServlet extends BaseServlet {
             value = "Server stats",
             notes = "Get statistical information about the server, such as player count, " +
                     "cpu and memory usage over time.")
-    public ServerStats getStats() {
+    public ServerStats getStats(@QueryParam("limit") Integer limit) {
+        if (limit != null) {
+            return new ServerStats(limit);
+        }
         return new ServerStats();
     }
 
@@ -203,12 +203,18 @@ public class InfoServlet extends BaseServlet {
 
 
         public ServerStats() {
+            this(Integer.MAX_VALUE);
+        }
+        public ServerStats(int limit) {
             ServerService srv = WebAPI.getServerService();
-            this.tps = srv.getAverageTps();
-            this.players = srv.getOnlinePlayers();
-            this.cpu = srv.getCpuLoad();
-            this.memory = srv.getMemoryLoad();
-            this.disk = srv.getDiskUsage();
+            int size = srv.getNumEntries();
+            int l = Math.min(limit, size);
+
+            this.tps = srv.getAverageTps().subList(size - l, size);
+            this.players = srv.getOnlinePlayers().subList(size - l, size);
+            this.cpu = srv.getCpuLoad().subList(size - l, size);
+            this.memory = srv.getMemoryLoad().subList(size - l, size);
+            this.disk = srv.getDiskUsage().subList(size - l, size);
         }
     }
 }

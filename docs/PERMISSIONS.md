@@ -89,20 +89,32 @@ endpoints and what data from those endpoints a client can access.
 <a name="key-perms"></a>
 # Permissions with keys
 ```yaml
-# This is an array of keys, defining which keys give access to which endpoints.
-keys = [{
-    # Use something secure and randomly generated for your key. Web-API will reject keys
-    # that are not at least 8 characters long, but longer is probably better!
-    key = "7S%M2FYp9NYT^Ozg"
-
-    # The "*" stands for all permissions and data
-    permissions="*"
+# This is a map of keys, defining which keys give access to which endpoints.
+keys {
+    # General usage
+    secretkey {
+        permissions {
+            info="*"
+            player {
+                one {
+                    "*"=true
+                    uuid=false
+                }
+            }
+        }
+        rateLimit = 0        
+    }
     
-    # Set to true to enable this key
-    enabled = false
+    # Example    
+    # Use something secure and randomly generated for your key. (e.g. strongpasswordgenerator.com)
+    # Web-API will reject keys that are not at least 8 characters long
+    7S%M2FYp9NYT^Ozg {
+        # The "*" stands for all permissions and data
+        permissions="*"
 
-    # No rate limit or zero = unlimited requests
-    rateLimit = 0
+        # No rate limit or zero = unlimited requests
+        rateLimit=0    
+    }
 }]
 ```
 

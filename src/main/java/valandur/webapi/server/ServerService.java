@@ -25,7 +25,7 @@ public class ServerService implements IServerService {
     private Map<String, ServerProperty> properties = new ConcurrentHashMap<>();
     private Map<String, ServerProperty> newProperties = new ConcurrentHashMap<>();
 
-    // Record every 5 seconds. Max 17280 entries = 24 hours of tps
+    // Record every 5 seconds. (17280 entries = 24 hours, 4320 entries = 6 hours)
     private static int STATS_INTERVAL = 5;
     private static int MAX_STATS_ENTRIES = 4320;
     private Queue<ServerStat<Double>> averageTps = new ConcurrentLinkedQueue<>();
@@ -103,6 +103,11 @@ public class ServerService implements IServerService {
             memoryLoad.poll();
         while (diskUsage.size() > MAX_STATS_ENTRIES)
             diskUsage.poll();
+    }
+
+    @Override
+    public int getNumEntries() {
+        return averageTps.size();
     }
 
     @Override

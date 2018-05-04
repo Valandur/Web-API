@@ -11,6 +11,7 @@ import org.spongepowered.api.event.command.SendCommandEvent;
 import org.spongepowered.api.event.entity.TargetEntityEvent;
 import org.spongepowered.api.event.entity.living.humanoid.HandInteractEvent;
 import org.spongepowered.api.event.entity.living.humanoid.player.KickPlayerEvent;
+import org.spongepowered.api.event.entity.living.humanoid.player.TargetPlayerEvent;
 import org.spongepowered.api.event.item.inventory.InteractInventoryEvent;
 import org.spongepowered.api.event.message.MessageChannelEvent;
 import org.spongepowered.api.event.user.BanUserEvent;
@@ -48,6 +49,9 @@ public class EventView extends BaseView<Event> {
 
         if (value instanceof TargetEntityEvent) {
             data.put("target", ((TargetEntityEvent)value).getTargetEntity());
+        } else if (value instanceof TargetPlayerEvent) {
+            // TODO: Not sure if we really need this clause...
+            data.put("target", ((TargetPlayerEvent)value).getTargetEntity());
         } else if (value instanceof TargetUserEvent) {
             data.put("target", ((TargetUserEvent)value).getTargetUser());
         }

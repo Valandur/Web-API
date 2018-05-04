@@ -36,7 +36,6 @@ public class UserServlet extends BaseServlet {
                     "permissions associated with this key")
     public PermissionStruct getUserDetails() {
         SecurityContext context = (SecurityContext)request.getAttribute("security");
-        PermissionStruct struct = context.getPermissionStruct();
         return context.getPermissionStruct();
     }
 

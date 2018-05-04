@@ -12,8 +12,11 @@ import valandur.webapi.api.cache.plugin.ICachedPluginContainer;
 import valandur.webapi.api.servlet.BaseServlet;
 import valandur.webapi.api.servlet.ExplicitDetails;
 import valandur.webapi.api.servlet.Permission;
+import valandur.webapi.security.SecurityContext;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -83,13 +86,15 @@ public class PluginServlet extends BaseServlet {
 
     @POST
     @Path("/{plugin}/config")
-    @Permission({ "config", "change" })
+    @Permission({ "config", "modify" })
+    @Permission(value = { "config", "modify", "[plugin]" }, autoCheck = false)
     @ApiOperation(value = "Change plugin configs", notes = "Allows changing the config files of plugin. Send a map " +
             "from config filename to file contents. **This does not reload the plugin**, you can do that with " +
             "`sponge plugins reload`, but not all plugins implement the reload event.")
     public Map<String, Object> changePluginConfig(
             @PathParam("plugin") @ApiParam("The id of the plugin") String pluginName,
-            Map<String, Object> configs)
+            Map<String, Object> configs,
+            @Context HttpServletRequest request)
             throws NotFoundException {
 
         if (configs == null) {
@@ -99,6 +104,11 @@ public class PluginServlet extends BaseServlet {
         Optional<ICachedPluginContainer> optPlugin = cacheService.getPlugin(pluginName);
         if (!optPlugin.isPresent()) {
             throw new NotFoundException("Plugin with id '" + pluginName + "' could not be found");
+        }
+
+        SecurityContext context = (SecurityContext)request.getAttribute("security");
+        if (!context.hasPerms(pluginName)) {
+            throw new ForbiddenException("You do not have permission edit " + pluginName + " configs");
         }
 
         List<java.nio.file.Path> paths = getConfigFiles(optPlugin.get());

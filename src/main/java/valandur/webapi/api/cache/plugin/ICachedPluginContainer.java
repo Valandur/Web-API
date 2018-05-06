@@ -11,6 +11,10 @@ import java.util.Set;
 @ApiModel("PluginContainer")
 public interface ICachedPluginContainer extends ICachedObject<PluginContainer> {
 
+    enum PluginState {
+        Loaded, Unloaded, WillBeLoaded, WillBeUnloaded,
+    }
+
     @ApiModelProperty(value = "The unique id of this plugin", required = true)
     String getId();
 
@@ -31,4 +35,13 @@ public interface ICachedPluginContainer extends ICachedObject<PluginContainer> {
 
     /*@ApiModelProperty(value = "Other plugins that this plugin depends on", required = true)
     Set<ICachedPluginDependency> getDependencies();*/
+
+    @ApiModelProperty("The file source where the plugin was loaded from.")
+    String getSource();
+
+    @ApiModelProperty(value = "The current loaded state of the plugin", required = true)
+    PluginState getState();
+
+    @ApiModelProperty(hidden = true)
+    boolean toggle();
 }

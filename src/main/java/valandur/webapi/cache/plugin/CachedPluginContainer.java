@@ -1,5 +1,7 @@
 package valandur.webapi.cache.plugin;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.JsonNode;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.plugin.PluginContainer;
 import valandur.webapi.api.cache.CachedObject;
@@ -7,9 +9,11 @@ import valandur.webapi.api.cache.plugin.ICachedPluginContainer;
 import valandur.webapi.api.serialize.JsonDetails;
 import valandur.webapi.util.Constants;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.*;
 
 public class CachedPluginContainer extends CachedObject<PluginContainer> implements ICachedPluginContainer {
 
@@ -58,6 +62,18 @@ public class CachedPluginContainer extends CachedObject<PluginContainer> impleme
         return new HashSet<>(dependencies);
     }*/
 
+    private String source;
+    @Override
+    public String getSource() {
+        return source;
+    }
+
+    private PluginState state;
+    @Override
+    public PluginState getState() {
+        return state;
+    }
+
 
     public CachedPluginContainer(PluginContainer plugin) {
         super(plugin);
@@ -69,6 +85,56 @@ public class CachedPluginContainer extends CachedObject<PluginContainer> impleme
         this.url = plugin.getUrl().orElse(null);
         this.authors = new ArrayList<>(plugin.getAuthors());
         //plugin.getDependencies().forEach(d -> dependencies.add(new CachedPluginDependency(d)));
+        this.source = plugin.getSource().map(p -> p.normalize().toString()).orElse(null);
+        this.state = PluginState.Loaded;
+    }
+    public CachedPluginContainer(JsonNode node, Path source) {
+        super(null);
+
+        this.id = node.path("modid").asText();
+        this.name = node.path("name").asText();
+        this.description = node.path("description").asText(null);
+        this.version = node.path("version").asText(null);
+        this.url = node.path("url").asText(null);
+        this.authors = new ArrayList<>();
+        //this.dependencies = new HashSet<>();
+        this.source = source.normalize().toString();
+        this.state = source.toString().endsWith(".jar") ? PluginState.WillBeLoaded : PluginState.Unloaded;
+    }
+
+    @JsonIgnore
+    public void setWillBeUnloaded() {
+        this.state = PluginState.WillBeUnloaded;
+        this.source = this.source.replace(".jar", ".jar.disabled");
+    }
+
+    @Override
+    @JsonIgnore
+    public boolean toggle() {
+        String newSource = state == PluginState.Loaded || state == PluginState.WillBeLoaded ?
+                source.replace(".jar", ".jar.disabled") :
+                source.replace(".jar.disabled", ".jar");
+
+        Path oldPath = Paths.get(source).normalize();
+        Path newPath = Paths.get(newSource).normalize();
+        try {
+            Files.move(oldPath, newPath);
+        } catch (IOException ignored) {
+            return false;
+        }
+
+        source = newSource;
+        if (state == PluginState.Loaded) {
+            state = PluginState.WillBeUnloaded;
+        } else if (state == PluginState.WillBeUnloaded) {
+            state = PluginState.Loaded;
+        } else if (state == PluginState.Unloaded) {
+            state = PluginState.WillBeLoaded;
+        } else if (state == PluginState.WillBeLoaded) {
+            state = PluginState.Unloaded;
+        }
+
+        return true;
     }
 
     @Override

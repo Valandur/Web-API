@@ -46,7 +46,9 @@ public class SerializationProvider extends JacksonJsonProvider {
 
     @Override
     protected boolean hasMatchingMediaType(MediaType mediaType) {
-        return MediaType.APPLICATION_XML_TYPE.isCompatible(mediaType) || super.hasMatchingMediaType(mediaType);
+        return MediaType.TEXT_PLAIN_TYPE.isCompatible(mediaType) ||
+                MediaType.APPLICATION_XML_TYPE.isCompatible(mediaType) ||
+                super.hasMatchingMediaType(mediaType);
     }
 
     @Override

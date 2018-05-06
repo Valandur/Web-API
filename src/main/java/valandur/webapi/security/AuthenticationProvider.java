@@ -37,7 +37,7 @@ public class AuthenticationProvider implements ContainerRequestFilter {
 
     private static String ACCESS_CONTROL_ORIGIN = "*";
     private static final String ACCESS_CONTROL_METHODS = "GET,PUT,POST,DELETE,OPTIONS";
-    private static final String ACCESS_CONTROL_HEADERS = "*";
+    private static final String ACCESS_CONTROL_HEADERS = "origin, content-type, x-webapi-key";
 
     private static Set<String> allowedProxyIps = new HashSet<>();
     private static Set<SubnetUtils.SubnetInfo> allowedProxyCidrs = new HashSet<>();
@@ -153,18 +153,18 @@ public class AuthenticationProvider implements ContainerRequestFilter {
         response.setHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, ACCESS_CONTROL_METHODS);
         response.setHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_HEADERS, ACCESS_CONTROL_HEADERS);
 
+        // Exit early on options requests
+        if (HttpMethod.OPTIONS.asString().equalsIgnoreCase(context.getMethod())) {
+            context.abortWith(Response.ok().build());
+            return;
+        }
+
         if (config.useWhitelist && !config.whitelist.contains(addr)) {
             WebAPI.getLogger().warn(addr + " is not on whitelist: " + target);
             throw new ForbiddenException();
         } else if (config.useBlacklist && config.blacklist.contains(addr)) {
             WebAPI.getLogger().warn(addr + " is on blacklist: " + target);
             throw new ForbiddenException();
-        }
-
-        // Exit early on options requests
-        if (HttpMethod.OPTIONS.asString().equalsIgnoreCase(context.getMethod())) {
-            context.abortWith(Response.ok().build());
-            return;
         }
 
         String key = context.getHeaderString(API_KEY_HEADER);

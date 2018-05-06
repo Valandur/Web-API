@@ -1,7 +1,11 @@
 package valandur.webapi.cache;
 
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.flowpowered.math.vector.Vector3i;
 import com.google.common.collect.Lists;
+import com.google.gson.JsonObject;
 import org.spongepowered.api.CatalogType;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.block.tileentity.TileEntity;
@@ -65,13 +69,24 @@ import valandur.webapi.util.Util;
 
 import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.NotFoundException;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Method;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Predicate;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.zip.ZipEntry;
 
 public class CacheService implements ICacheService {
 
@@ -403,6 +418,50 @@ public class CacheService implements ICacheService {
         for (PluginContainer plugin : newPlugins) {
             plugins.put(plugin.getId(), new CachedPluginContainer(plugin));
         }
+
+        // Look for .jar files in the current directory, and compare their "mcmod.info" file
+        // with the data we have of the loaded plugins to see if there are any unloaded ones.
+        try {
+            List<Path> paths = Files.walk(Paths.get("./"))
+                    .filter(Files::isRegularFile)
+                    .filter(p -> p.toString().endsWith(".jar") || p.toString().endsWith(".disabled"))
+                    .collect(Collectors.toList());
+
+            for (Path path : paths) {
+                JarFile jarFile = new JarFile(path.toFile());
+                ZipEntry entry = jarFile.getEntry("mcmod.info");
+                if (entry == null) {
+                    continue;
+                }
+
+                Optional<PluginContainer> exists = newPlugins.stream()
+                        .filter(p -> p.getSource().isPresent() && p.getSource().get().equals(path.normalize()))
+                        .findAny();
+                if (exists.isPresent()) {
+                    continue;
+                }
+
+                InputStream inputStream = jarFile.getInputStream(entry);
+                ByteArrayOutputStream result = new ByteArrayOutputStream();
+                byte[] buffer = new byte[1024];
+                int length;
+                while ((length = inputStream.read(buffer)) != -1) {
+                    result.write(buffer, 0, length);
+                }
+
+                ObjectMapper mapper = new ObjectMapper();
+                JsonNode root = mapper.readTree(result.toString(StandardCharsets.UTF_8.name()));
+                root.forEach(n -> {
+                    if (plugins.containsKey(n.path("modid").asText())) {
+                        if (path.toString().endsWith(".jar.disabled")) {
+                            plugins.get(n.path("modid").asText()).setWillBeUnloaded();
+                        }
+                        return;
+                    }
+                    plugins.put(n.path("modid").asText(), new CachedPluginContainer(n, path));
+                });
+            }
+        } catch (IOException ignored) {}
     }
     @Override
     public Collection<ICachedPluginContainer> getPlugins() {

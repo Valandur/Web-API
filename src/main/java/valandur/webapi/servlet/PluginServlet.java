@@ -52,6 +52,28 @@ public class PluginServlet extends BaseServlet {
         return optPlugin.get();
     }
 
+    @PUT
+    @Path("/{plugin}")
+    @Permission("toggle")
+    @ApiOperation(value = "Toggle a plugin", notes = "Allows enabling/disabling a plugin/mod. Requires a server restart.")
+    public ICachedPluginContainer togglePlugin(
+            @PathParam("plugin") @ApiParam("The id of the plugin") String pluginName)
+            throws NotFoundException {
+
+        Optional<ICachedPluginContainer> optPlugin = cacheService.getPlugin(pluginName);
+        if (!optPlugin.isPresent()) {
+            throw new NotFoundException("Plugin with id '" + pluginName + "' could not be found");
+        }
+
+        ICachedPluginContainer plugin = optPlugin.get();
+
+        if (!plugin.toggle()) {
+            throw new InternalServerErrorException("Could not toggle plugin");
+        }
+
+        return plugin;
+    }
+
     @GET
     @Path("/{plugin}/config")
     @Permission({ "config", "get" })

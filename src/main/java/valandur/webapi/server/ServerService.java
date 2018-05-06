@@ -107,7 +107,8 @@ public class ServerService implements IServerService {
 
     @Override
     public int getNumEntries() {
-        return averageTps.size();
+        return Math.min(averageTps.size(), Math.min(onlinePlayers.size(), Math.min(cpuLoad.size(),
+                Math.min(memoryLoad.size(), diskUsage.size()))));
     }
 
     @Override

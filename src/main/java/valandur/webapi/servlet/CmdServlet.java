@@ -1,6 +1,8 @@
 package valandur.webapi.servlet;
 
 import io.swagger.annotations.*;
+import org.spongepowered.api.Sponge;
+import org.spongepowered.api.command.CommandMapping;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.cache.command.ICachedCommand;
 import valandur.webapi.api.servlet.BaseServlet;
@@ -45,6 +47,7 @@ public class CmdServlet extends BaseServlet {
     public ICachedCommand getCommand(
             @PathParam("cmd") @ApiParam("The id of the command") String cmdName)
             throws NotFoundException {
+
         Optional<ICachedCommand> cmd = cacheService.getCommand(cmdName);
         if (!cmd.isPresent()) {
             throw new NotFoundException("The command '" + cmdName + "' could not be found");
@@ -62,7 +65,9 @@ public class CmdServlet extends BaseServlet {
                     "Pass an array of commands to execute them in succession, you can also just pass a list with " +
                     "only one command if that's all you want to execute.\n\n" +
                     "Returns a list with each response corresponding to a command.")
-    public List<Object> runCommands(List<ExecuteCommandRequest> reqs, @Context HttpServletRequest request) {
+    public List<ExecuteCommandResponse> runCommands(
+            List<ExecuteCommandRequest> reqs,
+            @Context HttpServletRequest request) {
 
         if (reqs == null) {
             throw new BadRequestException("Request body is required");
@@ -70,20 +75,27 @@ public class CmdServlet extends BaseServlet {
 
         SecurityContext context = (SecurityContext)request.getAttribute("security");
 
-        List<Object> res = new ArrayList<>();
+        List<ExecuteCommandResponse> res = new ArrayList<>();
         for (ExecuteCommandRequest req : reqs) {
-            String cmd = req.getCommand().split(" ")[0];
-            if (!context.hasPerms(cmd)) {
-                res.add(new ForbiddenException("You do not have permission to execute the " + cmd + " command"));
-            } else {
-                res.add(runCommand(req));
-            }
+            res.add(runCommand(context, req));
         }
 
         return res;
     }
 
-    private List<String> runCommand(ExecuteCommandRequest req) {
+    private ExecuteCommandResponse runCommand(SecurityContext context, ExecuteCommandRequest req) {
+        String cmd = req.getCommand().split(" ")[0];
+
+        Optional<? extends CommandMapping> map = Sponge.getCommandManager().get(cmd);
+        if (!map.isPresent()) {
+            return new ExecuteCommandResponse(req.command, "Unknown command: " + cmd);
+        }
+
+        String name = map.get().getPrimaryAlias();
+        if (!context.hasPerms(name)) {
+            return new ExecuteCommandResponse(req.getCommand(), "You are not allowed to execute '" + cmd + "'");
+        }
+
         final CommandSource src = new CommandSource(req.getName(), req.getWaitLines(), req.isHiddenInConsole());
 
         try {
@@ -95,17 +107,17 @@ public class CmdServlet extends BaseServlet {
                 }
             }
 
-            return src.getLines();
+            return new ExecuteCommandResponse(req.command, src.getLines());
         } catch (InterruptedException e) {
             e.printStackTrace();
             if (WebAPI.reportErrors()) WebAPI.sentryCapture(e);
-            return null;
+            return new ExecuteCommandResponse(req.command, e.getMessage());
         }
     }
 
 
     @ApiModel("ExecuteCommandRequest")
-        public static class ExecuteCommandRequest {
+    public static class ExecuteCommandRequest {
 
         private String command;
         @ApiModelProperty(value = "The command to execute", required = true)
@@ -135,6 +147,46 @@ public class CmdServlet extends BaseServlet {
         @ApiModelProperty("True to hide the execution of the command in the console, false otherwise")
         public Boolean isHiddenInConsole() {
             return hideInConsole != null ? hideInConsole : false;
+        }
+    }
+
+    @ApiModel("ExecuteCommandResponse")
+    public static class ExecuteCommandResponse {
+
+        private boolean ok;
+        @ApiModelProperty(value = "True if this command executed successfully, false otherwise", required = true)
+        public boolean isOk() {
+            return ok;
+        }
+
+        private String cmd;
+        @ApiModelProperty(value = "The command that was executed", required = true)
+        public String getCmd() {
+            return cmd;
+        }
+
+        private String error;
+        @ApiModelProperty(value = "Any potential error that occured during execution")
+        public String getError() {
+            return error;
+        }
+
+        private List<String> response;
+        @ApiModelProperty(value = "The response chat lines that were sent when executing the command")
+        public List<String> getResponse() {
+            return response;
+        }
+
+
+        public ExecuteCommandResponse(String cmd, List<String> response) {
+            this.cmd = cmd;
+            this.ok = true;
+            this.response = response;
+        }
+        public ExecuteCommandResponse(String cmd, String error) {
+            this.cmd = cmd;
+            this.ok = false;
+            this.error = error;
         }
     }
 }

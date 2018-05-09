@@ -4,6 +4,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import io.swagger.annotations.ApiOperation;
+import valandur.webapi.WebAPI;
 import valandur.webapi.api.servlet.BaseServlet;
 import valandur.webapi.api.servlet.Permission;
 import valandur.webapi.security.AuthenticationProvider;
@@ -51,13 +52,17 @@ public class UserServlet extends BaseServlet {
 
         Optional<UserPermissionStruct> optPerm = Users.getUser(req.getUsername(), req.getPassword());
         if (!optPerm.isPresent()) {
-            throw new ForbiddenException("Invalid username / password");
+            WebAPI.getLogger().warn(req.getUsername() + " tried to login from " +
+                    request.getAttribute("ip") + " (invalid username or password)");
+            throw new ForbiddenException("Invalid username or password");
         }
 
         UserPermissionStruct perm = optPerm.get();
         String key = Util.generateUniqueId();
 
         AuthenticationProvider.addTempPerm(key, perm);
+
+        WebAPI.getLogger().info(req.getUsername() + " logged in from " + request.getAttribute("ip"));
 
         return perm.withKey(key);
     }

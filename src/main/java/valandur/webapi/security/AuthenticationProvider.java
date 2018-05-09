@@ -149,6 +149,8 @@ public class AuthenticationProvider implements ContainerRequestFilter {
         String addr = getRealAddr(request);
         String target = context.getUriInfo().getPath();
 
+        request.setAttribute("ip", addr);
+
         response.setHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, ACCESS_CONTROL_ORIGIN);
         response.setHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, ACCESS_CONTROL_METHODS);
         response.setHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_HEADERS, ACCESS_CONTROL_HEADERS);

@@ -43,9 +43,6 @@ public class ItemStackView extends BaseView<ItemStack> {
         }
 
         // Add data
-        for (ImmutableValue<?> immutableValue : value.getValues()) {
-            WebAPI.getLogger().info(immutableValue.getKey().toString());
-        }
         for (Map.Entry<String, Class<? extends DataManipulator<?, ?>>> entry :
                 WebAPI.getSerializeService().getSupportedData().entrySet()) {
             try {

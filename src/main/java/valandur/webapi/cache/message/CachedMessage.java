@@ -36,7 +36,7 @@ public class CachedMessage extends CachedObject implements ICachedMessage {
     public CachedMessage(Collection<MessageReceiver> receivers, Text content) {
         super(null);
 
-        this.timestamp = (new Date()).toInstant().getEpochSecond();
+        this.timestamp = (new Date()).toInstant().toEpochMilli();
         if (receivers != null) {
             this.receivers.addAll(receivers.stream()
                     .map(m -> cacheService.asCachedObject(m))

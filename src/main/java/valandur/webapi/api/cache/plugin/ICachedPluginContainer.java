@@ -11,6 +11,10 @@ import java.util.Set;
 @ApiModel("PluginContainer")
 public interface ICachedPluginContainer extends ICachedObject<PluginContainer> {
 
+    enum PluginType {
+        Unknown, Sponge, Forge, Minecraft,
+    }
+
     enum PluginState {
         Loaded, Unloaded, WillBeLoaded, WillBeUnloaded,
     }
@@ -35,6 +39,9 @@ public interface ICachedPluginContainer extends ICachedObject<PluginContainer> {
 
     /*@ApiModelProperty(value = "Other plugins that this plugin depends on", required = true)
     Set<ICachedPluginDependency> getDependencies();*/
+
+    @ApiModelProperty(value = "The type of the plugin", required = true)
+    PluginType getType();
 
     @ApiModelProperty("The file source where the plugin was loaded from.")
     String getSource();

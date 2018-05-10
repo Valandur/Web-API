@@ -2,7 +2,9 @@ package valandur.webapi.cache.plugin;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import org.spongepowered.api.Sponge;
+import org.spongepowered.api.plugin.Plugin;
 import org.spongepowered.api.plugin.PluginContainer;
 import valandur.webapi.api.cache.CachedObject;
 import valandur.webapi.api.cache.plugin.ICachedPluginContainer;
@@ -62,6 +64,12 @@ public class CachedPluginContainer extends CachedObject<PluginContainer> impleme
         return new HashSet<>(dependencies);
     }*/
 
+    private PluginType type;
+    @Override
+    public PluginType getType() {
+        return type;
+    }
+
     private String source;
     @Override
     public String getSource() {
@@ -84,9 +92,11 @@ public class CachedPluginContainer extends CachedObject<PluginContainer> impleme
         this.version = plugin.getVersion().orElse(null);
         this.url = plugin.getUrl().orElse(null);
         this.authors = new ArrayList<>(plugin.getAuthors());
-        //plugin.getDependencies().forEach(d -> dependencies.add(new CachedPluginDependency(d)));
+        // plugin.getDependencies().forEach(d -> this.dependencies.add(new CachedPluginDependency(d)));
         this.source = plugin.getSource().map(p -> p.normalize().toString()).orElse(null);
         this.state = PluginState.Loaded;
+
+        this.checkType();
     }
     public CachedPluginContainer(JsonNode node, Path source) {
         super(null);
@@ -96,10 +106,45 @@ public class CachedPluginContainer extends CachedObject<PluginContainer> impleme
         this.description = node.path("description").asText(null);
         this.version = node.path("version").asText(null);
         this.url = node.path("url").asText(null);
-        this.authors = new ArrayList<>();
-        //this.dependencies = new HashSet<>();
+        List<String> authors = new ArrayList<>();
+        for (JsonNode authorNode : node.path("authorList")) {
+            authors.add(authorNode.asText());
+        }
+        this.authors = authors;
+        /*
+        Set<ICachedPluginDependency> deps = new HashSet<>();
+        for (JsonNode depNode : node.path("requiredMods")) {
+            deps.add(new CachedPluginDependency(depNode.asText(), true));
+        }
+        for (JsonNode depNode : node.path("dependencies")) {
+            deps.add(new CachedPluginDependency(depNode.asText(), false));
+        }
+        this.dependencies = deps;*/
         this.source = source.normalize().toString();
         this.state = source.toString().endsWith(".jar") ? PluginState.WillBeLoaded : PluginState.Unloaded;
+
+        this.checkType();
+    }
+
+    private void checkType() {
+        if (this.id.equalsIgnoreCase("minecraft") || this.id.equalsIgnoreCase("mcp")) {
+            this.type = PluginType.Minecraft;
+        } else if (this.id.equalsIgnoreCase("sponge") || this.id.equalsIgnoreCase("spongeapi")) {
+            this.type = PluginType.Sponge;
+        } else if (this.id.equalsIgnoreCase("fml") || this.id.equalsIgnoreCase("forge")
+                || this.id.equalsIgnoreCase("mercurius_updater")) {
+            this.type = PluginType.Forge;
+        } /*else if (this.dependencies.stream().anyMatch(d -> d.getId().contains("sponge"))) {
+            this.type = PluginType.Sponge;
+        } else if (this.dependencies.stream().anyMatch(d -> d.getId().contains("forge"))) {
+            this.type = PluginType.Forge;
+        } else if (this.dependencies.stream().anyMatch(d -> d.getId().contains("fml"))) {
+            this.type = PluginType.Forge;
+        }*/ else if (this.source.contains("plugins")) {
+            this.type = PluginType.Sponge;
+        } else {
+            this.type = PluginType.Unknown;
+        }
     }
 
     @JsonIgnore

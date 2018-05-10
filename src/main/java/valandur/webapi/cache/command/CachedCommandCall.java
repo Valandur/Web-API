@@ -56,7 +56,7 @@ public class CachedCommandCall extends CachedObject<Object> implements ICachedCo
     public CachedCommandCall(SendCommandEvent event, boolean censor) {
         super(null);
 
-        this.timestamp = (new Date()).toInstant().getEpochSecond();
+        this.timestamp = (new Date()).toInstant().toEpochMilli();
         this.command = censor ? "[censored]" : event.getCommand();
         this.args = censor ? "" : event.getArguments();
         this.cause = new CachedCause(event.getCause());

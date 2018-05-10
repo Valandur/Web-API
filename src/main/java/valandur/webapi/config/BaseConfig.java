@@ -22,7 +22,7 @@ public class BaseConfig {
     }
 
 
-    BaseConfig() {}
+    public BaseConfig() {}
 
     public void save() {
         try {

@@ -6,7 +6,6 @@ import io.swagger.annotations.ApiOperation;
 import ninja.leaping.configurate.objectmapping.serialize.TypeSerializers;
 import valandur.webapi.api.servlet.BaseServlet;
 import valandur.webapi.api.servlet.Permission;
-import valandur.webapi.config.WebBooksConfig;
 import valandur.webapi.util.Util;
 
 import javax.ws.rs.*;

@@ -16,6 +16,8 @@ import valandur.webapi.command.auth.CmdAuthListDisable;
 import valandur.webapi.command.auth.CmdAuthListEnable;
 import valandur.webapi.command.auth.CmdAuthListRemove;
 import valandur.webapi.command.block.CmdBlockUpdatesList;
+import valandur.webapi.command.block.CmdBlockUpdatesPause;
+import valandur.webapi.command.block.CmdBlockUpdatesStop;
 import valandur.webapi.command.element.CmdIpElement;
 import valandur.webapi.command.hook.CmdNotifyHook;
 import valandur.webapi.command.user.CmdUserAdd;
@@ -121,16 +123,16 @@ public class CommandRegistry {
                 .permission("webapi.op.pause")
                 .arguments(GenericArguments.choices(Text.of("uuid"),
                         () -> blockService.getBlockOperations().stream().map(u -> u.getUUID().toString()).collect(Collectors.toList()),
-                        uuid -> blockService.getBlockOperation(UUID.fromString(uuid))))
-                .executor(new CmdBlockUpdatesList())
+                        uuid -> blockService.getBlockOperation(UUID.fromString(uuid)).orElse(null)))
+                .executor(new CmdBlockUpdatesPause())
                 .build();
         CommandSpec specBlockOpsStop = CommandSpec.builder()
                 .description(Text.of("Stop a running block operation"))
                 .permission("webapi.op.stop")
                 .arguments(GenericArguments.choices(Text.of("uuid"),
                         () -> blockService.getBlockOperations().stream().map(u -> u.getUUID().toString()).collect(Collectors.toList()),
-                        uuid -> Util.isValidUUID(uuid) ? blockService.getBlockOperation(UUID.fromString(uuid)) : null))
-                .executor(new CmdBlockUpdatesList())
+                        uuid -> blockService.getBlockOperation(UUID.fromString(uuid)).orElse(null)))
+                .executor(new CmdBlockUpdatesStop())
                 .build();
         CommandSpec specBlockOps = CommandSpec.builder()
                 .description(Text.of("Manage running block operations"))

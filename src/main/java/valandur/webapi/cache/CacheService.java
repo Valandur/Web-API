@@ -1,11 +1,9 @@
 package valandur.webapi.cache;
 
-import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.flowpowered.math.vector.Vector3i;
 import com.google.common.collect.Lists;
-import com.google.gson.JsonObject;
 import org.spongepowered.api.CatalogType;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.block.tileentity.TileEntity;
@@ -19,7 +17,6 @@ import org.spongepowered.api.event.Order;
 import org.spongepowered.api.event.cause.Cause;
 import org.spongepowered.api.event.command.SendCommandEvent;
 import org.spongepowered.api.event.entity.living.humanoid.player.KickPlayerEvent;
-import org.spongepowered.api.event.filter.cause.First;
 import org.spongepowered.api.event.message.MessageChannelEvent;
 import org.spongepowered.api.event.network.ClientConnectionEvent;
 import org.spongepowered.api.event.world.LoadWorldEvent;
@@ -82,7 +79,6 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Predicate;
-import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -116,6 +112,9 @@ public class CacheService implements ICacheService {
 
     public void init() {
         CacheConfig config = Util.loadConfig(configFileName, new CacheConfig());
+
+        numChatMessages = config.chat_amount;
+        numCommandCalls = config.cmd_amount;
 
         censoredCommands.clear();
         for (String cmd : config.censoredCommands) {
@@ -423,7 +422,8 @@ public class CacheService implements ICacheService {
         // with the data we have of the loaded plugins to see if there are any unloaded ones.
         try {
             List<Path> paths = Files.walk(Paths.get("./"))
-                    .filter(Files::isRegularFile)
+                    .map(Path::normalize)
+                    .filter(p -> Files.isRegularFile(p) && !p.toString().startsWith("libraries"))
                     .filter(p -> p.toString().endsWith(".jar") || p.toString().endsWith(".disabled"))
                     .collect(Collectors.toList());
 
@@ -655,20 +655,14 @@ public class CacheService implements ICacheService {
     }
 
     @Listener(order = Order.POST)
-    public void onPlayerChat(MessageChannelEvent.Chat event, @First Player player) {
-        MessageChannel channel = event.getChannel().orElse(event.getOriginalChannel());
-        CachedChatMessage cache = new CachedChatMessage(player, channel.getMembers(), event.getMessage());
-        messages.add(cache);
-
-        while (messages.size() > numChatMessages) {
-            messages.poll();
-        }
-    }
-    @Listener(order = Order.POST)
     public void onMessage(MessageChannelEvent event) {
+        Optional<Player> player = event.getCause().first(Player.class);
+
         MessageChannel channel = event.getChannel().orElse(event.getOriginalChannel());
-        CachedMessage cache = new CachedMessage(channel.getMembers(), event.getMessage());
-        messages.add(cache);
+        CachedMessage msg = player.isPresent() ?
+                new CachedChatMessage(player.get(), channel.getMembers(), event.getMessage()) :
+                new CachedMessage(channel.getMembers(), event.getMessage());
+        messages.add(msg);
 
         while (messages.size() > numChatMessages) {
             messages.poll();

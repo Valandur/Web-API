@@ -8,7 +8,7 @@ import valandur.webapi.api.cache.misc.ICachedCause;
 @ApiModel("CommandCall")
 public interface ICachedCommandCall extends ICachedObject<Object> {
 
-    @ApiModelProperty(value = "The timestamp at which the command was executed", required = true)
+    @ApiModelProperty(value = "The timestamp at which the command was executed (epoch millis)", required = true)
     Long getTimestamp();
 
     @ApiModelProperty(value = "The command that was executed (without arguments)", required = true)

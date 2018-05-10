@@ -13,7 +13,7 @@ public interface ICachedMessage extends ICachedObject {
     @ApiModelProperty(value = "The receivers of this message", required = true)
     Collection<Object> getReceivers();
 
-    @ApiModelProperty(value = "The timestamp at which the chat message was sent", required = true)
+    @ApiModelProperty(value = "The timestamp at which the chat message was sent (epoch millis)", required = true)
     Long getTimestamp();
 
     @ApiModelProperty(value = "The content of the message", required = true)

@@ -15,7 +15,7 @@ public class CachedPluginDependency extends CachedObject<PluginDependency> imple
     private String id;
     @Override
     public String getId() {
-        return null;
+        return id;
     }
 
     private LoadOrder loadOrder;
@@ -44,6 +44,12 @@ public class CachedPluginDependency extends CachedObject<PluginDependency> imple
         this.version = dependency.getVersion();
         this.loadOrder = dependency.getLoadOrder();
         this.optional = dependency.isOptional();
+    }
+    public CachedPluginDependency(String id, boolean optional) {
+        super(null);
+
+        this.id = id;
+        this.optional = optional;
     }
 
     @Override

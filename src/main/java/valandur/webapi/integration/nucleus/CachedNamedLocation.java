@@ -30,6 +30,9 @@ public class CachedNamedLocation extends CachedObject<NamedLocation> {
     }
 
 
+    public CachedNamedLocation() {
+        super(null);
+    }
     public CachedNamedLocation(NamedLocation value) {
         super(value);
 

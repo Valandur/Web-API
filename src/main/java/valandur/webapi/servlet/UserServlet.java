@@ -30,7 +30,7 @@ public class UserServlet extends BaseServlet {
     HttpServletRequest request;
 
     @GET
-    @Permission("info")
+    @Permission("user")
     @ApiOperation(
             value = "Check info",
             notes = "Checks to see if the passed api key is still valid and retrieves the user info and " +
@@ -44,7 +44,7 @@ public class UserServlet extends BaseServlet {
     @ApiOperation(
             value = "Login",
             notes = "Tries to acquire an api key with the passed credentials.")
-    public PermissionStruct authUser(AuthRequest req)
+    public PermissionStruct login(AuthRequest req)
             throws ForbiddenException {
         if (req == null) {
             throw new BadRequestException("Request body is required");
@@ -65,6 +65,18 @@ public class UserServlet extends BaseServlet {
         WebAPI.getLogger().info(req.getUsername() + " logged in from " + request.getAttribute("ip"));
 
         return perm.withKey(key);
+    }
+
+    @POST
+    @Path("/logout")
+    @ApiOperation(
+            value = "Logout",
+            notes = "Invalidate the current API key, logging out the active user.")
+    public PermissionStruct logout()
+            throws ForbiddenException {
+        SecurityContext context = (SecurityContext)request.getAttribute("security");
+        AuthenticationProvider.removeTempPerm(context.getPermissionStruct().getKey());
+        return context.getPermissionStruct();
     }
 
 

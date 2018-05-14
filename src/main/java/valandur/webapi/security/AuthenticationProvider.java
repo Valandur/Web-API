@@ -117,6 +117,9 @@ public class AuthenticationProvider implements ContainerRequestFilter {
     public static void addTempPerm(String key, UserPermissionStruct perms) {
         tempPermMap.put(key, perms);
     }
+    public static void removeTempPerm(String key) {
+        tempPermMap.remove(key);
+    }
 
     public static void toggleBlacklist(boolean enable) {
         config.useBlacklist = enable;

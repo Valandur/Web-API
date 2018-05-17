@@ -66,7 +66,7 @@ supported routes. You can also find the same documentation [here](https://valand
 - [johnfg10](https://github.com/johnfg10)
 - [r15ch13](https://github.com/r15ch13)
 - [Cat121](https://github.com/Cat121)
-- [Cat121](https://github.com/Cat121)
 - [Sherex](https://github.com/Sherex)
 - [kawahara](https://github.com/kawahara)
 - [Lantcoder](https://github.com/Lantcoder)
+- [crymates](https://github.com/crymates)

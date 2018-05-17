@@ -19,6 +19,7 @@ import valandur.webapi.server.ServerService;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -153,7 +154,10 @@ public class InfoServlet extends BaseServlet {
             this.motd = server.getMotd().toBuilder().build();
             this.players = server.getOnlinePlayers().size();
             this.maxPlayers = server.getMaxPlayers();
-            this.address = server.getBoundAddress().map(Object::toString).orElse(null);
+            if (server.getBoundAddress().isPresent()) {
+                InetSocketAddress addr = server.getBoundAddress().get();
+                this.address = addr.getHostName() + (addr.getPort() == 25565 ? "" : addr.getPort());
+            }
             this.onlineMode = server.getOnlineMode();
             this.resourcePack = server.getDefaultResourcePack().map(ResourcePack::getName).orElse(null);
             this.hasWhitelist = server.hasWhitelist();

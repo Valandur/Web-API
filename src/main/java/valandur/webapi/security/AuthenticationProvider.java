@@ -231,7 +231,7 @@ public class AuthenticationProvider implements ContainerRequestFilter {
         request.setAttribute("details", details);
 
         String basePath = resourceInfo.getResourceClass().getAnnotation(Path.class).value();
-        TreeNode<String, Boolean> perms = permStruct.getPermissions();
+        TreeNode perms = permStruct.getPermissions();
 
         Permission[] reqPerms = method.getAnnotationsByType(Permission.class);
         if (reqPerms.length == 0) {
@@ -247,7 +247,7 @@ public class AuthenticationProvider implements ContainerRequestFilter {
             List<String> reqPermList = new ArrayList<>(Arrays.asList(reqPerm.value()));
             reqPermList.add(0, basePath);
 
-            TreeNode<String, Boolean> methodPerms = permissionService.subPermissions(perms, reqPermList);
+            TreeNode methodPerms = permissionService.subPermissions(perms, reqPermList);
             if (!methodPerms.getValue()) {
                 WebAPI.getLogger().warn(addr + " does not have permisson to access " + target);
                 if (key.equalsIgnoreCase(DEFAULT_KEY)) {

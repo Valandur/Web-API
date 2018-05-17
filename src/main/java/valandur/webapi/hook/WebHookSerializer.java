@@ -46,7 +46,7 @@ public class WebHookSerializer implements TypeSerializer<WebHook> {
         String filterName = filterBase.getNode("name").getString();
         ConfigurationNode filterConfig = filterBase.getNode("config");
 
-        TreeNode<String, Boolean> permissions = IPermissionService.permitAllNode();
+        TreeNode permissions = IPermissionService.permitAllNode();
 
         if (headers == null) {
             headers = new ArrayList<>();

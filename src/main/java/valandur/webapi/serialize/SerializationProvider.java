@@ -90,7 +90,7 @@ public class SerializationProvider extends JacksonJsonProvider {
         }
 
         SecurityContext ctx = (SecurityContext)request.getAttribute("security");
-        TreeNode<String, Boolean> perms = IPermissionService.permitAllNode();
+        TreeNode perms = IPermissionService.permitAllNode();
         if (ctx != null && ctx.getEndpointPerms() != null) {
             perms = ctx.getEndpointPerms();
         }

@@ -26,7 +26,7 @@ public class UserPermissionStruct extends PermissionStruct {
     }
 
 
-    public UserPermissionStruct(String username, String password, TreeNode<String, Boolean> permissions) {
+    public UserPermissionStruct(String username, String password, TreeNode permissions) {
         super(permissions, MAX_REQUESTS_PER_SECOND);
 
         this.username = username;

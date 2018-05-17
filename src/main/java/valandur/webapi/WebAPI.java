@@ -438,7 +438,7 @@ public class WebAPI {
 
         serializeService.init();
 
-        serverService.init();
+        serverService.init(mainConfig);
 
         CommandRegistry.init();
 

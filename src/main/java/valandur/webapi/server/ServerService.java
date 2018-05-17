@@ -8,6 +8,7 @@ import oshi.hardware.HardwareAbstractionLayer;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.server.IServerService;
 import valandur.webapi.api.server.IServerStat;
+import valandur.webapi.config.MainConfig;
 
 import java.io.File;
 import java.io.IOException;
@@ -37,9 +38,12 @@ public class ServerService implements IServerService {
     private Task statTask;
 
 
-    public void init() {
+    public void init(MainConfig config) {
         properties.clear();
         newProperties.clear();
+
+        STATS_INTERVAL = config.statsInterval;
+        MAX_STATS_ENTRIES = config.maxStats;
 
         try {
             List<String> lines = Files.readAllLines(Paths.get("./server.properties"));

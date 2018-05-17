@@ -26,18 +26,23 @@ public class MainConfig extends BaseConfig {
             "on all addresses IF YOU HAVE CONFIGURED THE PERMISSIONS")
     public String host = "localhost";
 
-    @Setting(comment = "This tells the API on which port to listen for requests.\n" +
+    @Setting(comment = "This tells the API on which port to listen for HTTP requests.\n" +
             "It is recommended to use a port above 1024, as those below\n" +
             "are reserved for the system and might not be available.\n" +
-            "Choose which protocols to enable. Set a port to -1 to\n" +
-            "disable that protocol.")
+            "Set to -1 to disable the HTTP protocol.")
     public int http = 8080;
+    @Setting(comment = "This tells the API on which port to listen for HTTPS requests.\n" +
+            "It is recommended to use a port above 1024, as those below\n" +
+            "are reserved for the system and might not be available.\n" +
+            "Set to -1 to disable the HTTPS protocol.")
     public int https = 8081;
 
     @Setting(comment = "Set this path to your java key store if you don't want to\n" +
             "use the default self-signed one provided by the Web-API")
     public String customKeyStore = null;
+    @Setting
     public String customKeyStorePassword = null;
+    @Setting
     public String customKeyStoreManagerPassword = null;
 
     @Setting(comment = "The default amount of time, in milliseconds, that a command\n" +

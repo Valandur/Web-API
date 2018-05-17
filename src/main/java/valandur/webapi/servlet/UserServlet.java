@@ -30,7 +30,7 @@ public class UserServlet extends BaseServlet {
     HttpServletRequest request;
 
     @GET
-    @Permission("user")
+    @Path("/me")
     @ApiOperation(
             value = "Check info",
             notes = "Checks to see if the passed api key is still valid and retrieves the user info and " +
@@ -41,6 +41,7 @@ public class UserServlet extends BaseServlet {
     }
 
     @POST
+    @Path("/login")
     @ApiOperation(
             value = "Login",
             notes = "Tries to acquire an api key with the passed credentials.")

@@ -10,7 +10,7 @@ import valandur.webapi.WebAPI;
 import valandur.webapi.api.hook.BaseWebHookFilter;
 import valandur.webapi.api.hook.IWebHook;
 import valandur.webapi.api.hook.WebHookHeader;
-import valandur.webapi.api.permission.IPermissionService;
+import valandur.webapi.api.security.IPermissionService;
 import valandur.webapi.api.util.TreeNode;
 
 import javax.ws.rs.HttpMethod;

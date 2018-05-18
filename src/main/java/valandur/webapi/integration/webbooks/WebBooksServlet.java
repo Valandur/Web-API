@@ -25,7 +25,7 @@ import java.util.concurrent.ConcurrentHashMap;
         value = "Create, edit and delete web books that have unique links which work on your server in-game.")
 @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 @Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
-public class WebBookServlet extends BaseServlet {
+public class WebBooksServlet extends BaseServlet {
 
     private static final String configFileName = "web-books.conf";
 
@@ -34,7 +34,7 @@ public class WebBookServlet extends BaseServlet {
     private static WebBooksConfig config;
 
 
-    public WebBookServlet() {
+    public WebBooksServlet() {
         config = Util.loadConfig(configFileName, new WebBooksConfig());
         books = config.books;
     }

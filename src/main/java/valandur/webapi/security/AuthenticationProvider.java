@@ -31,9 +31,10 @@ import java.util.concurrent.atomic.AtomicLong;
 @Priority(Priorities.AUTHENTICATION)
 public class AuthenticationProvider implements ContainerRequestFilter {
 
-    public static final String API_KEY_HEADER = "X-WEBAPI-KEY";
-    private static final String DEFAULT_KEY = "__DEFAULT__";
     private static final String configFileName = "permissions.conf";
+
+    private static final String API_KEY_HEADER = "X-WEBAPI-KEY";
+    private static final String DEFAULT_KEY = "__DEFAULT__";
 
     private static String ACCESS_CONTROL_ORIGIN = "*";
     private static final String ACCESS_CONTROL_METHODS = "GET,PUT,POST,DELETE,OPTIONS";
@@ -52,7 +53,8 @@ public class AuthenticationProvider implements ContainerRequestFilter {
     private static PermissionStruct defaultPerms;
     private static Map<String, PermissionStruct> permMap = new HashMap<>();
 
-    private static Map<String, UserPermissionStruct> tempPermMap = new HashMap<>();
+    private static Map<String, List<String>> tempUsersKeyMap = new HashMap<>();
+    private static Map<String, UserPermissionStruct> tempKeyMap = new HashMap<>();
 
     @Context
     private ResourceInfo resourceInfo;
@@ -114,11 +116,30 @@ public class AuthenticationProvider implements ContainerRequestFilter {
         return calls.get() / timeDiff;
     }
 
-    public static void addTempPerm(String key, UserPermissionStruct perms) {
-        tempPermMap.put(key, perms);
+    public static void addTempKey(String key, UserPermissionStruct user) {
+        if (!tempUsersKeyMap.containsKey(user.getName())) {
+            tempUsersKeyMap.put(user.getName(), new ArrayList<>());
+        }
+        tempUsersKeyMap.get(user.getName()).add(key);
+        tempKeyMap.put(key, user);
     }
-    public static void removeTempPerm(String key) {
-        tempPermMap.remove(key);
+    public static void removeTempKey(String key) {
+        UserPermissionStruct user = tempKeyMap.remove(key);
+        if (user != null) {
+            tempUsersKeyMap.get(user.getName()).remove(key);
+        }
+    }
+    public static void updateAllFrom(UserPermissionStruct user) {
+        List<String> keys = tempUsersKeyMap.get(user.getName());
+        if (keys != null) {
+            keys.forEach(k -> tempKeyMap.put(k, user));
+        }
+    }
+    public static void removeAllFrom(String username) {
+        List<String> keys = tempUsersKeyMap.remove(username);
+        if (keys != null) {
+            keys.forEach(k -> tempKeyMap.remove(k));
+        }
     }
 
     public static void toggleBlacklist(boolean enable) {
@@ -185,7 +206,7 @@ public class AuthenticationProvider implements ContainerRequestFilter {
         if (key != null) {
             permStruct = permMap.get(key);
             if (permStruct == null) {
-                permStruct = tempPermMap.get(key);
+                permStruct = tempKeyMap.get(key);
             }
             // If the user provided a key and it's invalid, then throw an exception
             if (permStruct == null) {

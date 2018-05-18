@@ -9,6 +9,8 @@ import valandur.webapi.WebAPI;
 import valandur.webapi.api.server.IServerService;
 import valandur.webapi.api.server.IServerStat;
 import valandur.webapi.config.MainConfig;
+import valandur.webapi.config.ServerConfig;
+import valandur.webapi.util.Util;
 
 import java.io.File;
 import java.io.IOException;
@@ -22,6 +24,8 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 
 public class ServerService implements IServerService {
+
+    private final static String configFileName = "server.conf";
 
     private Map<String, ServerProperty> properties = new ConcurrentHashMap<>();
     private Map<String, ServerProperty> newProperties = new ConcurrentHashMap<>();
@@ -38,9 +42,11 @@ public class ServerService implements IServerService {
     private Task statTask;
 
 
-    public void init(MainConfig config) {
+    public void init() {
         properties.clear();
         newProperties.clear();
+
+        ServerConfig config = Util.loadConfig(configFileName, new ServerConfig());
 
         STATS_INTERVAL = config.statsInterval;
         MAX_STATS_ENTRIES = config.maxStats;

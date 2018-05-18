@@ -1,12 +1,13 @@
 package valandur.webapi.command.user;
 
-import org.spongepowered.api.command.CommandException;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.command.args.CommandContext;
 import org.spongepowered.api.command.spec.CommandExecutor;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
+import valandur.webapi.api.security.IPermissionService;
+import valandur.webapi.user.UserPermissionStruct;
 import valandur.webapi.user.Users;
 import valandur.webapi.util.Util;
 
@@ -15,7 +16,7 @@ import java.util.Optional;
 public class CmdUserAdd implements CommandExecutor {
 
     @Override
-    public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
+    public CommandResult execute(CommandSource src, CommandContext args) {
         Optional<String> optUsername = args.getOne("username");
         if (!optUsername.isPresent()) {
             return CommandResult.empty();
@@ -25,8 +26,8 @@ public class CmdUserAdd implements CommandExecutor {
         Optional<String> optPassword = args.getOne("password");
         String password = optPassword.orElse(Util.generateUniqueId().substring(0, 8));
 
-        boolean res = Users.addUser(username, password);
-        if (!res) {
+        Optional<UserPermissionStruct> optUser = Users.addUser(username, password, IPermissionService.permitAllNode());
+        if (!optUser.isPresent()) {
             src.sendMessage(Text.builder("A user with this name already exists").color(TextColors.RED).build());
             return CommandResult.empty();
         }

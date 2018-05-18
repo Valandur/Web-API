@@ -1,4 +1,4 @@
-package valandur.webapi.api.permission;
+package valandur.webapi.api.security;
 
 import ninja.leaping.configurate.ConfigurationNode;
 import valandur.webapi.api.util.TreeNode;

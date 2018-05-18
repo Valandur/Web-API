@@ -45,30 +45,6 @@ public class MainConfig extends BaseConfig {
     @Setting
     public String customKeyStoreManagerPassword = null;
 
-    @Setting(comment = "The default amount of time, in milliseconds, that a command\n" +
-            "execution waits for response messages.")
-    public int cmdWaitTime = 1000;
-
-    @Setting(comment = "This controls the maximum amount of blocks a client can get\n" +
-            "in one Web-API call")
-    public int maxBlockGetSize = 1000000;
-
-    @Setting(comment = "This is the maximum amount of blocks that a client can change\n" +
-            "in one Web-API call. Please note that not all blocks are changed\n" +
-            "at once (see below)")
-    public int maxBlockUpdateSize = 1000000;
-
-    @Setting(comment = "The maximum number of blocks that are changed per second during\n" +
-            "a block update (related to the setting above)")
-    public int maxBlocksPerSecond = 1000;
-
-    @Setting(comment = "The number of stat entries that are saved per stat. Together with\n" +
-            "the stat interval this defines how far back the stats history goes.")
-    public int maxStats = 4320;
-
-    @Setting(comment = "The interval in seconds at which the server stats are recorded.")
-    public int statsInterval = 5;
-
     @Setting(comment = "Automatically report errors (your server IP is NOT collected,\n" +
             "neither any personal information). This just helps finding bugs.")
     public boolean reportErrors = true;

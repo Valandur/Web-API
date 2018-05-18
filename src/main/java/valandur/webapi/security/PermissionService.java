@@ -1,7 +1,7 @@
 package valandur.webapi.security;
 
 import ninja.leaping.configurate.ConfigurationNode;
-import valandur.webapi.api.permission.IPermissionService;
+import valandur.webapi.api.security.IPermissionService;
 import valandur.webapi.api.util.TreeNode;
 
 import java.util.*;

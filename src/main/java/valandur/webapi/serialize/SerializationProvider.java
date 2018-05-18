@@ -8,7 +8,7 @@ import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 import com.fasterxml.jackson.jaxrs.json.JsonEndpointConfig;
 import org.eclipse.jetty.io.EofException;
 import valandur.webapi.WebAPI;
-import valandur.webapi.api.permission.IPermissionService;
+import valandur.webapi.api.security.IPermissionService;
 import valandur.webapi.api.util.TreeNode;
 import valandur.webapi.security.SecurityContext;
 import valandur.webapi.util.Util;

@@ -19,7 +19,7 @@ public @interface Permission {
      * required. These permissions are relative to the servlet path, which serves as the root permissions entry.
      * @return The permissions required for this endpoint.
      */
-    String[] value() default "";
+    String[] value() default {};
 
     /**
      * Specify whether this permission is automatically checked against the user's permissions. This should usually

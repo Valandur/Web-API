@@ -48,7 +48,7 @@ public class TreeNode {
                 map.put(".", false);
             }
             for (Map.Entry<String, TreeNode> entry : children.entrySet()) {
-                map.put(entry.getKey().toString(), entry.getValue());
+                map.put(entry.getKey(), entry.getValue());
             }
             return map;
         }
@@ -60,7 +60,11 @@ public class TreeNode {
             return;
         }
 
-
+        if (value instanceof Map) {
+            this.addChild(new TreeNode(key, (Map<String, Object>)value));
+        } else {
+            this.addChild(new TreeNode(key, (boolean)value));
+        }
     }
 
     /**
@@ -83,23 +87,6 @@ public class TreeNode {
     }
 
     /**
-     * Gets the exact child of this node with the specified key. This traverses children recursivly until the keys
-     * array is exhausted.
-     * @param keys The array of keys that are traversed in search of the child.
-     * @return An optional containing the child with the specified key if it was found.
-     */
-    public Optional<TreeNode> getChild(String[] keys) {
-        TreeNode curr = this;
-        for (String key : keys) {
-            Optional<TreeNode> subCurr = curr.getChild(key);
-            if (!subCurr.isPresent())
-                return Optional.empty();
-            curr = subCurr.get();
-        }
-        return Optional.of(curr);
-    }
-
-    /**
      * Gets all direct children of the current node.
      * @return A collection of all the children of this node.
      */
@@ -107,6 +94,12 @@ public class TreeNode {
         return children.values();
     }
 
+    /**
+     * Creates a new (root) node with null as the key and 'true' as the value.
+     */
+    public TreeNode() {
+        this.value = true;
+    }
 
     /**
      * Creates a new (root) node with null as the key and the specified value.
@@ -135,6 +128,29 @@ public class TreeNode {
     public TreeNode(String key, boolean value, TreeNode parent) {
         this(key, value);
         setParent(parent);
+    }
+
+    /**
+     * Creates a new node with the specified key and children.
+     * @param key The key of the new node.
+     * @param children A map of child nodes of this node.
+     */
+    public TreeNode(String key, Map<String, Object> children) {
+        this.key = key;
+        this.value = true;
+
+        for (Map.Entry<String, Object> entry : children.entrySet()) {
+            if (".".equalsIgnoreCase(entry.getKey())) {
+                this.value = (boolean)entry.getValue();
+                continue;
+            }
+
+            if (entry.getValue() instanceof Map) {
+                this.addChild(new TreeNode(entry.getKey(), (Map<String, Object>)entry.getValue()));
+            } else {
+                this.addChild(new TreeNode(entry.getKey(), (boolean)entry.getValue()));
+            }
+        }
     }
 
     /**
@@ -196,6 +212,6 @@ public class TreeNode {
 
     @Override
     public String toString() {
-        return "[" + (key != null ? key.toString() : "") + ":" + value + "]";
+        return "[" + (key != null ? key : "") + ":" + value + "]";
     }
 }

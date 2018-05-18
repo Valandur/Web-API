@@ -27,7 +27,7 @@ public interface IWebHook {
 
     boolean includeDetails();
 
-    TreeNode<String, Boolean> getPermissions();
+    TreeNode getPermissions();
 
     BaseWebHookFilter getFilter();
 

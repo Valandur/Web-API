@@ -2,7 +2,6 @@ package valandur.webapi.user;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
 import valandur.webapi.api.util.TreeNode;
 import valandur.webapi.security.PermissionStruct;
 
@@ -26,7 +25,7 @@ public class UserPermissionStruct extends PermissionStruct {
     }
 
 
-    public UserPermissionStruct(String username, String password, TreeNode<String, Boolean> permissions) {
+    public UserPermissionStruct(String username, String password, TreeNode permissions) {
         super(permissions, MAX_REQUESTS_PER_SECOND);
 
         this.username = username;
@@ -42,5 +41,8 @@ public class UserPermissionStruct extends PermissionStruct {
     public PermissionStruct withKey(String key) {
         this.key = key;
         return this;
+    }
+    public UserPermissionStruct withPermissions(TreeNode permissions) {
+        return new UserPermissionStruct(username, password, permissions);
     }
 }

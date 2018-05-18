@@ -2,9 +2,7 @@ package valandur.webapi.cache.plugin;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import org.spongepowered.api.Sponge;
-import org.spongepowered.api.plugin.Plugin;
 import org.spongepowered.api.plugin.PluginContainer;
 import valandur.webapi.api.cache.CachedObject;
 import valandur.webapi.api.cache.plugin.ICachedPluginContainer;

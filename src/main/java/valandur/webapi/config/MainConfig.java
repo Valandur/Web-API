@@ -26,43 +26,24 @@ public class MainConfig extends BaseConfig {
             "on all addresses IF YOU HAVE CONFIGURED THE PERMISSIONS")
     public String host = "localhost";
 
-    @Setting(comment = "This tells the API on which port to listen for requests.\n" +
+    @Setting(comment = "This tells the API on which port to listen for HTTP requests.\n" +
             "It is recommended to use a port above 1024, as those below\n" +
             "are reserved for the system and might not be available.\n" +
-            "Choose which protocols to enable. Set a port to -1 to\n" +
-            "disable that protocol.")
+            "Set to -1 to disable the HTTP protocol.")
     public int http = 8080;
+    @Setting(comment = "This tells the API on which port to listen for HTTPS requests.\n" +
+            "It is recommended to use a port above 1024, as those below\n" +
+            "are reserved for the system and might not be available.\n" +
+            "Set to -1 to disable the HTTPS protocol.")
     public int https = 8081;
 
     @Setting(comment = "Set this path to your java key store if you don't want to\n" +
             "use the default self-signed one provided by the Web-API")
     public String customKeyStore = null;
+    @Setting
     public String customKeyStorePassword = null;
+    @Setting
     public String customKeyStoreManagerPassword = null;
-
-    @Setting(comment = "The default amount of time, in milliseconds, that a command\n" +
-            "execution waits for response messages.")
-    public int cmdWaitTime = 1000;
-
-    @Setting(comment = "This controls the maximum amount of blocks a client can get\n" +
-            "in one Web-API call")
-    public int maxBlockGetSize = 1000000;
-
-    @Setting(comment = "This is the maximum amount of blocks that a client can change\n" +
-            "in one Web-API call. Please note that not all blocks are changed\n" +
-            "at once (see below)")
-    public int maxBlockUpdateSize = 1000000;
-
-    @Setting(comment = "The maximum number of blocks that are changed per second during\n" +
-            "a block update (related to the setting above)")
-    public int maxBlocksPerSecond = 1000;
-
-    @Setting(comment = "The number of stat entries that are saved per stat. Together with\n" +
-            "the stat interval this defines how far back the stats history goes.")
-    public int maxStats = 4320;
-
-    @Setting(comment = "The interval in seconds at which the server stats are recorded.")
-    public int statsInterval = 5;
 
     @Setting(comment = "Automatically report errors (your server IP is NOT collected,\n" +
             "neither any personal information). This just helps finding bugs.")
@@ -74,7 +55,7 @@ public class MainConfig extends BaseConfig {
         @Setting(comment = "The display name of the server")
         public String name = "Localhost";
         @Setting(comment = "The Web-API URL for the server")
-        public String apiUrl = "http://localhost:8080";
+        public String apiUrl = "";
 
         private APServer() {}
     }

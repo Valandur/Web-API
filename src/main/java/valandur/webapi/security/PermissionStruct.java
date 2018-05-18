@@ -1,7 +1,6 @@
 package valandur.webapi.security;
 
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import ninja.leaping.configurate.objectmapping.serialize.ConfigSerializable;
@@ -27,9 +26,9 @@ public class PermissionStruct implements Principal {
         return key;
     }
 
-    private TreeNode<String, Boolean> permissions;
+    private TreeNode permissions;
     @ApiModelProperty(dataType = "object", value = "The permissions tree that this key grants access to", required = true)
-    public TreeNode<String, Boolean> getPermissions() {
+    public TreeNode getPermissions() {
         return permissions;
     }
 
@@ -40,11 +39,11 @@ public class PermissionStruct implements Principal {
     }
 
 
-    public PermissionStruct(TreeNode<String, Boolean> permissions, int rateLimit) {
+    public PermissionStruct(TreeNode permissions, int rateLimit) {
         this.permissions = permissions;
         this.rateLimit = rateLimit;
     }
-    public PermissionStruct(String key, TreeNode<String, Boolean> permissions, int rateLimit) {
+    public PermissionStruct(String key, TreeNode permissions, int rateLimit) {
         this.key = key;
         this.permissions = permissions;
         this.rateLimit = rateLimit;

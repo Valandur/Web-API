@@ -55,7 +55,7 @@ public class MainConfig extends BaseConfig {
         @Setting(comment = "The display name of the server")
         public String name = "Localhost";
         @Setting(comment = "The Web-API URL for the server")
-        public String apiUrl = "http://localhost:8080";
+        public String apiUrl = "";
 
         private APServer() {}
     }

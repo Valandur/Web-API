@@ -14,7 +14,7 @@ public class UserPermissionStructConfigSerializer implements TypeSerializer<User
         String username = value.getKey().toString();
         String password = value.getNode("password").getString();
 
-        TreeNode<String, Boolean> perms = WebAPI.getPermissionService().permissionTreeFromConfig(value.getNode("permissions"));
+        TreeNode perms = WebAPI.getPermissionService().permissionTreeFromConfig(value.getNode("permissions"));
 
         return new UserPermissionStruct(username, password, perms);
     }

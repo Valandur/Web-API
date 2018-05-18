@@ -7,6 +7,7 @@ import org.spongepowered.api.command.args.CommandContext;
 import org.spongepowered.api.command.spec.CommandExecutor;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
+import valandur.webapi.user.UserPermissionStruct;
 import valandur.webapi.user.Users;
 
 import java.util.Optional;
@@ -21,8 +22,8 @@ public class CmdUserRemove implements CommandExecutor {
         }
         String username = optUsername.get();
 
-        boolean res = Users.removeUser(username);
-        if (!res) {
+        Optional<UserPermissionStruct> optUser = Users.removeUser(username);
+        if (!optUser.isPresent()) {
             src.sendMessage(Text.builder("Couldn't find user to remove " + username)
                     .color(TextColors.RED).build());
             return CommandResult.empty();

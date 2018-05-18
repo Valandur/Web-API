@@ -1,4 +1,4 @@
-package valandur.webapi.api.permission;
+package valandur.webapi.api.security;
 
 import ninja.leaping.configurate.ConfigurationNode;
 import valandur.webapi.api.util.TreeNode;
@@ -15,13 +15,13 @@ public interface IPermissionService {
      * @param config The configuration node which represents a permission set
      * @return A tree structure representing the config node
      */
-    TreeNode<String, Boolean> permissionTreeFromConfig(ConfigurationNode config);
+    TreeNode permissionTreeFromConfig(ConfigurationNode config);
     /**
      * Adds the given permission tree as a config node to the passed base node.
      * @param config The base config node, at which the permissions tree is added
      * @param perms The permissions tree which is parsed to a config node
      */
-    void permissionTreeToConfig(ConfigurationNode config, TreeNode<String, Boolean> perms);
+    void permissionTreeToConfig(ConfigurationNode config, TreeNode perms);
 
     /**
      * Checks if the specified permissions tree permits the specified permission
@@ -29,14 +29,14 @@ public interface IPermissionService {
      * @param reqPerms The requested permission to check
      * @return True if the permission tree permits the specified permission, false otherwise
      */
-    boolean permits(TreeNode<String, Boolean> perms, String[] reqPerms);
+    boolean permits(TreeNode perms, String[] reqPerms);
     /**
      * Checks if the specified permissions tree permits the specified permission
      * @param perms The permissions tree
      * @param reqPerms The requested permission to check
      * @return True if the permission tree permits the specified permission, false otherwise
      */
-    boolean permits(TreeNode<String, Boolean> perms, List<String> reqPerms);
+    boolean permits(TreeNode perms, List<String> reqPerms);
 
     /**
      * Gets the permissions tree representing the allowed actions when following the path along the permissions tree
@@ -44,30 +44,30 @@ public interface IPermissionService {
      * @param path The permission path to follow in the permissions tree
      * @return The sub tree representing the permission permitted for that path
      */
-    TreeNode<String, Boolean> subPermissions(TreeNode<String, Boolean> perms, String[] path);
+    TreeNode subPermissions(TreeNode perms, String[] path);
     /**
      * Gets the permissions tree representing the allowed actions when following the path along the permissions tree
      * @param perms The permissions tree
      * @param path The permission path to follow in the permissions tree
      * @return The sub tree representing the permission permitted for that path
      */
-    TreeNode<String, Boolean> subPermissions(TreeNode<String, Boolean> perms, List<String> path);
+    TreeNode subPermissions(TreeNode perms, List<String> path);
 
     /**
      * Returns an empty node, i.e. a node that has no permissions.
      * @return An empty permissions node
      */
-    static TreeNode<String, Boolean> emptyNode() {
-        return new TreeNode<>(false);
+    static TreeNode emptyNode() {
+        return new TreeNode(false);
     }
 
     /**
      * Returns a grant-all permissions node, i.e. a node that contains all permissions.
      * @return A grant-all permissions node
      */
-    static TreeNode<String, Boolean> permitAllNode() {
-        TreeNode<String, Boolean> node = new TreeNode<>(true);
-        node.addChild(new TreeNode<>("*", true));
+    static TreeNode permitAllNode() {
+        TreeNode node = new TreeNode(true);
+        node.addChild(new TreeNode("*", true));
         return node;
     }
 }

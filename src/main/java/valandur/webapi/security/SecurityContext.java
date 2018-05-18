@@ -13,11 +13,11 @@ public class SecurityContext implements javax.ws.rs.core.SecurityContext {
         return perms;
     }
 
-    private TreeNode<String, Boolean> endpointPerms;
-    public TreeNode<String, Boolean> getEndpointPerms() {
+    private TreeNode endpointPerms;
+    public TreeNode getEndpointPerms() {
         return endpointPerms;
     }
-    public void setEndpointPerms(TreeNode<String, Boolean> endpointPerms) {
+    public void setEndpointPerms(TreeNode endpointPerms) {
         this.endpointPerms = endpointPerms;
     }
 

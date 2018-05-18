@@ -26,7 +26,6 @@ import valandur.webapi.command.user.CmdUserList;
 import valandur.webapi.command.user.CmdUserRemove;
 import valandur.webapi.hook.CommandWebHook;
 import valandur.webapi.hook.WebHookParam;
-import valandur.webapi.util.Util;
 
 import java.util.*;
 import java.util.stream.Collectors;

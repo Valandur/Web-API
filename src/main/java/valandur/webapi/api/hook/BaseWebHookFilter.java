@@ -3,8 +3,6 @@ package valandur.webapi.api.hook;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 
-import java.util.Map;
-
 public abstract class BaseWebHookFilter {
 
     protected IWebHook hook;

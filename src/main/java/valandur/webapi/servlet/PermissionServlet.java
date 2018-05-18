@@ -74,7 +74,7 @@ public class PermissionServlet extends BaseServlet {
 
     @GET
     @Path("/collection/{id}/subject/{subId}")
-    @Permission({ "collection", "subject", "list" })
+    @Permission({ "collection", "subject", "one" })
     @ApiOperation(
             value = "Get subject",
             notes = "Gets one specific subject belonging to a certain collection")

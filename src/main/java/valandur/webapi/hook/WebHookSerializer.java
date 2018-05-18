@@ -10,7 +10,7 @@ import valandur.webapi.WebAPI;
 import valandur.webapi.api.hook.BaseWebHookFilter;
 import valandur.webapi.api.hook.IWebHook;
 import valandur.webapi.api.hook.WebHookHeader;
-import valandur.webapi.api.permission.IPermissionService;
+import valandur.webapi.api.security.IPermissionService;
 import valandur.webapi.api.util.TreeNode;
 
 import javax.ws.rs.HttpMethod;
@@ -46,7 +46,7 @@ public class WebHookSerializer implements TypeSerializer<WebHook> {
         String filterName = filterBase.getNode("name").getString();
         ConfigurationNode filterConfig = filterBase.getNode("config");
 
-        TreeNode<String, Boolean> permissions = IPermissionService.permitAllNode();
+        TreeNode permissions = IPermissionService.permitAllNode();
 
         if (headers == null) {
             headers = new ArrayList<>();

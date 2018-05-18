@@ -3,8 +3,9 @@ package valandur.webapi.user;
 import org.mindrot.jbcrypt.BCrypt;
 import org.slf4j.Logger;
 import valandur.webapi.WebAPI;
-import valandur.webapi.api.permission.IPermissionService;
+import valandur.webapi.api.util.TreeNode;
 import valandur.webapi.config.UserConfig;
+import valandur.webapi.security.AuthenticationProvider;
 import valandur.webapi.util.Util;
 
 import java.util.ArrayList;
@@ -55,19 +56,35 @@ public class Users {
         }
     }
 
-    public static boolean addUser(String username, String password) {
+    public static Optional<UserPermissionStruct> addUser(String username, String password, TreeNode permissions) {
         if (users.containsKey(username))
-            return false;
-        users.put(username, new UserPermissionStruct(username, hashPassword(password), IPermissionService.permitAllNode()));
+            return Optional.empty();
+
+        UserPermissionStruct user = new UserPermissionStruct(username, hashPassword(password), permissions);
+        users.put(username, user);
         save();
-        return true;
+
+        return Optional.of(user);
     }
-    public static boolean removeUser(String username) {
-        if (!users.containsKey(username))
-            return false;
-        users.remove(username);
+    public static UserPermissionStruct modifyUser(UserPermissionStruct user, TreeNode permissions) {
+        UserPermissionStruct newUser = user.withPermissions(permissions);
+        users.put(newUser.getName(), newUser);
         save();
-        return true;
+
+        AuthenticationProvider.updateAllFrom(newUser);
+
+        return newUser;
+    }
+    public static Optional<UserPermissionStruct> removeUser(String username) {
+        if (!users.containsKey(username))
+            return Optional.empty();
+
+        UserPermissionStruct user = users.remove(username);
+        save();
+
+        AuthenticationProvider.removeAllFrom(user.getName());
+
+        return Optional.of(user);
     }
 
     public static String hashPassword(String password) {

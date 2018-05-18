@@ -13,7 +13,6 @@ import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.world.Location;
 import valandur.webapi.api.WebAPIAPI;
 import valandur.webapi.api.cache.player.ICachedPlayer;
-import valandur.webapi.api.cache.world.CachedLocation;
 import valandur.webapi.api.exceptions.NotImplementedException;
 import valandur.webapi.api.servlet.BaseServlet;
 import valandur.webapi.api.servlet.Permission;
@@ -26,7 +25,6 @@ import java.net.URISyntaxException;
 import java.time.Duration;
 import java.util.Collection;
 import java.util.Optional;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @Path("nucleus")

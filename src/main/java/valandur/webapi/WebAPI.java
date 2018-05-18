@@ -27,12 +27,11 @@ import org.spongepowered.api.plugin.PluginContainer;
 import org.spongepowered.api.scheduler.SpongeExecutorService;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
-import org.spongepowered.api.text.translation.Translation;
 import valandur.webapi.api.block.IBlockService;
 import valandur.webapi.api.cache.ICacheService;
 import valandur.webapi.api.hook.IWebHookService;
 import valandur.webapi.api.message.IInteractiveMessageService;
-import valandur.webapi.api.permission.IPermissionService;
+import valandur.webapi.api.security.IPermissionService;
 import valandur.webapi.api.serialize.ISerializeService;
 import valandur.webapi.api.server.IServerService;
 import valandur.webapi.api.servlet.BaseServlet;
@@ -47,14 +46,6 @@ import valandur.webapi.config.MainConfig;
 import valandur.webapi.hook.WebHook;
 import valandur.webapi.hook.WebHookSerializer;
 import valandur.webapi.hook.WebHookService;
-import valandur.webapi.integration.activetime.ActiveTimeServlet;
-import valandur.webapi.integration.huskycrates.HuskyCratesServlet;
-import valandur.webapi.integration.mmcrestrict.MMCRestrictServlet;
-import valandur.webapi.integration.mmctickets.MMCTicketsServlet;
-import valandur.webapi.integration.nucleus.NucleusServlet;
-import valandur.webapi.integration.redprotect.RedProtectServlet;
-import valandur.webapi.integration.universalmarket.UniversalMarketServlet;
-import valandur.webapi.integration.webbooks.WebBookServlet;
 import valandur.webapi.message.InteractiveMessageService;
 import valandur.webapi.security.AuthenticationProvider;
 import valandur.webapi.security.PermissionService;
@@ -62,7 +53,6 @@ import valandur.webapi.security.PermissionStruct;
 import valandur.webapi.security.PermissionStructSerializer;
 import valandur.webapi.serialize.SerializeService;
 import valandur.webapi.server.ServerService;
-import valandur.webapi.servlet.*;
 import valandur.webapi.servlet.base.ServletService;
 import valandur.webapi.swagger.SwaggerModelConverter;
 import valandur.webapi.user.UserPermissionStruct;
@@ -315,75 +305,6 @@ public class WebAPI {
         // Main init function, that is also called when reloading the plugin
         init(null);
 
-        logger.info("Registering servlets...");
-        servletService.registerServlet(BlockServlet.class);
-        servletService.registerServlet(ChunkServlet.class);
-        servletService.registerServlet(CmdServlet.class);
-        servletService.registerServlet(EconomyServlet.class);
-        servletService.registerServlet(EntityServlet.class);
-        servletService.registerServlet(HistoryServlet.class);
-        servletService.registerServlet(InfoServlet.class);
-        servletService.registerServlet(MapServlet.class);
-        servletService.registerServlet(InteractiveMessageServlet.class);
-        servletService.registerServlet(PermissionServlet.class);
-        servletService.registerServlet(PlayerServlet.class);
-        servletService.registerServlet(PluginServlet.class);
-        servletService.registerServlet(RecipeServlet.class);
-        servletService.registerServlet(RegistryServlet.class);
-        servletService.registerServlet(ServerServlet.class);
-        servletService.registerServlet(TileEntityServlet.class);
-        servletService.registerServlet(UserServlet.class);
-        servletService.registerServlet(WorldServlet.class);
-
-        // Other plugin integrations
-        try {
-            Class.forName("com.mcsimonflash.sponge.activetime.ActiveTime");
-            logger.info("  Integrating with ActiveTime...");
-            servletService.registerServlet(ActiveTimeServlet.class);
-        } catch (ClassNotFoundException ignored) { }
-
-        try {
-            Class.forName("com.codehusky.huskycrates.HuskyCrates");
-            logger.info("  Integrating with HuskyCrates...");
-            servletService.registerServlet(HuskyCratesServlet.class);
-        } catch (ClassNotFoundException ignored) { }
-
-        try {
-            Class.forName("net.moddedminecraft.mmcrestrict.Main");
-            logger.info("  Integrating with MMCRestrict...");
-            servletService.registerServlet(MMCRestrictServlet.class);
-        } catch (ClassNotFoundException ignored) { }
-
-        try {
-            Class.forName("net.moddedminecraft.mmctickets.Main");
-            logger.info("  Integrating with MMCTickets...");
-            servletService.registerServlet(MMCTicketsServlet.class);
-        } catch (ClassNotFoundException ignored) { }
-
-        try {
-            Class.forName("io.github.nucleuspowered.nucleus.api.NucleusAPI");
-            logger.info("  Integrating with Nucleus...");
-            servletService.registerServlet(NucleusServlet.class);
-        } catch (ClassNotFoundException ignored) { }
-
-        try {
-            Class.forName("br.net.fabiozumbi12.RedProtect.Sponge.RedProtect");
-            logger.info("  Integrating with RedProtect...");
-            servletService.registerServlet(RedProtectServlet.class);
-        } catch (ClassNotFoundException ignored) { }
-
-        try {
-            Class.forName("com.xwaffle.universalmarket.UniversalMarket");
-            logger.info("  Integrating with UniversalMarket...");
-            servletService.registerServlet(UniversalMarketServlet.class);
-        } catch (ClassNotFoundException ignored) { }
-
-        try {
-            Class.forName("de.dosmike.sponge.WebBooks.WebBooks");
-            logger.info("  Integrating with WebBooks...");
-            servletService.registerServlet(WebBookServlet.class);
-        } catch (ClassNotFoundException ignored) { }
-
         logger.info(Constants.NAME + " ready");
 
         Timings.STARTUP.stopTiming();
@@ -412,7 +333,6 @@ public class WebAPI {
         devMode = mainConfig.devMode;
         reportErrors = mainConfig.reportErrors;
         adminPanelEnabled = mainConfig.adminPanel;
-        CmdServlet.CMD_WAIT_TIME = mainConfig.cmdWaitTime;
 
         // Create our WebServer
         server = new WebServer(logger, mainConfig);
@@ -430,7 +350,7 @@ public class WebAPI {
 
         AuthenticationProvider.init();
 
-        blockService.init(mainConfig);
+        blockService.init();
 
         cacheService.init();
 
@@ -439,6 +359,8 @@ public class WebAPI {
         serializeService.init();
 
         serverService.init();
+
+        servletService.init();
 
         CommandRegistry.init();
 

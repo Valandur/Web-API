@@ -6,7 +6,7 @@ import ninja.leaping.configurate.objectmapping.serialize.ConfigSerializable;
 import valandur.webapi.api.hook.IWebHook;
 import valandur.webapi.api.hook.IWebHookService.WebHookType;
 import valandur.webapi.api.hook.WebHookHeader;
-import valandur.webapi.api.permission.IPermissionService;
+import valandur.webapi.api.security.IPermissionService;
 import valandur.webapi.hook.CommandWebHook;
 import valandur.webapi.hook.WebHook;
 import valandur.webapi.hook.WebHookParam;

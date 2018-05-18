@@ -8,7 +8,10 @@ import valandur.webapi.WebAPI;
 import valandur.webapi.api.block.IBlockOperation;
 import valandur.webapi.api.block.IBlockService;
 import valandur.webapi.api.cache.world.ICachedWorld;
+import valandur.webapi.config.BlockConfig;
+import valandur.webapi.config.CacheConfig;
 import valandur.webapi.config.MainConfig;
+import valandur.webapi.util.Util;
 
 import javax.ws.rs.InternalServerErrorException;
 import java.util.Collection;
@@ -19,6 +22,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 public class BlockService implements IBlockService {
+
+    private static final String configFileName = "blocks.conf";
+
     private static Map<UUID, IBlockOperation> blockOps = new ConcurrentHashMap<>();
 
     private static final String UNKOWN_BIOME_ID = "<unknown>";
@@ -28,7 +34,9 @@ public class BlockService implements IBlockService {
     private static Vector3i BIOME_INTERVAL = new Vector3i(4, 0, 4);
 
 
-    public void init(MainConfig config) {
+    public void init() {
+        BlockConfig config = Util.loadConfig(configFileName, new BlockConfig());
+
         MAX_BLOCK_GET_SIZE = config.maxBlockGetSize;
         MAX_BLOCK_UPDATE_SIZE = config.maxBlockUpdateSize;
         MAX_BLOCKS_PER_SECOND = config.maxBlocksPerSecond;

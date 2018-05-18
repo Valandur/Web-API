@@ -645,7 +645,7 @@ public class SerializeService implements ISerializeService {
         return optSer.map(BaseSerializer::getHandledClass);
     }
 
-    public ObjectMapper getDefaultObjectMapper(boolean xml, boolean details, TreeNode<String, Boolean> perms) {
+    public ObjectMapper getDefaultObjectMapper(boolean xml, boolean details, TreeNode perms) {
         if (perms == null) {
             throw new NullPointerException("Permissions may not be null");
         }

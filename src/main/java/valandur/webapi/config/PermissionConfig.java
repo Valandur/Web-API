@@ -3,7 +3,7 @@ package valandur.webapi.config;
 import com.google.common.collect.Lists;
 import ninja.leaping.configurate.objectmapping.Setting;
 import ninja.leaping.configurate.objectmapping.serialize.ConfigSerializable;
-import valandur.webapi.api.permission.IPermissionService;
+import valandur.webapi.api.security.IPermissionService;
 import valandur.webapi.security.PermissionStruct;
 
 import java.util.ArrayList;

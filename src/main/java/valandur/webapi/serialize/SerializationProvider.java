@@ -8,7 +8,7 @@ import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 import com.fasterxml.jackson.jaxrs.json.JsonEndpointConfig;
 import org.eclipse.jetty.io.EofException;
 import valandur.webapi.WebAPI;
-import valandur.webapi.api.permission.IPermissionService;
+import valandur.webapi.api.security.IPermissionService;
 import valandur.webapi.api.util.TreeNode;
 import valandur.webapi.security.SecurityContext;
 import valandur.webapi.util.Util;
@@ -90,7 +90,7 @@ public class SerializationProvider extends JacksonJsonProvider {
         }
 
         SecurityContext ctx = (SecurityContext)request.getAttribute("security");
-        TreeNode<String, Boolean> perms = IPermissionService.permitAllNode();
+        TreeNode perms = IPermissionService.permitAllNode();
         if (ctx != null && ctx.getEndpointPerms() != null) {
             perms = ctx.getEndpointPerms();
         }

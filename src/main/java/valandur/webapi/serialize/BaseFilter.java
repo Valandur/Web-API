@@ -16,12 +16,12 @@ public class BaseFilter extends SimpleBeanPropertyFilter {
     public static String ID = "WEBAPI-BASE-FILTER";
 
     private PermissionService permissionService;
-    private TreeNode<String, Boolean> perms;
+    private TreeNode perms;
     private ArrayList<String> path;
     private boolean details;
 
 
-    public BaseFilter(boolean details, TreeNode<String, Boolean> perms) {
+    public BaseFilter(boolean details, TreeNode perms) {
         this.permissionService = WebAPI.getPermissionService();
         this.details = details;
         this.path = new ArrayList<>();

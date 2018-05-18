@@ -60,9 +60,9 @@ public class WebHook implements IWebHook {
         return details;
     }
 
-    private TreeNode<String, Boolean> permissions;
+    private TreeNode permissions;
     @Override
-    public TreeNode<String, Boolean> getPermissions() {
+    public TreeNode getPermissions() {
         return permissions;
     }
 
@@ -77,7 +77,7 @@ public class WebHook implements IWebHook {
 
 
     public WebHook(String address, boolean enabled, String method, WebHookDataType dataType, boolean form,
-                   List<WebHookHeader> headers, boolean details, TreeNode<String, Boolean> permissions) {
+                   List<WebHookHeader> headers, boolean details, TreeNode permissions) {
         this.address = address;
         this.enabled = enabled;
         this.method = method;

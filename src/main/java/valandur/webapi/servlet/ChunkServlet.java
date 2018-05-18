@@ -30,7 +30,7 @@ public class ChunkServlet extends BaseServlet {
     @GET
     @ExplicitDetails
     @Path("/{world}")
-    @Permission({ "chunk", "list" })
+    @Permission("list")
     @ApiOperation(
             value = "List chunks",
             notes = "Gets a list of all the loaded chunks for the specified world.")
@@ -53,7 +53,7 @@ public class ChunkServlet extends BaseServlet {
 
     @GET
     @Path("/{world}/{x}/{z}")
-    @Permission({ "chunk", "one "})
+    @Permission("one")
     @ApiOperation(
             value = "Get a chunk",
             notes = "Get detailed information about a chunk")
@@ -74,7 +74,7 @@ public class ChunkServlet extends BaseServlet {
 
     @POST
     @Path("/{world}/{x}/{z}")
-    @Permission({ "chunk", "create" })
+    @Permission("create")
     @ApiOperation(
             value = "Load & Generate a chunk",
             response = CachedChunk.class,

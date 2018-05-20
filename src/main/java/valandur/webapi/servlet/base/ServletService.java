@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import valandur.webapi.WebAPI;
 import valandur.webapi.config.ServletsConfig;
 import valandur.webapi.integration.activetime.ActiveTimeServlet;
+import valandur.webapi.integration.cmdscheduler.CmdSchedulerServlet;
 import valandur.webapi.integration.huskycrates.HuskyCratesServlet;
 import valandur.webapi.integration.mmcrestrict.MMCRestrictServlet;
 import valandur.webapi.integration.mmctickets.MMCTicketsServlet;
@@ -67,6 +68,14 @@ public class ServletService {
                 Class.forName("com.mcsimonflash.sponge.activetime.ActiveTime");
                 logger.info("  Integrating with ActiveTime...");
                 registerServlet(ActiveTimeServlet.class);
+            } catch (ClassNotFoundException ignored) { }
+        }
+
+        if (config.integrations.CmdScheduler) {
+            try {
+                Class.forName("com.mcsimonflash.sponge.cmdscheduler.CmdScheduler");
+                logger.info("  Integrating with CmdScheduler...");
+                registerServlet(CmdSchedulerServlet.class);
             } catch (ClassNotFoundException ignored) { }
         }
 

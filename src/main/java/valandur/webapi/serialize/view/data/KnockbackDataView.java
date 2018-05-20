@@ -2,7 +2,7 @@ package valandur.webapi.serialize.view.data;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 import org.spongepowered.api.data.manipulator.mutable.entity.KnockbackData;
-import valandur.webapi.api.serialize.BaseView;
+import valandur.webapi.serialize.BaseView;
 
 public class KnockbackDataView extends BaseView<KnockbackData> {
 

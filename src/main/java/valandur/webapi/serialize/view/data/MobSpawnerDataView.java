@@ -6,7 +6,7 @@ import org.spongepowered.api.data.manipulator.mutable.MobSpawnerData;
 import org.spongepowered.api.entity.EntityArchetype;
 import org.spongepowered.api.entity.EntitySnapshot;
 import org.spongepowered.api.util.weighted.WeightedTable;
-import valandur.webapi.api.serialize.BaseView;
+import valandur.webapi.serialize.BaseView;
 
 @ApiModel("MobSpawnerData")
 public class MobSpawnerDataView extends BaseView<MobSpawnerData> {

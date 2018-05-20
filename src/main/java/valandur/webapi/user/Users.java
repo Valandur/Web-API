@@ -3,9 +3,9 @@ package valandur.webapi.user;
 import org.mindrot.jbcrypt.BCrypt;
 import org.slf4j.Logger;
 import valandur.webapi.WebAPI;
-import valandur.webapi.api.util.TreeNode;
 import valandur.webapi.config.UserConfig;
 import valandur.webapi.security.AuthenticationProvider;
+import valandur.webapi.util.TreeNode;
 import valandur.webapi.util.Util;
 
 import java.util.ArrayList;

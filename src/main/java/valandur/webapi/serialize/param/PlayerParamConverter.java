@@ -1,9 +1,8 @@
 package valandur.webapi.serialize.param;
 
 import valandur.webapi.WebAPI;
-import valandur.webapi.api.cache.player.ICachedPlayer;
-import valandur.webapi.api.cache.player.ICachedPlayerFull;
 import valandur.webapi.cache.CacheService;
+import valandur.webapi.cache.player.CachedPlayer;
 import valandur.webapi.util.Util;
 
 import javax.ws.rs.BadRequestException;
@@ -12,10 +11,10 @@ import javax.ws.rs.ext.ParamConverter;
 import java.util.Optional;
 import java.util.UUID;
 
-public class PlayerParamConverter implements ParamConverter<ICachedPlayer> {
+public class PlayerParamConverter implements ParamConverter<CachedPlayer> {
 
     @Override
-    public ICachedPlayer fromString(String value) {
+    public CachedPlayer fromString(String value) {
         // If we didn't request a player don't try to find one
         if (value == null)
             return null;
@@ -25,14 +24,14 @@ public class PlayerParamConverter implements ParamConverter<ICachedPlayer> {
 
         CacheService srv = WebAPI.getCacheService();
 
-        Optional<ICachedPlayerFull> optPlayer = srv.getPlayer(UUID.fromString(value));
+        Optional<CachedPlayer> optPlayer = srv.getPlayer(UUID.fromString(value));
         if (!optPlayer.isPresent())
             throw new NotFoundException("Could not find player/user with uuid " + value);
         return optPlayer.get();
     }
 
     @Override
-    public String toString(ICachedPlayer value) {
+    public String toString(CachedPlayer value) {
         return value.getLink();
     }
 }

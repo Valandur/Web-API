@@ -1,39 +1,40 @@
 package valandur.webapi.cache.command;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.spongepowered.api.command.CommandResult;
-import valandur.webapi.api.cache.CachedObject;
-import valandur.webapi.api.cache.command.ICachedCommandResult;
+import valandur.webapi.cache.CachedObject;
 
-public class CachedCommandResult extends CachedObject<Object> implements ICachedCommandResult {
+@ApiModel("CommandResult")
+public class CachedCommandResult extends CachedObject<CachedCommandResult> {
 
     private Integer affectedBlocks;
-    @Override
+    @ApiModelProperty("The number of blocks that were affected by this command")
     public Integer getAffectedBlocks() {
         return affectedBlocks;
     }
 
     private Integer affectedEntities;
-    @Override
+    @ApiModelProperty("The number of entities that were affected by this command")
     public Integer getAffectedEntities() {
         return affectedEntities;
     }
 
     private Integer affectedItems;
-    @Override
+    @ApiModelProperty("The number of items that were affected by this command")
     public Integer getAffectedItems() {
         return affectedItems;
     }
 
     private Integer queryResult;
-    @Override
+    @ApiModelProperty("The results of the query")
     public Integer getQueryResult() {
         return queryResult;
     }
 
     private Integer successCount;
-    @Override
+    @ApiModelProperty("The success count")
     public Integer getSuccessCount() {
         return successCount;
     }

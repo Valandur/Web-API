@@ -4,7 +4,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.spongepowered.api.item.inventory.ItemStackSnapshot;
 import org.spongepowered.api.item.merchant.TradeOffer;
-import valandur.webapi.api.serialize.BaseView;
+import valandur.webapi.serialize.BaseView;
 
 @ApiModel("TradeOffer")
 public class TradeOfferView extends BaseView<TradeOffer> {

@@ -8,11 +8,11 @@ import io.swagger.annotations.ApiParam;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
-import valandur.webapi.api.cache.plugin.ICachedPluginContainer;
-import valandur.webapi.api.servlet.BaseServlet;
-import valandur.webapi.api.servlet.ExplicitDetails;
-import valandur.webapi.api.servlet.Permission;
+import valandur.webapi.cache.plugin.CachedPluginContainer;
 import valandur.webapi.security.SecurityContext;
+import valandur.webapi.servlet.base.BaseServlet;
+import valandur.webapi.servlet.base.ExplicitDetails;
+import valandur.webapi.servlet.base.Permission;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
@@ -33,7 +33,7 @@ public class PluginServlet extends BaseServlet {
     @ExplicitDetails
     @Permission("list")
     @ApiOperation(value = "List plugins", notes = "Get a list of all the plugins running on the server.")
-    public Collection<ICachedPluginContainer> listPlugins() {
+    public Collection<CachedPluginContainer> listPlugins() {
         return cacheService.getPlugins();
     }
 
@@ -41,10 +41,10 @@ public class PluginServlet extends BaseServlet {
     @Path("/{plugin}")
     @Permission("one")
     @ApiOperation(value = "Get a plugin", notes = "Gets detailed information about a plugin.")
-    public ICachedPluginContainer getPlugin(
+    public CachedPluginContainer getPlugin(
             @PathParam("plugin") @ApiParam("The id of the plugin") String pluginName)
             throws NotFoundException {
-        Optional<ICachedPluginContainer> optPlugin = cacheService.getPlugin(pluginName);
+        Optional<CachedPluginContainer> optPlugin = cacheService.getPlugin(pluginName);
         if (!optPlugin.isPresent()) {
             throw new NotFoundException("Plugin with id '" + pluginName + "' could not be found");
         }
@@ -56,16 +56,16 @@ public class PluginServlet extends BaseServlet {
     @Path("/{plugin}")
     @Permission("toggle")
     @ApiOperation(value = "Toggle a plugin", notes = "Allows enabling/disabling a plugin/mod. Requires a server restart.")
-    public ICachedPluginContainer togglePlugin(
+    public CachedPluginContainer togglePlugin(
             @PathParam("plugin") @ApiParam("The id of the plugin") String pluginName)
             throws NotFoundException {
 
-        Optional<ICachedPluginContainer> optPlugin = cacheService.getPlugin(pluginName);
+        Optional<CachedPluginContainer> optPlugin = cacheService.getPlugin(pluginName);
         if (!optPlugin.isPresent()) {
             throw new NotFoundException("Plugin with id '" + pluginName + "' could not be found");
         }
 
-        ICachedPluginContainer plugin = optPlugin.get();
+        CachedPluginContainer plugin = optPlugin.get();
 
         if (!plugin.toggle()) {
             throw new InternalServerErrorException("Could not toggle plugin");
@@ -82,7 +82,7 @@ public class PluginServlet extends BaseServlet {
     public Map<String, Object> getPluginConfig(
             @PathParam("plugin") @ApiParam("The id of the plugin") String pluginName)
             throws NotFoundException {
-        Optional<ICachedPluginContainer> optPlugin = cacheService.getPlugin(pluginName);
+        Optional<CachedPluginContainer> optPlugin = cacheService.getPlugin(pluginName);
         if (!optPlugin.isPresent()) {
             throw new NotFoundException("Plugin with id '" + pluginName + "' could not be found");
         }
@@ -123,7 +123,7 @@ public class PluginServlet extends BaseServlet {
             throw new BadRequestException("Request body is required");
         }
 
-        Optional<ICachedPluginContainer> optPlugin = cacheService.getPlugin(pluginName);
+        Optional<CachedPluginContainer> optPlugin = cacheService.getPlugin(pluginName);
         if (!optPlugin.isPresent()) {
             throw new NotFoundException("Plugin with id '" + pluginName + "' could not be found");
         }
@@ -155,7 +155,7 @@ public class PluginServlet extends BaseServlet {
         return configs;
     }
 
-    private List<java.nio.file.Path> getConfigFiles(ICachedPluginContainer plugin) {
+    private List<java.nio.file.Path> getConfigFiles(CachedPluginContainer plugin) {
         List<java.nio.file.Path> paths = new ArrayList<>();
         paths.add(Paths.get("config/" + plugin.getId() + ".conf"));
         try {

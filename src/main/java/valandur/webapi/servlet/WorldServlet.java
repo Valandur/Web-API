@@ -12,16 +12,14 @@ import org.spongepowered.api.world.WorldArchetype;
 import org.spongepowered.api.world.difficulty.Difficulty;
 import org.spongepowered.api.world.storage.WorldProperties;
 import valandur.webapi.WebAPI;
-import valandur.webapi.api.cache.misc.CachedCatalogType;
-import valandur.webapi.api.cache.world.ICachedWorld;
-import valandur.webapi.api.cache.world.ICachedWorldFull;
-import valandur.webapi.api.exceptions.NotImplementedException;
-import valandur.webapi.api.servlet.BaseServlet;
-import valandur.webapi.api.servlet.ExplicitDetails;
-import valandur.webapi.api.servlet.Permission;
+import valandur.webapi.cache.misc.CachedCatalogType;
 import valandur.webapi.cache.world.CachedWorld;
+import valandur.webapi.exceptions.NotImplementedException;
 import valandur.webapi.serialize.objects.ExecuteMethodRequest;
 import valandur.webapi.serialize.objects.ExecuteMethodResponse;
+import valandur.webapi.servlet.base.BaseServlet;
+import valandur.webapi.servlet.base.ExplicitDetails;
+import valandur.webapi.servlet.base.Permission;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -47,7 +45,7 @@ public class WorldServlet extends BaseServlet {
     @ApiOperation(
             value = "List worlds",
             notes = "Get a list of all the worlds on the server.")
-    public Collection<ICachedWorldFull> listWorlds() {
+    public Collection<CachedWorld> listWorlds() {
         return cacheService.getWorlds();
     }
 
@@ -57,8 +55,8 @@ public class WorldServlet extends BaseServlet {
     @ApiOperation(
             value = "Get a world",
             notes = "Get detailed information about a world.")
-    public ICachedWorldFull getWorld(
-            @PathParam("world") @ApiParam("The uuid of the world for which to get details") ICachedWorldFull world) {
+    public CachedWorld getWorld(
+            @PathParam("world") @ApiParam("The uuid of the world for which to get details") CachedWorld world) {
         return world;
     }
 
@@ -66,7 +64,7 @@ public class WorldServlet extends BaseServlet {
     @Permission("create")
     @ApiOperation(
             value = "Create a world",
-            response = ICachedWorldFull.class,
+            response = CachedWorld.class,
             notes = "Creates a new world with the specified settings. This does not yet load the world.")
     public Response createWorld(CreateWorldRequest req)
             throws BadRequestException, URISyntaxException {
@@ -102,7 +100,7 @@ public class WorldServlet extends BaseServlet {
         String archTypeName = "WebAPI-" + UUID.randomUUID().toString();
         WorldArchetype archType = builder.generateSpawnOnLoad(true).enabled(true).build(archTypeName, archTypeName);
 
-        ICachedWorld world = WebAPI.runOnMain(() -> {
+        CachedWorld world = WebAPI.runOnMain(() -> {
             try {
                 WorldProperties props = Sponge.getServer().createWorldProperties(req.getName(), archType);
                 return cacheService.updateWorld(props);
@@ -120,8 +118,8 @@ public class WorldServlet extends BaseServlet {
     @ApiOperation(
             value = "Modify a world",
             notes = "Modify the properties of an existing world.")
-    public ICachedWorldFull modifyWorld(
-            @PathParam("world") @ApiParam("The uuid of the world which to update") ICachedWorldFull world,
+    public CachedWorld modifyWorld(
+            @PathParam("world") @ApiParam("The uuid of the world which to update") CachedWorld world,
             UpdateWorldRequest req) {
 
         if (req == null) {
@@ -195,7 +193,7 @@ public class WorldServlet extends BaseServlet {
     @ApiOperation(
             value = "Delete a world",
             notes = "Deletes an existing world. **The world must be unloaded before deleting it**")
-    public ICachedWorldFull deleteWorld(
+    public CachedWorld deleteWorld(
             @PathParam("world") @ApiParam("The uuid of the world to delete") CachedWorld world) {
         boolean deleted = WebAPI.runOnMain(() -> {
             Optional<WorldProperties> optLive = world.getLiveProps();
@@ -221,7 +219,7 @@ public class WorldServlet extends BaseServlet {
             value = "Execute a method",
             notes = "Provides direct access to the underlaying world object and can execute any method on it.")
     public ExecuteMethodResponse executeMethod(
-            @PathParam("world") @ApiParam("The uuid of the world on which to execute the method") ICachedWorldFull world,
+            @PathParam("world") @ApiParam("The uuid of the world on which to execute the method") CachedWorld world,
             ExecuteMethodRequest req)
             throws BadRequestException {
 

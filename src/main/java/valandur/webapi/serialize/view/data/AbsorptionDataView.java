@@ -2,7 +2,7 @@
 
 import com.fasterxml.jackson.annotation.JsonValue;
 import org.spongepowered.api.data.manipulator.mutable.entity.AbsorptionData;
-import valandur.webapi.api.serialize.BaseView;
+import valandur.webapi.serialize.BaseView;
 
 public class AbsorptionDataView extends BaseView<AbsorptionData> {
 

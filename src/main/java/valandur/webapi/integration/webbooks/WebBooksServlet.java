@@ -4,8 +4,8 @@ import com.google.common.reflect.TypeToken;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import ninja.leaping.configurate.objectmapping.serialize.TypeSerializers;
-import valandur.webapi.api.servlet.BaseServlet;
-import valandur.webapi.api.servlet.Permission;
+import valandur.webapi.servlet.base.BaseServlet;
+import valandur.webapi.servlet.base.Permission;
 import valandur.webapi.util.Util;
 
 import javax.ws.rs.*;

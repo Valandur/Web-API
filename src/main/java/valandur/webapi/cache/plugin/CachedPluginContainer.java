@@ -2,11 +2,12 @@ package valandur.webapi.cache.plugin;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.JsonNode;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.plugin.PluginContainer;
-import valandur.webapi.api.cache.CachedObject;
-import valandur.webapi.api.cache.plugin.ICachedPluginContainer;
-import valandur.webapi.api.serialize.JsonDetails;
+import valandur.webapi.cache.CachedObject;
+import valandur.webapi.serialize.JsonDetails;
 import valandur.webapi.util.Constants;
 
 import java.io.IOException;
@@ -15,67 +16,76 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 
-public class CachedPluginContainer extends CachedObject<PluginContainer> implements ICachedPluginContainer {
+@ApiModel("PluginContainer")
+public class CachedPluginContainer extends CachedObject<PluginContainer> {
+
+    public enum PluginType {
+        Unknown, Sponge, Forge, Minecraft,
+    }
+
+    public enum PluginState {
+        Loaded, Unloaded, WillBeLoaded, WillBeUnloaded,
+    }
 
     private String id;
-    @Override
+    @ApiModelProperty(value = "The unique id of this plugin", required = true)
     public String getId() {
         return id;
     }
 
     private String name;
-    @Override
+    @ApiModelProperty(value = "The name of this plugin", required = true)
     public String getName() {
         return name;
     }
 
     private String version;
-    @Override
+    @ApiModelProperty("The current version of the plugin")
     public String getVersion() {
         return version;
     }
 
     private String description;
-    @Override
+    @ApiModelProperty("A description describing what this plugin does (hopefully)")
     public String getDescription() {
         return description;
     }
 
     private String url;
-    @Override
     @JsonDetails
+    @ApiModelProperty("The url that was added to the plugin (probably the homepage)")
     public String getUrl() {
         return url;
     }
 
     private List<String> authors;
-    @Override
     @JsonDetails
+    @ApiModelProperty(value = "A list of authors that created this plugin", required = true)
     public List<String> getAuthors() {
         return authors;
     }
 
-    /*private Set<ICachedPluginDependency> dependencies = new HashSet<>();
-    @Override
+    /*private Set<CachedPluginDependency> dependencies = new HashSet<>();
     @JsonDetails
-    public Set<ICachedPluginDependency> getDependencies() {
+    @ApiModelProperty(value = "Other plugins that this plugin depends on", required = true)
+    public Set<CachedPluginDependency> getDependencies() {
         return new HashSet<>(dependencies);
     }*/
 
     private PluginType type;
-    @Override
+    @ApiModelProperty(value = "The type of the plugin", required = true)
     public PluginType getType() {
         return type;
     }
 
     private String source;
-    @Override
+    @ApiModelProperty("The file source where the plugin was loaded from.")
     public String getSource() {
         return source;
     }
 
     private PluginState state;
-    @Override
+    @ApiModelProperty(value = "The current loaded state of the plugin", required = true)
     public PluginState getState() {
         return state;
     }
@@ -109,8 +119,7 @@ public class CachedPluginContainer extends CachedObject<PluginContainer> impleme
             authors.add(authorNode.asText());
         }
         this.authors = authors;
-        /*
-        Set<ICachedPluginDependency> deps = new HashSet<>();
+        /*Set<CachedPluginDependency> deps = new HashSet<>();
         for (JsonNode depNode : node.path("requiredMods")) {
             deps.add(new CachedPluginDependency(depNode.asText(), true));
         }
@@ -151,8 +160,8 @@ public class CachedPluginContainer extends CachedObject<PluginContainer> impleme
         this.source = this.source.replace(".jar", ".jar.disabled");
     }
 
-    @Override
     @JsonIgnore
+    @ApiModelProperty(hidden = true)
     public boolean toggle() {
         String newSource = state == PluginState.Loaded || state == PluginState.WillBeLoaded ?
                 source.replace(".jar", ".jar.disabled") :

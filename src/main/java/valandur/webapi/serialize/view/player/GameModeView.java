@@ -3,7 +3,7 @@ package valandur.webapi.serialize.view.player;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.spongepowered.api.entity.living.player.gamemode.GameMode;
-import valandur.webapi.api.serialize.BaseView;
+import valandur.webapi.serialize.BaseView;
 
 @ApiModel("GameMode")
 public class GameModeView extends BaseView<GameMode> {

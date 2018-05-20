@@ -4,8 +4,8 @@ import io.swagger.jersey.SwaggerJersey2Jaxrs;
 import io.swagger.models.Operation;
 import io.swagger.models.RefResponse;
 import io.swagger.models.parameters.RefParameter;
-import valandur.webapi.api.exceptions.NotImplementedException;
-import valandur.webapi.api.servlet.Permission;
+import valandur.webapi.exceptions.NotImplementedException;
+import valandur.webapi.servlet.base.Permission;
 
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.NotFoundException;

@@ -4,11 +4,10 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import net.moddedminecraft.mmctickets.data.TicketData;
 import net.moddedminecraft.mmctickets.data.ticketStatus;
-import valandur.webapi.api.cache.CachedObject;
-import valandur.webapi.api.cache.player.ICachedPlayer;
-import valandur.webapi.api.cache.player.ICachedPlayerFull;
-import valandur.webapi.api.cache.world.CachedLocation;
-import valandur.webapi.api.serialize.JsonDetails;
+import valandur.webapi.cache.CachedObject;
+import valandur.webapi.cache.player.CachedPlayer;
+import valandur.webapi.cache.world.CachedLocation;
+import valandur.webapi.serialize.JsonDetails;
 import valandur.webapi.util.Constants;
 
 @ApiModel("MMCTicketsTicket")
@@ -38,10 +37,10 @@ public class CachedTicketData extends CachedObject<TicketData> {
         return message;
     }
 
-    private ICachedPlayerFull sender;
+    private CachedPlayer sender;
     @JsonDetails
     @ApiModelProperty("The sender of this ticket")
-    public ICachedPlayerFull getSender() {
+    public CachedPlayer getSender() {
         return sender;
     }
 
@@ -52,10 +51,10 @@ public class CachedTicketData extends CachedObject<TicketData> {
         return comment;
     }
 
-    private ICachedPlayer staff;
+    private CachedPlayer staff;
     @JsonDetails
     @ApiModelProperty("The staff member that was assigned to this ticket")
-    public ICachedPlayer getStaff() {
+    public CachedPlayer getStaff() {
         return staff;
     }
 

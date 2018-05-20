@@ -3,7 +3,7 @@ package valandur.webapi.serialize.view.economy;
 import io.swagger.annotations.ApiModel;
 import org.spongepowered.api.service.economy.account.Account;
 import org.spongepowered.api.text.Text;
-import valandur.webapi.api.serialize.BaseView;
+import valandur.webapi.serialize.BaseView;
 
 import java.math.BigDecimal;
 import java.util.Map;

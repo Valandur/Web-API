@@ -4,12 +4,12 @@ import io.swagger.annotations.*;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandMapping;
 import valandur.webapi.WebAPI;
-import valandur.webapi.api.cache.command.ICachedCommand;
-import valandur.webapi.api.servlet.BaseServlet;
-import valandur.webapi.api.servlet.ExplicitDetails;
-import valandur.webapi.api.servlet.Permission;
+import valandur.webapi.cache.command.CachedCommand;
 import valandur.webapi.command.CommandSource;
 import valandur.webapi.security.SecurityContext;
+import valandur.webapi.servlet.base.BaseServlet;
+import valandur.webapi.servlet.base.ExplicitDetails;
+import valandur.webapi.servlet.base.Permission;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
@@ -34,7 +34,7 @@ public class CmdServlet extends BaseServlet {
     @ApiOperation(
             value = "List commands",
             notes = "Gets a list of all the commands available on the server.")
-    public Collection<ICachedCommand> listCommands() {
+    public Collection<CachedCommand> listCommands() {
         return cacheService.getCommands();
     }
 
@@ -44,11 +44,11 @@ public class CmdServlet extends BaseServlet {
     @ApiOperation(
             value = "Get a command",
             notes = "Get detailed information about a command.")
-    public ICachedCommand getCommand(
+    public CachedCommand getCommand(
             @PathParam("cmd") @ApiParam("The id of the command") String cmdName)
             throws NotFoundException {
 
-        Optional<ICachedCommand> cmd = cacheService.getCommand(cmdName);
+        Optional<CachedCommand> cmd = cacheService.getCommand(cmdName);
         if (!cmd.isPresent()) {
             throw new NotFoundException("The command '" + cmdName + "' could not be found");
         }

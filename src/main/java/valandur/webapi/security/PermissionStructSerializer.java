@@ -5,7 +5,7 @@ import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 import ninja.leaping.configurate.objectmapping.serialize.TypeSerializer;
 import valandur.webapi.WebAPI;
-import valandur.webapi.api.util.TreeNode;
+import valandur.webapi.util.TreeNode;
 
 public class PermissionStructSerializer implements TypeSerializer<PermissionStruct> {
 

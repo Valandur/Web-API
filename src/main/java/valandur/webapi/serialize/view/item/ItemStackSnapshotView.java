@@ -3,7 +3,7 @@ package valandur.webapi.serialize.view.item;
 import com.fasterxml.jackson.annotation.JsonValue;
 import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.item.inventory.ItemStackSnapshot;
-import valandur.webapi.api.serialize.BaseView;
+import valandur.webapi.serialize.BaseView;
 
 public class ItemStackSnapshotView extends BaseView<ItemStackSnapshot> {
 

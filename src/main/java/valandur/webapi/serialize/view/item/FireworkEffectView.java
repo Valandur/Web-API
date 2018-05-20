@@ -5,7 +5,7 @@ import io.swagger.annotations.ApiModelProperty;
 import org.spongepowered.api.item.FireworkEffect;
 import org.spongepowered.api.item.FireworkShape;
 import org.spongepowered.api.util.Color;
-import valandur.webapi.api.serialize.BaseView;
+import valandur.webapi.serialize.BaseView;
 
 import java.util.List;
 

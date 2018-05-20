@@ -6,7 +6,7 @@ import org.spongepowered.api.entity.EntitySnapshot;
 import org.spongepowered.api.entity.EntityType;
 import org.spongepowered.api.entity.Transform;
 import org.spongepowered.api.world.World;
-import valandur.webapi.api.serialize.BaseView;
+import valandur.webapi.serialize.BaseView;
 
 import java.util.UUID;
 

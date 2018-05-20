@@ -6,7 +6,7 @@ import org.spongepowered.api.block.BlockSnapshot;
 import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
-import valandur.webapi.api.serialize.BaseView;
+import valandur.webapi.serialize.BaseView;
 
 import java.util.UUID;
 

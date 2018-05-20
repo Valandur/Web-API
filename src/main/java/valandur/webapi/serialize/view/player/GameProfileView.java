@@ -3,7 +3,7 @@ package valandur.webapi.serialize.view.player;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.spongepowered.api.profile.GameProfile;
-import valandur.webapi.api.serialize.BaseView;
+import valandur.webapi.serialize.BaseView;
 
 import java.util.UUID;
 

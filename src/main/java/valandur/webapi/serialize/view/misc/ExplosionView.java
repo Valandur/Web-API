@@ -3,7 +3,7 @@ package valandur.webapi.serialize.view.misc;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.spongepowered.api.world.explosion.Explosion;
-import valandur.webapi.api.serialize.BaseView;
+import valandur.webapi.serialize.BaseView;
 
 @ApiModel("Explosion")
 public class ExplosionView extends BaseView<Explosion> {

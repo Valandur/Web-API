@@ -4,7 +4,7 @@ import com.flowpowered.math.vector.Vector3i;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.spongepowered.api.data.manipulator.mutable.tileentity.EndGatewayData;
-import valandur.webapi.api.serialize.BaseView;
+import valandur.webapi.serialize.BaseView;
 
 @ApiModel("EndGatewayData")
 public class EndGatewayDataView extends BaseView<EndGatewayData> {

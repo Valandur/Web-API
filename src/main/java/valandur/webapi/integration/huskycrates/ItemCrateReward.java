@@ -5,7 +5,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import ninja.leaping.configurate.ConfigurationNode;
 import org.spongepowered.api.item.inventory.ItemStack;
-import valandur.webapi.api.serialize.JsonDetails;
+import valandur.webapi.serialize.JsonDetails;
 
 @ApiModel(value = "HuskyCratesItemReward", parent = CrateRewardObject.class)
 public class ItemCrateReward extends CrateRewardObject {

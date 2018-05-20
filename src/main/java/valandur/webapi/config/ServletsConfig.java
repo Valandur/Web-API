@@ -71,6 +71,9 @@ public class ServletsConfig extends BaseConfig {
         public boolean ActiveTime = true;
 
         @Setting
+        public boolean CmdScheduler = true;
+
+        @Setting
         public boolean HuskyCrates = true;
 
         @Setting

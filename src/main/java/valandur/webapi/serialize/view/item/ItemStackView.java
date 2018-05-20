@@ -8,8 +8,8 @@ import org.spongepowered.api.data.manipulator.DataManipulator;
 import org.spongepowered.api.item.ItemType;
 import org.spongepowered.api.item.inventory.ItemStack;
 import valandur.webapi.WebAPI;
-import valandur.webapi.api.serialize.BaseView;
-import valandur.webapi.api.serialize.JsonDetails;
+import valandur.webapi.serialize.BaseView;
+import valandur.webapi.serialize.JsonDetails;
 
 import java.util.HashMap;
 import java.util.Map;

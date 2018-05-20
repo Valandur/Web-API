@@ -6,8 +6,8 @@ import org.spongepowered.api.Sponge;
 import org.spongepowered.api.service.economy.Currency;
 import org.spongepowered.api.service.economy.EconomyService;
 import org.spongepowered.api.service.economy.account.Account;
-import valandur.webapi.api.servlet.BaseServlet;
-import valandur.webapi.api.servlet.Permission;
+import valandur.webapi.servlet.base.BaseServlet;
+import valandur.webapi.servlet.base.Permission;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;

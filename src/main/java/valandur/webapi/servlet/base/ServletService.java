@@ -2,10 +2,9 @@ package valandur.webapi.servlet.base;
 
 import org.slf4j.Logger;
 import valandur.webapi.WebAPI;
-import valandur.webapi.api.servlet.BaseServlet;
-import valandur.webapi.api.servlet.IServletService;
 import valandur.webapi.config.ServletsConfig;
 import valandur.webapi.integration.activetime.ActiveTimeServlet;
+import valandur.webapi.integration.cmdscheduler.CmdSchedulerServlet;
 import valandur.webapi.integration.huskycrates.HuskyCratesServlet;
 import valandur.webapi.integration.mmcrestrict.MMCRestrictServlet;
 import valandur.webapi.integration.mmctickets.MMCTicketsServlet;
@@ -22,7 +21,13 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ServletService implements IServletService {
+/**
+ * This service allows registering servlets with the Web-API, which it will serve for clients.
+ * Your servlet must inherit from {@link BaseServlet} and have the
+ * {@link javax.ws.rs.Path} annotation specifying the base path at which the servlet will
+ * be accessible.
+ */
+public class ServletService {
 
     private static final String configFileName = "servlets.conf";
 
@@ -63,6 +68,14 @@ public class ServletService implements IServletService {
                 Class.forName("com.mcsimonflash.sponge.activetime.ActiveTime");
                 logger.info("  Integrating with ActiveTime...");
                 registerServlet(ActiveTimeServlet.class);
+            } catch (ClassNotFoundException ignored) { }
+        }
+
+        if (config.integrations.CmdScheduler) {
+            try {
+                Class.forName("com.mcsimonflash.sponge.cmdscheduler.CmdScheduler");
+                logger.info("  Integrating with CmdScheduler...");
+                registerServlet(CmdSchedulerServlet.class);
             } catch (ClassNotFoundException ignored) { }
         }
 
@@ -123,6 +136,11 @@ public class ServletService implements IServletService {
         }
     }
 
+    /**
+     * Register a servlet with the WebAPI, which will give it a separate base address
+     * @param servlet The class of servlet to register. The WebAPI will create an instance when starting. Make
+     *                sure to provide an empty constructor.
+     */
     public void registerServlet(Class<? extends BaseServlet> servlet) {
         Logger logger = WebAPI.getLogger();
 
@@ -150,7 +168,10 @@ public class ServletService implements IServletService {
         servletClasses.put(basePath, servlet);
     }
 
-    @Override
+    /**
+     * Gets a map of all available base paths mapped to the servlets that implement them.
+     * @return A map from base path to implementing servlet class.
+     */
     public Map<String, Class<? extends BaseServlet>> getRegisteredServlets() {
         return servletClasses;
     }

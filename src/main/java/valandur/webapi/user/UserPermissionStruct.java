@@ -2,8 +2,8 @@ package valandur.webapi.user;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModel;
-import valandur.webapi.api.util.TreeNode;
 import valandur.webapi.security.PermissionStruct;
+import valandur.webapi.util.TreeNode;
 
 @ApiModel("UserPermissionStruct")
 public class UserPermissionStruct extends PermissionStruct {

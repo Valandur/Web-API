@@ -1,37 +1,38 @@
 /*package valandur.webapi.cache.plugin;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.spongepowered.plugin.meta.PluginDependency;
-import valandur.webapi.api.cache.CachedObject;
-import valandur.webapi.api.cache.plugin.ICachedPluginDependency;
+import valandur.webapi.cache.CachedObject;
 
 import java.util.Optional;
 
 import static org.spongepowered.plugin.meta.PluginDependency.LoadOrder;
 
-public class CachedPluginDependency extends CachedObject<PluginDependency> implements ICachedPluginDependency {
+@ApiModel("PluginDependency")
+public class CachedPluginDependency extends CachedObject<PluginDependency> {
 
     private String id;
-    @Override
+    @ApiModelProperty(value = "The id of the plugin that the original plugin depends on", required = true)
     public String getId() {
         return id;
     }
 
     private LoadOrder loadOrder;
-    @Override
+    @ApiModelProperty(value = "The load order of the original plugin in relation to the dependency", required = true)
     public LoadOrder getLoadOrder() {
         return loadOrder;
     }
 
     private String version;
-    @Override
+    @ApiModelProperty(value = "The version of the plugin that the original plugin depends on", required = true)
     public String getVersion() {
         return version;
     }
 
     private Boolean optional;
-    @Override
+    @ApiModelProperty(value = "True if this is an optional dependency, false otherwise", required = true)
     public Boolean isOptional() {
         return optional;
     }

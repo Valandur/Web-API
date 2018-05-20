@@ -15,15 +15,14 @@ import org.spongepowered.api.util.Tuple;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 import valandur.webapi.WebAPI;
-import valandur.webapi.api.cache.entity.ICachedEntity;
-import valandur.webapi.api.cache.misc.CachedCatalogType;
-import valandur.webapi.api.cache.world.ICachedWorld;
-import valandur.webapi.api.servlet.BaseServlet;
-import valandur.webapi.api.servlet.ExplicitDetails;
-import valandur.webapi.api.servlet.Permission;
 import valandur.webapi.cache.entity.CachedEntity;
+import valandur.webapi.cache.misc.CachedCatalogType;
+import valandur.webapi.cache.world.CachedWorld;
 import valandur.webapi.serialize.objects.ExecuteMethodRequest;
 import valandur.webapi.serialize.objects.ExecuteMethodResponse;
+import valandur.webapi.servlet.base.BaseServlet;
+import valandur.webapi.servlet.base.ExplicitDetails;
+import valandur.webapi.servlet.base.Permission;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -46,8 +45,8 @@ public class EntityServlet extends BaseServlet {
     @ExplicitDetails
     @Permission("list")
     @ApiOperation(value = "List entities", notes = "Get a list of all entities on the server (in all worlds).")
-    public Collection<ICachedEntity> listEntities(
-            @QueryParam("world") @ApiParam("The world to filter the entities by") ICachedWorld world,
+    public Collection<CachedEntity> listEntities(
+            @QueryParam("world") @ApiParam("The world to filter the entities by") CachedWorld world,
             @QueryParam("type") @ApiParam("The type id of the entities to filter by") String typeId,
             @QueryParam("min") @ApiParam("The minimum coordinates at which the entity must be, min=x|y|z") Vector3i min,
             @QueryParam("max") @ApiParam("The maximum coordinates at which the entity must be, max=x|y|z") Vector3i max,
@@ -63,10 +62,10 @@ public class EntityServlet extends BaseServlet {
     @ApiOperation(
             value = "Get entity",
             notes = "Get detailed information about an entity.")
-    public ICachedEntity getEntity(
+    public CachedEntity getEntity(
             @PathParam("entity") @ApiParam("The uuid of the entity") UUID uuid)
             throws NotFoundException {
-        Optional<ICachedEntity> optEntity = WebAPI.getCacheService().getEntity(uuid);
+        Optional<CachedEntity> optEntity = WebAPI.getCacheService().getEntity(uuid);
         if (!optEntity.isPresent()) {
             throw new NotFoundException("Entity with UUID '" + uuid + "' could not be found");
         }
@@ -80,7 +79,7 @@ public class EntityServlet extends BaseServlet {
     @ApiOperation(
             value = "Modify an entity",
             notes = "Modify the properties of an existing entity.")
-    public ICachedEntity modifyEntity(
+    public CachedEntity modifyEntity(
             @PathParam("entity") @ApiParam("The uuid of the entity") UUID uuid,
             UpdateEntityRequest req)
             throws NotFoundException, BadRequestException {
@@ -89,7 +88,7 @@ public class EntityServlet extends BaseServlet {
             throw new BadRequestException("Request body is required");
         }
 
-        Optional<ICachedEntity> optEntity = WebAPI.getCacheService().getEntity(uuid);
+        Optional<CachedEntity> optEntity = WebAPI.getCacheService().getEntity(uuid);
         if (!optEntity.isPresent()) {
             throw new NotFoundException("Entity with UUID '" + uuid + "' could not be found");
         }
@@ -164,7 +163,7 @@ public class EntityServlet extends BaseServlet {
     @Permission("create")
     @ApiOperation(
             value = "Spawn an entity",
-            response = ICachedEntity.class,
+            response = CachedEntity.class,
             notes = "Creates & Spawns a new entity with the specified properties.")
     public Response createEntity(CreateEntityRequest req)
             throws BadRequestException, URISyntaxException {
@@ -173,7 +172,7 @@ public class EntityServlet extends BaseServlet {
             throw new BadRequestException("Request body is required");
         }
 
-        Optional<ICachedWorld> optWorld = req.getWorld();
+        Optional<CachedWorld> optWorld = req.getWorld();
         if (!optWorld.isPresent()) {
             throw new BadRequestException("No valid world provided");
         }
@@ -225,7 +224,7 @@ public class EntityServlet extends BaseServlet {
             throw new BadRequestException("Request body is required");
         }
 
-        Optional<ICachedEntity> optEntity = WebAPI.getCacheService().getEntity(uuid);
+        Optional<CachedEntity> optEntity = WebAPI.getCacheService().getEntity(uuid);
         if (!optEntity.isPresent()) {
             throw new NotFoundException("Entity with UUID '" + uuid + "' could not be found");
         }
@@ -246,10 +245,10 @@ public class EntityServlet extends BaseServlet {
     @ApiOperation(
             value = "Destroy an entity",
             notes = "Destroys an entity.")
-    public ICachedEntity removeEntity(
+    public CachedEntity removeEntity(
             @PathParam("entity") @ApiParam("The uuid of the entity") UUID uuid)
             throws NotFoundException {
-        Optional<ICachedEntity> optEntity = WebAPI.getCacheService().getEntity(uuid);
+        Optional<CachedEntity> optEntity = WebAPI.getCacheService().getEntity(uuid);
         if (!optEntity.isPresent()) {
             throw new NotFoundException("Entity with UUID '" + uuid + "' could not be found");
         }
@@ -269,9 +268,9 @@ public class EntityServlet extends BaseServlet {
     @ApiModel("CreateEntityRequest")
         public static class CreateEntityRequest {
 
-        private ICachedWorld world;
+        private CachedWorld world;
         @ApiModelProperty(dataType = "string", value = "The world that the entity will be spawned in", required = true)
-        public Optional<ICachedWorld> getWorld() {
+        public Optional<CachedWorld> getWorld() {
             return world != null ? Optional.of(world) : Optional.empty();
         }
 
@@ -291,9 +290,9 @@ public class EntityServlet extends BaseServlet {
     @ApiModel("UpdateEntityRequest")
         public static class UpdateEntityRequest {
 
-        private ICachedWorld world;
+        private CachedWorld world;
         @ApiModelProperty(dataType = "string", value = "The world that the entity will be moved to")
-        public Optional<ICachedWorld> getWorld() {
+        public Optional<CachedWorld> getWorld() {
             return world != null ? Optional.of(world) : Optional.empty();
         }
 

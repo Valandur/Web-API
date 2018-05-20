@@ -9,8 +9,8 @@ import io.swagger.annotations.ApiModelProperty;
 import ninja.leaping.configurate.objectmapping.Setting;
 import ninja.leaping.configurate.objectmapping.serialize.ConfigSerializable;
 import org.spongepowered.api.item.inventory.ItemStack;
-import valandur.webapi.api.cache.CachedObject;
-import valandur.webapi.api.serialize.JsonDetails;
+import valandur.webapi.cache.CachedObject;
+import valandur.webapi.serialize.JsonDetails;
 
 import java.util.List;
 import java.util.stream.Collectors;

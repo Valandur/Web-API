@@ -5,7 +5,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import ninja.leaping.configurate.objectmapping.Setting;
 import ninja.leaping.configurate.objectmapping.serialize.ConfigSerializable;
-import valandur.webapi.api.serialize.JsonDetails;
+import valandur.webapi.serialize.JsonDetails;
 import valandur.webapi.util.Constants;
 
 import java.util.List;

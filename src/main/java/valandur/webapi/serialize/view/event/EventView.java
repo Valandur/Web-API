@@ -19,9 +19,9 @@ import org.spongepowered.api.event.user.TargetUserEvent;
 import org.spongepowered.api.event.world.ExplosionEvent;
 import org.spongepowered.api.event.world.GenerateChunkEvent;
 import org.spongepowered.api.event.world.TargetWorldEvent;
-import valandur.webapi.api.block.IBlockOperationEvent;
-import valandur.webapi.api.serialize.BaseView;
+import valandur.webapi.block.BlockOperationEvent;
 import valandur.webapi.cache.command.CachedCommandResult;
+import valandur.webapi.serialize.BaseView;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -83,8 +83,8 @@ public class EventView extends BaseView<Event> {
             data.put("inventory", ((InteractInventoryEvent)value).getTargetInventory());
         }
 
-        if (value instanceof IBlockOperationEvent) {
-            data.put("operation", ((IBlockOperationEvent)value).getBlockOperation());
+        if (value instanceof BlockOperationEvent) {
+            data.put("operation", ((BlockOperationEvent)value).getBlockOperation());
         }
 
         if (value instanceof GenerateChunkEvent) {

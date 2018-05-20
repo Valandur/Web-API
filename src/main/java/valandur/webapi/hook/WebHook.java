@@ -1,38 +1,35 @@
 package valandur.webapi.hook;
 
-import valandur.webapi.api.hook.BaseWebHookFilter;
-import valandur.webapi.api.hook.IWebHook;
-import valandur.webapi.api.hook.WebHookHeader;
-import valandur.webapi.api.util.TreeNode;
+import valandur.webapi.hook.filter.BaseWebHookFilter;
+import valandur.webapi.util.TreeNode;
 
 import java.util.List;
 
-public class WebHook implements IWebHook {
+public class WebHook {
+
+    public enum WebHookDataType {
+        JSON, XML
+    }
 
     private String address;
-    @Override
     public String getAddress() {
         return address;
     }
 
     private boolean enabled;
-    @Override
     public boolean isEnabled() {
         return enabled;
     }
 
     private boolean form;
-    @Override
     public boolean isForm() {
         return form;
     }
 
     private String method;
-    @Override
     public String getMethod() { return method; }
 
     private WebHookDataType dataType;
-    @Override
     public WebHookDataType getDataType() {
         return dataType;
     }
@@ -51,23 +48,19 @@ public class WebHook implements IWebHook {
     }
 
     private List<WebHookHeader> headers;
-    @Override
     public List<WebHookHeader> getHeaders() { return headers; }
 
     private boolean details;
-    @Override
     public boolean includeDetails() {
         return details;
     }
 
     private TreeNode permissions;
-    @Override
     public TreeNode getPermissions() {
         return permissions;
     }
 
     private BaseWebHookFilter filter;
-    @Override
     public BaseWebHookFilter getFilter() {
         return filter;
     }

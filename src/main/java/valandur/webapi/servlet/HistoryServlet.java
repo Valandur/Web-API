@@ -2,11 +2,11 @@ package valandur.webapi.servlet;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import valandur.webapi.api.cache.command.ICachedCommandCall;
-import valandur.webapi.api.cache.message.ICachedMessage;
-import valandur.webapi.api.servlet.BaseServlet;
-import valandur.webapi.api.servlet.ExplicitDetails;
-import valandur.webapi.api.servlet.Permission;
+import valandur.webapi.cache.command.CachedCommandCall;
+import valandur.webapi.cache.message.CachedMessage;
+import valandur.webapi.servlet.base.BaseServlet;
+import valandur.webapi.servlet.base.ExplicitDetails;
+import valandur.webapi.servlet.base.Permission;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -28,7 +28,7 @@ public class HistoryServlet extends BaseServlet {
     @ApiOperation(
             value = "Get command history",
             notes = "View a history of the server commands.")
-    public List<ICachedCommandCall> getCommands() {
+    public List<CachedCommandCall> getCommands() {
         return cacheService.getCommandCalls();
     }
 
@@ -39,7 +39,7 @@ public class HistoryServlet extends BaseServlet {
     @ApiOperation(
             value = "Get message history",
             notes = "View a history of the server messages.")
-    public List<ICachedMessage> getChat() {
+    public List<CachedMessage> getChat() {
         return cacheService.getMessages();
     }
 }

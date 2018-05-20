@@ -1,7 +1,7 @@
 package valandur.webapi.serialize.view.misc;
 
 import com.fasterxml.jackson.annotation.JsonValue;
-import valandur.webapi.api.serialize.BaseView;
+import valandur.webapi.serialize.BaseView;
 
 import java.time.Instant;
 

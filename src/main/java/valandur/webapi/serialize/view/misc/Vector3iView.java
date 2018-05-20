@@ -3,7 +3,7 @@ package valandur.webapi.serialize.view.misc;
 import com.flowpowered.math.vector.Vector3i;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import valandur.webapi.api.serialize.BaseView;
+import valandur.webapi.serialize.BaseView;
 
 @ApiModel("Vector3i")
 public class Vector3iView extends BaseView<Vector3i> {

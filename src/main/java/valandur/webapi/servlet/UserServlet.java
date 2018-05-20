@@ -2,15 +2,15 @@ package valandur.webapi.servlet;
 
 import io.swagger.annotations.*;
 import valandur.webapi.WebAPI;
-import valandur.webapi.api.security.IPermissionService;
-import valandur.webapi.api.servlet.BaseServlet;
-import valandur.webapi.api.servlet.Permission;
-import valandur.webapi.api.util.TreeNode;
 import valandur.webapi.security.AuthenticationProvider;
+import valandur.webapi.security.PermissionService;
 import valandur.webapi.security.PermissionStruct;
 import valandur.webapi.security.SecurityContext;
+import valandur.webapi.servlet.base.BaseServlet;
+import valandur.webapi.servlet.base.Permission;
 import valandur.webapi.user.UserPermissionStruct;
 import valandur.webapi.user.Users;
+import valandur.webapi.util.TreeNode;
 import valandur.webapi.util.Util;
 
 import javax.servlet.http.HttpServletRequest;
@@ -64,7 +64,7 @@ public class UserServlet extends BaseServlet {
         }
 
         Optional<UserPermissionStruct> optUser =
-                Users.addUser(req.username, req.password, IPermissionService.emptyNode());
+                Users.addUser(req.username, req.password, PermissionService.emptyNode());
         if (!optUser.isPresent()) {
             throw new InternalServerErrorException("Could not create user!");
         }
@@ -121,6 +121,7 @@ public class UserServlet extends BaseServlet {
 
     @GET
     @Path("/me")
+    @Permission
     @ApiOperation(
             value = "Check info",
             notes = "Checks to see if the passed api key is still valid and retrieves the user info and " +

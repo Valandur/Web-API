@@ -5,7 +5,7 @@ import io.swagger.annotations.ApiModelProperty;
 import org.spongepowered.api.data.meta.PatternLayer;
 import org.spongepowered.api.data.type.BannerPatternShape;
 import org.spongepowered.api.data.type.DyeColor;
-import valandur.webapi.api.serialize.BaseView;
+import valandur.webapi.serialize.BaseView;
 
 @ApiModel("PatternLayer")
 public class PatternLayerView extends BaseView<PatternLayer> {

@@ -2,8 +2,8 @@ package valandur.webapi.serialize.param;
 
 import com.flowpowered.math.vector.Vector3d;
 import com.flowpowered.math.vector.Vector3i;
-import valandur.webapi.api.cache.player.ICachedPlayer;
-import valandur.webapi.api.cache.world.ICachedWorld;
+import valandur.webapi.cache.player.CachedPlayer;
+import valandur.webapi.cache.world.CachedWorld;
 
 import javax.ws.rs.ext.ParamConverter;
 import javax.ws.rs.ext.Provider;
@@ -15,9 +15,9 @@ public class ParamConverterProvider implements javax.ws.rs.ext.ParamConverterPro
 
     @Override
     public <T> ParamConverter<T> getConverter(Class<T> rawType, Type genericType, Annotation[] annotations) {
-        if (ICachedWorld.class.isAssignableFrom(rawType)) {
+        if (CachedWorld.class.isAssignableFrom(rawType)) {
             return (ParamConverter<T>) new WorldParamConverter();
-        } else if (ICachedPlayer.class.isAssignableFrom(rawType)) {
+        } else if (CachedPlayer.class.isAssignableFrom(rawType)) {
             return (ParamConverter<T>) new PlayerParamConverter();
         } else if (Vector3d.class.isAssignableFrom(rawType)) {
             return (ParamConverter<T>) new Vector3dParamConverter();

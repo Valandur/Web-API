@@ -3,7 +3,7 @@ package valandur.webapi.serialize.view.data;
 import com.fasterxml.jackson.annotation.JsonValue;
 import org.spongepowered.api.CatalogType;
 import org.spongepowered.api.data.manipulator.mutable.MappedData;
-import valandur.webapi.api.serialize.BaseView;
+import valandur.webapi.serialize.BaseView;
 
 import java.util.HashMap;
 import java.util.Map;

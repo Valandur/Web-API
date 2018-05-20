@@ -2,7 +2,7 @@ package valandur.webapi.serialize.view.item;
 
 import org.spongepowered.api.data.meta.ItemEnchantment;
 import org.spongepowered.api.item.Enchantment;
-import valandur.webapi.api.serialize.BaseView;
+import valandur.webapi.serialize.BaseView;
 
 public class ItemEnchantmentView extends BaseView<ItemEnchantment> {
 

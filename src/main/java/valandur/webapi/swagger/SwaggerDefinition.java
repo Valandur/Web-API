@@ -17,7 +17,7 @@ import io.swagger.models.properties.Property;
 import io.swagger.models.properties.StringProperty;
 import org.spongepowered.api.data.manipulator.DataManipulator;
 import valandur.webapi.WebAPI;
-import valandur.webapi.api.servlet.BaseServlet;
+import valandur.webapi.servlet.base.BaseServlet;
 import valandur.webapi.util.Constants;
 
 import javax.ws.rs.core.MediaType;
@@ -263,8 +263,8 @@ public class SwaggerDefinition implements ReaderListener {
         // Add the additional properties to the required DataObjects
         // TODO: Automate this with an annotation
         Map<String, Model> defs = swagger.getDefinitions();
-        attachAdditionalProps(defs.get("PlayerFull"), props);
-        attachAdditionalProps(defs.get("WorldFull"), props);
+        attachAdditionalProps(defs.get("Player"), props);
+        attachAdditionalProps(defs.get("World"), props);
         attachAdditionalProps(defs.get("Entity"), props);
         attachAdditionalProps(defs.get("TileEntity"), props);
         attachAdditionalProps(defs.get("ItemStack"), props);

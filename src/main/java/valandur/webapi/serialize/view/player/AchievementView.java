@@ -1,7 +1,7 @@
 package valandur.webapi.serialize.view.player;
 
 import org.spongepowered.api.statistic.achievement.Achievement;
-import valandur.webapi.api.serialize.BaseView;
+import valandur.webapi.serialize.BaseView;
 
 public class AchievementView extends BaseView<Achievement> {
 

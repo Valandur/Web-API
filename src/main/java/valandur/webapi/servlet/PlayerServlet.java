@@ -13,13 +13,12 @@ import org.spongepowered.api.util.Tuple;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 import valandur.webapi.WebAPI;
-import valandur.webapi.api.cache.player.ICachedPlayer;
-import valandur.webapi.api.cache.player.ICachedPlayerFull;
-import valandur.webapi.api.servlet.BaseServlet;
-import valandur.webapi.api.servlet.ExplicitDetails;
-import valandur.webapi.api.servlet.Permission;
+import valandur.webapi.cache.player.CachedPlayer;
 import valandur.webapi.serialize.objects.ExecuteMethodRequest;
 import valandur.webapi.serialize.objects.ExecuteMethodResponse;
+import valandur.webapi.servlet.base.BaseServlet;
+import valandur.webapi.servlet.base.ExplicitDetails;
+import valandur.webapi.servlet.base.Permission;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -38,7 +37,7 @@ public class PlayerServlet extends BaseServlet {
     @ApiOperation(
             value = "List players",
             notes = "Get a list of all the players on the server.")
-    public Collection<ICachedPlayerFull> listPlayers() {
+    public Collection<CachedPlayer> listPlayers() {
         return cacheService.getPlayers();
     }
 
@@ -48,8 +47,8 @@ public class PlayerServlet extends BaseServlet {
     @ApiOperation(
             value = "Get a player",
             notes = "Get detailed information about a player.")
-    public ICachedPlayerFull getPlayer(
-            @PathParam("player") @ApiParam("The uuid of the player") ICachedPlayerFull player)
+    public CachedPlayer getPlayer(
+            @PathParam("player") @ApiParam("The uuid of the player") CachedPlayer player)
             throws NotFoundException {
         return player;
     }
@@ -60,8 +59,8 @@ public class PlayerServlet extends BaseServlet {
     @ApiOperation(
             value = "Modify a player",
             notes = "Modify the properties of an existing player.")
-    public ICachedPlayerFull modifyPlayer(
-            @PathParam("player") @ApiParam("The uuid of the player") ICachedPlayer player,
+    public CachedPlayer modifyPlayer(
+            @PathParam("player") @ApiParam("The uuid of the player") CachedPlayer player,
             UpdatePlayerRequest req)
             throws NotFoundException {
 
@@ -165,7 +164,7 @@ public class PlayerServlet extends BaseServlet {
             value = "Execute a method",
             notes = "Provides direct access to the underlying player object and can execute any method on it.")
     public ExecuteMethodResponse executeMethod(
-            @PathParam("player") @ApiParam("The uuid of the player") ICachedPlayer player,
+            @PathParam("player") @ApiParam("The uuid of the player") CachedPlayer player,
             ExecuteMethodRequest req)
             throws NotFoundException, BadRequestException {
 

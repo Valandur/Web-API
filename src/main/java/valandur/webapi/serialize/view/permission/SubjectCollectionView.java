@@ -3,7 +3,7 @@ package valandur.webapi.serialize.view.permission;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.spongepowered.api.service.permission.SubjectCollection;
-import valandur.webapi.api.serialize.BaseView;
+import valandur.webapi.serialize.BaseView;
 
 @ApiModel("SubjectCollection")
 public class SubjectCollectionView extends BaseView<SubjectCollection> {

@@ -4,12 +4,11 @@ import br.net.fabiozumbi12.RedProtect.Sponge.Region;
 import com.flowpowered.math.vector.Vector3d;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import valandur.webapi.api.cache.CachedObject;
-import valandur.webapi.api.cache.player.ICachedPlayer;
-import valandur.webapi.api.cache.player.ICachedPlayerFull;
-import valandur.webapi.api.cache.world.CachedLocation;
-import valandur.webapi.api.cache.world.ICachedWorld;
-import valandur.webapi.api.serialize.JsonDetails;
+import valandur.webapi.cache.CachedObject;
+import valandur.webapi.cache.player.CachedPlayer;
+import valandur.webapi.cache.world.CachedLocation;
+import valandur.webapi.cache.world.CachedWorld;
+import valandur.webapi.serialize.JsonDetails;
 import valandur.webapi.util.Constants;
 
 import java.util.*;
@@ -29,10 +28,10 @@ public class CachedRegion extends CachedObject<Region> {
         return name;
     }
 
-    private ICachedWorld world;
+    private CachedWorld world;
     @JsonDetails(value = false, simple = true)
     @ApiModelProperty(value = "The world this region is located in", required = true)
-    public ICachedWorld getWorld() {
+    public CachedWorld getWorld() {
         return world;
     }
 
@@ -62,24 +61,24 @@ public class CachedRegion extends CachedObject<Region> {
         return canDelete;
     }
 
-    private List<ICachedPlayer> leaders;
+    private List<CachedPlayer> leaders;
     @JsonDetails(simple = true)
     @ApiModelProperty("A list of players that are leaders of this region")
-    public List<ICachedPlayer> getLeaders() {
+    public List<CachedPlayer> getLeaders() {
         return leaders;
     }
 
-    private List<ICachedPlayer> admins;
+    private List<CachedPlayer> admins;
     @JsonDetails(simple = true)
     @ApiModelProperty("A list of players that are admins of this region")
-    public List<ICachedPlayer> getAdmins() {
+    public List<CachedPlayer> getAdmins() {
         return admins;
     }
 
-    private List<ICachedPlayer> members;
+    private List<CachedPlayer> members;
     @JsonDetails(simple = true)
     @ApiModelProperty("A list of players that are members of this region")
-    public List<ICachedPlayer> getMembers() {
+    public List<CachedPlayer> getMembers() {
         return members;
     }
 
@@ -131,19 +130,19 @@ public class CachedRegion extends CachedObject<Region> {
 
         this.leaders = new ArrayList<>();
         for (String uuid : region.getLeaders()) {
-            Optional<ICachedPlayerFull> optPlayer = cacheService.getPlayer(uuid);
+            Optional<CachedPlayer> optPlayer = cacheService.getPlayer(uuid);
             optPlayer.ifPresent(player -> this.leaders.add(player));
         }
 
         this.admins = new ArrayList<>();
         for (String uuid : region.getAdmins()) {
-            Optional<ICachedPlayerFull> optPlayer = cacheService.getPlayer(uuid);
+            Optional<CachedPlayer> optPlayer = cacheService.getPlayer(uuid);
             optPlayer.ifPresent(player -> this.admins.add(player));
         }
 
         this.members = new ArrayList<>();
         for (String uuid : region.getLeaders()) {
-            Optional<ICachedPlayerFull> optPlayer = cacheService.getPlayer(uuid);
+            Optional<CachedPlayer> optPlayer = cacheService.getPlayer(uuid);
             optPlayer.ifPresent(player -> this.members.add(player));
         }
 

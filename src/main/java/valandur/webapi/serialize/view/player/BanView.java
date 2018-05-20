@@ -5,7 +5,7 @@ import io.swagger.annotations.ApiModelProperty;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.util.ban.Ban;
-import valandur.webapi.api.serialize.BaseView;
+import valandur.webapi.serialize.BaseView;
 
 import java.time.Instant;
 

@@ -1,105 +1,126 @@
 package valandur.webapi.cache.player;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.flowpowered.math.vector.Vector3d;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.service.user.UserStorageService;
-import valandur.webapi.api.cache.CachedObject;
-import valandur.webapi.api.cache.player.ICachedPlayerFull;
-import valandur.webapi.api.cache.world.CachedLocation;
-import valandur.webapi.api.serialize.JsonDetails;
+import valandur.webapi.cache.CachedObject;
 import valandur.webapi.cache.misc.CachedInventory;
+import valandur.webapi.cache.world.CachedLocation;
+import valandur.webapi.serialize.JsonDetails;
 import valandur.webapi.util.Constants;
 
 import java.util.Optional;
 import java.util.UUID;
 
-public class CachedPlayer extends CachedObject<Player> implements ICachedPlayerFull {
+@ApiModel(value = "Player")
+public class CachedPlayer extends CachedObject<Player> {
 
     protected UUID uuid;
-    @Override
+    @ApiModelProperty(value = "The unique UUID of this player", required = true)
     public UUID getUUID() {
         return uuid;
     }
 
     private String name;
-    @Override
+    @ApiModelProperty(value = "The players name", required = true)
     public String getName() {
         return name;
     }
 
     private boolean isOnline;
+    @ApiModelProperty(value = "True if the player is online, false otherwise", required = true)
     public boolean isOnline() {
         return isOnline;
     }
 
     private String address;
     @JsonDetails
+    @ApiModelProperty(value = "The player's IP address and port", required = true)
     public String getAddress() {
         return address;
     }
 
     private int latency;
     @JsonDetails
+    @ApiModelProperty(value = "The latency (in milliseconds) of the player", required = true)
     public int getLatency() {
         return latency;
     }
 
     private CachedLocation location;
+    @ApiModelProperty(value = "The current Location of the player", required = true)
     public CachedLocation getLocation() {
         return location;
     }
 
     private Vector3d rotation;
     @JsonDetails
+    @ApiModelProperty(value = "The current rotation of the player", required = true)
     public Vector3d getRotation() {
         return rotation;
     }
 
     private Vector3d velocity;
     @JsonDetails
+    @ApiModelProperty(value = "The current velocity of the player", required = true)
     public Vector3d getVelocity() {
         return velocity;
     }
 
     private Vector3d scale;
     @JsonDetails
+    @ApiModelProperty(value = "The current scale of the player", required = true)
     public Vector3d getScale() {
         return scale;
     }
 
     private ItemStack helmet;
     @JsonDetails(simple = true)
+    @ApiModelProperty("The item stack that the player is wearing as a helmet")
     public ItemStack getHelmet() {
         return helmet;
     }
 
     private ItemStack chestplate;
     @JsonDetails(simple = true)
+    @ApiModelProperty("The item stack that the player is wearing as chestplate")
     public ItemStack getChestplate() {
         return chestplate;
     }
 
     private ItemStack leggings;
     @JsonDetails(simple = true)
+    @ApiModelProperty("The item stack that the player is wearing as leggings")
     public ItemStack getLeggings() {
         return leggings;
     }
 
     private ItemStack boots;
     @JsonDetails(simple = true)
+    @ApiModelProperty("The item stack that the player is wearing as boots")
     public ItemStack getBoots() {
         return boots;
     }
 
     private CachedInventory inventory;
     @JsonDetails
+    @ApiModelProperty(value = "The current inventory of the player", required = true)
     public CachedInventory getInventory() {
         return inventory;
     }
 
+    /*private List<CachedAdvancement> unlockedAdvancements = new ArrayList<>();
+    @JsonDetails
+    @ApiModelProperty(value = "A list of all unlocked advancements of this player", required = true)
+    public List<CachedAdvancement> getUnlockedAdvancements() {
+        return unlockedAdvancements;
+    }*/
 
     public CachedPlayer(User user) {
         super(null);
@@ -136,7 +157,7 @@ public class CachedPlayer extends CachedObject<Player> implements ICachedPlayerF
         return Sponge.getServer().getPlayer(uuid);
     }
 
-    @Override
+    @JsonIgnore
     public Optional<User> getUser() {
         Optional<UserStorageService> optSrv = Sponge.getServiceManager().provide(UserStorageService.class);
         return optSrv.flatMap(srv -> srv.get(uuid));

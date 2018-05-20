@@ -6,11 +6,11 @@ import io.swagger.annotations.ApiParam;
 import org.spongepowered.api.world.Chunk;
 import org.spongepowered.api.world.World;
 import valandur.webapi.WebAPI;
-import valandur.webapi.api.cache.world.ICachedWorld;
-import valandur.webapi.api.servlet.BaseServlet;
-import valandur.webapi.api.servlet.ExplicitDetails;
-import valandur.webapi.api.servlet.Permission;
 import valandur.webapi.cache.world.CachedChunk;
+import valandur.webapi.cache.world.CachedWorld;
+import valandur.webapi.servlet.base.BaseServlet;
+import valandur.webapi.servlet.base.ExplicitDetails;
+import valandur.webapi.servlet.base.Permission;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -35,7 +35,7 @@ public class ChunkServlet extends BaseServlet {
             value = "List chunks",
             notes = "Gets a list of all the loaded chunks for the specified world.")
     public List<CachedChunk> listChunks(
-            @PathParam("world") @ApiParam("The uuid of the for which to get all chunks") ICachedWorld world) {
+            @PathParam("world") @ApiParam("The uuid of the for which to get all chunks") CachedWorld world) {
         return WebAPI.runOnMain(() -> {
             Optional<World> optWorld = world.getLive();
             if (!optWorld.isPresent())
@@ -58,7 +58,7 @@ public class ChunkServlet extends BaseServlet {
             value = "Get a chunk",
             notes = "Get detailed information about a chunk")
     public CachedChunk getChunkAt(
-            @PathParam("world") @ApiParam("The uuid of the world in which to get the chunk") ICachedWorld world,
+            @PathParam("world") @ApiParam("The uuid of the world in which to get the chunk") CachedWorld world,
             @PathParam("x") @ApiParam("The x-coordinate of the chunk (in chunk coordinates)") int x,
             @PathParam("z") @ApiParam("The z-coordinate of the chunk (in chunk coordinates)") int z) {
         return WebAPI.runOnMain(() -> {
@@ -80,7 +80,7 @@ public class ChunkServlet extends BaseServlet {
             response = CachedChunk.class,
             notes = "Forces a chunk to be loaded into memory, and created if it does not exist.")
     public Response createChunkAt(
-            @PathParam("world") @ApiParam("The uuid of the world in which to create the chunk") ICachedWorld world,
+            @PathParam("world") @ApiParam("The uuid of the world in which to create the chunk") CachedWorld world,
             @PathParam("x") @ApiParam("The x-coordinate of the chunk (in chunk coordinates)") int x,
             @PathParam("z") @ApiParam("The z-coordinate of the chunk (in chunk coordinates)") int z)
             throws URISyntaxException {

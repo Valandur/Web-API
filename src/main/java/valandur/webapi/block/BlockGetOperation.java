@@ -1,13 +1,14 @@
 package valandur.webapi.block;
 
 import com.flowpowered.math.vector.Vector3i;
+import io.swagger.annotations.ApiModel;
 import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.world.World;
-import valandur.webapi.api.block.IBlockGetOperation;
-import valandur.webapi.api.cache.world.ICachedWorld;
-import valandur.webapi.api.serialize.JsonDetails;
+import valandur.webapi.cache.world.CachedWorld;
+import valandur.webapi.serialize.JsonDetails;
 
-public class BlockGetOperation extends BlockOperation implements IBlockGetOperation {
+@ApiModel(parent = BlockOperation.class)
+public class BlockGetOperation extends BlockOperation {
 
     private BlockState[][][] blockStates;
 
@@ -16,14 +17,13 @@ public class BlockGetOperation extends BlockOperation implements IBlockGetOperat
         return BlockOperationType.GET;
     }
 
-    @Override
     @JsonDetails
     public BlockState[][][] getBlocks() {
         return blockStates;
     }
 
 
-    public BlockGetOperation(ICachedWorld world, Vector3i min, Vector3i max) {
+    public BlockGetOperation(CachedWorld world, Vector3i min, Vector3i max) {
         super(world, min, max);
         blockStates = new  BlockState[size.getX()][size.getY()][size.getZ()];
     }

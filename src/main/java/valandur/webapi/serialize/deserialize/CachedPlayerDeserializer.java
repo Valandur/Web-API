@@ -4,22 +4,21 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import valandur.webapi.WebAPI;
-import valandur.webapi.api.cache.player.ICachedPlayer;
-import valandur.webapi.api.cache.player.ICachedPlayerFull;
+import valandur.webapi.cache.player.CachedPlayer;
 
 import java.io.IOException;
 import java.util.Optional;
 
-public class CachedPlayerDeserializer extends StdDeserializer<ICachedPlayer> {
+public class CachedPlayerDeserializer extends StdDeserializer<CachedPlayer> {
 
     public CachedPlayerDeserializer() {
-        super(ICachedPlayer.class);
+        super(CachedPlayer.class);
     }
 
     @Override
-    public ICachedPlayer deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
+    public CachedPlayer deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
         String nameOrUuid = p.getValueAsString();
-        Optional<ICachedPlayerFull> optPlayer = WebAPI.getCacheService().getPlayer(nameOrUuid);
+        Optional<CachedPlayer> optPlayer = WebAPI.getCacheService().getPlayer(nameOrUuid);
         return optPlayer.orElse(null);
     }
 }

@@ -11,11 +11,12 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.world.Location;
-import valandur.webapi.api.WebAPIAPI;
-import valandur.webapi.api.cache.player.ICachedPlayer;
-import valandur.webapi.api.exceptions.NotImplementedException;
-import valandur.webapi.api.servlet.BaseServlet;
-import valandur.webapi.api.servlet.Permission;
+import valandur.webapi.WebAPI;
+import valandur.webapi.cache.player.CachedPlayer;
+import valandur.webapi.exceptions.NotImplementedException;
+import valandur.webapi.serialize.SerializeService;
+import valandur.webapi.servlet.base.BaseServlet;
+import valandur.webapi.servlet.base.Permission;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -34,11 +35,10 @@ import java.util.stream.Collectors;
 public class NucleusServlet extends BaseServlet {
 
     public static void onRegister() {
-        WebAPIAPI.getJsonService().ifPresent(srv -> {
-            srv.registerCache(NamedLocation.class, CachedNamedLocation.class);
-            srv.registerCache(MailMessage.class, CachedMailMessage.class);
-            srv.registerCache(Kit.class, CachedKit.class);
-        });
+        SerializeService srv = WebAPI.getSerializeService();
+        srv.registerCache(NamedLocation.class, CachedNamedLocation.class);
+        srv.registerCache(MailMessage.class, CachedMailMessage.class);
+        srv.registerCache(Kit.class, CachedKit.class);
     }
 
 
@@ -55,7 +55,7 @@ public class NucleusServlet extends BaseServlet {
 
         NucleusJailService srv = optSrv.get();
 
-        return WebAPIAPI.runOnMain(
+        return WebAPI.runOnMain(
                 () -> srv.getJails().values().stream()
                         .map(CachedNamedLocation::new)
                         .collect(Collectors.toList())
@@ -75,7 +75,7 @@ public class NucleusServlet extends BaseServlet {
 
         NucleusJailService srv = optSrv.get();
 
-        return WebAPIAPI.runOnMain(() -> {
+        return WebAPI.runOnMain(() -> {
             Optional<NamedLocation> optJail = srv.getJail(name);
             if (!optJail.isPresent()) {
                 throw new NotFoundException("Jail with name " + name + " not found");
@@ -107,7 +107,7 @@ public class NucleusServlet extends BaseServlet {
             throw new BadRequestException("A location is required");
         }
 
-        CachedNamedLocation jail = WebAPIAPI.runOnMain(() -> {
+        CachedNamedLocation jail = WebAPI.runOnMain(() -> {
             Optional<Location> optLive = req.getLocation().getLive();
             if (!optLive.isPresent()) {
                 throw new InternalServerErrorException("Could not get live location");
@@ -146,7 +146,7 @@ public class NucleusServlet extends BaseServlet {
 
         NucleusJailService srv = optSrv.get();
 
-        return WebAPIAPI.runOnMain(() -> {
+        return WebAPI.runOnMain(() -> {
             Optional<NamedLocation> optJail = srv.getJail(name);
             if (!optJail.isPresent()) {
                 throw new NotFoundException("Jail with name " + name + " not found");
@@ -172,7 +172,7 @@ public class NucleusServlet extends BaseServlet {
 
         NucleusKitService srv = optSrv.get();
 
-        return WebAPIAPI.runOnMain(
+        return WebAPI.runOnMain(
                 () -> srv.getKitNames().stream()
                         .map(name -> srv.getKit(name).map(CachedKit::new).orElse(null))
                         .collect(Collectors.toList())
@@ -192,7 +192,7 @@ public class NucleusServlet extends BaseServlet {
 
         NucleusKitService srv = optSrv.get();
 
-        return WebAPIAPI.runOnMain(() -> {
+        return WebAPI.runOnMain(() -> {
             Optional<Kit> optKit = srv.getKit(name);
             if (!optKit.isPresent()) {
                 throw new NotFoundException("Kit with name " + name + " not found");
@@ -224,7 +224,7 @@ public class NucleusServlet extends BaseServlet {
             throw new BadRequestException("Invalid kit name");
         }
 
-        CachedKit resKit = WebAPIAPI.runOnMain(() -> {
+        CachedKit resKit = WebAPI.runOnMain(() -> {
             Kit kit = srv.createKit(req.getName());
             kit.setCost(req.getCost());
             kit.setCooldown(Duration.ofMillis(req.getCooldown()));
@@ -263,7 +263,7 @@ public class NucleusServlet extends BaseServlet {
 
         NucleusKitService srv = optSrv.get();
 
-        return WebAPIAPI.runOnMain(() -> {
+        return WebAPI.runOnMain(() -> {
             Optional<Kit> optKit = srv.getKit(name);
             if (!optKit.isPresent()) {
                 throw new NotFoundException("Kit with name " + name + " not found");
@@ -306,7 +306,7 @@ public class NucleusServlet extends BaseServlet {
 
         NucleusKitService srv = optSrv.get();
 
-        return WebAPIAPI.runOnMain(() -> {
+        return WebAPI.runOnMain(() -> {
             Optional<Kit> optKit = srv.getKit(name);
             if (!optKit.isPresent()) {
                 throw new NotFoundException("Kit with name " + name + " not found");
@@ -324,7 +324,7 @@ public class NucleusServlet extends BaseServlet {
     @Permission({ "home", "list" })
     @ApiOperation(value = "List homes", notes = "Get a list of all the homes of a player.")
     public Collection<CachedNamedLocation> listHomes(
-            @PathParam("player") @ApiParam("The uuid of the player") ICachedPlayer player)
+            @PathParam("player") @ApiParam("The uuid of the player") CachedPlayer player)
             throws NotFoundException {
 
         Optional<NucleusHomeService> optSrv = NucleusAPI.getHomeService();
@@ -334,7 +334,7 @@ public class NucleusServlet extends BaseServlet {
 
         NucleusHomeService srv = optSrv.get();
 
-        return WebAPIAPI.runOnMain(
+        return WebAPI.runOnMain(
                 () -> srv.getHomes(player.getUUID()).stream()
                         .map(CachedNamedLocation::new)
                         .collect(Collectors.toList())
@@ -348,7 +348,7 @@ public class NucleusServlet extends BaseServlet {
     @Permission({ "mail", "list" })
     @ApiOperation(value = "List mail", notes = "Get a list of all mail messages of a player.")
     public Collection<CachedMailMessage> listMail(
-            @PathParam("player") @ApiParam("The uuid of the player") ICachedPlayer player)
+            @PathParam("player") @ApiParam("The uuid of the player") CachedPlayer player)
             throws NotFoundException {
 
         Optional<NucleusMailService> optSrv = NucleusAPI.getMailService();
@@ -363,7 +363,7 @@ public class NucleusServlet extends BaseServlet {
             throw new InternalServerErrorException("Could not get user");
         }
 
-        return WebAPIAPI.runOnMain(
+        return WebAPI.runOnMain(
                 () -> srv.getMail(optUser.get(), mailMessage -> { return true; }).stream()
                         .map(CachedMailMessage::new)
                         .collect(Collectors.toList())
@@ -379,6 +379,6 @@ public class NucleusServlet extends BaseServlet {
     public Collection<String> listMail() {
 
         NucleusModuleService srv = NucleusAPI.getModuleService();
-        return WebAPIAPI.runOnMain(srv::getModulesToLoad);
+        return WebAPI.runOnMain(srv::getModulesToLoad);
     }
 }

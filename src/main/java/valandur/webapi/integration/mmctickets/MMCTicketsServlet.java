@@ -6,9 +6,10 @@ import net.moddedminecraft.mmctickets.Main;
 import net.moddedminecraft.mmctickets.data.TicketData;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.plugin.PluginContainer;
-import valandur.webapi.api.WebAPIAPI;
-import valandur.webapi.api.servlet.BaseServlet;
-import valandur.webapi.api.servlet.Permission;
+import valandur.webapi.WebAPI;
+import valandur.webapi.serialize.SerializeService;
+import valandur.webapi.servlet.base.BaseServlet;
+import valandur.webapi.servlet.base.Permission;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -24,9 +25,8 @@ import java.util.Optional;
 public class MMCTicketsServlet extends BaseServlet {
 
     public static void onRegister() {
-        WebAPIAPI.getJsonService().ifPresent(srv -> {
-            srv.registerCache(TicketData.class, CachedTicketData.class);
-        });
+        SerializeService srv = WebAPI.getSerializeService();
+        srv.registerCache(TicketData.class, CachedTicketData.class);
     }
 
 
@@ -53,7 +53,7 @@ public class MMCTicketsServlet extends BaseServlet {
     public Collection<CachedTicketData> listTickets() {
         Main plugin = getMMCTicketsPlugin();
 
-        return WebAPIAPI.runOnMain(() -> {
+        return WebAPI.runOnMain(() -> {
             List<CachedTicketData> tickets = new ArrayList<>();
             for (TicketData ticket : plugin.getTickets()) {
                 tickets.add(new CachedTicketData(ticket));
@@ -70,7 +70,7 @@ public class MMCTicketsServlet extends BaseServlet {
             notes = "Get detailed information about a ticket.")
     public CachedTicketData getTicket(@PathParam("id") Integer id)
             throws NotFoundException {
-        return WebAPIAPI.runOnMain(() -> {
+        return WebAPI.runOnMain(() -> {
             Main plugin = getMMCTicketsPlugin();
             TicketData ticketData = plugin.getTicket(id);
             if (ticketData == null) {
@@ -94,7 +94,7 @@ public class MMCTicketsServlet extends BaseServlet {
             throw new BadRequestException("Request body is required");
         }
 
-        return WebAPIAPI.runOnMain(() -> {
+        return WebAPI.runOnMain(() -> {
             Main plugin = getMMCTicketsPlugin();
             TicketData ticketData = plugin.getTicket(id);
             if (ticketData == null) {

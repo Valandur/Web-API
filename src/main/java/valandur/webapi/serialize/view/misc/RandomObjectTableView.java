@@ -6,7 +6,7 @@ import org.spongepowered.api.util.weighted.NestedTableEntry;
 import org.spongepowered.api.util.weighted.RandomObjectTable;
 import org.spongepowered.api.util.weighted.TableEntry;
 import org.spongepowered.api.util.weighted.WeightedObject;
-import valandur.webapi.api.serialize.BaseView;
+import valandur.webapi.serialize.BaseView;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;

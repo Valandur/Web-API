@@ -20,11 +20,11 @@ import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
-import valandur.webapi.api.servlet.BaseServlet;
 import valandur.webapi.config.MainConfig;
 import valandur.webapi.handler.AssetHandler;
 import valandur.webapi.handler.ErrorHandler;
 import valandur.webapi.serialize.SerializationFeature;
+import valandur.webapi.servlet.base.BaseServlet;
 import valandur.webapi.util.Constants;
 
 import java.net.SocketException;

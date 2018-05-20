@@ -3,7 +3,7 @@ package valandur.webapi.serialize.view.economy;
 import io.swagger.annotations.ApiModel;
 import org.spongepowered.api.service.economy.Currency;
 import org.spongepowered.api.text.Text;
-import valandur.webapi.api.serialize.BaseView;
+import valandur.webapi.serialize.BaseView;
 
 @ApiModel("Currency")
 public class CurrencyView extends BaseView<Currency> {

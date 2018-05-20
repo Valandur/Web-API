@@ -156,7 +156,7 @@ public class InfoServlet extends BaseServlet {
             this.maxPlayers = server.getMaxPlayers();
             if (server.getBoundAddress().isPresent()) {
                 InetSocketAddress addr = server.getBoundAddress().get();
-                this.address = addr.getHostName() + (addr.getPort() == 25565 ? "" : addr.getPort());
+                this.address = addr.getHostName() + (addr.getPort() == 25565 ? "" : ":" + addr.getPort());
             }
             this.onlineMode = server.getOnlineMode();
             this.resourcePack = server.getDefaultResourcePack().map(ResourcePack::getName).orElse(null);

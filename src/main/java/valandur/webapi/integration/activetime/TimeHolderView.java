@@ -3,7 +3,7 @@ package valandur.webapi.integration.activetime;
 import com.mcsimonflash.sponge.activetime.objects.TimeHolder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import valandur.webapi.api.serialize.BaseView;
+import valandur.webapi.serialize.BaseView;
 
 @ApiModel("TimeHolder")
 public class TimeHolderView extends BaseView<TimeHolder> {

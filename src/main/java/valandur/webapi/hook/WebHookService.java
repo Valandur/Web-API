@@ -29,12 +29,9 @@ import org.spongepowered.api.event.world.*;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.util.Tuple;
 import valandur.webapi.WebAPI;
-import valandur.webapi.api.hook.BaseWebHookFilter;
-import valandur.webapi.api.hook.IWebHook;
-import valandur.webapi.api.hook.IWebHookService;
-import valandur.webapi.api.hook.WebHookHeader;
 import valandur.webapi.block.BlockOperationStatusChangeEvent;
 import valandur.webapi.config.HookConfig;
+import valandur.webapi.hook.filter.BaseWebHookFilter;
 import valandur.webapi.hook.filter.BlockTypeFilter;
 import valandur.webapi.hook.filter.ItemTypeFilter;
 import valandur.webapi.hook.filter.PlayerFilter;
@@ -48,10 +45,23 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
-public class WebHookService implements IWebHookService {
+/**
+ * The web hook service provides access to the Web-API web hooks.
+ */
+public class WebHookService {
 
     private static final String configFileName = "hooks.conf";
     private static String userAgent = Constants.NAME + "/" + Constants.VERSION;
+
+    /**
+     * Some base types of WebHooks that are included with the WebAPI
+     */
+    public enum WebHookType {
+        ALL, CUSTOM_COMMAND, CUSTOM_EVENT, INTERACTIVE_MESSAGE,
+        ADVANCEMENT, BLOCK_OPERATION_STATUS, CHAT, COMMAND, GENERATE_CHUNK, EXPLOSION, INTERACT_BLOCK, INVENTORY_OPEN,
+        INVENTORY_CLOSE, PLAYER_JOIN, PLAYER_LEAVE, PLAYER_DEATH, PLAYER_KICK, PLAYER_BAN, SERVER_START, SERVER_STOP,
+        WORLD_SAVE, WORLD_LOAD, WORLD_UNLOAD, ENTITY_SPAWN, ENTITY_DESPAWN, ENTITY_EXPIRE
+    }
 
     private Map<String, CommandWebHook> commandHooks = new HashMap<>();
     private Map<WebHookType, List<WebHook>> eventHooks = new HashMap<>();
@@ -145,7 +155,11 @@ public class WebHookService implements IWebHookService {
         return filters.containsKey(name) ? Optional.of(filters.get(name)) : Optional.empty();
     }
 
-    @Override
+    /**
+     * Trigger a WebHook of the specified type, sending along the specified data.
+     * @param type The type of WebHook
+     * @param data The data that is sent to the endpoints.
+     */
     public void notifyHooks(WebHookType type, Object data) {
         Timings.WEBHOOK_NOTIFY.startTimingIfSync();
 
@@ -167,7 +181,11 @@ public class WebHookService implements IWebHookService {
         Timings.WEBHOOK_NOTIFY.stopTimingIfSync();
     }
 
-    @Override
+    /**
+     * Trigger an event WebHook for the specified event.
+     * @param clazz The class of event for which the WebHooks are triggered.
+     * @param data The data that is sent to the endpoints.
+     */
     public void notifyHooks(Class<? extends Event> clazz, Object data) {
         Timings.WEBHOOK_NOTIFY.startTimingIfSync();
 
@@ -190,7 +208,7 @@ public class WebHookService implements IWebHookService {
         String stringData = "";
         try {
             ObjectMapper om = WebAPI.getSerializeService().getDefaultObjectMapper(
-                    hook.getDataType() == IWebHook.WebHookDataType.XML,
+                    hook.getDataType() == WebHook.WebHookDataType.XML,
                     hook.includeDetails(),
                     hook.getPermissions()
             );

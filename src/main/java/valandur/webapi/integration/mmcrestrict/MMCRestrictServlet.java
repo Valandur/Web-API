@@ -8,10 +8,11 @@ import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.item.ItemType;
 import org.spongepowered.api.plugin.PluginContainer;
-import valandur.webapi.api.WebAPIAPI;
-import valandur.webapi.api.cache.misc.CachedCatalogType;
-import valandur.webapi.api.servlet.BaseServlet;
-import valandur.webapi.api.servlet.Permission;
+import valandur.webapi.WebAPI;
+import valandur.webapi.cache.misc.CachedCatalogType;
+import valandur.webapi.serialize.SerializeService;
+import valandur.webapi.servlet.base.BaseServlet;
+import valandur.webapi.servlet.base.Permission;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -31,9 +32,8 @@ import java.util.Optional;
 public class MMCRestrictServlet extends BaseServlet {
 
     public static void onRegister() {
-        WebAPIAPI.getJsonService().ifPresent(srv -> {
-            srv.registerCache(ItemData.class, CachedItemData.class);
-        });
+        SerializeService srv = WebAPI.getSerializeService();
+        srv.registerCache(ItemData.class, CachedItemData.class);
     }
 
     private Main getMMCRestrictPlugin() {
@@ -59,7 +59,7 @@ public class MMCRestrictServlet extends BaseServlet {
     public Collection<CachedItemData> listItems() {
         Main plugin = getMMCRestrictPlugin();
 
-        return WebAPIAPI.runOnMain(() -> {
+        return WebAPI.runOnMain(() -> {
             List<CachedItemData> items = new ArrayList<>();
             for (ItemData item : plugin.getItemData()) {
                 items.add(new CachedItemData(item));
@@ -86,7 +86,7 @@ public class MMCRestrictServlet extends BaseServlet {
             throw new BadRequestException("Invalid item data");
         }
 
-        CachedItemData item = WebAPIAPI.runOnMain(() -> {
+        CachedItemData item = WebAPI.runOnMain(() -> {
             Main plugin = getMMCRestrictPlugin();
             Optional<ItemData> optData = req.getLive();
             if (!optData.isPresent()) {
@@ -113,7 +113,7 @@ public class MMCRestrictServlet extends BaseServlet {
             throw new BadRequestException("Request body is required");
         }
 
-        return WebAPIAPI.runOnMain(() -> {
+        return WebAPI.runOnMain(() -> {
             Main plugin = getMMCRestrictPlugin();
             ItemData item = plugin.removeItem(id);
             if (item == null) {
@@ -146,7 +146,7 @@ public class MMCRestrictServlet extends BaseServlet {
     public CachedItemData deleteItem(@PathParam("id") String id)
             throws NotFoundException {
 
-        return WebAPIAPI.runOnMain(() -> {
+        return WebAPI.runOnMain(() -> {
             Main plugin = getMMCRestrictPlugin();
             ItemData item = plugin.removeItem(id);
             if (item == null) {

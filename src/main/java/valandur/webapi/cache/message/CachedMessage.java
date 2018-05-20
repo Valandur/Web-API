@@ -1,33 +1,34 @@
 package valandur.webapi.cache.message;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.channel.MessageReceiver;
-import valandur.webapi.api.cache.CachedObject;
-import valandur.webapi.api.cache.message.ICachedMessage;
+import valandur.webapi.cache.CachedObject;
 
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.stream.Collectors;
 
-public class CachedMessage extends CachedObject implements ICachedMessage {
+@ApiModel(value = "Message", subTypes = { CachedChatMessage.class })
+public class CachedMessage extends CachedObject {
 
     protected Long timestamp;
-    @Override
+    @ApiModelProperty(value = "The timestamp at which the chat message was sent (epoch millis)", required = true)
     public Long getTimestamp() {
         return timestamp;
     }
 
     protected Collection<Object> receivers = new HashSet<>();
-    @Override
+    @ApiModelProperty(value = "The receivers of this message", required = true)
     public Collection<Object> getReceivers() {
         return receivers;
     }
 
     protected Text content;
-    @Override
+    @ApiModelProperty(value = "The content of the message", required = true)
     public Text getContent() {
         return content;
     }

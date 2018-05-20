@@ -4,8 +4,8 @@ import com.flowpowered.math.vector.Vector3d;
 import io.github.nucleuspowered.nucleus.api.nucleusdata.NamedLocation;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import valandur.webapi.api.cache.CachedObject;
-import valandur.webapi.api.cache.world.CachedLocation;
+import valandur.webapi.cache.CachedObject;
+import valandur.webapi.cache.world.CachedLocation;
 import valandur.webapi.util.Constants;
 
 @ApiModel("NucleusNamedLocation")

@@ -7,11 +7,9 @@ import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 import ninja.leaping.configurate.objectmapping.serialize.TypeSerializer;
 import org.slf4j.Logger;
 import valandur.webapi.WebAPI;
-import valandur.webapi.api.hook.BaseWebHookFilter;
-import valandur.webapi.api.hook.IWebHook;
-import valandur.webapi.api.hook.WebHookHeader;
-import valandur.webapi.api.security.IPermissionService;
-import valandur.webapi.api.util.TreeNode;
+import valandur.webapi.hook.filter.BaseWebHookFilter;
+import valandur.webapi.security.PermissionService;
+import valandur.webapi.util.TreeNode;
 
 import javax.ws.rs.HttpMethod;
 import java.lang.reflect.Constructor;
@@ -46,7 +44,7 @@ public class WebHookSerializer implements TypeSerializer<WebHook> {
         String filterName = filterBase.getNode("name").getString();
         ConfigurationNode filterConfig = filterBase.getNode("config");
 
-        TreeNode permissions = IPermissionService.permitAllNode();
+        TreeNode permissions = PermissionService.permitAllNode();
 
         if (headers == null) {
             headers = new ArrayList<>();
@@ -110,7 +108,7 @@ public class WebHookSerializer implements TypeSerializer<WebHook> {
         setValueAndComment(value.getNode("method"), obj.getMethod(),
                 "This is the http method that is used (GET, PUT, POST or DELETE)");
 
-        setValueAndComment(value.getNode("dataType"), TypeToken.of(IWebHook.WebHookDataType.class), obj.getDataType(),
+        setValueAndComment(value.getNode("dataType"), TypeToken.of(WebHook.WebHookDataType.class), obj.getDataType(),
                 "Choose to either send the data as:\n" +
                         "JSON = application/json\n" +
                         "XML = application/xml");

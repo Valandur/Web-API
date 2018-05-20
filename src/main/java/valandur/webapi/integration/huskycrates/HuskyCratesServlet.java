@@ -9,9 +9,10 @@ import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.plugin.PluginContainer;
-import valandur.webapi.api.WebAPIAPI;
-import valandur.webapi.api.servlet.BaseServlet;
-import valandur.webapi.api.servlet.Permission;
+import valandur.webapi.WebAPI;
+import valandur.webapi.serialize.SerializeService;
+import valandur.webapi.servlet.base.BaseServlet;
+import valandur.webapi.servlet.base.Permission;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -33,10 +34,9 @@ import java.util.Optional;
 public class HuskyCratesServlet extends BaseServlet {
 
     public static void onRegister() {
-        WebAPIAPI.getJsonService().ifPresent(srv -> {
-            srv.registerCache(VirtualCrate.class, CachedVirtualCrate.class);
-            srv.registerCache(CrateReward.class, CachedCrateReward.class);
-        });
+        SerializeService srv = WebAPI.getSerializeService();
+        srv.registerCache(VirtualCrate.class, CachedVirtualCrate.class);
+        srv.registerCache(CrateReward.class, CachedCrateReward.class);
     }
 
 
@@ -61,7 +61,7 @@ public class HuskyCratesServlet extends BaseServlet {
             value = "List crates",
             notes = "Get a list of all the crates on the server.")
     public Collection<CachedVirtualCrate> listCrates() {
-        return WebAPIAPI.runOnMain(() -> {
+        return WebAPI.runOnMain(() -> {
             HuskyCrates plugin = getHuskyPlugin();
             List<CachedVirtualCrate> crates = new ArrayList<>();
             for (VirtualCrate crate : plugin.getCrateUtilities().crateTypes.values()) {
@@ -79,7 +79,7 @@ public class HuskyCratesServlet extends BaseServlet {
             notes = "Get detailed information about a crate.")
     public CachedVirtualCrate getCrate(@PathParam("id") String id)
             throws NotFoundException {
-        return WebAPIAPI.runOnMain(() -> {
+        return WebAPI.runOnMain(() -> {
             HuskyCrates plugin = getHuskyPlugin();
             VirtualCrate crate = plugin.crateUtilities.getVirtualCrate(id);
             if (crate == null) {
@@ -103,7 +103,7 @@ public class HuskyCratesServlet extends BaseServlet {
             throw new BadRequestException("Request body is required");
         }
 
-        CachedVirtualCrate crate = WebAPIAPI.runOnMain(() -> {
+        CachedVirtualCrate crate = WebAPI.runOnMain(() -> {
             HuskyCrates plugin = getHuskyPlugin();
             saveCrate(plugin.crateConfig, req);
             plugin.crateUtilities.generateVirtualCrates(plugin.crateConfig);
@@ -132,7 +132,7 @@ public class HuskyCratesServlet extends BaseServlet {
             throw new BadRequestException("Request body is required");
         }
 
-        return WebAPIAPI.runOnMain(() -> {
+        return WebAPI.runOnMain(() -> {
             HuskyCrates plugin = getHuskyPlugin();
             VirtualCrate oldCrate = plugin.crateUtilities.getVirtualCrate(id);
             if (oldCrate == null) {
@@ -162,7 +162,7 @@ public class HuskyCratesServlet extends BaseServlet {
     public CachedVirtualCrate deleteCrate(@PathParam("id") String id)
             throws NotFoundException {
 
-        return WebAPIAPI.runOnMain(() -> {
+        return WebAPI.runOnMain(() -> {
             HuskyCrates plugin = getHuskyPlugin();
             VirtualCrate crate = plugin.crateUtilities.getVirtualCrate(id);
             if (crate == null) {

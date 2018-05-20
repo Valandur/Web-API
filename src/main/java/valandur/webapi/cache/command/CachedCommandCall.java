@@ -1,54 +1,53 @@
 package valandur.webapi.cache.command;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.spongepowered.api.event.command.SendCommandEvent;
-import valandur.webapi.api.cache.CachedObject;
-import valandur.webapi.api.cache.command.ICachedCommandCall;
-import valandur.webapi.api.cache.command.ICachedCommandResult;
-import valandur.webapi.api.cache.misc.ICachedCause;
-import valandur.webapi.api.serialize.JsonDetails;
+import valandur.webapi.cache.CachedObject;
 import valandur.webapi.cache.misc.CachedCause;
+import valandur.webapi.serialize.JsonDetails;
 
 import java.util.Date;
 
-public class CachedCommandCall extends CachedObject<Object> implements ICachedCommandCall {
+@ApiModel("CommandCall")
+public class CachedCommandCall extends CachedObject<CachedCommandCall> {
 
     private Long timestamp;
-    @Override
+    @ApiModelProperty(value = "The timestamp at which the command was executed (epoch millis)", required = true)
     public Long getTimestamp() {
         return timestamp;
     }
 
     private String command;
-    @Override
+    @ApiModelProperty(value = "The command that was executed (without arguments)", required = true)
     public String getCommand() {
         return command;
     }
 
     private String args;
-    @Override
+    @ApiModelProperty(value = "The arguments that were passed to the command", required = true)
     public String getArgs() {
         return args;
     }
 
     private boolean cancelled;
-    @Override
+    @ApiModelProperty(value = "True if the command was cancelled, false otherwise", required = true)
     public boolean isCancelled() {
         return cancelled;
     }
 
-    private ICachedCause cause;
-    @Override
+    private CachedCause cause;
     @JsonDetails
-    public ICachedCause getCause() {
+    @ApiModelProperty(value = "The cause of the command execution", required = true)
+    public CachedCause getCause() {
         return cause;
     }
 
-    private ICachedCommandResult result;
-    @Override
+    private CachedCommandResult result;
     @JsonDetails
-    public ICachedCommandResult getResult() {
+    @ApiModelProperty(value = "The result of the command execution", required = true)
+    public CachedCommandResult getResult() {
         return result;
     }
 

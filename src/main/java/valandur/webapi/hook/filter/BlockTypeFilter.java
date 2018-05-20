@@ -5,7 +5,6 @@ import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 import org.spongepowered.api.block.BlockType;
 import org.spongepowered.api.event.block.TargetBlockEvent;
-import valandur.webapi.api.hook.BaseWebHookFilter;
 import valandur.webapi.hook.WebHook;
 
 import java.util.List;

@@ -9,8 +9,8 @@ import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.world.World;
 import valandur.webapi.WebAPI;
-import valandur.webapi.api.cache.player.ICachedPlayer;
-import valandur.webapi.api.cache.world.ICachedWorld;
+import valandur.webapi.cache.player.CachedPlayer;
+import valandur.webapi.cache.world.CachedWorld;
 
 import java.util.Optional;
 
@@ -102,11 +102,11 @@ public class WebHookParam {
                 return Optional.of(obj);
 
             case PLAYER:
-                ICachedPlayer p = WebAPI.getCacheService().getPlayer((Player)obj);
+                CachedPlayer p = WebAPI.getCacheService().getPlayer((Player)obj);
                 return Optional.of(p);
 
             case WORLD:
-                ICachedWorld w = WebAPI.getCacheService().getWorld((World)obj);
+                CachedWorld w = WebAPI.getCacheService().getWorld((World)obj);
                 return Optional.of(w);
         }
 

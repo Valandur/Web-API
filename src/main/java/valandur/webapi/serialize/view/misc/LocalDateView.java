@@ -2,7 +2,7 @@ package valandur.webapi.serialize.view.misc;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import valandur.webapi.api.serialize.BaseView;
+import valandur.webapi.serialize.BaseView;
 
 import java.time.LocalDate;
 

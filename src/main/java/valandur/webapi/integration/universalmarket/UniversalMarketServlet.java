@@ -7,9 +7,10 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.plugin.PluginContainer;
-import valandur.webapi.api.WebAPIAPI;
-import valandur.webapi.api.servlet.BaseServlet;
-import valandur.webapi.api.servlet.Permission;
+import valandur.webapi.WebAPI;
+import valandur.webapi.serialize.SerializeService;
+import valandur.webapi.servlet.base.BaseServlet;
+import valandur.webapi.servlet.base.Permission;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -24,9 +25,8 @@ import java.util.stream.Collectors;
 public class UniversalMarketServlet extends BaseServlet {
 
     public static void onRegister() {
-        WebAPIAPI.getJsonService().ifPresent(srv -> {
-            srv.registerCache(MarketItem.class, CachedMarketItem.class);
-        });
+        SerializeService srv = WebAPI.getSerializeService();
+        srv.registerCache(MarketItem.class, CachedMarketItem.class);
     }
 
     @GET
@@ -36,7 +36,7 @@ public class UniversalMarketServlet extends BaseServlet {
             value = "List items",
             notes = "Lists all the items in the market currently available for sale")
     public Collection<CachedMarketItem> listMarketItems() {
-        return WebAPIAPI.runOnMain(() -> {
+        return WebAPI.runOnMain(() -> {
             UniversalMarket plugin = getUMPlugin();
             Market market = plugin.getMarket();
             return market.getListings().stream().map(CachedMarketItem::new).collect(Collectors.toList());

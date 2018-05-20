@@ -5,11 +5,7 @@ import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.action.TextActions;
 import org.spongepowered.api.text.format.TextColors;
 import valandur.webapi.WebAPI;
-import valandur.webapi.api.cache.player.ICachedPlayer;
-import valandur.webapi.api.cache.player.ICachedPlayerFull;
-import valandur.webapi.api.message.IInteractiveMessage;
-import valandur.webapi.api.message.IInteractiveMessageOption;
-import valandur.webapi.api.message.IInteractiveMessageService;
+import valandur.webapi.cache.player.CachedPlayer;
 import valandur.webapi.hook.WebHookService;
 
 import javax.ws.rs.BadRequestException;
@@ -18,18 +14,28 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
 
-public class InteractiveMessageService implements IInteractiveMessageService {
+/**
+ * The message service allows sending interactive messages to online players.
+ * These messages will show up in the chat and feature clickable answers, which will trigger a web hook-like response.
+ */
+public class InteractiveMessageService {
 
-    private Map<UUID, IInteractiveMessage> messages = new ConcurrentHashMap<>();
+    private Map<UUID, InteractiveMessage> messages = new ConcurrentHashMap<>();
     private Map<UUID, Set<String>> replied = new ConcurrentHashMap<>();
 
-    @Override
-    public List<IInteractiveMessage> getMessages() {
+    /**
+     * Gets all the messages that were sent since server start.
+     * @return The messages sent since server start.
+     */
+    public List<InteractiveMessage> getMessages() {
         return new ArrayList<>(messages.values());
     }
 
-    @Override
-    public void sendMessage(IInteractiveMessage msg) {
+    /**
+     * Sends a new interactive message to a player.
+     * @param msg The message to send.
+     */
+    public void sendMessage(InteractiveMessage msg) {
         Text.Builder builder = Text.builder();
 
         if (msg.getMessage() != null) {
@@ -43,7 +49,7 @@ public class InteractiveMessageService implements IInteractiveMessageService {
         if (msg.hasOptions() && msg.getOptions().size() > 0) {
             builder.append(Text.of("\n"));
 
-            for (IInteractiveMessageOption option : msg.getOptions()) {
+            for (InteractiveMessageOption option : msg.getOptions()) {
                 final String data = option.getKey();
 
                 Text opt = option.getValue().toBuilder().onClick(TextActions.executeCallback(source -> {
@@ -70,12 +76,12 @@ public class InteractiveMessageService implements IInteractiveMessageService {
 
         Text text = builder.build();
 
-        List<ICachedPlayer> cachedPlayers = new ArrayList<>();
+        List<CachedPlayer> cachedPlayers = new ArrayList<>();
         if (msg.getTarget() != null) {
             if (msg.getTarget().equalsIgnoreCase("server")) {
                 cachedPlayers.addAll(WebAPI.getCacheService().getPlayers());
             } else {
-                Optional<ICachedPlayerFull> player = WebAPI.getCacheService().getPlayer(msg.getTarget());
+                Optional<CachedPlayer> player = WebAPI.getCacheService().getPlayer(msg.getTarget());
                 player.map(cachedPlayers::add);
             }
         } else {
@@ -90,7 +96,7 @@ public class InteractiveMessageService implements IInteractiveMessageService {
 
         WebAPI.runOnMain(() -> {
             List<Player> players = new ArrayList<>();
-            for (ICachedPlayer player : cachedPlayers) {
+            for (CachedPlayer player : cachedPlayers) {
                 Optional<?> p = player.getLive();
                 if (!p.isPresent())
                     throw new InternalServerErrorException("Could not get live player");
@@ -104,9 +110,13 @@ public class InteractiveMessageService implements IInteractiveMessageService {
         });
     }
 
-    @Override
-    public Optional<IInteractiveMessage> getMessage(UUID uuid) {
-        IInteractiveMessage msg = messages.get(uuid);
+    /**
+     * Gets a message by its uuid.
+     * @param uuid The uuid of the message.
+     * @return An optional containing the message if found, otherwise an empty optional.
+     */
+    public Optional<InteractiveMessage> getMessage(UUID uuid) {
+        InteractiveMessage msg = messages.get(uuid);
         return msg != null ? Optional.of(msg) : Optional.empty();
     }
 }

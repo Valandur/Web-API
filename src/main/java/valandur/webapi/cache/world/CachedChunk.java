@@ -6,9 +6,8 @@ import io.swagger.annotations.ApiModelProperty;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.world.Chunk;
 import valandur.webapi.WebAPI;
-import valandur.webapi.api.cache.CachedObject;
-import valandur.webapi.api.cache.world.ICachedWorld;
-import valandur.webapi.api.serialize.JsonDetails;
+import valandur.webapi.cache.CachedObject;
+import valandur.webapi.serialize.JsonDetails;
 import valandur.webapi.util.Constants;
 
 import java.util.Optional;
@@ -29,10 +28,10 @@ public class CachedChunk extends CachedObject<Chunk> {
         return pos;
     }
 
-    private ICachedWorld world;
+    private CachedWorld world;
     @JsonDetails(simple = true)
     @ApiModelProperty("The world the chunk is in")
-    public ICachedWorld getWorld() {
+    public CachedWorld getWorld() {
         return world;
     }
 

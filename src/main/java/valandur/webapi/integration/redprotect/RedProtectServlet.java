@@ -7,10 +7,11 @@ import io.swagger.annotations.ApiOperation;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
-import valandur.webapi.api.WebAPIAPI;
-import valandur.webapi.api.cache.world.ICachedWorld;
-import valandur.webapi.api.servlet.BaseServlet;
-import valandur.webapi.api.servlet.Permission;
+import valandur.webapi.WebAPI;
+import valandur.webapi.cache.world.CachedWorld;
+import valandur.webapi.serialize.SerializeService;
+import valandur.webapi.servlet.base.BaseServlet;
+import valandur.webapi.servlet.base.Permission;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -27,9 +28,8 @@ import java.util.stream.Collectors;
 public class RedProtectServlet extends BaseServlet {
 
     public static void onRegister() {
-        WebAPIAPI.getJsonService().ifPresent(srv -> {
-            srv.registerCache(Region.class, CachedRegion.class);
-        });
+        SerializeService srv = WebAPI.getSerializeService();
+        srv.registerCache(Region.class, CachedRegion.class);
     }
 
 
@@ -39,10 +39,10 @@ public class RedProtectServlet extends BaseServlet {
     @ApiOperation(
             value = "List regions",
             notes = "Lists all the regions being protected")
-    public Collection<CachedRegion> listRegions(@QueryParam("world") ICachedWorld world) {
+    public Collection<CachedRegion> listRegions(@QueryParam("world") CachedWorld world) {
         Set<CachedRegion> regions;
         if (world != null) {
-            regions = WebAPIAPI.runOnMain(() -> {
+            regions = WebAPI.runOnMain(() -> {
                 Optional<World> optLive = world.getLive();
                 if (!optLive.isPresent()) {
                     return null;
@@ -54,7 +54,7 @@ public class RedProtectServlet extends BaseServlet {
                         .collect(Collectors.toSet());
             });
         } else {
-            regions = WebAPIAPI.runOnMain(() -> RedProtect.get().rm.getAllRegions().stream()
+            regions = WebAPI.runOnMain(() -> RedProtect.get().rm.getAllRegions().stream()
                     .map(CachedRegion::new)
                     .collect(Collectors.toSet()));
         }
@@ -74,7 +74,7 @@ public class RedProtectServlet extends BaseServlet {
             throw new BadRequestException("Invalid region id");
         }
 
-        return WebAPIAPI.runOnMain(() -> new CachedRegion(RedProtect.get().rm.getRegionById(id)));
+        return WebAPI.runOnMain(() -> new CachedRegion(RedProtect.get().rm.getRegionById(id)));
     }
 
     @POST
@@ -91,7 +91,7 @@ public class RedProtectServlet extends BaseServlet {
             throw new BadRequestException("Request body is required");
         }
 
-        CachedRegion resRegion = WebAPIAPI.runOnMain(() -> {
+        CachedRegion resRegion = WebAPI.runOnMain(() -> {
             String name = req.getName();
             if (name == null) {
                 throw new BadRequestException("The region needs a name");
@@ -194,7 +194,7 @@ public class RedProtectServlet extends BaseServlet {
             throw new BadRequestException("Request body is required");
         }
 
-        return WebAPIAPI.runOnMain(() -> {
+        return WebAPI.runOnMain(() -> {
             Region region = RedProtect.get().rm.getRegionById(id);
             if (region == null) {
                 throw new BadRequestException("Could not find region with id " + id);
@@ -268,7 +268,7 @@ public class RedProtectServlet extends BaseServlet {
             throw new BadRequestException("Invalid region id");
         }
 
-        return WebAPIAPI.runOnMain(() -> {
+        return WebAPI.runOnMain(() -> {
             Region region = RedProtect.get().rm.getRegionById(id);
             if (region == null) {
                 throw new NotFoundException("Could not find region with id " + id);

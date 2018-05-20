@@ -4,8 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.github.nucleuspowered.nucleus.api.nucleusdata.MailMessage;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import valandur.webapi.api.cache.CachedObject;
-import valandur.webapi.api.cache.player.ICachedPlayer;
+import valandur.webapi.cache.CachedObject;
+import valandur.webapi.cache.player.CachedPlayer;
 
 import java.time.Instant;
 
@@ -25,8 +25,8 @@ public class CachedMailMessage  extends CachedObject<MailMessage> {
     }
 
     @ApiModelProperty(value = "The sender of the message")
-    private ICachedPlayer sender;
-    public ICachedPlayer getSender() {
+    private CachedPlayer sender;
+    public CachedPlayer getSender() {
         return sender;
     }
 

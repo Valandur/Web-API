@@ -4,12 +4,12 @@ import com.google.common.net.HttpHeaders;
 import org.eclipse.jetty.http.HttpMethod;
 import org.slf4j.Logger;
 import valandur.webapi.WebAPI;
-import valandur.webapi.api.servlet.ExplicitDetails;
-import valandur.webapi.api.servlet.Permission;
-import valandur.webapi.api.util.TreeNode;
 import valandur.webapi.config.PermissionConfig;
+import valandur.webapi.servlet.base.ExplicitDetails;
+import valandur.webapi.servlet.base.Permission;
 import valandur.webapi.user.UserPermissionStruct;
 import valandur.webapi.util.SubnetUtils;
+import valandur.webapi.util.TreeNode;
 import valandur.webapi.util.Util;
 
 import javax.annotation.Priority;

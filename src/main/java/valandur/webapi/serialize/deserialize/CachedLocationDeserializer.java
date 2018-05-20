@@ -5,8 +5,8 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import valandur.webapi.WebAPI;
-import valandur.webapi.api.cache.world.CachedLocation;
-import valandur.webapi.api.cache.world.ICachedWorldFull;
+import valandur.webapi.cache.world.CachedLocation;
+import valandur.webapi.cache.world.CachedWorld;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -24,7 +24,7 @@ public class CachedLocationDeserializer extends StdDeserializer<CachedLocation> 
         if (root.isNull() || root.isMissingNode())
             return null;
 
-        Optional<ICachedWorldFull> optWorld = WebAPI.getCacheService().getWorld(root.path("world").asText());
+        Optional<CachedWorld> optWorld = WebAPI.getCacheService().getWorld(root.path("world").asText());
         if (!optWorld.isPresent())
             throw new IOException("Invalid world name / uuid");
 

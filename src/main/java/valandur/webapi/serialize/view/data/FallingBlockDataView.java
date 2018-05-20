@@ -4,7 +4,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.data.manipulator.mutable.entity.FallingBlockData;
-import valandur.webapi.api.serialize.BaseView;
+import valandur.webapi.serialize.BaseView;
 
 @ApiModel("FallingBlockData")
 public class FallingBlockDataView extends BaseView<FallingBlockData> {

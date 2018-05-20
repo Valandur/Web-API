@@ -1,66 +1,67 @@
 package valandur.webapi.cache.entity;
 
 import com.flowpowered.math.vector.Vector3d;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.item.inventory.Carrier;
 import org.spongepowered.api.world.World;
-import valandur.webapi.api.cache.CachedObject;
-import valandur.webapi.api.cache.entity.ICachedEntity;
-import valandur.webapi.api.cache.misc.CachedCatalogType;
-import valandur.webapi.api.cache.misc.ICachedCatalogType;
-import valandur.webapi.api.cache.world.CachedLocation;
-import valandur.webapi.api.serialize.JsonDetails;
+import valandur.webapi.cache.CachedObject;
+import valandur.webapi.cache.misc.CachedCatalogType;
 import valandur.webapi.cache.misc.CachedInventory;
+import valandur.webapi.cache.world.CachedLocation;
+import valandur.webapi.serialize.JsonDetails;
 import valandur.webapi.util.Constants;
 
 import java.util.Optional;
 import java.util.UUID;
 
-public class CachedEntity extends CachedObject<Entity> implements ICachedEntity {
+@ApiModel("Entity")
+public class CachedEntity extends CachedObject<Entity> {
 
     protected CachedCatalogType type;
-    @Override
-    public ICachedCatalogType getType() {
+    @ApiModelProperty(value = "The type of entity", required = true)
+    public CachedCatalogType getType() {
         return type;
     }
 
     protected UUID uuid;
-    @Override
+    @ApiModelProperty(value = "The unique UUID of the entity", required = true)
     public UUID getUUID() {
         return uuid;
     }
 
     private CachedLocation location;
-    @Override
+    @ApiModelProperty(value = "The current location of the entity", required = true)
     public CachedLocation getLocation() {
         return location;
     }
 
     private Vector3d rotation;
-    @Override
     @JsonDetails
+    @ApiModelProperty(value = "The current rotation of the entity", required = true)
     public Vector3d getRotation() {
         return rotation;
     }
 
     private Vector3d velocity;
-    @Override
     @JsonDetails
+    @ApiModelProperty(value = "The current velocity of the entity", required = true)
     public Vector3d getVelocity() {
         return velocity;
     }
 
     private Vector3d scale;
-    @Override
     @JsonDetails
+    @ApiModelProperty(value = "The current scale of the entity", required = true)
     public Vector3d getScale() {
         return scale;
     }
 
     private CachedInventory inventory;
-    @Override
     @JsonDetails
+    @ApiModelProperty("The current inventory of the entity (if any)")
     public CachedInventory getInventory() {
         return inventory;
     }

@@ -1,8 +1,8 @@
 package valandur.webapi.security;
 
 import valandur.webapi.WebAPI;
-import valandur.webapi.api.util.TreeNode;
 import valandur.webapi.user.UserPermissionStruct;
+import valandur.webapi.util.TreeNode;
 
 import java.security.Principal;
 

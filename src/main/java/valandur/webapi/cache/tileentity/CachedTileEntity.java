@@ -1,38 +1,39 @@
 package valandur.webapi.cache.tileentity;
 
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import org.spongepowered.api.CatalogType;
 import org.spongepowered.api.block.tileentity.TileEntity;
 import org.spongepowered.api.block.tileentity.carrier.TileEntityCarrier;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
-import valandur.webapi.api.cache.CachedObject;
-import valandur.webapi.api.cache.misc.CachedCatalogType;
-import valandur.webapi.api.cache.misc.ICachedCatalogType;
-import valandur.webapi.api.cache.tileentity.ICachedTileEntity;
-import valandur.webapi.api.cache.world.CachedLocation;
-import valandur.webapi.api.serialize.JsonDetails;
+import valandur.webapi.cache.CachedObject;
+import valandur.webapi.cache.misc.CachedCatalogType;
 import valandur.webapi.cache.misc.CachedInventory;
+import valandur.webapi.cache.world.CachedLocation;
+import valandur.webapi.serialize.JsonDetails;
 import valandur.webapi.util.Constants;
 
 import java.util.Optional;
 
-public class CachedTileEntity extends CachedObject<TileEntity> implements ICachedTileEntity {
+@ApiModel("TileEntity")
+public class CachedTileEntity extends CachedObject<TileEntity> {
 
     private CachedCatalogType type;
-    @Override
-    public ICachedCatalogType getType() {
+    @ApiModelProperty(value = "The type of this tile entity", required = true)
+    public CachedCatalogType getType() {
         return type;
     }
 
     private CachedLocation location;
-    @Override
+    @ApiModelProperty(value = "The location of this tile entity", required = true)
     public CachedLocation getLocation() {
         return location;
     }
 
     protected CachedInventory inventory;
-    @Override
     @JsonDetails
+    @ApiModelProperty("The inventory this tile entity has (if any)")
     public CachedInventory getInventory() {
         return inventory;
     }

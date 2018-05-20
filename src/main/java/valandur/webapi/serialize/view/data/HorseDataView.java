@@ -5,7 +5,7 @@ import io.swagger.annotations.ApiModelProperty;
 import org.spongepowered.api.data.manipulator.mutable.entity.HorseData;
 import org.spongepowered.api.data.type.HorseColor;
 import org.spongepowered.api.data.type.HorseStyle;
-import valandur.webapi.api.serialize.BaseView;
+import valandur.webapi.serialize.BaseView;
 
 @ApiModel("HorseData")
 public class HorseDataView extends BaseView<HorseData> {

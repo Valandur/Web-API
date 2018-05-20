@@ -5,10 +5,10 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import valandur.webapi.WebAPI;
-import valandur.webapi.api.servlet.BaseServlet;
-import valandur.webapi.api.servlet.Permission;
 import valandur.webapi.cache.world.CachedWorld;
 import valandur.webapi.config.MapConfig;
+import valandur.webapi.servlet.base.BaseServlet;
+import valandur.webapi.servlet.base.Permission;
 import valandur.webapi.util.Util;
 
 import javax.imageio.ImageIO;

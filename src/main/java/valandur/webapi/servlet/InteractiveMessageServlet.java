@@ -3,11 +3,10 @@ package valandur.webapi.servlet;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import valandur.webapi.api.message.IInteractiveMessage;
-import valandur.webapi.api.servlet.BaseServlet;
-import valandur.webapi.api.servlet.ExplicitDetails;
-import valandur.webapi.api.servlet.Permission;
 import valandur.webapi.message.InteractiveMessage;
+import valandur.webapi.servlet.base.BaseServlet;
+import valandur.webapi.servlet.base.ExplicitDetails;
+import valandur.webapi.servlet.base.Permission;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -31,7 +30,7 @@ public class InteractiveMessageServlet extends BaseServlet {
             value = "List messages",
             notes = "Get a list of all the messages that were sent through the message " +
                     "endpoint since the server started.")
-    public List<IInteractiveMessage> listMessages() {
+    public List<InteractiveMessage> listMessages() {
         return messageService.getMessages();
     }
 
@@ -41,10 +40,10 @@ public class InteractiveMessageServlet extends BaseServlet {
     @ApiOperation(
             value = "Get a message",
             notes = "Get detailed information about a message.")
-    public IInteractiveMessage getMessage(
+    public InteractiveMessage getMessage(
             @PathParam("uuid") @ApiParam("The uuid of the sent message") UUID uuid)
             throws NotFoundException {
-        Optional<IInteractiveMessage> optMsg = messageService.getMessage(uuid);
+        Optional<InteractiveMessage> optMsg = messageService.getMessage(uuid);
         if (!optMsg.isPresent()) {
             throw new NotFoundException("Message with uuid " + uuid + " not found");
         }
@@ -56,7 +55,7 @@ public class InteractiveMessageServlet extends BaseServlet {
     @Permission("create")
     @ApiOperation(
             value = "Send a message",
-            response = IInteractiveMessage.class,
+            response = InteractiveMessage.class,
             notes = "Send an interactive message to a player. Make sure to have an event hook for " +
                     "\"custom_message\" to receive the response.")
     public Response sendMessage(InteractiveMessage msg)

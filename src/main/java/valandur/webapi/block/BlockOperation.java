@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.flowpowered.math.vector.Vector3i;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.event.cause.Cause;
 import org.spongepowered.api.event.cause.EventContext;
@@ -11,11 +13,9 @@ import org.spongepowered.api.scheduler.Task;
 import org.spongepowered.api.world.Chunk;
 import org.spongepowered.api.world.World;
 import valandur.webapi.WebAPI;
-import valandur.webapi.api.block.IBlockOperation;
-import valandur.webapi.api.block.IBlockService;
-import valandur.webapi.api.cache.CachedObject;
-import valandur.webapi.api.cache.world.ICachedWorld;
-import valandur.webapi.api.serialize.JsonDetails;
+import valandur.webapi.cache.CachedObject;
+import valandur.webapi.cache.world.CachedWorld;
+import valandur.webapi.serialize.JsonDetails;
 import valandur.webapi.util.Constants;
 
 import java.util.Optional;
@@ -33,9 +33,25 @@ import java.util.concurrent.TimeUnit;
         @JsonSubTypes.Type(value = BlockGetOperation.class, name = "GET"),
         @JsonSubTypes.Type(value = BlockChangeOperation.class, name = "CHANGE"),
 })
-public abstract class BlockOperation extends CachedObject<IBlockOperation> implements IBlockOperation {
+@ApiModel(value = "BlockOperation", subTypes = { BlockGetOperation.class, BlockChangeOperation.class })
+public abstract class BlockOperation extends CachedObject<BlockOperation> {
 
-    private IBlockService blockService;
+    /**
+     * The type of block operation
+     */
+    public enum BlockOperationType {
+        GET, CHANGE
+    }
+
+    /**
+     * The current status of the update.
+     */
+    public enum BlockOperationStatus {
+        INIT, RUNNING, PAUSED, DONE, ERRORED, CANCELED,
+    }
+
+
+    private BlockService blockService;
     private final int totalBlocks;
     private int currentBlock = 0;
     private Task task;
@@ -44,61 +60,62 @@ public abstract class BlockOperation extends CachedObject<IBlockOperation> imple
     protected UUID uuid;
     protected String error = null;
     protected Cause cause;
-    protected ICachedWorld world;
+    protected CachedWorld world;
     protected final Vector3i min;
     protected final Vector3i max;
     protected final Vector3i size;
 
+    @ApiModelProperty(value = "The type of block operation", required = true)
+    public abstract BlockOperationType getType();
 
-    @Override
+    @ApiModelProperty(value = "The unique UUID identifying this block operation", required = true)
     public UUID getUUID() {
         return uuid;
     }
 
-    @Override
+    @ApiModelProperty(value = "The current status of the block operation", required = true)
     public BlockOperationStatus getStatus() {
         return status;
     }
 
-
-    @Override
     @JsonDetails
-    public ICachedWorld getWorld() {
+    @ApiModelProperty(value = "The world in which this block operation is running", required = true)
+    public CachedWorld getWorld() {
         return world;
     }
 
-    @Override
     @JsonDetails
+    @ApiModelProperty(value = "The minimum block belonging to this operation", required = true)
     public Vector3i getMin() {
         return min;
     }
 
-    @Override
     @JsonDetails
+    @ApiModelProperty(value = "The maximum block belonging to this operation", required = true)
     public Vector3i getMax() {
         return max;
     }
 
-    @Override
     @JsonIgnore
+    @ApiModelProperty(value = "True if this block operation produced errors, false otherwise.", required = true)
     public boolean isErrored() {
         return error != null;
     }
 
-    @Override
     @JsonDetails
+    @ApiModelProperty(value = "The error message, if any", required = true)
     public String getError() {
         return error;
     }
 
-    @Override
     @JsonIgnore
+    @ApiModelProperty(hidden = true)
     public Cause getCause() {
         return cause;
     }
 
 
-    public BlockOperation(ICachedWorld world, Vector3i min, Vector3i max) {
+    public BlockOperation(CachedWorld world, Vector3i min, Vector3i max) {
         super(null);
 
         this.blockService = WebAPI.getBlockService();
@@ -111,16 +128,23 @@ public abstract class BlockOperation extends CachedObject<IBlockOperation> imple
         this.totalBlocks = size.getX() * size.getY() * size.getZ();
     }
 
-    @Override
+    @ApiModelProperty(
+            value = "The current progress of the block operation, from 0 (=started) to 1 (=finished)",
+            required = true)
     final public float getProgress() {
         return (float)currentBlock / totalBlocks;
     }
-    @Override
+
+    @ApiModelProperty(
+            value = "The estimated amount of time remaining until this block operation is complete (in seconds)",
+            required = true)
     public float getEstimatedSecondsRemaining() {
         return (float)(totalBlocks - currentBlock) / blockService.getMaxBlocksPerSecond();
     }
 
-    @Override
+    /**
+     * Starts this operation. Has no effect if already started, done or errored.
+     */
     final public void start() {
         if (status != BlockOperationStatus.INIT && status != BlockOperationStatus.PAUSED) return;
         status = BlockOperationStatus.RUNNING;
@@ -175,7 +199,9 @@ public abstract class BlockOperation extends CachedObject<IBlockOperation> imple
     }
     protected abstract void processBlock(World world, Vector3i pos);
 
-    @Override
+    /**
+     * Pauses this operation. Has no effect if not running.
+     */
     final public void pause() {
         if (status != BlockOperationStatus.RUNNING) return;
 
@@ -185,7 +211,11 @@ public abstract class BlockOperation extends CachedObject<IBlockOperation> imple
         Sponge.getEventManager().post(new BlockOperationStatusChangeEvent(this));
     }
 
-    @Override
+    /**
+     * Stops this operation. Has no effect if not running or paused.
+     * Once an operation is stopped it cannot be resumed.
+     * @param error The error, if any, that occurred and is the reason this operation was stopped.
+     */
     final public void stop(String error) {
         if (status != BlockOperationStatus.RUNNING && status != BlockOperationStatus.PAUSED) return;
 
@@ -201,13 +231,11 @@ public abstract class BlockOperation extends CachedObject<IBlockOperation> imple
         Sponge.getEventManager().post(new BlockOperationStatusChangeEvent(this));
     }
 
-    @Override
     public String getLink() {
         return Constants.BASE_PATH + "/block/op/" + uuid;
     }
 
-    @Override
-    public Optional<IBlockOperation> getLive() {
+    public Optional<BlockOperation> getLive() {
         return WebAPI.getBlockService().getBlockOperation(uuid);
     }
 }

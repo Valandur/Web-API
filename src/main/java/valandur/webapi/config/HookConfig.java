@@ -3,13 +3,12 @@ package valandur.webapi.config;
 import com.google.common.collect.Lists;
 import ninja.leaping.configurate.objectmapping.Setting;
 import ninja.leaping.configurate.objectmapping.serialize.ConfigSerializable;
-import valandur.webapi.api.hook.IWebHook;
-import valandur.webapi.api.hook.IWebHookService.WebHookType;
-import valandur.webapi.api.hook.WebHookHeader;
-import valandur.webapi.api.security.IPermissionService;
 import valandur.webapi.hook.CommandWebHook;
 import valandur.webapi.hook.WebHook;
+import valandur.webapi.hook.WebHookHeader;
 import valandur.webapi.hook.WebHookParam;
+import valandur.webapi.hook.WebHookService.WebHookType;
+import valandur.webapi.security.PermissionService;
 
 import javax.ws.rs.HttpMethod;
 import java.util.ArrayList;
@@ -34,11 +33,11 @@ public class HookConfig extends BaseConfig {
                                 "http://localhost/test/{player}",
                                 false,
                                 HttpMethod.POST,
-                                IWebHook.WebHookDataType.JSON,
+                                WebHook.WebHookDataType.JSON,
                                 false,
                                 Lists.newArrayList(new WebHookHeader("X-SUPER-SECRET", "my_secret_to_verify")),
                                 true,
-                                IPermissionService.permitAllNode()
+                                PermissionService.permitAllNode()
                         )
                 )
         ));
@@ -69,11 +68,11 @@ public class HookConfig extends BaseConfig {
                 "http://localhost/test",
                 false,
                 HttpMethod.POST,
-                IWebHook.WebHookDataType.JSON,
+                WebHook.WebHookDataType.JSON,
                 false,
                 Lists.newArrayList(new WebHookHeader("X-SUPER-SECRET", "my_secret_to_verify")),
                 true,
-                IPermissionService.permitAllNode()
+                PermissionService.permitAllNode()
         ));
 
         @Setting(comment = "This event is fired when a player earns an achievement / advancement")

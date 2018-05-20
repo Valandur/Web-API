@@ -3,11 +3,11 @@ package valandur.webapi.servlet;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import valandur.webapi.WebAPI;
-import valandur.webapi.api.servlet.BaseServlet;
-import valandur.webapi.api.servlet.Permission;
 import valandur.webapi.security.SecurityContext;
 import valandur.webapi.server.ServerProperty;
 import valandur.webapi.server.ServerService;
+import valandur.webapi.servlet.base.BaseServlet;
+import valandur.webapi.servlet.base.Permission;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;

@@ -3,7 +3,7 @@ package valandur.webapi.serialize.view.data;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.spongepowered.api.data.manipulator.mutable.entity.FoodData;
-import valandur.webapi.api.serialize.BaseView;
+import valandur.webapi.serialize.BaseView;
 
 @ApiModel("FoodData")
 public class FoodDataView extends BaseView<FoodData> {

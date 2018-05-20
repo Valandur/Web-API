@@ -3,14 +3,14 @@ package valandur.webapi.servlet;
 import com.flowpowered.math.vector.Vector3i;
 import io.swagger.annotations.*;
 import org.spongepowered.api.block.BlockState;
-import valandur.webapi.api.block.IBlockOperation;
-import valandur.webapi.api.cache.world.ICachedWorld;
-import valandur.webapi.api.servlet.BaseServlet;
-import valandur.webapi.api.servlet.ExplicitDetails;
-import valandur.webapi.api.servlet.Permission;
 import valandur.webapi.block.BlockChangeOperation;
 import valandur.webapi.block.BlockGetOperation;
+import valandur.webapi.block.BlockOperation;
+import valandur.webapi.cache.world.CachedWorld;
 import valandur.webapi.serialize.view.block.BlockStateView;
+import valandur.webapi.servlet.base.BaseServlet;
+import valandur.webapi.servlet.base.ExplicitDetails;
+import valandur.webapi.servlet.base.Permission;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -32,7 +32,7 @@ public class BlockServlet extends BaseServlet {
             value = "Get a block",
             notes = "Gets information about one block in the world.")
     public BlockStateView getBlock(
-            @PathParam("world") @ApiParam("The uuid of the world to get the block from") ICachedWorld world,
+            @PathParam("world") @ApiParam("The uuid of the world to get the block from") CachedWorld world,
             @PathParam("x") @ApiParam("The x-coordinate of the block") int x,
             @PathParam("y") @ApiParam("The y-coordinate of the block") int y,
             @PathParam("z") @ApiParam("The z-coordinate of the block") int z) {
@@ -47,7 +47,7 @@ public class BlockServlet extends BaseServlet {
     @ApiOperation(
             value = "List block operations",
             notes = "Returns a list of all the currently running block operations.")
-    public Collection<IBlockOperation> listBlockOperations() {
+    public Collection<BlockOperation> listBlockOperations() {
         return blockService.getBlockOperations();
     }
 
@@ -56,7 +56,7 @@ public class BlockServlet extends BaseServlet {
     @Permission({ "op", "create" })
     @ApiOperation(
             value = "Create a block operation",
-            response = IBlockOperation.class,
+            response = BlockOperation.class,
             notes = "Start a request to get or change blocks on the server.")
     public Response createBlockOperation(CreateBlockOperationRequest req)
             throws BadRequestException, NotAcceptableException, URISyntaxException {
@@ -88,8 +88,8 @@ public class BlockServlet extends BaseServlet {
         Vector3i size = max.sub(min).add(1, 1, 1);
         int numBlocks = size.getX() * size.getY() * size.getZ();
 
-        IBlockOperation op;
-        if (req.getType() == IBlockOperation.BlockOperationType.GET) {
+        BlockOperation op;
+        if (req.getType() == BlockOperation.BlockOperationType.GET) {
             // Check volume size
             if (blockService.getMaxGetBlocks() > 0 && numBlocks > blockService.getMaxGetBlocks()) {
                 throw new NotAcceptableException("Size is " + numBlocks +
@@ -98,7 +98,7 @@ public class BlockServlet extends BaseServlet {
             }
 
             op = blockService.startBlockOperation(new BlockGetOperation(req.getWorld().get(), min, max));
-        } else if (req.getType() == IBlockOperation.BlockOperationType.CHANGE) {
+        } else if (req.getType() == BlockOperation.BlockOperationType.CHANGE) {
             // Check volume size
             if (blockService.getMaxUpdateBlocks() > 0 && numBlocks > blockService.getMaxUpdateBlocks()) {
                 throw new NotAcceptableException("Size is " + numBlocks +
@@ -170,11 +170,11 @@ public class BlockServlet extends BaseServlet {
     @ApiOperation(
             value = "Get a block operation",
             notes = "Gets details about a specific block operation")
-    public IBlockOperation getBlockOperation(
+    public BlockOperation getBlockOperation(
             @PathParam("uuid") @ApiParam("The uuid of the block operation") UUID uuid)
             throws NotFoundException {
         // Check block op
-        Optional<IBlockOperation> op = blockService.getBlockOperation(uuid);
+        Optional<BlockOperation> op = blockService.getBlockOperation(uuid);
         if (!op.isPresent()) {
             throw new NotFoundException("Block operation with UUID '" + uuid + "' could not be found");
         }
@@ -188,7 +188,7 @@ public class BlockServlet extends BaseServlet {
     @ApiOperation(
             value = "Modify a block operation",
             notes = "Modify an existing block operation to either pause or continue it.")
-    public IBlockOperation modifyBlockOperation(
+    public BlockOperation modifyBlockOperation(
             @PathParam("uuid") @ApiParam("The uuid of the block operation") UUID uuid,
             ModifyBlockOperationRequest req)
             throws NotFoundException {
@@ -198,7 +198,7 @@ public class BlockServlet extends BaseServlet {
         }
 
         // Check block op
-        Optional<IBlockOperation> op = blockService.getBlockOperation(uuid);
+        Optional<BlockOperation> op = blockService.getBlockOperation(uuid);
         if (!op.isPresent()) {
             throw new NotFoundException("Block opeartion with UUID '" + uuid + "' could not be found");
         }
@@ -218,11 +218,11 @@ public class BlockServlet extends BaseServlet {
     @ApiOperation(
             value = "Stop a block operation",
             notes = "Cancel a pending or running block operation. **THIS DOES NOT UNDO THE BLOCK CHANGES**")
-    public IBlockOperation deleteBlockOperation(
+    public BlockOperation deleteBlockOperation(
             @PathParam("uuid") @ApiParam("The uuid of the block operation") UUID uuid)
             throws NotFoundException {
         // Check block op
-        Optional<IBlockOperation> op = blockService.getBlockOperation(uuid);
+        Optional<BlockOperation> op = blockService.getBlockOperation(uuid);
         if (!op.isPresent()) {
             throw new NotFoundException("Block operation with UUID '" + uuid + "' could not be found");
         }
@@ -236,15 +236,15 @@ public class BlockServlet extends BaseServlet {
     @ApiModel("CreateBlockOperationRequest")
         public static class CreateBlockOperationRequest {
 
-        private IBlockOperation.BlockOperationType type;
+        private BlockOperation.BlockOperationType type;
         @ApiModelProperty(value = "The type of the block operation", required = true)
-        public IBlockOperation.BlockOperationType getType() {
+        public BlockOperation.BlockOperationType getType() {
             return type;
         }
 
-        private ICachedWorld world;
+        private CachedWorld world;
         @ApiModelProperty(dataType = "string", value = "The world that the operation is run in", required = true)
-        public Optional<ICachedWorld> getWorld() {
+        public Optional<CachedWorld> getWorld() {
             return world != null ? Optional.of(world) : Optional.empty();
         }
 

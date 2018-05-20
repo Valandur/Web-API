@@ -3,7 +3,7 @@ package valandur.webapi.serialize.view.item;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.spongepowered.api.item.enchantment.Enchantment;
-import valandur.webapi.api.serialize.BaseView;
+import valandur.webapi.serialize.BaseView;
 
 @ApiModel("Enchantment")
 public class EnchantmentView extends BaseView<Enchantment> {

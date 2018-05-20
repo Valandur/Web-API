@@ -74,17 +74,10 @@ import org.spongepowered.api.world.WorldBorder;
 import org.spongepowered.api.world.explosion.Explosion;
 import org.spongepowered.plugin.meta.PluginDependency;
 import valandur.webapi.WebAPI;
-import valandur.webapi.api.cache.ICachedObject;
-import valandur.webapi.api.cache.misc.CachedCatalogType;
-import valandur.webapi.api.cache.player.ICachedPlayer;
-import valandur.webapi.api.cache.world.CachedLocation;
-import valandur.webapi.api.cache.world.CachedTransform;
-import valandur.webapi.api.cache.world.ICachedWorld;
-import valandur.webapi.api.serialize.BaseView;
-import valandur.webapi.api.serialize.ISerializeService;
-import valandur.webapi.api.util.TreeNode;
+import valandur.webapi.cache.CachedObject;
 import valandur.webapi.cache.command.CachedCommand;
 import valandur.webapi.cache.entity.CachedEntity;
+import valandur.webapi.cache.misc.CachedCatalogType;
 import valandur.webapi.cache.misc.CachedCause;
 import valandur.webapi.cache.misc.CachedInventory;
 import valandur.webapi.cache.player.CachedAdvancement;
@@ -92,9 +85,7 @@ import valandur.webapi.cache.player.CachedPlayer;
 import valandur.webapi.cache.plugin.CachedPluginContainer;
 import valandur.webapi.cache.plugin.CachedPluginDependency;
 import valandur.webapi.cache.tileentity.CachedTileEntity;
-import valandur.webapi.cache.world.CachedChunk;
-import valandur.webapi.cache.world.CachedWorld;
-import valandur.webapi.cache.world.CachedWorldBorder;
+import valandur.webapi.cache.world.*;
 import valandur.webapi.serialize.deserialize.*;
 import valandur.webapi.serialize.view.block.BlockSnapshotView;
 import valandur.webapi.serialize.view.block.BlockStateView;
@@ -118,6 +109,7 @@ import valandur.webapi.serialize.view.player.GameModeView;
 import valandur.webapi.serialize.view.player.GameProfileView;
 import valandur.webapi.serialize.view.player.RespawnLocationView;
 import valandur.webapi.serialize.view.tileentity.PatternLayerView;
+import valandur.webapi.util.TreeNode;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -126,7 +118,11 @@ import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class SerializeService implements ISerializeService {
+/**
+ * The serialize service is used to convert java objects into json/xml.
+ * You can register your own serializers here to determine how certain objects are converted into json.
+ */
+public class SerializeService {
 
     private Map<Class, BaseSerializer> serializers;
     private Map<String, Class<? extends DataManipulator<?, ?>>> supportedData;
@@ -536,21 +532,39 @@ public class SerializeService implements ISerializeService {
     private void _register(Class handledClass, Class cacheClass) {
         serializers.put(handledClass, new BaseSerializer<>(handledClass, cacheClass));
     }
-    @Override
-    public <T> void registerCache(Class<? extends T> handledClass, Class<? extends ICachedObject<T>> cacheClass) {
+
+    /**
+     * Registers an object as a cached object for the Web-API.
+     * @param handledClass The class of the live object which is turned into a cached object.
+     * @param cacheClass The class of the cached object.
+     * @param <T> The type of the live object.
+     */
+    public <T> void registerCache(Class<? extends T> handledClass, Class<? extends CachedObject<T>> cacheClass) {
         _register(handledClass, cacheClass);
     }
-    @Override
+
+    /**
+     * Registers a view which helps turn an object into json.
+     * @param handledClass The class of the live object which is turned into json using the view class.
+     * @param viewClass The class of the view which helps turn the object into json.
+     * @param <T> The type of the live object.
+     */
     public <T> void registerView(Class<? extends T> handledClass, Class<? extends BaseView<T>> viewClass) {
         _register(handledClass, viewClass);
     }
 
-    @Override
+    /**
+     * Gets all DataHolder types that are supported by the Web-API
+     * @return A map from json key to DataHolder type
+     */
     public Map<String, Class<? extends DataManipulator<?, ?>>> getSupportedData() {
         return supportedData;
     }
 
-    @Override
+    /**
+     * Gets all PropertyHolder types that are supported by the Web-API
+     * @return A map from json key to PropertyHolder type
+     */
     public Map<Class<? extends Property<?, ?>>, String> getSupportedProperties() {
         return supportedProperties;
     }
@@ -577,7 +591,11 @@ public class SerializeService implements ISerializeService {
         return new Type[0];
     }
 
-    @Override
+    /**
+     * Gets the View class used to represent a certain class, if present
+     * @param clazz The class which should be check for an available view
+     * @return The view class that should be used for serialization instead of the original class, if available.
+     */
     public Optional<Type> getViewFor(Class clazz) {
         BaseSerializer ser = serializers.get(clazz);
         if (ser != null) {
@@ -664,8 +682,8 @@ public class SerializeService implements ISerializeService {
         mod.addDeserializer(BlockState.class, new BlockStateDeserializer());
         mod.addDeserializer(ItemStackSnapshot.class, new ItemStackSnapshotDeserializer());
         mod.addDeserializer(CachedLocation.class, new CachedLocationDeserializer());
-        mod.addDeserializer(ICachedPlayer.class, new CachedPlayerDeserializer());
-        mod.addDeserializer(ICachedWorld.class, new CachedWorldDeserializer());
+        mod.addDeserializer(CachedPlayer.class, new CachedPlayerDeserializer());
+        mod.addDeserializer(CachedWorld.class, new CachedWorldDeserializer());
         mod.addDeserializer(CachedCatalogType.class, new CachedCatalogTypeDeserializer<>(CatalogType.class));
         om.registerModule(mod);
 

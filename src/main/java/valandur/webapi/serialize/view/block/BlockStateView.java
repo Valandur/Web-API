@@ -7,8 +7,8 @@ import org.spongepowered.api.block.BlockType;
 import org.spongepowered.api.block.trait.BlockTrait;
 import org.spongepowered.api.data.manipulator.DataManipulator;
 import valandur.webapi.WebAPI;
-import valandur.webapi.api.serialize.BaseView;
-import valandur.webapi.api.serialize.JsonDetails;
+import valandur.webapi.serialize.BaseView;
+import valandur.webapi.serialize.JsonDetails;
 
 import java.util.HashMap;
 import java.util.Map;

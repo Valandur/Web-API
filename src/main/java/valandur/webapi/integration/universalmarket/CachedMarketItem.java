@@ -4,9 +4,9 @@ import com.xwaffle.universalmarket.market.MarketItem;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.spongepowered.api.item.inventory.ItemStack;
-import valandur.webapi.api.WebAPIAPI;
-import valandur.webapi.api.cache.CachedObject;
-import valandur.webapi.api.cache.player.ICachedPlayer;
+import valandur.webapi.WebAPI;
+import valandur.webapi.cache.CachedObject;
+import valandur.webapi.cache.player.CachedPlayer;
 import valandur.webapi.util.Constants;
 
 @ApiModel("UniversalMarketItem")
@@ -36,9 +36,9 @@ public class CachedMarketItem extends CachedObject<MarketItem> {
         return price;
     }
 
-    private ICachedPlayer owner;
+    private CachedPlayer owner;
     @ApiModelProperty(value = "The owner that submitted this offer", required = true)
-    public ICachedPlayer getOwner() {
+    public CachedPlayer getOwner() {
         return owner;
     }
 
@@ -50,7 +50,7 @@ public class CachedMarketItem extends CachedObject<MarketItem> {
         this.item = value.getItem().copy();
         this.expires = value.getExpireTime() / 1000;
         this.price = value.getPrice();
-        this.owner = WebAPIAPI.getCacheService().flatMap(srv -> srv.getPlayer(value.getOwnerUUID())).orElse(null);
+        this.owner = WebAPI.getCacheService().getPlayer(value.getOwnerUUID()).orElse(null);
     }
 
     @Override

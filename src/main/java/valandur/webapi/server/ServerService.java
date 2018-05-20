@@ -4,8 +4,6 @@ import com.sun.management.OperatingSystemMXBean;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.scheduler.Task;
 import valandur.webapi.WebAPI;
-import valandur.webapi.api.server.IServerService;
-import valandur.webapi.api.server.IServerStat;
 import valandur.webapi.config.ServerConfig;
 import valandur.webapi.util.Util;
 
@@ -21,7 +19,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 
-public class ServerService implements IServerService {
+/**
+ * This service provides information about the minecraft server.
+ */
+public class ServerService {
 
     private final static String configFileName = "server.conf";
 
@@ -92,8 +93,8 @@ public class ServerService implements IServerService {
             free += root.getFreeSpace();
         }
 
-        long totalMem = Runtime.getRuntime().totalMemory();
-        long usedMem = (totalMem - Runtime.getRuntime().freeMemory());
+        long maxMem = Runtime.getRuntime().maxMemory();
+        long usedMem = (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory());
 
         // Stuff accessing sponge needs to be run on the server main thread
         WebAPI.runOnMain(() -> {
@@ -101,7 +102,7 @@ public class ServerService implements IServerService {
             onlinePlayers.add(new ServerStat<>(Sponge.getServer().getOnlinePlayers().size()));
         });
         cpuLoad.add(new ServerStat<>(systemMXBean.getProcessCpuLoad()));
-        memoryLoad.add(new ServerStat<>((totalMem - usedMem) / (double)totalMem));
+        memoryLoad.add(new ServerStat<>(usedMem / (double)maxMem));
         diskUsage.add(new ServerStat<>((total - free) / (double)total));
 
         while (averageTps.size() > MAX_STATS_ENTRIES)
@@ -116,30 +117,52 @@ public class ServerService implements IServerService {
             diskUsage.poll();
     }
 
-    @Override
+    /**
+     * Gets the number of data entries currently recorded.
+     * @return The number of data entries that are available.
+     */
     public int getNumEntries() {
         return Math.min(averageTps.size(), Math.min(onlinePlayers.size(), Math.min(cpuLoad.size(),
                 Math.min(memoryLoad.size(), diskUsage.size()))));
     }
 
-    @Override
-    public List<IServerStat<Double>> getAverageTps() {
+    /**
+     * Gets a history of the average TPS of the minecraft server.
+     * @return A list containing measurements of the TPS.
+     */
+    public List<ServerStat<Double>> getAverageTps() {
         return new ArrayList<>(averageTps);
     }
-    @Override
-    public List<IServerStat<Integer>> getOnlinePlayers() {
+
+    /**
+     * Gets a history of the amount of players that were online on the minecraft server.
+     * @return A list containing measurements of the amount of players online.
+     */
+    public List<ServerStat<Integer>> getOnlinePlayers() {
         return new ArrayList<>(onlinePlayers);
     }
-    @Override
-    public List<IServerStat<Double>> getCpuLoad() {
+
+    /**
+     * Gets a history of the average load of the cpu.
+     * @return A list containing the measurements of the average load of the cpu.
+     */
+    public List<ServerStat<Double>> getCpuLoad() {
         return new ArrayList<>(cpuLoad);
     }
-    @Override
-    public List<IServerStat<Double>> getMemoryLoad() {
+
+    /**
+     * Gets a history of the average memory load.
+     * @return A list containing the measurements of the average memory load.
+     */
+    public List<ServerStat<Double>> getMemoryLoad() {
         return new ArrayList<>(memoryLoad);
     }
-    @Override
-    public List<IServerStat<Double>> getDiskUsage() {
+
+    /**
+     * Gets a history of the average disk usage.
+     * @return A list containing measurements of the average disk usage.
+     */
+    public List<ServerStat<Double>> getDiskUsage() {
         return new ArrayList<>(diskUsage);
     }
 

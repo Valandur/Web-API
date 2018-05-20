@@ -3,7 +3,7 @@ package valandur.webapi.serialize.view.data;
 import com.fasterxml.jackson.annotation.JsonValue;
 import org.spongepowered.api.extra.fluid.FluidStackSnapshot;
 import org.spongepowered.api.extra.fluid.data.manipulator.mutable.FluidItemData;
-import valandur.webapi.api.serialize.BaseView;
+import valandur.webapi.serialize.BaseView;
 
 public class FluidItemDataView extends BaseView<FluidItemData> {
 

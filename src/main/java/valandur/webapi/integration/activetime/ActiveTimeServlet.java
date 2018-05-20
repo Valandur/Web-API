@@ -8,10 +8,10 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.spongepowered.api.entity.living.player.User;
 import valandur.webapi.WebAPI;
-import valandur.webapi.api.WebAPIAPI;
-import valandur.webapi.api.cache.player.ICachedPlayer;
-import valandur.webapi.api.servlet.BaseServlet;
-import valandur.webapi.api.servlet.Permission;
+import valandur.webapi.cache.player.CachedPlayer;
+import valandur.webapi.serialize.SerializeService;
+import valandur.webapi.servlet.base.BaseServlet;
+import valandur.webapi.servlet.base.Permission;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -27,11 +27,10 @@ import java.util.concurrent.ExecutionException;
 public class ActiveTimeServlet extends BaseServlet {
 
     public static void onRegister() {
-        WebAPIAPI.getJsonService().ifPresent(srv -> {
-            srv.registerView(ServerReport.class, ServerReportView.class);
-            srv.registerView(TimeHolder.class, TimeHolderView.class);
-            srv.registerView(UserReport.class, UserReportView.class);
-        });
+        SerializeService srv = WebAPI.getSerializeService();
+        srv.registerView(ServerReport.class, ServerReportView.class);
+        srv.registerView(TimeHolder.class, TimeHolderView.class);
+        srv.registerView(UserReport.class, UserReportView.class);
     }
 
     @GET
@@ -53,7 +52,7 @@ public class ActiveTimeServlet extends BaseServlet {
     @ApiOperation(
             value = "User report",
             notes = "Generates a report for a specific user from a week ago until now")
-    public UserReport getUserReport(@PathParam("uuid") ICachedPlayer player) {
+    public UserReport getUserReport(@PathParam("uuid") CachedPlayer player) {
         try {
             CompletableFuture<UserReport> report = WebAPI.runOnMain(() -> {
                 Optional<User> optUser = player.getUser();

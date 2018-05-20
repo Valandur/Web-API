@@ -3,7 +3,7 @@ package valandur.webapi.serialize.view.data;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.spongepowered.api.data.manipulator.mutable.entity.PickupDelayData;
-import valandur.webapi.api.serialize.BaseView;
+import valandur.webapi.serialize.BaseView;
 
 @ApiModel("PickupDelayData")
 public class PickupDelayDataView extends BaseView<PickupDelayData> {

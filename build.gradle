@@ -79,6 +79,7 @@ dependencies {
 
     // Integrations
     compileOnly name: "ActiveTime-s7.1-v1.4.0"
+    compileOnly name: "CmdScheduler-s7.1-v1.1.0"
     compileOnly name: "HuskyCrates-v1.8.0PRE2-API7"
     compileOnly name: "MMCRestrict-1.4.2-API-7"
     compileOnly name: "MMCTickets-1.4.1-API-7"

@@ -27,15 +27,6 @@ import org.spongepowered.api.plugin.PluginContainer;
 import org.spongepowered.api.scheduler.SpongeExecutorService;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
-import valandur.webapi.api.block.IBlockService;
-import valandur.webapi.api.cache.ICacheService;
-import valandur.webapi.api.hook.IWebHookService;
-import valandur.webapi.api.message.IInteractiveMessageService;
-import valandur.webapi.api.security.IPermissionService;
-import valandur.webapi.api.serialize.ISerializeService;
-import valandur.webapi.api.server.IServerService;
-import valandur.webapi.api.servlet.BaseServlet;
-import valandur.webapi.api.servlet.IServletService;
 import valandur.webapi.block.BlockOperation;
 import valandur.webapi.block.BlockOperationStatusChangeEvent;
 import valandur.webapi.block.BlockService;
@@ -53,6 +44,7 @@ import valandur.webapi.security.PermissionStruct;
 import valandur.webapi.security.PermissionStructSerializer;
 import valandur.webapi.serialize.SerializeService;
 import valandur.webapi.server.ServerService;
+import valandur.webapi.servlet.base.BaseServlet;
 import valandur.webapi.servlet.base.ServletService;
 import valandur.webapi.swagger.SwaggerModelConverter;
 import valandur.webapi.user.UserPermissionStruct;
@@ -275,14 +267,14 @@ public class WebAPI {
         this.webHookService = new WebHookService();
 
         // Register services
-        Sponge.getServiceManager().setProvider(this, IBlockService.class, blockService);
-        Sponge.getServiceManager().setProvider(this, ICacheService.class, cacheService);
-        Sponge.getServiceManager().setProvider(this, ISerializeService.class, serializeService);
-        Sponge.getServiceManager().setProvider(this, IInteractiveMessageService.class, messageService);
-        Sponge.getServiceManager().setProvider(this, IPermissionService.class, permissionService);
-        Sponge.getServiceManager().setProvider(this, IServerService.class, serverService);
-        Sponge.getServiceManager().setProvider(this, IServletService.class, servletService);
-        Sponge.getServiceManager().setProvider(this, IWebHookService.class, webHookService);
+        Sponge.getServiceManager().setProvider(this, BlockService.class, blockService);
+        Sponge.getServiceManager().setProvider(this, CacheService.class, cacheService);
+        Sponge.getServiceManager().setProvider(this, SerializeService.class, serializeService);
+        Sponge.getServiceManager().setProvider(this, InteractiveMessageService.class, messageService);
+        Sponge.getServiceManager().setProvider(this, PermissionService.class, permissionService);
+        Sponge.getServiceManager().setProvider(this, ServerService.class, serverService);
+        Sponge.getServiceManager().setProvider(this, ServletService.class, servletService);
+        Sponge.getServiceManager().setProvider(this, WebHookService.class, webHookService);
 
         // Register events of services
         Sponge.getEventManager().registerListeners(this, cacheService);

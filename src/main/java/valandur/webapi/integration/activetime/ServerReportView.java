@@ -3,7 +3,7 @@ package valandur.webapi.integration.activetime;
 import com.mcsimonflash.sponge.activetime.objects.ServerReport;
 import com.mcsimonflash.sponge.activetime.objects.TimeHolder;
 import io.swagger.annotations.ApiModel;
-import valandur.webapi.api.serialize.BaseView;
+import valandur.webapi.serialize.BaseView;
 
 import java.time.LocalDate;
 

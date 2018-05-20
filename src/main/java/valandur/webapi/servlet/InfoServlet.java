@@ -10,12 +10,11 @@ import org.spongepowered.api.Sponge;
 import org.spongepowered.api.resourcepack.ResourcePack;
 import org.spongepowered.api.text.Text;
 import valandur.webapi.WebAPI;
-import valandur.webapi.api.cache.plugin.ICachedPluginContainer;
-import valandur.webapi.api.server.IServerStat;
-import valandur.webapi.api.servlet.BaseServlet;
-import valandur.webapi.api.servlet.Permission;
 import valandur.webapi.cache.plugin.CachedPluginContainer;
 import valandur.webapi.server.ServerService;
+import valandur.webapi.server.ServerStat;
+import valandur.webapi.servlet.base.BaseServlet;
+import valandur.webapi.servlet.base.Permission;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -128,21 +127,21 @@ public class InfoServlet extends BaseServlet {
             return minecraftVersion;
         }
 
-        private ICachedPluginContainer game;
+        private CachedPluginContainer game;
         @ApiModelProperty(required = true)
-        public ICachedPluginContainer getGame() {
+        public CachedPluginContainer getGame() {
             return game;
         }
 
-        private ICachedPluginContainer api;
+        private CachedPluginContainer api;
         @ApiModelProperty(required = true)
-        public ICachedPluginContainer getApi() {
+        public CachedPluginContainer getApi() {
             return api;
         }
 
-        private ICachedPluginContainer implementation;
+        private CachedPluginContainer implementation;
         @ApiModelProperty(required = true)
-        public ICachedPluginContainer getImplementation() {
+        public CachedPluginContainer getImplementation() {
             return implementation;
         }
 
@@ -175,33 +174,33 @@ public class InfoServlet extends BaseServlet {
     @ApiModel("ServerStats")
         public static class ServerStats {
 
-        private List<IServerStat<Double>> tps;
+        private List<ServerStat<Double>> tps;
         @ApiModelProperty(value = "Historic values for the average ticks per second", required = true)
-        public List<IServerStat<Double>> getTps() {
+        public List<ServerStat<Double>> getTps() {
             return tps;
         }
 
-        private List<IServerStat<Integer>> players;
+        private List<ServerStat<Integer>> players;
         @ApiModelProperty(value = "Historic values for the number of online players", required = true)
-        public List<IServerStat<Integer>> getPlayers() {
+        public List<ServerStat<Integer>> getPlayers() {
             return players;
         }
 
-        private List<IServerStat<Double>> cpu;
+        private List<ServerStat<Double>> cpu;
         @ApiModelProperty(value = "Historic values for the cpu load", required = true)
-        public List<IServerStat<Double>> getCpu() {
+        public List<ServerStat<Double>> getCpu() {
             return cpu;
         }
 
-        private List<IServerStat<Double>> memory;
+        private List<ServerStat<Double>> memory;
         @ApiModelProperty(value = "Historic values for the memory load", required = true)
-        public List<IServerStat<Double>> getMemory() {
+        public List<ServerStat<Double>> getMemory() {
             return memory;
         }
 
-        private List<IServerStat<Double>> disk;
+        private List<ServerStat<Double>> disk;
         @ApiModelProperty(value = "Historic values for the disk usage", required = true)
-        public List<IServerStat<Double>> getDisk() {
+        public List<ServerStat<Double>> getDisk() {
             return disk;
         }
 

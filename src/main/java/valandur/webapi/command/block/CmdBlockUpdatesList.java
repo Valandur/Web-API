@@ -12,17 +12,17 @@ import org.spongepowered.api.text.action.TextActions;
 import org.spongepowered.api.text.format.TextColor;
 import org.spongepowered.api.text.format.TextColors;
 import valandur.webapi.WebAPI;
-import valandur.webapi.api.block.IBlockOperation;
+import valandur.webapi.block.BlockOperation;
 
 import java.util.Collection;
 import java.util.stream.Collectors;
 
-import static valandur.webapi.api.block.IBlockOperation.BlockOperationStatus;
+import static valandur.webapi.block.BlockOperation.BlockOperationStatus;
 
 public class CmdBlockUpdatesList implements CommandExecutor {
     @Override
     public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
-        Collection<IBlockOperation> ops = WebAPI.getBlockService().getBlockOperations();
+        Collection<BlockOperation> ops = WebAPI.getBlockService().getBlockOperations();
         PaginationList.builder()
                 .title(Text.of("Web-API Block Ops"))
                 .contents(ops.stream().map(op -> {
@@ -60,7 +60,7 @@ public class CmdBlockUpdatesList implements CommandExecutor {
         return CommandResult.success();
     }
 
-    private TextColor getColor(IBlockOperation op) {
+    private TextColor getColor(BlockOperation op) {
         switch (op.getStatus()) {
             case RUNNING:
                 return TextColors.DARK_GREEN;

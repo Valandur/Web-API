@@ -7,10 +7,11 @@ import org.spongepowered.api.command.args.CommandContext;
 import org.spongepowered.api.command.spec.CommandExecutor;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
-import valandur.webapi.api.block.IBlockOperation;
 import valandur.webapi.block.BlockOperation;
 
 import java.util.Optional;
+
+import static valandur.webapi.block.BlockOperation.BlockOperationStatus;
 
 public class CmdBlockUpdatesPause implements CommandExecutor {
     @Override
@@ -23,7 +24,7 @@ public class CmdBlockUpdatesPause implements CommandExecutor {
             return CommandResult.empty();
         }
 
-        if (op.get().getStatus() == IBlockOperation.BlockOperationStatus.RUNNING) {
+        if (op.get().getStatus() == BlockOperationStatus.RUNNING) {
             op.get().pause();
         } else {
             op.get().start();

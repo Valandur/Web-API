@@ -1,19 +1,17 @@
 package valandur.webapi.server;
 
+import com.sun.management.OperatingSystemMXBean;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.scheduler.Task;
-import oshi.SystemInfo;
-import oshi.hardware.GlobalMemory;
-import oshi.hardware.HardwareAbstractionLayer;
 import valandur.webapi.WebAPI;
 import valandur.webapi.api.server.IServerService;
 import valandur.webapi.api.server.IServerStat;
-import valandur.webapi.config.MainConfig;
 import valandur.webapi.config.ServerConfig;
 import valandur.webapi.util.Util;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -27,12 +25,14 @@ public class ServerService implements IServerService {
 
     private final static String configFileName = "server.conf";
 
-    private Map<String, ServerProperty> properties = new ConcurrentHashMap<>();
-    private Map<String, ServerProperty> newProperties = new ConcurrentHashMap<>();
-
     // Record every 5 seconds. (17280 entries = 24 hours, 4320 entries = 6 hours)
     private static int STATS_INTERVAL = 5;
     private static int MAX_STATS_ENTRIES = 4320;
+
+    private OperatingSystemMXBean systemMXBean;
+    private Map<String, ServerProperty> properties = new ConcurrentHashMap<>();
+    private Map<String, ServerProperty> newProperties = new ConcurrentHashMap<>();
+
     private Queue<ServerStat<Double>> averageTps = new ConcurrentLinkedQueue<>();
     private Queue<ServerStat<Integer>> onlinePlayers = new ConcurrentLinkedQueue<>();
     private Queue<ServerStat<Double>> cpuLoad = new ConcurrentLinkedQueue<>();
@@ -73,6 +73,8 @@ public class ServerService implements IServerService {
             statTask.cancel();
         }
 
+        systemMXBean = (OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
+
         statTask = Task.builder().execute(this::recordStats)
                 .async()
                 .delay(STATS_INTERVAL, TimeUnit.SECONDS)
@@ -82,10 +84,6 @@ public class ServerService implements IServerService {
     }
 
     private void recordStats() {
-        SystemInfo si = new SystemInfo();
-        HardwareAbstractionLayer hal = si.getHardware();
-        GlobalMemory mem = hal.getMemory();
-
         long total = 0;
         long free = 0;
         File[] roots = File.listRoots();
@@ -94,13 +92,16 @@ public class ServerService implements IServerService {
             free += root.getFreeSpace();
         }
 
+        long totalMem = Runtime.getRuntime().totalMemory();
+        long usedMem = (totalMem - Runtime.getRuntime().freeMemory());
+
         // Stuff accessing sponge needs to be run on the server main thread
         WebAPI.runOnMain(() -> {
             averageTps.add(new ServerStat<>(Sponge.getServer().getTicksPerSecond()));
             onlinePlayers.add(new ServerStat<>(Sponge.getServer().getOnlinePlayers().size()));
         });
-        cpuLoad.add(new ServerStat<>(hal.getProcessor().getSystemCpuLoadBetweenTicks()));
-        memoryLoad.add(new ServerStat<>((mem.getTotal() - mem.getAvailable()) / (double)mem.getTotal()));
+        cpuLoad.add(new ServerStat<>(systemMXBean.getProcessCpuLoad()));
+        memoryLoad.add(new ServerStat<>((totalMem - usedMem) / (double)totalMem));
         diskUsage.add(new ServerStat<>((total - free) / (double)total));
 
         while (averageTps.size() > MAX_STATS_ENTRIES)

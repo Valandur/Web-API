@@ -54,8 +54,6 @@ configurations.all {
 dependencies {
     compile group: "co.aikar", name: "minecraft-timings", version: "1.0.4"
 
-    compile group: "com.github.oshi", name: "oshi-core", version: "3.4.4"
-
     compile group: "com.fasterxml.jackson.core", name: "jackson-core", version: project.jacksonVersion
     compile group: "com.fasterxml.jackson.core", name: "jackson-databind", version: project.jacksonVersion
     compile group: "com.fasterxml.jackson.core", name: "jackson-annotations", version: project.jacksonVersion
@@ -81,7 +79,6 @@ dependencies {
 
     // Integrations
     compileOnly name: "ActiveTime-s7.1-v1.4.0"
-    compileOnly name: "griefprevention-1.12.2-4.3.0.511"
     compileOnly name: "HuskyCrates-v1.8.0PRE2-API7"
     compileOnly name: "MMCRestrict-1.4.2-API-7"
     compileOnly name: "MMCTickets-1.4.1-API-7"
@@ -154,8 +151,6 @@ shadowJar {
     relocate "org.slf4j.spi", "valandur.webapi.shadow.org.slf4j.spi"
 
     relocate "org.yaml", "valandur.webapi.shadow.org.yaml"
-
-    relocate "oshi", "valandur.webapi.shadow.oshi"
 
     // Provided by Sponge/Minecraft
     dependencies {

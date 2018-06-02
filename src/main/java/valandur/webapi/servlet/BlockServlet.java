@@ -249,15 +249,13 @@ public class BlockServlet extends BaseServlet {
         }
 
         private Vector3i min;
-        @ApiModelProperty(value = "The minimum world coordinates spanning the cube where the operation is run",
-                required = true)
+        @ApiModelProperty(value = "The minimum world coordinates spanning the cube where the operation is run", required = true)
         public Vector3i getMin() {
             return min;
         }
 
         private Vector3i max;
-        @ApiModelProperty(value = "The maximum world coordinates spanning the cube where the operation is run",
-                required = true)
+        @ApiModelProperty(value = "The maximum world coordinates spanning the cube where the operation is run", required = true)
         public Vector3i getMax() {
             return max;
         }

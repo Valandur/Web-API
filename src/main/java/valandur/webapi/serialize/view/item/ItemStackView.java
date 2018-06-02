@@ -38,6 +38,9 @@ public class ItemStackView extends BaseView<ItemStack> {
         Map<Class<? extends Property<?, ?>>, String> props = WebAPI.getSerializeService().getSupportedProperties();
         for (Property<?, ?> property : value.getApplicableProperties()) {
             String key = props.get(property.getClass());
+            if (key == null) {
+                continue;
+            }
             data.put(key, property.getValue());
         }
 

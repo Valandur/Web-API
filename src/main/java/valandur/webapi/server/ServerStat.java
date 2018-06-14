@@ -9,10 +9,7 @@ import java.time.Instant;
 public class ServerStat<V> {
 
     private Instant timestamp;
-    @ApiModelProperty(
-            value = "The epoch timestamp (in seconds) when the statistic was recorded",
-            dataType = "long",
-            required = true)
+    @ApiModelProperty(value = "The epoch timestamp (in seconds) when the statistic was recorded", dataType = "long", required = true)
     public Instant getTimestamp() {
         return timestamp;
     }

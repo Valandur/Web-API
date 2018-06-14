@@ -9,7 +9,7 @@ group = "valandur.webapi"
 
 apply plugin: "java"
 
-version = "${project.version}-S${project.spongeVersion}";
+version = "${project.version}-S${project.spongeVersion}"
 
 blossom {
     def locMain = "src/main/java/valandur/webapi/util/Constants.java"

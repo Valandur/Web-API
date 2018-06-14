@@ -12,6 +12,7 @@ import valandur.webapi.WebAPI;
 import valandur.webapi.serialize.JsonDetails;
 import valandur.webapi.serialize.SerializeService;
 
+import javax.xml.bind.annotation.XmlAnyElement;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -92,10 +93,7 @@ public abstract class CachedObject<T> {
      * Gets a relative link representing a Web-API endpoint where details for the object can be retrieved.
      * @return The link to the details of the object, or null if not applicable.
      */
-    @ApiModelProperty(
-            value = "The API link that can be used to obtain more information about this object",
-            required = true,
-            readOnly = true)
+    @ApiModelProperty(value = "The API link that can be used to obtain more information about this object", required = true, readOnly = true)
     public abstract String getLink();
 
     /**

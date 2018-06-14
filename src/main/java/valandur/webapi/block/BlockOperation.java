@@ -127,16 +127,12 @@ public abstract class BlockOperation extends CachedObject<BlockOperation> {
         this.totalBlocks = size.getX() * size.getY() * size.getZ();
     }
 
-    @ApiModelProperty(
-            value = "The current progress of the block operation, from 0 (=started) to 1 (=finished)",
-            required = true)
+    @ApiModelProperty(value = "The current progress of the block operation, from 0 (=started) to 1 (=finished)", required = true)
     final public float getProgress() {
         return (float)currentBlock / totalBlocks;
     }
 
-    @ApiModelProperty(
-            value = "The estimated amount of time remaining until this block operation is complete (in seconds)",
-            required = true)
+    @ApiModelProperty(value = "The estimated amount of time remaining until this block operation is complete (in seconds)", required = true)
     public float getEstimatedSecondsRemaining() {
         return (float)(totalBlocks - currentBlock) / blockService.getMaxBlocksPerSecond();
     }

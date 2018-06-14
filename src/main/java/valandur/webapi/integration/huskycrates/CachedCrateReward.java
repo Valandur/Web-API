@@ -28,10 +28,7 @@ public class CachedCrateReward extends CachedObject<CrateReward> {
 
     @Setting
     private double chance;
-    @ApiModelProperty(
-            value = "The chance to aquire this reward. This is relative to the chances of the other " +
-                    "rewards in this crate",
-            required = true)
+    @ApiModelProperty(value = "The chance to aquire this reward. This is relative to the chances of the other rewards in this crate", required = true)
     public double getChance() {
         return chance;
     }

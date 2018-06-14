@@ -32,10 +32,7 @@ public class CachedVirtualCrate extends CachedObject<VirtualCrate> {
     }
 
     private String type;
-    @ApiModelProperty(
-            value = "The type of crate",
-            allowableValues = "Spinner, Roulette, Instant, Simple",
-            required = true)
+    @ApiModelProperty(value = "The type of crate", allowableValues = "Spinner, Roulette, Instant, Simple", required = true)
     public String getType() {
         return type;
     }
@@ -49,10 +46,7 @@ public class CachedVirtualCrate extends CachedObject<VirtualCrate> {
 
     private Integer freeDelay;
     @JsonDetails
-    @ApiModelProperty(
-            value = "In case this crate is free, this interval specifies the time (in seconds) after which " +
-                    "this crate can be opened again",
-            required = true)
+    @ApiModelProperty(value = "In case this crate is free, this interval specifies the time (in seconds) after which this crate can be opened again", required = true)
     public Integer getFreeDelay() {
         return freeDelay;
     }

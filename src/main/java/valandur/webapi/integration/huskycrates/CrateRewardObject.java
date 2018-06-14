@@ -19,10 +19,7 @@ import static com.fasterxml.jackson.annotation.JsonSubTypes.Type;
         @Type(value = CommandCrateReward.class, name = "COMMAND"),
         @Type(value = ItemCrateReward.class, name = "ITEM"),
 })
-@ApiModel(
-        value = "HuskyCratesCrateRewardObject",
-        discriminator = "type",
-        subTypes = { CommandCrateReward.class, ItemCrateReward.class })
+@ApiModel(value = "HuskyCratesCrateRewardObject", discriminator = "type", subTypes = { CommandCrateReward.class, ItemCrateReward.class })
 public abstract class CrateRewardObject {
 
     public enum CrateRewardObjecType {

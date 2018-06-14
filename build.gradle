@@ -66,6 +66,9 @@ dependencies {
     compile group: "org.eclipse.jetty", name: "jetty-server", version: project.jettyVersion
     compile group: "org.eclipse.jetty", name: "jetty-servlet", version: project.jettyVersion
     compile group: "org.eclipse.jetty", name: "jetty-rewrite", version: project.jettyVersion
+    compile group: "org.eclipse.jetty.websocket", name: "websocket-server", version: project.jettyVersion
+    compile group: "org.eclipse.jetty.websocket", name: "websocket-servlet", version: project.jettyVersion
+    compile group: "org.eclipse.jetty.websocket", name: "websocket-client", version: project.jettyVersion
 
     compile group: "io.swagger", name: "swagger-jersey2-jaxrs", version: "1.5.18"
     compile group: "io.sentry", name: "sentry", version: "1.6.4"

@@ -3,6 +3,8 @@ package valandur.webapi;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.jaxrs.config.BeanConfig;
+import org.eclipse.jetty.client.HttpRequest;
+import org.eclipse.jetty.client.HttpResponse;
 import org.eclipse.jetty.http.HttpVersion;
 import org.eclipse.jetty.rewrite.handler.RedirectPatternRule;
 import org.eclipse.jetty.rewrite.handler.RewriteHandler;
@@ -24,6 +26,7 @@ import valandur.webapi.config.MainConfig;
 import valandur.webapi.handler.AssetHandler;
 import valandur.webapi.handler.ErrorHandler;
 import valandur.webapi.serialize.SerializationFeature;
+import valandur.webapi.servlet.WSServlet;
 import valandur.webapi.servlet.base.BaseServlet;
 import valandur.webapi.util.Constants;
 
@@ -196,6 +199,9 @@ public class WebServer {
             // Main servlet context
             ServletContextHandler servletsContext = new ServletContextHandler();
             servletsContext.setContextPath(Constants.BASE_PATH);
+
+            // Add Web-Socket servlet
+            servletsContext.addServlet(WSServlet.class, "/ws");
 
             // Resource config for jersey servlet
             ResourceConfig conf = new ResourceConfig();

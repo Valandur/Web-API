@@ -55,10 +55,7 @@ public class WebBook {
         return html + "</ul></body></html>";
     }
 
-    @ApiModelProperty(
-            value = "The API link that can be used to obtain more information about this object",
-            required = true,
-            readOnly = true)
+    @ApiModelProperty(value = "The API link that can be used to obtain more information about this object", required = true, readOnly = true)
     public String getLink() {
         return Constants.BASE_PATH + "/web-books/book/" + id;
     }

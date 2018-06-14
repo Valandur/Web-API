@@ -36,9 +36,7 @@ public class CachedKit extends CachedObject<Kit> {
     }
 
     private Boolean firstJoinKit;
-    @ApiModelProperty(
-            value = "True if this kit is awarded for joining the server the first time, false otherwise",
-            required = true)
+    @ApiModelProperty(value = "True if this kit is awarded for joining the server the first time, false otherwise", required = true)
     public Boolean isFirstJoinKit() {
         return firstJoinKit;
     }

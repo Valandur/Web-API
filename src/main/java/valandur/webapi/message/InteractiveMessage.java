@@ -35,9 +35,7 @@ public class InteractiveMessage extends CachedObject<InteractiveMessage> {
      * The id of the message. Useful to identify it in the response.
      * @return The id of the message.
      */
-    @ApiModelProperty(
-            value = "The id of the message. Used for sender of the message to identify responses.",
-            required = true)
+    @ApiModelProperty(value = "The id of the message. Used for sender of the message to identify responses.", required = true)
     public String getId() {
         return id;
     }
@@ -47,8 +45,7 @@ public class InteractiveMessage extends CachedObject<InteractiveMessage> {
      * The target of the message, usually a player uuid. Can be set to "server" to send to all online players.
      * @return The uuid of the target, or "server" to send to all online players.
      */
-    @ApiModelProperty(value = "The target of the message, usually this is a player UUID. " +
-            "Can be set to \"server\" to send to all online players.", required = true)
+    @ApiModelProperty(value = "The target of the message, usually this is a player UUID. Can be set to \"server\" to send to all online players.", required = true)
     @JsonDetails
     public String getTarget() {
         return target;

@@ -25,10 +25,7 @@ public class InteractiveMessageOption {
      * Gets the value of the message option that is displayed to the user.
      * @return The value of the message option.
      */
-    @ApiModelProperty(
-            dataType = "string",
-            value = "The value of the option (this is displayed to the player)",
-            required = true)
+    @ApiModelProperty(dataType = "string", value = "The value of the option (this is displayed to the player)", required = true)
     @JsonIgnore
     public Text getValue() {
         if (value == null) {

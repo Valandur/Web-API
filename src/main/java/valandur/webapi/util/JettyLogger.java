@@ -5,10 +5,11 @@ import valandur.webapi.WebAPI;
 
 public class JettyLogger implements Logger {
     private org.slf4j.Logger logger;
-    private boolean enableDebug = true;
+    private boolean enableDebug;
 
     public JettyLogger() {
         logger = WebAPI.getLogger();
+        enableDebug = WebAPI.isDevMode();
     }
 
     @Override public String getName() { return "jetty"; }

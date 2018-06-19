@@ -94,7 +94,10 @@ public class InteractiveMessage extends CachedObject<InteractiveMessage> {
     @ApiModelProperty("Clickable options that the player can select from")
     @JsonDetails
     public List<InteractiveMessageOption> getOptions() {
-        return new ArrayList<>(options);
+        if (options != null) {
+            return new ArrayList<>(options);
+        }
+        return new ArrayList<>();
     }
 
     /**

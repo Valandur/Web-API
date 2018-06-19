@@ -145,7 +145,6 @@ as to when that event is triggered.
 | Event / Hook name   | Description |
 | ------------------- | ----------- |
 | ALL                 | Fired for all events listed below
-| INTERACTIVE_MESSAGE | Use this hook to capture the response from [Messages](MESSAGE.md)
 | ACHIEVEMENT         | Fired when a player earns a new achievement
 | BLOCK_UPDATE_STATUS | Fired when a Web-API BlockUpdate changes status
 | CHAT                | Fired when a chat message is sent (by players)
@@ -153,6 +152,7 @@ as to when that event is triggered.
 | GENERATE_CHUNK      | Fired when a new chunk is generated
 | EXPLOSION           | Fired when an explosion happens
 | INTERACT_BLOCK      | Fired when a player interacts with a block
+| INTERACTIVE_MESSAGE | Use this hook to capture the response from [Messages](MESSAGE.md) (prev CUSTOM_MESSAGE)
 | INVENTORY_OPEN      | Fired when a player opens an inventory
 | INVENTORY_CLOSE     | Fired when a player closes an inventory
 | PLAYER_JOIN         | Fired when a player joins the server

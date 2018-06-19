@@ -58,7 +58,7 @@ in the text.
 ## Responses
 
 To receive the responses (when players click one of the provided options) you must add a
-[WebHook](WEBHOOKS.md) for **CUSTOM_MESSAGE**.
+[WebHook](WEBHOOKS.md) for **INTERACTIVE_MESSAGE**.
 
 The response will look similar to the following:
 ```json

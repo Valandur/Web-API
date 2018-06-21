@@ -65,7 +65,7 @@ public class ServerService {
             }
         } catch (IOException e) {
             e.printStackTrace();
-            if (WebAPI.reportErrors()) WebAPI.sentryCapture(e);
+            WebAPI.sentryCapture(e);
         }
 
         newProperties.putAll(properties);

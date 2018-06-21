@@ -221,7 +221,7 @@ public class WebHookService {
                 stringData = hook.isForm() ? "body=" + URLEncoder.encode(stringData, "UTF-8") : stringData;
             } catch (Exception e) {
                 e.printStackTrace();
-                if (WebAPI.reportErrors()) WebAPI.sentryCapture(e);
+                WebAPI.sentryCapture(e);
             }
         }
         final String finalData = stringData;

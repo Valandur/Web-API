@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.reflect.TypeToken;
 import com.google.inject.Inject;
 import io.sentry.Sentry;
+import io.sentry.SentryClient;
 import io.sentry.context.Context;
 import io.swagger.converter.ModelConverters;
 import ninja.leaping.configurate.objectmapping.serialize.TypeSerializers;
@@ -190,34 +191,6 @@ public class WebAPI {
         System.setProperty("sentry.release", Constants.VERSION.split("-")[0]);
         System.setProperty("sentry.maxmessagelength", "2000");
         System.setProperty("sentry.stacktrace.app.packages", WebAPI.class.getPackage().getName());
-
-        Sentry.init();
-
-        // Add our own jar to the system classloader classpath, because some external libraries don't work otherwise.
-        // (I'm looking at you jna)
-        registerInSystemClasspath(WebAPI.class);
-    }
-    private void registerInSystemClasspath(Class clazz) {
-        try {
-            CodeSource src = clazz.getProtectionDomain().getCodeSource();
-            if (src == null) {
-                throw new IOException("Could not get code source for " + clazz.getName() + "!");
-            }
-
-            URL jar = src.getLocation();
-            String str = jar.toString();
-            if (str.indexOf("!") > 0) {
-                jar = new URL(jar.toString().substring(0, str.indexOf("!") + 2));
-            }
-            URLClassLoader sysloader = (URLClassLoader) ClassLoader.getSystemClassLoader();
-            Class sysclass = URLClassLoader.class;
-
-            Method method = sysclass.getDeclaredMethod("addURL", URL.class);
-            method.setAccessible(true);
-            method.invoke(sysloader, jar);
-        } catch (IOException | NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
-            e.printStackTrace();
-        }
     }
 
     @Listener
@@ -240,7 +213,6 @@ public class WebAPI {
                 Files.createDirectories(configPath);
             } catch (IOException e) {
                 e.printStackTrace();
-                if (WebAPI.reportErrors()) WebAPI.sentryCapture(e);
             }
         }
 
@@ -338,6 +310,10 @@ public class WebAPI {
         if (this.container.getVersion().orElse("").equalsIgnoreCase("@version@")) {
             logger.warn("Web-API VERSION SIGNALS DEV MODE. ERROR REPORTING IS OFF!");
             reportErrors = false;
+        }
+
+        if (reportErrors) {
+            Sentry.init();
         }
 
         AuthenticationProvider.init();
@@ -537,7 +513,7 @@ public class WebAPI {
                     throw (WebApplicationException)e.getCause();
 
                 e.printStackTrace();
-                if (WebAPI.reportErrors()) WebAPI.sentryCapture(e);
+                WebAPI.sentryCapture(e);
                 throw new InternalServerErrorException(e.getMessage());
             }
         }
@@ -560,24 +536,13 @@ public class WebAPI {
                     throw (WebApplicationException)e.getCause();
 
                 e.printStackTrace();
-                if (WebAPI.reportErrors()) WebAPI.sentryCapture(e);
+                WebAPI.sentryCapture(e);
                 throw new InternalServerErrorException(e.getMessage());
             }
         }
     }
 
     // Sentry logging
-    public static void sentryNewRequest(HttpServletRequest req) {
-        Sentry.clearContext();
-        Context context = Sentry.getContext();
-        context.addExtra("request_protocol", req.getProtocol());
-        context.addExtra("request_method", req.getMethod());
-        context.addExtra("request_uri", req.getRequestURI());
-    }
-    public static void sentryExtra(String name, Object value) {
-        Sentry.getContext().addExtra(name, value);
-    }
-
     private static void addDefaultContext() {
         Context context = Sentry.getContext();
         context.addTag("full_release", Constants.VERSION);
@@ -603,15 +568,15 @@ public class WebAPI {
         context.addExtra("plugins", pluginList);
     }
     public static void sentryCapture(Exception e) {
+        if (!reportErrors())
+            return;
         addDefaultContext();
         Sentry.capture(e);
     }
     public static void sentryCapture(Throwable t) {
+        if (!reportErrors())
+            return;
         addDefaultContext();
         Sentry.capture(t);
-    }
-    public static void sentryCapture(String msg) {
-        addDefaultContext();
-        Sentry.capture(msg);
     }
 }

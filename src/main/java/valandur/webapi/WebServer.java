@@ -293,7 +293,7 @@ public class WebServer {
                 server = null;
             } catch (Exception e) {
                 e.printStackTrace();
-                if (WebAPI.reportErrors()) WebAPI.sentryCapture(e);
+                WebAPI.sentryCapture(e);
             }
         }
     }

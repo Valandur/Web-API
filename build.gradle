@@ -19,8 +19,8 @@ blossom {
 spongestart {
     eula true
     minecraft project.minecraftVersion
-    spongeForgeVersion "1.12.2-2611-7.1.0-BETA-3002"
-    spongeVanillaVersion "1.12.2-7.1.0-BETA-33"
+    spongeForgeVersion "1.12.2-2705-7.1.0-BETA-3206"
+    spongeVanillaVersion "1.12.2-7.1.0-BETA-59"
 }
 
 repositories {
@@ -47,7 +47,6 @@ configurations.all {
     resolutionStrategy {
         force "com.google.guava:guava:23.0"
         force "org.reflections:reflections:0.9.10"      // Fixes some logging issues in 0.9.11
-        force "net.java.dev.jna:jna:4.5.1"
     }
 }
 
@@ -106,7 +105,6 @@ shadowJar {
     relocate "com.google.thirdparty", "valandur.webapi.shadow.com.google.thirdparty"
 
     relocate "com.sun.research", "valandur.webapi.shadow.com.sun.research"
-    // relocate "com.sun.jna", "valandur.webapi.shadow.com.sun.jna"
 
     relocate "edu.umd.cs.findbugs.annotations", "valandur.webapi.shadow.edu.umd.cs.findbugs.annotations"
 

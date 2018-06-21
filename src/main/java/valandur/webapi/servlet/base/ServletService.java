@@ -162,7 +162,7 @@ public class ServletService {
         } catch (NoSuchMethodException ignored) {
         } catch (IllegalAccessException | InvocationTargetException e) {
             e.printStackTrace();
-            if (WebAPI.reportErrors()) WebAPI.sentryCapture(e);
+            WebAPI.sentryCapture(e);
         }
 
         servletClasses.put(basePath, servlet);

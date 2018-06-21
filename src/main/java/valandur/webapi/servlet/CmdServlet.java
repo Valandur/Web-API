@@ -110,7 +110,7 @@ public class CmdServlet extends BaseServlet {
             return new ExecuteCommandResponse(req.command, src.getLines());
         } catch (InterruptedException e) {
             e.printStackTrace();
-            if (WebAPI.reportErrors()) WebAPI.sentryCapture(e);
+            WebAPI.sentryCapture(e);
             return new ExecuteCommandResponse(req.command, e.getMessage());
         }
     }

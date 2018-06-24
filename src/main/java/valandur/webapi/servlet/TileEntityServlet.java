@@ -1,11 +1,13 @@
 package valandur.webapi.servlet;
 
 import com.flowpowered.math.vector.Vector3i;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.*;
 import org.spongepowered.api.block.tileentity.TileEntity;
+import org.spongepowered.api.block.tileentity.carrier.TileEntityCarrier;
+import org.spongepowered.api.item.inventory.Inventory;
+import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.util.Tuple;
+import valandur.webapi.WebAPI;
 import valandur.webapi.cache.tileentity.CachedTileEntity;
 import valandur.webapi.cache.world.CachedWorld;
 import valandur.webapi.serialize.objects.ExecuteMethodRequest;
@@ -17,6 +19,7 @@ import valandur.webapi.servlet.base.Permission;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 
@@ -66,6 +69,57 @@ public class TileEntityServlet extends BaseServlet {
         return optTe.get();
     }
 
+    @PUT
+    @Path("/{world}/{x}/{y}/{z}")
+    @Permission("modify")
+    @ApiOperation(
+            value = "Modify tile entity",
+            notes = "Modify the properties of an existing tile entity.")
+    public CachedTileEntity modifyTileEntity(
+            @PathParam("world") @ApiParam("The world the tile entity is in") CachedWorld world,
+            @PathParam("x") @ApiParam("The x-coordinate of the tile-entity") Integer x,
+            @PathParam("y") @ApiParam("The y-coordinate of the tile-entity") Integer y,
+            @PathParam("z") @ApiParam("The z-coordinate of the tile-entity") Integer z,
+            UpdateTileEntityRequest req)
+            throws NotFoundException, BadRequestException {
+
+        if (req == null) {
+            throw new BadRequestException("Request body is required");
+        }
+
+        Optional<CachedTileEntity> optTe = cacheService.getTileEntity(world, x, y, z);
+        if (!optTe.isPresent()) {
+            throw new NotFoundException("Tile entity in world '" + world.getName() +
+                    "' at [" + x + "," + y + "," + z + "] could not be found");
+        }
+
+        return WebAPI.runOnMain(() -> {
+            Optional<TileEntity> optLive = optTe.get().getLive();
+            if (!optLive.isPresent())
+                throw new InternalServerErrorException("Could not get live tile entity");
+
+            TileEntity live = optLive.get();
+
+            if (req.hasInventory()) {
+                if (!(live instanceof TileEntityCarrier)) {
+                    throw new BadRequestException("Tile entity does not have an inventory!");
+                }
+
+                try {
+                    Inventory inv = ((TileEntityCarrier) live).getInventory();
+                    inv.clear();
+                    for (ItemStack stack : req.getInventory()) {
+                        inv.offer(stack);
+                    }
+                } catch (Exception e) {
+                    throw new InternalServerErrorException(e.getMessage());
+                }
+            }
+
+            return new CachedTileEntity(live);
+        });
+    }
+
     @POST
     @Path("/{world}/{x}/{y}/{z}/method")
     @Permission("method")
@@ -98,5 +152,18 @@ public class TileEntityServlet extends BaseServlet {
         Tuple<Class[], Object[]> params = req.getParsedParameters();
         Object res = cacheService.executeMethod(te.get(), mName, params.getFirst(), params.getSecond());
         return new ExecuteMethodResponse(te.get(), res);
+    }
+
+    @ApiModel("UpdateTileEntityRequest")
+    public static class UpdateTileEntityRequest {
+
+        private List<ItemStack> inventory;
+        @ApiModelProperty("The ItemStacks in the inventory of the tile entity")
+        public List<ItemStack> getInventory() throws Exception {
+            return inventory;
+        }
+        public boolean hasInventory() {
+            return inventory != null;
+        }
     }
 }

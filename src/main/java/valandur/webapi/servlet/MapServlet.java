@@ -43,6 +43,7 @@ public class MapServlet extends BaseServlet {
         biomeColorMap.clear();
 
         MapConfig config = Util.loadConfig("map.conf", new MapConfig());
+        config.save(); // Save in case we don't have the default values yet
         biomeColorMap.putAll(config.biomeColors);
     }
 

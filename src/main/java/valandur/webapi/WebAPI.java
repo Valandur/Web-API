@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.reflect.TypeToken;
 import com.google.inject.Inject;
 import io.sentry.Sentry;
-import io.sentry.SentryClient;
 import io.sentry.context.Context;
 import io.swagger.converter.ModelConverters;
 import ninja.leaping.configurate.objectmapping.serialize.TypeSerializers;
@@ -38,6 +37,10 @@ import valandur.webapi.config.MainConfig;
 import valandur.webapi.hook.WebHook;
 import valandur.webapi.hook.WebHookSerializer;
 import valandur.webapi.hook.WebHookService;
+import valandur.webapi.ipcomm.*;
+import valandur.webapi.ipcomm.internal.InternalHttpRequest;
+import valandur.webapi.ipcomm.internal.InternalHttpResponse;
+import valandur.webapi.ipcomm.ws.WSClient;
 import valandur.webapi.message.InteractiveMessageService;
 import valandur.webapi.security.AuthenticationProvider;
 import valandur.webapi.security.PermissionService;
@@ -57,20 +60,16 @@ import valandur.webapi.util.Timings;
 import valandur.webapi.util.Util;
 
 import javax.net.ssl.HttpsURLConnection;
-import javax.servlet.http.HttpServletRequest;
+import javax.servlet.ServletException;
 import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.WebApplicationException;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.security.CodeSource;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -116,6 +115,7 @@ public class WebAPI {
     private static String pluginList;
 
     private static WebServer server;
+    private static IPClient ipClient;
 
     @Inject
     private Metrics metrics;
@@ -334,6 +334,9 @@ public class WebAPI {
 
         Users.init();
 
+        ipClient = new WSClient();
+        ipClient.connect("ws://localhost:5000/ws");
+
         if (triggeringPlayer != null) {
             triggeringPlayer.sendMessage(Text.builder().color(TextColors.AQUA)
                     .append(Text.of("[" + Constants.NAME + "] " + Constants.NAME + " has been reloaded!"))
@@ -540,6 +543,19 @@ public class WebAPI {
                 throw new InternalServerErrorException(e.getMessage());
             }
         }
+    }
+
+    // Emulate HTTP requests from sockets
+    public static IPResponse emulateRequest(IPRequest message) throws IOException, ServletException {
+        try {
+            InternalHttpRequest req = new InternalHttpRequest(message);
+            InternalHttpResponse res = new InternalHttpResponse();
+            server.handle(message.getPath(), req, req, res);
+            return new IPResponse(message.getId(), res.getStatus(), res.getHeaders(), res.getOuput());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     // Sentry logging

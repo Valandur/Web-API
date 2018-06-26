@@ -27,6 +27,11 @@ import valandur.webapi.serialize.SerializationFeature;
 import valandur.webapi.servlet.base.BaseServlet;
 import valandur.webapi.util.Constants;
 
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletRequestWrapper;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.net.SocketException;
 import java.nio.charset.Charset;
 import java.util.HashSet;
@@ -210,6 +215,11 @@ public class WebServer {
             );
             conf.property("jersey.config.server.wadl.disableWadl", true);
 
+            // Add error handler to jetty (will also be picked up by jersey
+            ErrorHandler errHandler = new ErrorHandler();
+            server.setErrorHandler(errHandler);
+            server.addBean(errHandler);
+
             // Register all servlets. We use this instead of package scanning because we don't want the
             // integrated servlets to load unless their plugin is present. Also this gives us more control/info
             // over which servlets/endpoints are loaded.
@@ -242,16 +252,16 @@ public class WebServer {
             }
             servletsContext.addBean(beanConfig);
 
+            // Attach error handler to servlets context
+            servletsContext.setErrorHandler(errHandler);
+            servletsContext.addBean(errHandler);
+
             // Add servlets to main context
             mainContext.addHandler(servletsContext);
 
             // Add main context to server
             server.setHandler(mainContext);
 
-            // Add error handler to jetty (will also be picked up by jersey
-            ErrorHandler errHandler = new ErrorHandler();
-            server.setErrorHandler(errHandler);
-            server.addBean(errHandler);
 
             server.start();
 
@@ -296,6 +306,11 @@ public class WebServer {
                 WebAPI.sentryCapture(e);
             }
         }
+    }
+
+    public void handle(String target, Request baseRequest, HttpServletRequest req, HttpServletResponse res)
+            throws IOException, ServletException {
+        server.handle(target, baseRequest, req, res);
     }
 
     private ContextHandler newContext(String path, Handler handler) {

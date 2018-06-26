@@ -64,10 +64,10 @@ public class SerializationProvider extends JacksonJsonProvider {
         if (queryParams.containsKey("accept")) {
             String acc = queryParams.get("accept");
             if (acc.equalsIgnoreCase("json")) {
-                httpHeaders.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
+                httpHeaders.putSingle(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
             }
             if (acc.equalsIgnoreCase("xml")) {
-                httpHeaders.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_XML);
+                httpHeaders.putSingle(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_XML);
             }
         }
     }

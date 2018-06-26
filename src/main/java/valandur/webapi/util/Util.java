@@ -28,7 +28,7 @@ public class Util {
     private static Map<Class, Field[]> fields = new HashMap<>();
     private static Map<Class, Method[]> methods = new HashMap<>();
 
-    private static SecureRandom random = new SecureRandom();
+    private static final SecureRandom random = new SecureRandom();
 
     public static <T extends BaseConfig> T loadConfig(String path, T defaultConfig) {
         Path filePath = WebAPI.getConfigPath().resolve(path).normalize();

@@ -21,4 +21,6 @@ dependencies {
     compile group: "org.eclipse.jetty.websocket", name: "websocket-server", version: project.jettyVersion
     compile group: "org.eclipse.jetty.websocket", name: "websocket-servlet", version: project.jettyVersion
     compile group: "org.eclipse.jetty.websocket", name: "websocket-client", version: project.jettyVersion
+
+    compile group: 'redis.clients', name: 'jedis', version: '2.9.0'
 }

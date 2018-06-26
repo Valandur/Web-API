@@ -1,16 +1,27 @@
 package valandur.webapi.ipcomm;
 
-import java.util.function.Function;
+import javax.servlet.http.HttpServlet;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Consumer;
 
-public interface IPLink {
+public abstract class IPLink {
 
-    void init();
+    private List<Consumer<IPResponse>> listeners = new ArrayList<>();
 
-    void start();
+    public abstract void init();
 
-    boolean hasServer(String server);
+    public abstract Class<? extends IPServlet> getServletClass();
 
-    boolean send(String server, IPRequest message);
+    public abstract boolean hasServer(String server);
 
-    void onResponse(Function<IPResponse, Void> callback);
+    public abstract void send(String server, IPRequest message);
+
+    public void respond(IPResponse res) {
+        listeners.forEach(c -> c.accept(res));
+    }
+
+    public void onResponse(Consumer<IPResponse> callback) {
+        listeners.add(callback);
+    }
 }

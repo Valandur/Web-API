@@ -17,7 +17,7 @@ public class JettyLogger implements Logger {
         logger.warn(msg, args);
     }
     @Override public void warn(Throwable thrown) {
-        logger.warn("THROWN: " + thrown);
+        logger.warn("THROWN", thrown);
     }
     @Override public void warn(String msg, Throwable thrown) {
         logger.warn(msg, thrown);
@@ -26,7 +26,7 @@ public class JettyLogger implements Logger {
         logger.info(msg, args);
     }
     @Override public void info(Throwable thrown) {
-        logger.info("THROWN: " + thrown);
+        logger.info("THROWN", thrown);
     }
     @Override public void info(String msg, Throwable thrown) {
         logger.info(msg, thrown);
@@ -42,11 +42,11 @@ public class JettyLogger implements Logger {
         logger.debug(msg, value);
     }
     @Override public void debug(Throwable thrown) {
-        logger.debug("THROWN: " + thrown);
+        logger.debug("THROWN", thrown);
     }
     @Override public void debug(String msg, Throwable thrown) {
         logger.debug(msg, thrown);
     }
     @Override public Logger getLogger(String name) { return this; }
-    @Override public void ignore(Throwable ignored) { }
+    @Override public void ignore(Throwable ignored) { logger.debug("THROWN", ignored); }
 }

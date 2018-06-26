@@ -79,6 +79,8 @@ dependencies {
 
     compileOnly group: "org.spongepowered", name: "spongeapi", version: "${project.spongeVersion}.0-SNAPSHOT"
 
+    compile group: 'redis.clients', name: 'jedis', version: '2.9.0'
+
     // Integrations
     compileOnly name: "ActiveTime-s7.1-v1.4.0"
     compileOnly name: "CmdScheduler-s7.1-v1.1.0"

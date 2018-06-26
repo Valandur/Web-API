@@ -15,11 +15,14 @@ import java.util.concurrent.Future;
 @WebSocket(maxTextMessageSize = 64 * 1024, maxIdleTime = 24 * 60 * 60 * 1000)
 public class WSMainSocket {
 
+    private WSLink link;
     private Session session;
     private String addr;
 
 
-    public WSMainSocket() { }
+    public WSMainSocket(WSLink link) {
+        this.link = link;
+    }
 
     @OnWebSocketConnect
     public void onConnect(Session session) {
@@ -27,14 +30,14 @@ public class WSMainSocket {
         System.out.println("Connected: " + addr);
 
         this.session = session;
-        WSLink.connectSocket(addr, this);
+        link.connectSocket(addr, this);
     }
 
     @OnWebSocketClose
     public void onClose(int statusCode, String reason) {
         System.out.println("Disconnected: " + addr);
 
-        WSLink.disconnectSocket(addr);
+        link.disconnectSocket(addr);
     }
 
     @OnWebSocketMessage
@@ -44,7 +47,7 @@ public class WSMainSocket {
         try {
             ObjectMapper mapper = new ObjectMapper();
             IPResponse res = mapper.readValue(msg, IPResponse.class);
-            WSLink.onResponse(res);
+            link.respond(res);
         } catch (IOException e) {
             e.printStackTrace();
         }

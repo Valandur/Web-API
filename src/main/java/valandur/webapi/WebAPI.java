@@ -334,8 +334,9 @@ public class WebAPI {
 
         Users.init();
 
-        ipClient = new WSClient();
-        ipClient.connect("ws://localhost:5000/ws");
+        // TODO: This needs config values
+        // ipClient = new WSClient();
+        // ipClient.connect("ws://localhost:5000/ws");
 
         if (triggeringPlayer != null) {
             triggeringPlayer.sendMessage(Text.builder().color(TextColors.AQUA)

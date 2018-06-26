@@ -50,6 +50,7 @@
     <orderEntry type="library" name="Gradle: org.glassfish.jersey.containers:jersey-container-servlet:2.26" level="project" />
     <orderEntry type="library" name="Gradle: org.glassfish.jersey.inject:jersey-hk2:2.26" level="project" />
     <orderEntry type="library" name="Gradle: org.bstats:bstats-sponge:1.2" level="project" />
+    <orderEntry type="library" name="Gradle: redis.clients:jedis:2.9.0" level="project" />
     <orderEntry type="library" name="Gradle: org.jetbrains:annotations:13.0" level="project" />
     <orderEntry type="library" name="Gradle: com.fasterxml.woodstox:woodstox-core:5.0.3" level="project" />
     <orderEntry type="library" name="Gradle: org.codehaus.woodstox:stax2-api:3.1.4" level="project" />

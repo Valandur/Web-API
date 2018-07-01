@@ -4,8 +4,8 @@ import com.sun.management.OperatingSystemMXBean;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.scheduler.Task;
 import valandur.webapi.WebAPI;
+import valandur.webapi.config.BaseConfig;
 import valandur.webapi.config.ServerConfig;
-import valandur.webapi.util.Util;
 
 import java.io.File;
 import java.io.IOException;
@@ -47,7 +47,8 @@ public class ServerService {
         properties.clear();
         newProperties.clear();
 
-        ServerConfig config = Util.loadConfig(configFileName, new ServerConfig());
+        Path configPath = WebAPI.getConfigPath().resolve(configFileName).normalize();
+        ServerConfig config = BaseConfig.load(configPath, new ServerConfig());
 
         STATS_INTERVAL = config.statsInterval;
         MAX_STATS_ENTRIES = config.maxStats;

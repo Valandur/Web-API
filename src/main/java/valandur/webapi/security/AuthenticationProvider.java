@@ -4,13 +4,13 @@ import com.google.common.net.HttpHeaders;
 import org.eclipse.jetty.http.HttpMethod;
 import org.slf4j.Logger;
 import valandur.webapi.WebAPI;
+import valandur.webapi.config.BaseConfig;
 import valandur.webapi.config.PermissionConfig;
 import valandur.webapi.servlet.base.ExplicitDetails;
 import valandur.webapi.servlet.base.Permission;
 import valandur.webapi.user.UserPermissionStruct;
 import valandur.webapi.util.SubnetUtils;
 import valandur.webapi.util.TreeNode;
-import valandur.webapi.util.Util;
 
 import javax.annotation.Priority;
 import javax.servlet.http.HttpServletRequest;
@@ -73,7 +73,8 @@ public class AuthenticationProvider implements ContainerRequestFilter {
         permissionService = WebAPI.getPermissionService();
         start = System.nanoTime();
 
-        config = Util.loadConfig(configFileName, new PermissionConfig());
+        java.nio.file.Path configPath = WebAPI.getConfigPath().resolve(configFileName).normalize();
+        config = BaseConfig.load(configPath, new PermissionConfig());
         defaultPerms = config.def;
 
         for (String proxy : config.allowedProxies) {

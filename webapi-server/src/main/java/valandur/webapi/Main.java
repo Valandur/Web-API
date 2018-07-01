@@ -6,12 +6,14 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.handler.ContextHandler;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
-import valandur.webapi.ipcomm.IPLink;
-import valandur.webapi.ipcomm.rabbitmq.RabbitMQLink;
-import valandur.webapi.ipcomm.ws.WSLink;
+import valandur.webapi.link.LinkServer;
+import valandur.webapi.link.rabbitmq.RabbitMQLinkServer;
+
+import java.util.HashMap;
 
 public class Main {
     public static void main(String... args) {
+
         Server server = new Server();
 
         HttpConfiguration httpConfig = new HttpConfiguration();
@@ -25,7 +27,7 @@ public class Main {
 
         ContextHandlerCollection handlers = new ContextHandlerCollection();
 
-        IPLink link = new RabbitMQLink();
+        LinkServer link = new RabbitMQLinkServer(new HashMap<>());
 
         MainHandler handler = new MainHandler(link);
         ContextHandler context = new ContextHandler();

@@ -12,7 +12,6 @@ import valandur.webapi.WebAPI;
 import valandur.webapi.serialize.JsonDetails;
 import valandur.webapi.serialize.SerializeService;
 
-import javax.xml.bind.annotation.XmlAnyElement;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;

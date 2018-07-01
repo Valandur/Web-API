@@ -9,7 +9,6 @@ import valandur.webapi.security.SecurityContext;
 import valandur.webapi.servlet.base.BaseServlet;
 import valandur.webapi.servlet.base.Permission;
 import valandur.webapi.user.UserPermissionStruct;
-import valandur.webapi.user.Users;
 import valandur.webapi.util.TreeNode;
 import valandur.webapi.util.Util;
 
@@ -36,7 +35,7 @@ public class UserServlet extends BaseServlet {
             value = "List users",
             notes = "Gets a list of all the Web-API users.")
     public List<UserPermissionStruct> getUsers() {
-        return Users.getUsers();
+        return WebAPI.getUserService().getUsers();
     }
 
     @POST
@@ -59,12 +58,12 @@ public class UserServlet extends BaseServlet {
             throw new BadRequestException("Invalid password");
         }
 
-        if (Users.getUser(req.username).isPresent()) {
+        if (WebAPI.getUserService().getUser(req.username).isPresent()) {
             throw new BadRequestException("A user with that username already exists");
         }
 
         Optional<UserPermissionStruct> optUser =
-                Users.addUser(req.username, req.password, PermissionService.emptyNode());
+                WebAPI.getUserService().addUser(req.username, req.password, PermissionService.emptyNode());
         if (!optUser.isPresent()) {
             throw new InternalServerErrorException("Could not create user!");
         }
@@ -87,7 +86,7 @@ public class UserServlet extends BaseServlet {
             throw new BadRequestException("Request body is required");
         }
 
-        Optional<UserPermissionStruct> optUser = Users.getUser(name);
+        Optional<UserPermissionStruct> optUser = WebAPI.getUserService().getUser(name);
         if (!optUser.isPresent()) {
             throw new NotFoundException("User not found");
         }
@@ -95,7 +94,7 @@ public class UserServlet extends BaseServlet {
         UserPermissionStruct user = optUser.get();
 
         if (req.permissions != null) {
-            user = Users.modifyUser(user, req.permissions);
+            user = WebAPI.getUserService().modifyUser(user, req.permissions);
         }
 
         return user;
@@ -111,7 +110,7 @@ public class UserServlet extends BaseServlet {
             @PathParam("name") @ApiParam("The username of the user to delete") String name)
             throws NotFoundException {
 
-        Optional<UserPermissionStruct> optUser = Users.removeUser(name);
+        Optional<UserPermissionStruct> optUser = WebAPI.getUserService().removeUser(name);
         if (!optUser.isPresent()) {
             throw new NotFoundException("User not found");
         }
@@ -142,7 +141,7 @@ public class UserServlet extends BaseServlet {
             throw new BadRequestException("Request body is required");
         }
 
-        Optional<UserPermissionStruct> optPerm = Users.getUser(req.getUsername(), req.getPassword());
+        Optional<UserPermissionStruct> optPerm = WebAPI.getUserService().getUser(req.getUsername(), req.getPassword());
         if (!optPerm.isPresent()) {
             WebAPI.getLogger().warn(req.getUsername() + " tried to login from " +
                     request.getAttribute("ip") + " (invalid username or password)");

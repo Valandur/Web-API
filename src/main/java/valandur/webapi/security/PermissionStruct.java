@@ -3,7 +3,6 @@ package valandur.webapi.security;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import ninja.leaping.configurate.objectmapping.serialize.ConfigSerializable;
 import valandur.webapi.util.TreeNode;
 
 import java.security.Principal;

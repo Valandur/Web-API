@@ -6,10 +6,11 @@ import org.spongepowered.api.world.World;
 import org.spongepowered.api.world.extent.BiomeVolume;
 import valandur.webapi.WebAPI;
 import valandur.webapi.cache.world.CachedWorld;
+import valandur.webapi.config.BaseConfig;
 import valandur.webapi.config.BlockConfig;
-import valandur.webapi.util.Util;
 
 import javax.ws.rs.InternalServerErrorException;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -30,7 +31,8 @@ public class BlockService {
 
 
     public void init() {
-        BlockConfig config = Util.loadConfig(configFileName, new BlockConfig());
+        Path configPath = WebAPI.getConfigPath().resolve(configFileName).normalize();
+        BlockConfig config = BaseConfig.load(configPath, new BlockConfig());
 
         MAX_BLOCK_GET_SIZE = config.maxBlockGetSize;
         MAX_BLOCK_UPDATE_SIZE = config.maxBlockUpdateSize;

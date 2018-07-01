@@ -16,10 +16,13 @@ import java.lang.reflect.Field;
 import java.util.Optional;
 import java.util.UUID;
 
-import static valandur.webapi.util.Util.ParameterType;
-
 @ApiModel("ExecuteMethodParam")
 public class ExecuteMethodParam {
+
+    public enum ParameterType {
+        INT, INTEGER, FLOAT, DOUBLE, BOOL, BOOLEAN, BYTE, CHAR, LONG, SHORT, STRING, CLASS, ENUM,
+        VECTOR3D, VECTOR3I, TEXT, WORLD, PLAYER, ITEMSTACK, STATIC,
+    }
 
     private ParameterType type;
     @ApiModelProperty(value = "The type of the parameter", required = true)

@@ -4,9 +4,10 @@ import com.google.common.reflect.TypeToken;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import ninja.leaping.configurate.objectmapping.serialize.TypeSerializers;
+import valandur.webapi.WebAPI;
+import valandur.webapi.config.BaseConfig;
 import valandur.webapi.servlet.base.BaseServlet;
 import valandur.webapi.servlet.base.Permission;
-import valandur.webapi.util.Util;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -35,7 +36,8 @@ public class WebBooksServlet extends BaseServlet {
 
 
     public WebBooksServlet() {
-        config = Util.loadConfig(configFileName, new WebBooksConfig());
+        java.nio.file.Path configPath = WebAPI.getConfigPath().resolve(configFileName).normalize();
+        config = BaseConfig.load(configPath, new WebBooksConfig());
         books = config.books;
     }
 

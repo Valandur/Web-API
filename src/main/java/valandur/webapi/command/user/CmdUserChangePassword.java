@@ -7,8 +7,9 @@ import org.spongepowered.api.command.args.CommandContext;
 import org.spongepowered.api.command.spec.CommandExecutor;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
+import valandur.webapi.WebAPI;
 import valandur.webapi.user.UserPermissionStruct;
-import valandur.webapi.user.Users;
+import valandur.webapi.user.UserService;
 
 import java.util.Optional;
 
@@ -28,7 +29,9 @@ public class CmdUserChangePassword implements CommandExecutor {
         }
         String password = optPassword.get();
 
-        Optional<UserPermissionStruct> optUser = Users.getUser(username);
+        UserService srv = WebAPI.getUserService();
+
+        Optional<UserPermissionStruct> optUser = srv.getUser(username);
         if (!optUser.isPresent()) {
             src.sendMessage(Text.builder("Could not find user '" + username + "'").color(TextColors.RED).build());
             return CommandResult.empty();
@@ -36,12 +39,12 @@ public class CmdUserChangePassword implements CommandExecutor {
 
         UserPermissionStruct user = optUser.get();
 
-        user.setPassword(Users.hashPassword(password));
+        user.setPassword(srv.hashPassword(password));
         src.sendMessage(Text.builder("Changed password for ")
                 .append(Text.builder(username).color(TextColors.GOLD).build())
                 .build());
 
-        Users.save();
+        srv.save();
         return CommandResult.success();
     }
 }

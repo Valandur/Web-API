@@ -9,7 +9,6 @@ import valandur.webapi.util.TreeNode;
 import java.security.Principal;
 
 @ApiModel(value = "PermissionStruct", description = "Represents a permissions struct that contains information to access the Web-API")
-@ConfigSerializable
 public class PermissionStruct implements Principal {
 
     protected String key = null;

@@ -5,7 +5,6 @@ import org.eclipse.jetty.server.handler.AbstractHandler;
 import valandur.webapi.ipcomm.IPLink;
 import valandur.webapi.ipcomm.IPRequest;
 import valandur.webapi.ipcomm.IPResponse;
-import valandur.webapi.ipcomm.IPServlet;
 
 import javax.servlet.AsyncContext;
 import javax.servlet.http.HttpServletRequest;
@@ -17,7 +16,6 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class MainHandler extends AbstractHandler {
@@ -36,11 +34,15 @@ public class MainHandler extends AbstractHandler {
             AsyncContext ctx = contexts.get(res.getId());
             if (ctx == null) {
                 System.out.println("ERROR: Could not find context for " + res.getId());
+                return;
             }
+
             HttpServletResponse resp = (HttpServletResponse)ctx.getResponse();
             if (resp == null) {
                 System.out.println("ERROR: Could not find response object for " + res.getId());
+                return;
             }
+
             try {
                 resp.setStatus(res.getStatus() != 0 ? res.getStatus() : HttpServletResponse.SC_OK);
                 res.getHeaders().forEach(resp::setHeader);
@@ -102,7 +104,7 @@ public class MainHandler extends AbstractHandler {
         link.send(server, msg);
     }
 
-    public String generateUniqueId() {
+    private String generateUniqueId() {
         return new BigInteger(130, random).toString(32);
     }
 

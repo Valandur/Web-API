@@ -1,29 +1,28 @@
 package valandur.webapi.ipcomm.ws;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.eclipse.jetty.server.handler.ContextHandlerCollection;
+import org.eclipse.jetty.servlet.ServletContextHandler;
 import valandur.webapi.ipcomm.IPLink;
 import valandur.webapi.ipcomm.IPRequest;
-import valandur.webapi.ipcomm.IPResponse;
 
-import javax.servlet.http.HttpServlet;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Function;
 
 public class WSLink extends IPLink {
 
+    public static WSLink instance;
     private Map<String, WSMainSocket> sockets = new ConcurrentHashMap<>();
 
 
     @Override
-    public void init() {
-    }
+    public void init(ContextHandlerCollection handlers) {
+        instance = this;
 
-    @Override
-    public Class<WSServlet> getServletClass() {
-        return WSServlet.class;
+        ServletContextHandler servletHandler = new ServletContextHandler();
+        servletHandler.setContextPath("/");
+        servletHandler.addServlet(WSServlet.class, "/ws");
+        handlers.addHandler(servletHandler);
     }
 
     @Override

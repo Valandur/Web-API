@@ -9,8 +9,8 @@ public class WSCreator implements WebSocketCreator {
     private WSMainSocket socket;
 
 
-    public WSCreator(WSLink link) {
-        this.socket = new WSMainSocket(link);
+    public WSCreator() {
+        this.socket = new WSMainSocket(WSLink.instance);
     }
 
     @Override

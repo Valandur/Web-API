@@ -42,15 +42,9 @@ public class WSMainSocket {
 
     @OnWebSocketMessage
     public void onMessage(String msg) {
-        System.out.printf("Got msg: %s%n",msg);
+        System.out.printf("Got msg: %s%n", msg);
 
-        try {
-            ObjectMapper mapper = new ObjectMapper();
-            IPResponse res = mapper.readValue(msg, IPResponse.class);
-            link.respond(res);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        link.respond(msg);
     }
 
 

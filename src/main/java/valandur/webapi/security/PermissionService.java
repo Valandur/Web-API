@@ -105,6 +105,11 @@ public class PermissionService {
      * @return The sub tree representing the permission permitted for that path
      */
     public TreeNode subPermissions(TreeNode perms, List<String> path) {
+        // If we don't have any permissions return an empty node
+        if (perms == null) {
+            return PermissionService.emptyNode();
+        }
+
         // Check if we ourselves already are a permit-all permission
         if (perms.getKey() != null && perms.getKey().equalsIgnoreCase("*") && perms.getValue()) {
             return perms;

@@ -19,6 +19,7 @@
     <orderEntry type="library" name="Gradle: org.eclipse.jetty.websocket:websocket-servlet:9.4.8.v20171121" level="project" />
     <orderEntry type="library" name="Gradle: org.eclipse.jetty.websocket:websocket-client:9.4.8.v20171121" level="project" />
     <orderEntry type="library" name="Gradle: redis.clients:jedis:2.9.0" level="project" />
+    <orderEntry type="library" name="Gradle: com.rabbitmq:amqp-client:5.3.0" level="project" />
     <orderEntry type="library" name="Gradle: com.fasterxml.jackson.core:jackson-annotations:2.9.0" level="project" />
     <orderEntry type="library" name="Gradle: javax.servlet:javax.servlet-api:3.1.0" level="project" />
     <orderEntry type="library" name="Gradle: org.eclipse.jetty:jetty-client:9.4.8.v20171121" level="project" />
@@ -29,5 +30,6 @@
     <orderEntry type="library" name="Gradle: org.eclipse.jetty:jetty-xml:9.4.8.v20171121" level="project" />
     <orderEntry type="library" name="Gradle: org.eclipse.jetty:jetty-util:9.4.8.v20171121" level="project" />
     <orderEntry type="library" name="Gradle: org.apache.commons:commons-pool2:2.4.2" level="project" />
+    <orderEntry type="library" name="Gradle: org.slf4j:slf4j-api:1.7.25" level="project" />
   </component>
 </module>

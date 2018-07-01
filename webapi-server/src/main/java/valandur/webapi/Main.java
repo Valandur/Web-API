@@ -6,15 +6,9 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.handler.ContextHandler;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
-import org.eclipse.jetty.servlet.ServletContextHandler;
-import org.eclipse.jetty.servlet.ServletHolder;
 import valandur.webapi.ipcomm.IPLink;
-import valandur.webapi.ipcomm.IPServlet;
+import valandur.webapi.ipcomm.rabbitmq.RabbitMQLink;
 import valandur.webapi.ipcomm.ws.WSLink;
-import valandur.webapi.ipcomm.ws.WSServlet;
-
-import javax.servlet.Servlet;
-import javax.servlet.ServletException;
 
 public class Main {
     public static void main(String... args) {
@@ -31,8 +25,7 @@ public class Main {
 
         ContextHandlerCollection handlers = new ContextHandlerCollection();
 
-        IPLink link = new WSLink();
-        link.init();
+        IPLink link = new RabbitMQLink();
 
         MainHandler handler = new MainHandler(link);
         ContextHandler context = new ContextHandler();
@@ -40,23 +33,13 @@ public class Main {
         context.setHandler(handler);
         handlers.addHandler(context);
 
-        ServletContextHandler servletHandler = new ServletContextHandler();
-        servletHandler.setContextPath("/");
-        ServletHolder holder = servletHandler.addServlet(link.getServletClass(), "/ws");
-        handlers.addHandler(servletHandler);
-
         server.setHandler(handlers);
+
+        link.init(handlers);
 
         try {
             server.start();
         } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        try {
-            IPServlet servlet = (IPServlet) holder.getServlet();
-            servlet.init(link);
-        } catch (ServletException e) {
             e.printStackTrace();
         }
     }

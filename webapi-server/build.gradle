@@ -23,4 +23,5 @@ dependencies {
     compile group: "org.eclipse.jetty.websocket", name: "websocket-client", version: project.jettyVersion
 
     compile group: 'redis.clients', name: 'jedis', version: '2.9.0'
+    compile group: 'com.rabbitmq', name: 'amqp-client', version: '5.3.0'
 }

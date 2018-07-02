@@ -1,4 +1,4 @@
-package valandur.webapi.ipcomm.internal;
+package valandur.webapi.link.internal;
 
 import javax.servlet.ReadListener;
 import javax.servlet.ServletInputStream;

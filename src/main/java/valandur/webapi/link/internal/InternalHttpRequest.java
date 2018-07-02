@@ -1,8 +1,8 @@
-package valandur.webapi.ipcomm.internal;
+package valandur.webapi.link.internal;
 
 import org.eclipse.jetty.server.HttpChannelState;
 import org.eclipse.jetty.server.Request;
-import valandur.webapi.ipcomm.IPRequest;
+import valandur.webapi.link.message.RequestMessage;
 
 import javax.servlet.DispatcherType;
 import javax.servlet.ServletInputStream;
@@ -14,12 +14,12 @@ import java.util.Map;
 
 public class InternalHttpRequest extends Request {
 
-    private IPRequest msg;
+    private RequestMessage msg;
     private HttpChannelState state;
     private InternalInputStream stream;
 
 
-    public InternalHttpRequest(IPRequest msg) {
+    public InternalHttpRequest(RequestMessage msg) {
         super(null, null);
 
         this.msg = msg;

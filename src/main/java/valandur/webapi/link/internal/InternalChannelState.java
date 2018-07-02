@@ -1,4 +1,4 @@
-package valandur.webapi.ipcomm.internal;
+package valandur.webapi.link.internal;
 
 import org.eclipse.jetty.server.HttpChannelState;
 

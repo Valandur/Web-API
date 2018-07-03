@@ -74,6 +74,9 @@ public class ServletsConfig extends BaseConfig {
         public boolean CmdScheduler = true;
 
         @Setting
+        public boolean GWMCrates = true;
+
+        @Setting
         public boolean HuskyCrates = true;
 
         @Setting

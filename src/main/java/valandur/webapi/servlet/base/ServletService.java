@@ -6,6 +6,7 @@ import valandur.webapi.config.BaseConfig;
 import valandur.webapi.config.ServletsConfig;
 import valandur.webapi.integration.activetime.ActiveTimeServlet;
 import valandur.webapi.integration.cmdscheduler.CmdSchedulerServlet;
+import valandur.webapi.integration.gwmcrates.GWMCratesServlet;
 import valandur.webapi.integration.huskycrates.HuskyCratesServlet;
 import valandur.webapi.integration.mmcrestrict.MMCRestrictServlet;
 import valandur.webapi.integration.mmctickets.MMCTicketsServlet;
@@ -78,6 +79,15 @@ public class ServletService {
                 logger.info("  Integrating with CmdScheduler...");
                 registerServlet(CmdSchedulerServlet.class);
             } catch (ClassNotFoundException ignored) { }
+        }
+
+        if (config.integrations.GWMCrates) {
+            try {
+                Class.forName("org.gwmdevelopments.sponge_plugin.crates.GWMCrates");
+                logger.info("  Integrating with GWMCrates...");
+                registerServlet(GWMCratesServlet.class);
+            } catch (ClassNotFoundException ignored) {
+            }
         }
 
         if (config.integrations.HuskyCrates) {

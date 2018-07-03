@@ -54,6 +54,8 @@ public class LinkService {
 
     @Listener
     public void onServerStop(GameStoppingEvent event) {
-        linkClient.disconnect();
+        if (linkClient != null) {
+            linkClient.disconnect();
+        }
     }
 }

@@ -46,10 +46,9 @@ import valandur.webapi.link.internal.InternalHttpResponse;
 import valandur.webapi.link.message.RequestMessage;
 import valandur.webapi.link.message.ResponseMessage;
 import valandur.webapi.message.InteractiveMessageService;
-import valandur.webapi.security.AuthenticationProvider;
-import valandur.webapi.security.PermissionService;
 import valandur.webapi.security.PermissionStruct;
 import valandur.webapi.security.PermissionStructSerializer;
+import valandur.webapi.security.SecurityService;
 import valandur.webapi.serialize.SerializeService;
 import valandur.webapi.server.ServerService;
 import valandur.webapi.servlet.base.BaseServlet;
@@ -172,9 +171,9 @@ public class WebAPI {
         return WebAPI.getInstance().linkService;
     }
 
-    private PermissionService permissionService;
-    public static PermissionService getPermissionService() {
-        return WebAPI.getInstance().permissionService;
+    private SecurityService securityService;
+    public static SecurityService getSecurityService() {
+        return WebAPI.getInstance().securityService;
     }
 
     private ServerService serverService;
@@ -246,7 +245,7 @@ public class WebAPI {
         this.cacheService = new CacheService();
         this.linkService = new LinkService();
         this.messageService = new InteractiveMessageService();
-        this.permissionService = new PermissionService();
+        this.securityService = new SecurityService();
         this.serializeService = new SerializeService();
         this.serverService = new ServerService();
         this.servletService = new ServletService();
@@ -259,7 +258,7 @@ public class WebAPI {
         serviceMan.setProvider(this, CacheService.class, cacheService);
         serviceMan.setProvider(this, LinkService.class, linkService);
         serviceMan.setProvider(this, InteractiveMessageService.class, messageService);
-        serviceMan.setProvider(this, PermissionService.class, permissionService);
+        serviceMan.setProvider(this, SecurityService.class, securityService);
         serviceMan.setProvider(this, SerializeService.class, serializeService);
         serviceMan.setProvider(this, ServerService.class, serverService);
         serviceMan.setProvider(this, ServletService.class, servletService);
@@ -337,13 +336,13 @@ public class WebAPI {
             Sentry.init();
         }
 
-        AuthenticationProvider.init();
-
         blockService.init();
 
         cacheService.init();
 
-        webHookService.init();
+        linkService.init();
+
+        securityService.init();
 
         serializeService.init();
 
@@ -353,8 +352,9 @@ public class WebAPI {
 
         userService.init();
 
-        CommandRegistry.init();
+        webHookService.init();
 
+        CommandRegistry.init();
 
         if (triggeringPlayer != null) {
             triggeringPlayer.sendMessage(Text.builder().color(TextColors.AQUA)

@@ -12,7 +12,7 @@ public class JettyLogger implements Logger {
         enableDebug = WebAPI.isDevMode();
     }
 
-    @Override public String getName() { return "jetty"; }
+    @Override public String getName() { return "webapi-jetty"; }
     @Override public void warn(String msg, Object... args) {
         logger.warn(msg, args);
     }

@@ -13,7 +13,7 @@ public class PermissionStructSerializer implements TypeSerializer<PermissionStru
     public PermissionStruct deserialize(TypeToken<?> type, ConfigurationNode value) throws ObjectMappingException {
         String key = value.getKey().toString();
 
-        TreeNode perms = WebAPI.getPermissionService().permissionTreeFromConfig(value.getNode("permissions"));
+        TreeNode perms = WebAPI.getSecurityService().permissionTreeFromConfig(value.getNode("permissions"));
         int rateLimit = value.getNode("rateLimit").getInt();
 
         return new PermissionStruct(key, perms, rateLimit);
@@ -21,7 +21,7 @@ public class PermissionStructSerializer implements TypeSerializer<PermissionStru
 
     @Override
     public void serialize(TypeToken<?> type, PermissionStruct obj, ConfigurationNode value) throws ObjectMappingException {
-        WebAPI.getPermissionService().permissionTreeToConfig(value.getNode("permissions"), obj.getPermissions());
+        WebAPI.getSecurityService().permissionTreeToConfig(value.getNode("permissions"), obj.getPermissions());
         value.getNode("rateLimit").setValue(obj.getRateLimit());
     }
 }

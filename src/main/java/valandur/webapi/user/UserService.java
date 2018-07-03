@@ -5,7 +5,6 @@ import org.slf4j.Logger;
 import valandur.webapi.WebAPI;
 import valandur.webapi.config.BaseConfig;
 import valandur.webapi.config.UserConfig;
-import valandur.webapi.security.AuthenticationProvider;
 import valandur.webapi.util.TreeNode;
 
 import java.nio.file.Path;
@@ -73,7 +72,7 @@ public class UserService {
         users.put(newUser.getName(), newUser);
         save();
 
-        AuthenticationProvider.updateAllFrom(newUser);
+        WebAPI.getSecurityService().updateAllFrom(newUser);
 
         return newUser;
     }
@@ -84,7 +83,7 @@ public class UserService {
         UserPermissionStruct user = users.remove(username);
         save();
 
-        AuthenticationProvider.removeAllFrom(user.getName());
+        WebAPI.getSecurityService().removeAllFrom(user.getName());
 
         return Optional.of(user);
     }

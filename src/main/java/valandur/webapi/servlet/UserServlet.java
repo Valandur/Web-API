@@ -2,10 +2,9 @@ package valandur.webapi.servlet;
 
 import io.swagger.annotations.*;
 import valandur.webapi.WebAPI;
-import valandur.webapi.security.AuthenticationProvider;
-import valandur.webapi.security.PermissionService;
 import valandur.webapi.security.PermissionStruct;
 import valandur.webapi.security.SecurityContext;
+import valandur.webapi.security.SecurityService;
 import valandur.webapi.servlet.base.BaseServlet;
 import valandur.webapi.servlet.base.Permission;
 import valandur.webapi.user.UserPermissionStruct;
@@ -63,7 +62,7 @@ public class UserServlet extends BaseServlet {
         }
 
         Optional<UserPermissionStruct> optUser =
-                WebAPI.getUserService().addUser(req.username, req.password, PermissionService.emptyNode());
+                WebAPI.getUserService().addUser(req.username, req.password, SecurityService.emptyNode());
         if (!optUser.isPresent()) {
             throw new InternalServerErrorException("Could not create user!");
         }
@@ -151,7 +150,7 @@ public class UserServlet extends BaseServlet {
         UserPermissionStruct perm = optPerm.get();
         String key = Util.generateUniqueId();
 
-        AuthenticationProvider.addTempKey(key, perm);
+        WebAPI.getSecurityService().addTempKey(key, perm);
 
         WebAPI.getLogger().info(req.getUsername() + " logged in from " + request.getAttribute("ip"));
 
@@ -167,7 +166,7 @@ public class UserServlet extends BaseServlet {
     public PermissionStruct logout()
             throws ForbiddenException {
         SecurityContext context = (SecurityContext)request.getAttribute("security");
-        AuthenticationProvider.removeTempKey(context.getPermissionStruct().getKey());
+        WebAPI.getSecurityService().removeTempKey(context.getPermissionStruct().getKey());
 
         WebAPI.getLogger().info(context.getPermissionStruct().getName() + " logged out");
 
@@ -181,7 +180,7 @@ public class UserServlet extends BaseServlet {
             @QueryParam("redirect") @ApiParam("The URL the client should be redirect to after logout") String redirect)
             throws ForbiddenException {
         SecurityContext context = (SecurityContext)request.getAttribute("security");
-        AuthenticationProvider.removeTempKey(context.getPermissionStruct().getKey());
+        WebAPI.getSecurityService().removeTempKey(context.getPermissionStruct().getKey());
 
         WebAPI.getLogger().info(context.getPermissionStruct().getName() + " logged out");
 

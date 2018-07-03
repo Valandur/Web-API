@@ -7,7 +7,7 @@ import org.spongepowered.api.command.spec.CommandExecutor;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
 import valandur.webapi.WebAPI;
-import valandur.webapi.security.PermissionService;
+import valandur.webapi.security.SecurityService;
 import valandur.webapi.user.UserPermissionStruct;
 import valandur.webapi.util.Util;
 
@@ -27,7 +27,7 @@ public class CmdUserAdd implements CommandExecutor {
         String password = optPassword.orElse(Util.generateUniqueId().substring(0, 8));
 
         Optional<UserPermissionStruct> optUser = WebAPI.getUserService().addUser(
-                username, password, PermissionService.permitAllNode());
+                username, password, SecurityService.permitAllNode());
 
         if (!optUser.isPresent()) {
             src.sendMessage(Text.builder("A user with this name already exists").color(TextColors.RED).build());

@@ -6,10 +6,10 @@ import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.command.args.CommandContext;
 import org.spongepowered.api.command.spec.CommandExecutor;
 import org.spongepowered.api.text.Text;
-import valandur.webapi.security.AuthenticationProvider;
+import valandur.webapi.WebAPI;
 
 public class CmdAuthListRemove implements CommandExecutor {
-    private boolean whitelist = false;
+    private boolean whitelist;
 
     public CmdAuthListRemove(boolean whitelist) {
         this.whitelist = whitelist;
@@ -20,10 +20,10 @@ public class CmdAuthListRemove implements CommandExecutor {
         String ip = args.getOne("ip").get().toString();
 
         if (whitelist) {
-            AuthenticationProvider.removeFromWhitelist(ip);
+            WebAPI.getSecurityService().removeFromWhitelist(ip);
             src.sendMessage(Text.of("Removed " + ip + " from whitelist"));
         } else {
-            AuthenticationProvider.removeFromBlacklist(ip);
+            WebAPI.getSecurityService().removeFromBlacklist(ip);
             src.sendMessage(Text.of("Removed " + ip + " from blacklist"));
         }
 

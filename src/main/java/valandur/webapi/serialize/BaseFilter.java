@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.PropertyWriter;
 import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
 import valandur.webapi.WebAPI;
-import valandur.webapi.security.PermissionService;
+import valandur.webapi.security.SecurityService;
 import valandur.webapi.util.TreeNode;
 
 import java.util.ArrayList;
@@ -14,14 +14,14 @@ public class BaseFilter extends SimpleBeanPropertyFilter {
 
     public static String ID = "WEBAPI-BASE-FILTER";
 
-    private PermissionService permissionService;
+    private SecurityService permissionService;
     private TreeNode perms;
     private ArrayList<String> path;
     private boolean details;
 
 
     public BaseFilter(boolean details, TreeNode perms) {
-        this.permissionService = WebAPI.getPermissionService();
+        this.permissionService = WebAPI.getSecurityService();
         this.details = details;
         this.path = new ArrayList<>();
         this.perms = perms;

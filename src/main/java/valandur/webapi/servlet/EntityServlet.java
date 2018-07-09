@@ -10,6 +10,8 @@ import org.spongepowered.api.event.cause.entity.damage.source.DamageSource;
 import org.spongepowered.api.item.inventory.Carrier;
 import org.spongepowered.api.item.inventory.Inventory;
 import org.spongepowered.api.item.inventory.ItemStack;
+import org.spongepowered.api.item.inventory.Slot;
+import org.spongepowered.api.item.inventory.property.SlotIndex;
 import org.spongepowered.api.util.Tuple;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
@@ -145,9 +147,18 @@ public class EntityServlet extends BaseServlet {
 
                 try {
                     Inventory inv = ((Carrier) live).getInventory();
-                    inv.clear();
-                    for (ItemStack stack : req.getInventory()) {
-                        inv.offer(stack);
+                    for (SlotRequest slotReq : req.getInventory()) {
+                        for (Inventory slot : inv.slots()) {
+                            Optional<SlotIndex> optIndex = slot.getInventoryProperty(SlotIndex.class);
+                            if (!optIndex.isPresent() || !slotReq.getSlotIndex().equals(optIndex.get().getValue())) {
+                                continue;
+                            }
+                            if (slotReq.getStack().isPresent()) {
+                                slot.set(slotReq.getStack().get());
+                            } else {
+                                slot.clear();
+                            }
+                        }
                     }
                 } catch (Exception e) {
                     throw new InternalServerErrorException(e.getMessage());
@@ -263,9 +274,8 @@ public class EntityServlet extends BaseServlet {
         return optEntity.get();
     }
 
-
     @ApiModel("CreateEntityRequest")
-        public static class CreateEntityRequest {
+    public static class CreateEntityRequest {
 
         private CachedWorld world;
         @ApiModelProperty(dataType = "string", value = "The world that the entity will be spawned in", required = true)
@@ -287,7 +297,7 @@ public class EntityServlet extends BaseServlet {
     }
 
     @ApiModel("UpdateEntityRequest")
-        public static class UpdateEntityRequest {
+    public static class UpdateEntityRequest {
 
         private CachedWorld world;
         @ApiModelProperty(dataType = "string", value = "The world that the entity will be moved to")
@@ -325,9 +335,9 @@ public class EntityServlet extends BaseServlet {
             return damage;
         }
 
-        private List<ItemStack> inventory;
-        @ApiModelProperty("The ItemStacks in the inventory of the entity")
-        public List<ItemStack> getInventory() throws Exception {
+        private List<SlotRequest> inventory;
+        @ApiModelProperty("The slots in the inventory of the entity to modify")
+        public List<SlotRequest> getInventory() throws Exception {
             return inventory;
         }
         public boolean hasInventory() {
@@ -336,7 +346,7 @@ public class EntityServlet extends BaseServlet {
     }
 
     @ApiModel("DamageRequest")
-        public static class DamageRequest {
+    public static class DamageRequest {
 
         private Integer amount;
         @ApiModelProperty("The amount of damage that should be dealt to the entity")
@@ -348,6 +358,22 @@ public class EntityServlet extends BaseServlet {
         @ApiModelProperty(dataType = "string", value = "The type of damage that should be dealt")
         public Optional<CachedCatalogType<DamageType>> getType() {
             return type != null ? Optional.of(type) : Optional.empty();
+        }
+    }
+
+    @ApiModel("SlotRequest")
+    public static class SlotRequest {
+
+        private Integer slotIndex;
+        @ApiModelProperty("The index of the slot to change")
+        public Integer getSlotIndex() {
+            return slotIndex;
+        }
+
+        private ItemStack stack;
+        @ApiModelProperty("The ItemStack that should be in the slot. null for an empty slot")
+        public Optional<ItemStack> getStack() {
+            return stack != null ? Optional.of(stack) : Optional.empty();
         }
     }
 }

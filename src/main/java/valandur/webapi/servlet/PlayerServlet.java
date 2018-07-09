@@ -10,6 +10,8 @@ import org.spongepowered.api.event.cause.entity.damage.source.DamageSource;
 import org.spongepowered.api.item.inventory.Carrier;
 import org.spongepowered.api.item.inventory.Inventory;
 import org.spongepowered.api.item.inventory.ItemStack;
+import org.spongepowered.api.item.inventory.property.SlotIndex;
+import org.spongepowered.api.item.inventory.query.QueryOperation;
 import org.spongepowered.api.util.Tuple;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
@@ -156,10 +158,19 @@ public class PlayerServlet extends BaseServlet {
 
             if (req.hasInventory()) {
                 try {
-                    Inventory inv = ((Carrier) live).getInventory();
-                    inv.clear();
-                    for (ItemStack stack : req.getInventory()) {
-                        inv.offer(stack);
+                    Inventory inv = live.getInventory();
+                    for (EntityServlet.SlotRequest slotReq : req.getInventory()) {
+                        for (Inventory slot : inv.slots()) {
+                            Optional<SlotIndex> optIndex = slot.getInventoryProperty(SlotIndex.class);
+                            if (!optIndex.isPresent() || !slotReq.getSlotIndex().equals(optIndex.get().getValue())) {
+                                continue;
+                            }
+                            if (slotReq.getStack().isPresent()) {
+                                slot.set(slotReq.getStack().get());
+                            } else {
+                                slot.clear();
+                            }
+                        }
                     }
                 } catch (Exception e) {
                     throw new InternalServerErrorException(e.getMessage());

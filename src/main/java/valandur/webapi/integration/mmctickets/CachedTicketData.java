@@ -1,5 +1,6 @@
 package valandur.webapi.integration.mmctickets;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import net.moddedminecraft.mmctickets.data.TicketData;
@@ -91,6 +92,7 @@ public class CachedTicketData extends CachedObject<TicketData> {
     }
 
     @Override
+    @JsonIgnore(false)
     public String getLink() {
         return Constants.BASE_PATH + "/mmc-tickets/ticket/" + id;
     }

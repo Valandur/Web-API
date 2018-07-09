@@ -61,9 +61,4 @@ public class CachedManager extends CachedObject<Manager> {
         this.preview = value.getPreview().map(CachedPreview::new).orElse(null);
         this.drops = value.getDrops().stream().map(CachedDrop::new).collect(Collectors.toList());
     }
-
-    @Override
-    public String getLink() {
-        return null;
-    }
 }

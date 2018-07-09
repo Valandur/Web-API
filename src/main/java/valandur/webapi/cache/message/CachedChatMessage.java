@@ -1,6 +1,5 @@
 package valandur.webapi.cache.message;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.spongepowered.api.entity.living.player.Player;
@@ -24,12 +23,5 @@ public class CachedChatMessage extends CachedMessage {
         super(receivers, content);
 
         this.sender = cacheService.getPlayer(sender);
-    }
-
-    @Override
-    @JsonIgnore
-    @ApiModelProperty(hidden = true)
-    public String getLink() {
-        return null;
     }
 }

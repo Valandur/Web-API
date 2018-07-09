@@ -3,9 +3,10 @@ package valandur.webapi.servlet;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.spongepowered.api.Sponge;
-import org.spongepowered.api.service.economy.Currency;
 import org.spongepowered.api.service.economy.EconomyService;
 import org.spongepowered.api.service.economy.account.Account;
+import valandur.webapi.cache.economy.CachedAccount;
+import valandur.webapi.cache.economy.CachedCurrency;
 import valandur.webapi.servlet.base.BaseServlet;
 import valandur.webapi.servlet.base.Permission;
 
@@ -13,6 +14,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.util.Collection;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Path("economy")
 @Api(tags = { "Economy" }, value = "Manage the economy on your server")
@@ -26,9 +28,9 @@ public class EconomyServlet extends BaseServlet {
     @ApiOperation(
             value = "List currencies",
             notes = "Lists all the currencies that the current economy supports.")
-    public Collection<Currency> getCurrencies() {
+    public Collection<CachedCurrency> getCurrencies() {
         EconomyService srv = getEconomyService();
-        return srv.getCurrencies();
+        return srv.getCurrencies().stream().map(CachedCurrency::new).collect(Collectors.toList());
     }
 
     @GET
@@ -37,7 +39,7 @@ public class EconomyServlet extends BaseServlet {
     @ApiOperation(
             value = "List currencies",
             notes = "Lists all the currencies that the current economy supports.")
-    public Account getAccount(@PathParam("id") String id) {
+    public CachedAccount getAccount(@PathParam("id") String id) {
         EconomyService srv = getEconomyService();
         if (!srv.hasAccount(id))
             throw new NotFoundException("Could not find account with id " + id);
@@ -46,7 +48,7 @@ public class EconomyServlet extends BaseServlet {
         if (!optAcc.isPresent())
             throw new InternalServerErrorException("Could not get account " + id);
 
-        return optAcc.get();
+        return new CachedAccount(optAcc.get());
     }
 
 

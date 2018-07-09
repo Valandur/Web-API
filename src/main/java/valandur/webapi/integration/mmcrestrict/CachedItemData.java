@@ -1,5 +1,6 @@
 package valandur.webapi.integration.mmcrestrict;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import net.moddedminecraft.mmcrestrict.Data.ItemData;
@@ -8,8 +9,6 @@ import org.spongepowered.api.item.ItemType;
 import valandur.webapi.cache.CachedObject;
 import valandur.webapi.cache.misc.CachedCatalogType;
 import valandur.webapi.util.Constants;
-
-import java.util.Optional;
 
 @ApiModel("MMCRestrictItem")
 public class CachedItemData extends CachedObject<ItemData> {
@@ -83,8 +82,8 @@ public class CachedItemData extends CachedObject<ItemData> {
     }
 
     @Override
-    public Optional<ItemData> getLive() {
-        return Optional.of(new ItemData(
+    public ItemData getLive() {
+        return new ItemData(
                 item.getId(),
                 item.getName(),
                 banReason != null ? banReason : "",
@@ -93,10 +92,11 @@ public class CachedItemData extends CachedObject<ItemData> {
                 placingBanned != null ? placingBanned : false,
                 ownershipBanned != null ? ownershipBanned : true,
                 dropBanned != null ? dropBanned : false,
-                worldBanned != null ? worldBanned : false));
+                worldBanned != null ? worldBanned : false);
     }
 
     @Override
+    @JsonIgnore(false)
     public String getLink() {
         return Constants.BASE_PATH + "/mmc-restrict/item/" + item.getId();
     }

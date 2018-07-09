@@ -21,16 +21,16 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 @Path("active-time")
-@Api(tags = { "Active Time" }, value = "Keep track of the play time of players on your server.")
+@Api(tags = { "Integration", "Active Time" }, value = "Keep track of the play time of players on your server.")
 @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 @Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 public class ActiveTimeServlet extends BaseServlet {
 
     public static void onRegister() {
         SerializeService srv = WebAPI.getSerializeService();
-        srv.registerView(ServerReport.class, ServerReportView.class);
-        srv.registerView(TimeHolder.class, TimeHolderView.class);
-        srv.registerView(UserReport.class, UserReportView.class);
+        srv.registerCache(ServerReport.class, CachedServerReport.class);
+        srv.registerCache(TimeHolder.class, CachedTimeHolder.class);
+        srv.registerCache(UserReport.class, CachedUserReport.class);
     }
 
     @GET
@@ -38,9 +38,10 @@ public class ActiveTimeServlet extends BaseServlet {
     @ApiOperation(
             value = "Server report",
             notes = "Generates a report for the whole server from week ago until now")
-    public ServerReport getServerReport() {
+    public CachedServerReport getServerReport() {
         try {
-            return ActiveTimeAPI.getServerReport(LocalDate.now().minusWeeks(1), LocalDate.now()).get();
+            return new CachedServerReport(
+                    ActiveTimeAPI.getServerReport(LocalDate.now().minusWeeks(1), LocalDate.now()).get());
         } catch (InterruptedException | ExecutionException e) {
             throw new InternalServerErrorException(e.getMessage());
         }
@@ -52,7 +53,7 @@ public class ActiveTimeServlet extends BaseServlet {
     @ApiOperation(
             value = "User report",
             notes = "Generates a report for a specific user from a week ago until now")
-    public UserReport getUserReport(@PathParam("uuid") CachedPlayer player) {
+    public CachedUserReport getUserReport(@PathParam("uuid") CachedPlayer player) {
         try {
             CompletableFuture<UserReport> report = WebAPI.runOnMain(() -> {
                 Optional<User> optUser = player.getUser();
@@ -60,7 +61,7 @@ public class ActiveTimeServlet extends BaseServlet {
                     throw new InternalServerErrorException("Could not get live user");
                 return ActiveTimeAPI.getUserReport(optUser.get(), LocalDate.now().minusWeeks(1), LocalDate.now());
             });
-            return report.get();
+            return new CachedUserReport(report.get());
         } catch (InterruptedException | ExecutionException e) {
             throw new InternalServerErrorException(e.getMessage());
         }

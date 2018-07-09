@@ -9,7 +9,6 @@ import valandur.webapi.cache.player.CachedPlayer;
 import valandur.webapi.hook.WebHookService;
 
 import javax.ws.rs.BadRequestException;
-import javax.ws.rs.InternalServerErrorException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
@@ -97,11 +96,7 @@ public class InteractiveMessageService {
         WebAPI.runOnMain(() -> {
             List<Player> players = new ArrayList<>();
             for (CachedPlayer player : cachedPlayers) {
-                Optional<?> p = player.getLive();
-                if (!p.isPresent())
-                    throw new InternalServerErrorException("Could not get live player");
-
-                players.add((Player)p.get());
+                players.add(player.getLive());
             }
 
             for (Player player : players) {

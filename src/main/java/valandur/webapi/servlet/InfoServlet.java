@@ -8,8 +8,8 @@ import org.spongepowered.api.Platform;
 import org.spongepowered.api.Server;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.resourcepack.ResourcePack;
-import org.spongepowered.api.text.Text;
 import valandur.webapi.WebAPI;
+import valandur.webapi.cache.misc.CachedText;
 import valandur.webapi.cache.plugin.CachedPluginContainer;
 import valandur.webapi.server.ServerService;
 import valandur.webapi.server.ServerStat;
@@ -67,9 +67,9 @@ public class InfoServlet extends BaseServlet {
     @ApiModel("ServerInfo")
         public static class ServerInfo {
 
-        private Text motd;
+        private CachedText motd;
         @ApiModelProperty(value = "The message of the day set on the server", required = true)
-        public Text getMotd() {
+        public CachedText getMotd() {
             return motd;
         }
 
@@ -150,7 +150,7 @@ public class InfoServlet extends BaseServlet {
             Server server = Sponge.getServer();
             Platform platform = Sponge.getPlatform();
 
-            this.motd = server.getMotd().toBuilder().build();
+            this.motd = new CachedText(server.getMotd());
             this.players = server.getOnlinePlayers().size();
             this.maxPlayers = server.getMaxPlayers();
             if (server.getBoundAddress().isPresent()) {

@@ -11,7 +11,6 @@ import valandur.webapi.util.Constants;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -119,12 +118,13 @@ public class InteractiveMessage extends CachedObject<InteractiveMessage> {
     }
 
     @Override
+    @JsonIgnore(false)
     public String getLink() {
         return Constants.BASE_PATH + "/message/" + uuid;
     }
 
     @Override
-    public Optional<InteractiveMessage> getLive() {
-        return super.getLive();
+    public InteractiveMessage getLive() {
+        return this;
     }
 }

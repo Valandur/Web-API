@@ -63,11 +63,4 @@ public class CachedCatalogType<T extends CatalogType> extends CachedObject<T> {
     public Optional<T> getLive(Class<T> clazz) {
         return Sponge.getRegistry().getType(clazz, this.id);
     }
-
-    @Override
-    @JsonIgnore
-    @ApiModelProperty(hidden = true)
-    public String getLink() {
-        return null;
-    }
 }

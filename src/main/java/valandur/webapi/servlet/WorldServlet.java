@@ -126,13 +126,8 @@ public class WorldServlet extends BaseServlet {
         }
 
         return WebAPI.runOnMain(() -> {
-            Optional<World> optLive = world.getLive();
-            Optional<WorldProperties> optProps = world.getLiveProps();
-            if (!optProps.isPresent())
-                throw new InternalServerErrorException("Could not get live world properties");
-
-            World live = optLive.orElse(null);
-            WorldProperties props = optProps.get();
+            World live = world.getLive();
+            WorldProperties props = world.getLiveProps();
 
             if (req.isLoaded() != null && req.isLoaded() != world.isLoaded()) {
                 if (req.isLoaded()) {
@@ -147,7 +142,7 @@ public class WorldServlet extends BaseServlet {
                             .stream().filter(w -> w.getUniqueId().equals(world.getUUID())).findAny();
                     if (newProps.isPresent()) {
                         live = null;
-                        props = optProps.get();
+                        props = world.getLiveProps();
                     }
                 } else {
                     WebAPI.getLogger().warn("World should be unloaded but isn't present");
@@ -194,11 +189,7 @@ public class WorldServlet extends BaseServlet {
     public CachedWorld deleteWorld(
             @PathParam("world") @ApiParam("The uuid of the world to delete") CachedWorld world) {
         boolean deleted = WebAPI.runOnMain(() -> {
-            Optional<WorldProperties> optLive = world.getLiveProps();
-            if (!optLive.isPresent())
-                throw new InternalServerErrorException("Could not get live world properties");
-
-            WorldProperties live = optLive.get();
+            WorldProperties live = world.getLiveProps();
             try {
                 return Sponge.getServer().deleteWorld(live).get();
             } catch (InterruptedException | ExecutionException e) {

@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Path("mmc-restrict")
-@Api(tags = { "MMC Restrict" }, value = "Manage restricted items on your server.")
+@Api(tags = { "Integration", "MMC Restrict" }, value = "Manage restricted items on your server.")
 @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 @Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 public class MMCRestrictServlet extends BaseServlet {
@@ -88,13 +88,10 @@ public class MMCRestrictServlet extends BaseServlet {
 
         CachedItemData item = WebAPI.runOnMain(() -> {
             Main plugin = getMMCRestrictPlugin();
-            Optional<ItemData> optData = req.getLive();
-            if (!optData.isPresent()) {
-                return null;
-            }
-            plugin.addItem(optData.get());
+            ItemData data = req.getLive();
+            plugin.addItem(data);
             saveData(plugin);
-            return new CachedItemData(optData.get());
+            return new CachedItemData(data);
         });
 
         return Response.created(new URI(null, null, item.getLink(), null)).entity(item).build();
@@ -126,14 +123,10 @@ public class MMCRestrictServlet extends BaseServlet {
                 throw new InternalServerErrorException("Could not get item type");
             }
             req.setItem(new CachedCatalogType<>(optType.get()));
-            Optional<ItemData> optData = req.getLive();
-            if (!optData.isPresent()) {
-                plugin.addItem(item);   // Add the old item because we removed it
-                throw new InternalServerErrorException("Could not create item data");
-            }
-            plugin.addItem(optData.get());
+            ItemData data = req.getLive();
+            plugin.addItem(data);
             saveData(plugin);
-            return new CachedItemData(optData.get());
+            return new CachedItemData(data);
         });
     }
 

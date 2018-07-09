@@ -1,19 +1,18 @@
 package valandur.webapi.cache.world;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.flowpowered.math.vector.Vector3d;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.spongepowered.api.world.WorldBorder;
 import org.spongepowered.api.world.storage.WorldProperties;
 import valandur.webapi.cache.CachedObject;
+import valandur.webapi.cache.misc.CachedVector3d;
 
 @ApiModel("WorldBorder")
 public class CachedWorldBorder extends CachedObject<WorldBorder> {
 
-    private Vector3d center;
+    private CachedVector3d center;
     @ApiModelProperty(value = "The center of the world border", required = true)
-    public Vector3d getCenter() {
+    public CachedVector3d getCenter() {
         return center;
     }
 
@@ -63,7 +62,7 @@ public class CachedWorldBorder extends CachedObject<WorldBorder> {
     public CachedWorldBorder(WorldBorder border) {
         super(null);
 
-        this.center = border.getCenter().clone();
+        this.center = new CachedVector3d(border.getCenter());
         this.diameter = border.getDiameter();
         this.damageAmount = border.getDamageAmount();
         this.damageThreshold = border.getDamageThreshold();
@@ -75,7 +74,7 @@ public class CachedWorldBorder extends CachedObject<WorldBorder> {
     public CachedWorldBorder(WorldProperties properties) {
         super(null);
 
-        this.center = properties.getWorldBorderCenter().clone();
+        this.center = new CachedVector3d(properties.getWorldBorderCenter());
         this.diameter = properties.getWorldBorderDiameter();
         this.damageAmount = properties.getWorldBorderDamageAmount();
         this.damageThreshold = properties.getWorldBorderDamageThreshold();
@@ -83,12 +82,5 @@ public class CachedWorldBorder extends CachedObject<WorldBorder> {
         this.timeRemaining = properties.getWorldBorderTimeRemaining();
         this.warningDistance = properties.getWorldBorderWarningDistance();
         this.warningTime = properties.getWorldBorderWarningTime();
-    }
-
-    @Override
-    @JsonIgnore
-    @ApiModelProperty(hidden = true)
-    public String getLink() {
-        return null;
     }
 }

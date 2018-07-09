@@ -22,7 +22,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Path("web-books")
 @Api(
-        tags = { "Web Books" },
+        tags = { "Integration", "Web Books" },
         value = "Create, edit and delete web books that have unique links which work on your server in-game.")
 @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 @Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })

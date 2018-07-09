@@ -1,11 +1,11 @@
 package valandur.webapi.integration.nucleus;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.github.nucleuspowered.nucleus.api.nucleusdata.Kit;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import org.spongepowered.api.data.value.ValueContainer;
-import org.spongepowered.api.item.inventory.ItemStackSnapshot;
 import valandur.webapi.cache.CachedObject;
+import valandur.webapi.cache.item.CachedItemStackSnapshot;
 import valandur.webapi.serialize.JsonDetails;
 import valandur.webapi.util.Constants;
 
@@ -54,10 +54,10 @@ public class CachedKit extends CachedObject<Kit> {
         return commands;
     }
 
-    private List<ItemStackSnapshot> stacks;
+    private List<CachedItemStackSnapshot> stacks;
     @JsonDetails
     @ApiModelProperty(value = "The ItemStacks that are awarded to the player who buys/acquires this kit", required = true)
-    public List<ItemStackSnapshot> getStacks() {
+    public List<CachedItemStackSnapshot> getStacks() {
         return stacks;
     }
 
@@ -74,10 +74,11 @@ public class CachedKit extends CachedObject<Kit> {
         this.firstJoinKit = kit.isFirstJoinKit();
         this.oneTime = kit.isOneTime();
         this.commands = new ArrayList<>(kit.getCommands());
-        this.stacks = kit.getStacks().stream().map(ValueContainer::copy).collect(Collectors.toList());
+        this.stacks = kit.getStacks().stream().map(CachedItemStackSnapshot::new).collect(Collectors.toList());
     }
 
     @Override
+    @JsonIgnore(false)
     public String getLink() {
         return Constants.BASE_PATH + "/nucleus/kit/" + name;
     }

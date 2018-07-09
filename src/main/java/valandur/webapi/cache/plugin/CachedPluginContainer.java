@@ -10,6 +10,7 @@ import valandur.webapi.cache.CachedObject;
 import valandur.webapi.serialize.JsonDetails;
 import valandur.webapi.util.Constants;
 
+import javax.ws.rs.NotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -190,11 +191,16 @@ public class CachedPluginContainer extends CachedObject<PluginContainer> {
     }
 
     @Override
-    public Optional<PluginContainer> getLive() {
-        return Sponge.getPluginManager().getPlugin(id);
+    public PluginContainer getLive() {
+        Optional<PluginContainer> optContainer = Sponge.getPluginManager().getPlugin(id);
+        if (!optContainer.isPresent()) {
+            throw new NotFoundException("Could not find plugin: " + id);
+        }
+        return optContainer.get();
     }
 
     @Override
+    @JsonIgnore(false)
     public String getLink() {
         return Constants.BASE_PATH + "/plugin/" + id;
     }

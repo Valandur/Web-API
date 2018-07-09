@@ -10,8 +10,8 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.spongepowered.api.entity.living.player.User;
-import org.spongepowered.api.world.Location;
 import valandur.webapi.WebAPI;
+import valandur.webapi.cache.item.CachedItemStackSnapshot;
 import valandur.webapi.cache.player.CachedPlayer;
 import valandur.webapi.exceptions.NotImplementedException;
 import valandur.webapi.serialize.SerializeService;
@@ -29,7 +29,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Path("nucleus")
-@Api(tags = { "Nucleus" }, value = "Manage your kits and jails")
+@Api(tags = { "Integration", "Nucleus" }, value = "Manage your kits and jails")
 @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 @Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 public class NucleusServlet extends BaseServlet {
@@ -108,12 +108,8 @@ public class NucleusServlet extends BaseServlet {
         }
 
         CachedNamedLocation jail = WebAPI.runOnMain(() -> {
-            Optional<Location> optLive = req.getLocation().getLive();
-            if (!optLive.isPresent()) {
-                throw new InternalServerErrorException("Could not get live location");
-            }
-            Vector3d rot = req.getRotation() == null ? Vector3d.FORWARD : req.getRotation();
-            srv.setJail(req.getName(), optLive.get(), rot);
+            Vector3d rot = req.getRotation() == null ? Vector3d.FORWARD : req.getRotation().getLive();
+            srv.setJail(req.getName(), req.getLocation().getLive(), rot);
             Optional<NamedLocation> optJail = srv.getJail(req.getName());
             if (!optJail.isPresent()) {
                 throw new InternalServerErrorException("Could not get jail after creating it");
@@ -230,7 +226,9 @@ public class NucleusServlet extends BaseServlet {
             kit.setCooldown(Duration.ofMillis(req.getCooldown()));
             if (req.getStacks() != null) {
                 try {
-                    kit.setStacks(req.getStacks());
+                    kit.setStacks(req.getStacks().stream()
+                            .map(CachedItemStackSnapshot::getLive)
+                            .collect(Collectors.toList()));
                 } catch (Exception e) {
                     throw new BadRequestException("Could not process item stack: " + e.getMessage());
                 }
@@ -281,7 +279,9 @@ public class NucleusServlet extends BaseServlet {
             }
             if (req.getStacks() != null) {
                 try {
-                    kit.setStacks(req.getStacks());
+                    kit.setStacks(req.getStacks().stream()
+                            .map(CachedItemStackSnapshot::getLive)
+                            .collect(Collectors.toList()));
                 } catch (Exception e) {
                     throw new BadRequestException("Could not process item stack: " + e.getMessage());
                 }
@@ -364,7 +364,7 @@ public class NucleusServlet extends BaseServlet {
         }
 
         return WebAPI.runOnMain(
-                () -> srv.getMail(optUser.get(), mailMessage -> { return true; }).stream()
+                () -> srv.getMail(optUser.get(), mailMessage -> true).stream()
                         .map(CachedMailMessage::new)
                         .collect(Collectors.toList())
         );
@@ -376,7 +376,7 @@ public class NucleusServlet extends BaseServlet {
     @Path("/module")
     @Permission({ "module", "list" })
     @ApiOperation(value = "List modules", notes = "Get a list of loaded Nucleus modules.")
-    public Collection<String> listMail() {
+    public Collection<String> listModules() {
 
         NucleusModuleService srv = NucleusAPI.getModuleService();
         return WebAPI.runOnMain(srv::getModulesToLoad);

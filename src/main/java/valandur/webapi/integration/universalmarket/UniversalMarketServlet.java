@@ -19,7 +19,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Path("universal-market")
-@Api(tags = { "Universal Market" }, value = "View the current items on the market")
+@Api(tags = { "Integration", "Universal Market" }, value = "View the current items on the market")
 @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 @Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 public class UniversalMarketServlet extends BaseServlet {

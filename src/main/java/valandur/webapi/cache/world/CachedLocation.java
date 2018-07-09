@@ -1,15 +1,12 @@
 package valandur.webapi.cache.world;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.flowpowered.math.vector.Vector3d;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 import valandur.webapi.cache.CachedObject;
+import valandur.webapi.cache.misc.CachedVector3d;
 import valandur.webapi.serialize.JsonDetails;
-
-import java.util.Optional;
 
 @ApiModel("Location")
 public class CachedLocation extends CachedObject<Location> {
@@ -21,9 +18,9 @@ public class CachedLocation extends CachedObject<Location> {
         return world;
     }
 
-    private Vector3d position;
+    private CachedVector3d position;
     @ApiModelProperty(value = "The position within the world that this location refers to", required = true)
-    public Vector3d getPosition() {
+    public CachedVector3d getPosition() {
         return position;
     }
 
@@ -32,31 +29,23 @@ public class CachedLocation extends CachedObject<Location> {
         super(null);
 
         this.world = cacheService.getWorld(worldNameOrUuid).orElse(null);
-        this.position = new Vector3d(x, y, z);
+        this.position = new CachedVector3d(x, y, z);
     }
     public CachedLocation(CachedWorld world, double x, double y, double z) {
         super(null);
 
         this.world = world;
-        this.position = new Vector3d(x, y, z);
+        this.position = new CachedVector3d(x, y, z);
     }
     public CachedLocation(Location<World> location) {
         super(null);
 
         this.world = cacheService.getWorld(location.getExtent());
-        this.position = location.getPosition().clone();
+        this.position = new CachedVector3d(location.getPosition());
     }
 
     @Override
-    public Optional<Location> getLive() {
-        Optional<World> optWorld = world.getLive();
-        return optWorld.map(w -> new Location<>(w, position));
-    }
-
-    @Override
-    @JsonIgnore
-    @ApiModelProperty(hidden = true)
-    public String getLink() {
-        return null;
+    public Location<World> getLive() {
+        return new Location<>(world.getLive(), position.getLive());
     }
 }

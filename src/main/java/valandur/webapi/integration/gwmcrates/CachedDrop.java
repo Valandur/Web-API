@@ -1,7 +1,5 @@
 package valandur.webapi.integration.gwmcrates;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import io.swagger.annotations.ApiModelProperty;
 import org.gwmdevelopments.sponge_plugin.crates.drop.Drop;
 import org.gwmdevelopments.sponge_plugin.crates.drop.drops.*;
 import org.spongepowered.api.item.inventory.ItemStack;
@@ -71,12 +69,5 @@ public class CachedDrop extends CachedObject<Drop> {
             data.put("dropTrue", new CachedDrop(((PermissionDrop) value).getDrop1()));
             data.put("dropFalse", new CachedDrop(((PermissionDrop) value).getDrop2()));
         }
-    }
-
-    @Override
-    @JsonIgnore
-    @ApiModelProperty(hidden = true)
-    public String getLink() {
-        return null;
     }
 }

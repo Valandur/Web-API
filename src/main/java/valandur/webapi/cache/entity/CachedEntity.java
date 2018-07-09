@@ -1,6 +1,6 @@
 package valandur.webapi.cache.entity;
 
-import com.flowpowered.math.vector.Vector3d;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.spongepowered.api.Sponge;
@@ -10,10 +10,12 @@ import org.spongepowered.api.world.World;
 import valandur.webapi.cache.CachedObject;
 import valandur.webapi.cache.misc.CachedCatalogType;
 import valandur.webapi.cache.misc.CachedInventory;
+import valandur.webapi.cache.misc.CachedVector3d;
 import valandur.webapi.cache.world.CachedLocation;
 import valandur.webapi.serialize.JsonDetails;
 import valandur.webapi.util.Constants;
 
+import javax.ws.rs.NotFoundException;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -38,24 +40,24 @@ public class CachedEntity extends CachedObject<Entity> {
         return location;
     }
 
-    private Vector3d rotation;
+    private CachedVector3d rotation;
     @JsonDetails
     @ApiModelProperty(value = "The current rotation of the entity", required = true)
-    public Vector3d getRotation() {
+    public CachedVector3d getRotation() {
         return rotation;
     }
 
-    private Vector3d velocity;
+    private CachedVector3d velocity;
     @JsonDetails
     @ApiModelProperty(value = "The current velocity of the entity", required = true)
-    public Vector3d getVelocity() {
+    public CachedVector3d getVelocity() {
         return velocity;
     }
 
-    private Vector3d scale;
+    private CachedVector3d scale;
     @JsonDetails
     @ApiModelProperty(value = "The current scale of the entity", required = true)
-    public Vector3d getScale() {
+    public CachedVector3d getScale() {
         return scale;
     }
 
@@ -70,13 +72,13 @@ public class CachedEntity extends CachedObject<Entity> {
     public CachedEntity(Entity entity) {
         super(entity);
 
-        this.type = new CachedCatalogType(entity.getType());
+        this.type = new CachedCatalogType<>(entity.getType());
         this.uuid = UUID.fromString(entity.getUniqueId().toString());
         this.location = new CachedLocation(entity.getLocation());
 
-        this.rotation = entity.getRotation().clone();
-        this.velocity = entity.getVelocity().clone();
-        this.scale = entity.getScale().clone();
+        this.rotation = new CachedVector3d(entity.getRotation());
+        this.velocity = new CachedVector3d(entity.getVelocity());
+        this.scale = new CachedVector3d(entity.getScale());
 
         if (entity instanceof Carrier) {
             try {
@@ -86,16 +88,17 @@ public class CachedEntity extends CachedObject<Entity> {
     }
 
     @Override
-    public Optional<Entity> getLive() {
+    public Entity getLive() {
         for (World w : Sponge.getServer().getWorlds()) {
             Optional<Entity> e = w.getEntity(uuid);
             if (e.isPresent())
-                return Optional.of(e.get());
+                return e.get();
         }
-        return Optional.empty();
+        throw new NotFoundException("Could not find entity: " + uuid);
     }
 
     @Override
+    @JsonIgnore(false)
     public String getLink() {
         return Constants.BASE_PATH + "/entity/" + uuid;
     }

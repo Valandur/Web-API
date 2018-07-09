@@ -1,7 +1,5 @@
 package valandur.webapi.integration.gwmcrates;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import io.swagger.annotations.ApiModelProperty;
 import org.gwmdevelopments.sponge_plugin.crates.caze.Case;
 import org.gwmdevelopments.sponge_plugin.crates.caze.cases.BlockCase;
 import org.gwmdevelopments.sponge_plugin.crates.caze.cases.EntityCase;
@@ -48,12 +46,5 @@ public class CachedCase extends CachedObject<Case> {
         } else if (value instanceof VirtualCase) {
             data.put("virtualName", ((VirtualCase) value).getVirtualName());
         }
-    }
-
-    @Override
-    @JsonIgnore
-    @ApiModelProperty(hidden = true)
-    public String getLink() {
-        return null;
     }
 }

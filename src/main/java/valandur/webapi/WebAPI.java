@@ -6,7 +6,6 @@ import com.google.common.reflect.TypeToken;
 import com.google.inject.Inject;
 import io.sentry.Sentry;
 import io.sentry.context.Context;
-import io.swagger.converter.ModelConverters;
 import ninja.leaping.configurate.objectmapping.serialize.TypeSerializers;
 import org.bstats.sponge.Metrics;
 import org.eclipse.jetty.util.log.Log;
@@ -53,7 +52,6 @@ import valandur.webapi.serialize.SerializeService;
 import valandur.webapi.server.ServerService;
 import valandur.webapi.servlet.base.BaseServlet;
 import valandur.webapi.servlet.base.ServletService;
-import valandur.webapi.swagger.SwaggerModelConverter;
 import valandur.webapi.user.UserPermissionStruct;
 import valandur.webapi.user.UserPermissionStructConfigSerializer;
 import valandur.webapi.user.UserService;
@@ -270,9 +268,6 @@ public class WebAPI {
         evenMan.registerListeners(this, cacheService);
         evenMan.registerListeners(this, linkService);
         evenMan.registerListeners(this, webHookService);
-
-        // Swagger setup stuff
-        ModelConverters.getInstance().addConverter(new SwaggerModelConverter());
 
         Timings.STARTUP.stopTiming();
     }

@@ -1,7 +1,5 @@
 package valandur.webapi.integration.gwmcrates;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import io.swagger.annotations.ApiModelProperty;
 import org.gwmdevelopments.sponge_plugin.crates.key.Key;
 import org.gwmdevelopments.sponge_plugin.crates.key.keys.*;
 import org.spongepowered.api.service.economy.Currency;
@@ -50,12 +48,5 @@ public class CachedKey extends CachedObject<Key> {
             data.put("name", ((TimedKey) value).getVirtualName());
             data.put("delay", ((TimedKey) value).getDelay());
         }
-    }
-
-    @Override
-    @JsonIgnore
-    @ApiModelProperty(hidden = true)
-    public String getLink() {
-        return null;
     }
 }

@@ -92,6 +92,7 @@ public class CachedVirtualCrate extends CachedObject<VirtualCrate> {
     }
 
     @Override
+    @JsonIgnore(false)
     public String getLink() {
         return Constants.BASE_PATH + "/husky-crates/crate/" + id;
     }

@@ -9,7 +9,6 @@ import valandur.webapi.cache.world.CachedWorld;
 import valandur.webapi.config.BaseConfig;
 import valandur.webapi.config.BlockConfig;
 
-import javax.ws.rs.InternalServerErrorException;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -76,15 +75,7 @@ public class BlockService {
      * @return The block state of the block that was requested
      */
     public BlockState getBlockAt(CachedWorld world, Vector3i pos) {
-        return WebAPI.runOnMain(() -> {
-            Optional<?> obj = world.getLive();
-
-            if (!obj.isPresent())
-                throw new InternalServerErrorException("Could not get live world");
-
-            World w = (World)obj.get();
-            return w.getBlock(pos).copy();
-        });
+        return WebAPI.runOnMain(() -> world.getLive().getBlock(pos).copy());
     }
 
     /**
@@ -123,12 +114,7 @@ public class BlockService {
      */
     public String[][] getBiomes(CachedWorld world, Vector3i min, Vector3i max) {
         return WebAPI.runOnMain(() -> {
-            Optional<?> obj = world.getLive();
-
-            if (!obj.isPresent())
-                throw new InternalServerErrorException("Could not get live world");
-
-            World w = (World)obj.get();
+            World w = world.getLive();
             BiomeVolume vol = w.getBiomeView(min, max).getRelativeBiomeView();
             Vector3i size = vol.getBiomeSize();
 

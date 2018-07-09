@@ -94,11 +94,7 @@ public class TileEntityServlet extends BaseServlet {
         }
 
         return WebAPI.runOnMain(() -> {
-            Optional<TileEntity> optLive = optTe.get().getLive();
-            if (!optLive.isPresent())
-                throw new InternalServerErrorException("Could not get live tile entity");
-
-            TileEntity live = optLive.get();
+            TileEntity live = optTe.get().getLive();
 
             if (req.hasInventory()) {
                 if (!(live instanceof TileEntityCarrier)) {

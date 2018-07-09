@@ -27,7 +27,7 @@ import java.util.Optional;
 
 @Path("husky-crates")
 @Api(
-        tags = { "Husky Crates" },
+        tags = { "Integration", "Husky Crates" },
         value = "Create, edit and delete the crate types on your server, without having to restart it.")
 @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 @Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })

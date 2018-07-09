@@ -1,15 +1,16 @@
 package valandur.webapi.cache.world;
 
-import com.flowpowered.math.vector.Vector3i;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import org.spongepowered.api.Sponge;
 import org.spongepowered.api.world.Chunk;
 import valandur.webapi.WebAPI;
 import valandur.webapi.cache.CachedObject;
+import valandur.webapi.cache.misc.CachedVector3i;
 import valandur.webapi.serialize.JsonDetails;
 import valandur.webapi.util.Constants;
 
+import javax.ws.rs.NotFoundException;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -22,9 +23,9 @@ public class CachedChunk extends CachedObject<Chunk> {
         return uuid;
     }
 
-    private Vector3i pos;
+    private CachedVector3i pos;
     @ApiModelProperty(value = "The position of this chunk (in chunk coordinates)", required = true)
-    public Vector3i getPosition() {
+    public CachedVector3i getPosition() {
         return pos;
     }
 
@@ -41,17 +42,17 @@ public class CachedChunk extends CachedObject<Chunk> {
         return loaded;
     }
 
-    private Vector3i blockMin;
+    private CachedVector3i blockMin;
     @JsonDetails
     @ApiModelProperty("The bock with the smallest coordinates that is still part of this chunk")
-    public Vector3i getBlockMin() {
+    public CachedVector3i getBlockMin() {
         return blockMin;
     }
 
-    private Vector3i blockMax;
+    private CachedVector3i blockMax;
     @JsonDetails
     @ApiModelProperty("The bock with the largest coordinates that is still part of this chunk")
-    public Vector3i getBlockMax() {
+    public CachedVector3i getBlockMax() {
         return blockMax;
     }
 
@@ -80,11 +81,11 @@ public class CachedChunk extends CachedObject<Chunk> {
     public CachedChunk(Chunk chunk) {
         super(chunk);
 
-        this.uuid = UUID.fromString(chunk.getUniqueId().toString());
-        this.pos = chunk.getPosition().clone();
+        this.uuid = chunk.getUniqueId();
+        this.pos = new CachedVector3i(chunk.getPosition());
         this.world = WebAPI.getCacheService().getWorld(chunk.getWorld());
-        this.blockMin = chunk.getBlockMin().clone();
-        this.blockMax = chunk.getBlockMax().clone();
+        this.blockMin = new CachedVector3i(chunk.getBlockMin());
+        this.blockMax = new CachedVector3i(chunk.getBlockMax());
         this.loaded = chunk.isLoaded();
         this.inhabitedTime = chunk.getInhabitedTime();
         this.regionalDifficultyFactor = chunk.getRegionalDifficultyFactor();
@@ -92,16 +93,17 @@ public class CachedChunk extends CachedObject<Chunk> {
     }
 
     @Override
-    public Optional<Chunk> getLive() {
-        if (world.isLoaded()) {
-            return Sponge.getServer().getWorld(uuid).flatMap(w -> w.getChunk(pos));
-        } else {
-            return Optional.empty();
+    public Chunk getLive() {
+        Optional<Chunk> optChunk = world.getLive().getChunk(pos.getLive());
+        if (!optChunk.isPresent()) {
+            throw new NotFoundException("Could not find chunk: " + uuid);
         }
+        return optChunk.get();
     }
 
     @Override
+    @JsonIgnore(false)
     public String getLink() {
-        return Constants.BASE_PATH + "/chunk/" + world.getUUID() + "/" + pos.getX() + "/" + pos.getZ();
+        return Constants.BASE_PATH + "/chunk/" + world.getUUID() + "/" + pos.x + "/" + pos.z;
     }
 }

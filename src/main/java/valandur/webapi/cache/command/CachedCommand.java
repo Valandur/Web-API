@@ -1,10 +1,12 @@
 package valandur.webapi.cache.command;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.spongepowered.api.command.CommandMapping;
 import org.spongepowered.api.text.Text;
 import valandur.webapi.cache.CachedObject;
+import valandur.webapi.cache.misc.CachedText;
 import valandur.webapi.util.Constants;
 
 import static valandur.webapi.command.CommandSource.instance;
@@ -18,9 +20,9 @@ public class CachedCommand extends CachedObject<CommandMapping> {
         return name;
     }
 
-    private Text description;
+    private CachedText description;
     @ApiModelProperty(value = "The description provided with the command", required = true)
-    public Text getDescription() {
+    public CachedText getDescription() {
         return description;
     }
 
@@ -30,15 +32,15 @@ public class CachedCommand extends CachedObject<CommandMapping> {
         return aliases;
     }
 
-    private Text usage;
+    private CachedText usage;
     @ApiModelProperty(value = "A short description of the usage of this command", required = true)
-    public Text getUsage() {
+    public CachedText getUsage() {
         return usage;
     }
 
-    private Text help;
+    private CachedText help;
     @ApiModelProperty(value = "Extended help information on the usage of the command", required = true)
-    public Text getHelp() {
+    public CachedText getHelp() {
         return help;
     }
 
@@ -49,13 +51,14 @@ public class CachedCommand extends CachedObject<CommandMapping> {
         this.name = cmd.getPrimaryAlias();
         this.aliases = cmd.getAllAliases().toArray(new String[cmd.getAllAliases().size()]);
         try {
-            this.usage = cmd.getCallable().getUsage(instance).toBuilder().build();
-            this.description = cmd.getCallable().getShortDescription(instance).orElse(Text.EMPTY).toBuilder().build();
-            this.help = cmd.getCallable().getHelp(instance).orElse(Text.EMPTY).toBuilder().build();
+            this.usage = new CachedText(cmd.getCallable().getUsage(instance));
+            this.description = new CachedText(cmd.getCallable().getShortDescription(instance).orElse(Text.EMPTY));
+            this.help = new CachedText(cmd.getCallable().getHelp(instance).orElse(Text.EMPTY));
         } catch (Exception ignored) {}
     }
 
     @Override
+    @JsonIgnore(false)
     public String getLink() {
         return Constants.BASE_PATH + "/cmd/" + name;
     }

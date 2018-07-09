@@ -1,10 +1,11 @@
 package valandur.webapi.integration.redprotect;
 
 import br.net.fabiozumbi12.RedProtect.Sponge.Region;
-import com.flowpowered.math.vector.Vector3d;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import valandur.webapi.cache.CachedObject;
+import valandur.webapi.cache.misc.CachedVector3d;
 import valandur.webapi.cache.player.CachedPlayer;
 import valandur.webapi.cache.world.CachedLocation;
 import valandur.webapi.cache.world.CachedWorld;
@@ -35,15 +36,15 @@ public class CachedRegion extends CachedObject<Region> {
         return world;
     }
 
-    private Vector3d min;
+    private CachedVector3d min;
     @ApiModelProperty(value = "The minimum coordinates that define the region", required = true)
-    public Vector3d getMin() {
+    public CachedVector3d getMin() {
         return min;
     }
 
-    private Vector3d max;
+    private CachedVector3d max;
     @ApiModelProperty(value = "The maximum coordinates that define the region", required = true)
-    public Vector3d getMax() {
+    public CachedVector3d getMax() {
         return max;
     }
 
@@ -120,8 +121,8 @@ public class CachedRegion extends CachedObject<Region> {
         this.id = region.getID();
         this.name = region.getName();
         this.world = cacheService.getWorld(region.getWorld()).orElse(null);
-        this.min = new Vector3d(region.getMinMbrX(), region.getMinY(), region.getMinMbrZ());
-        this.max = new Vector3d(region.getMaxMbrX(), region.getMaxY(), region.getMaxMbrZ());
+        this.min = new CachedVector3d(region.getMinMbrX(), region.getMinY(), region.getMinMbrZ());
+        this.max = new CachedVector3d(region.getMaxMbrX(), region.getMaxY(), region.getMaxMbrZ());
         this.priority = region.getPrior();
         this.welcomeMessage = region.getWelcome();
         this.date = region.getDate();
@@ -153,6 +154,7 @@ public class CachedRegion extends CachedObject<Region> {
     }
 
     @Override
+    @JsonIgnore(false)
     public String getLink() {
         return Constants.BASE_PATH + "/red-protect/region/" + id;
     }

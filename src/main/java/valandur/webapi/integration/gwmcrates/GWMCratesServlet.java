@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 
 @Path("gwm-crates")
 @Api(
-        tags = { "GWMCrates" },
+        tags = { "Integration", "GWMCrates" },
         value = "Create, edit and delete the crate types on your server, without having to restart it.")
 @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 @Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })

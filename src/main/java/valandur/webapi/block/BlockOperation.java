@@ -14,10 +14,12 @@ import org.spongepowered.api.world.Chunk;
 import org.spongepowered.api.world.World;
 import valandur.webapi.WebAPI;
 import valandur.webapi.cache.CachedObject;
+import valandur.webapi.cache.misc.CachedVector3i;
 import valandur.webapi.cache.world.CachedWorld;
 import valandur.webapi.serialize.JsonDetails;
 import valandur.webapi.util.Constants;
 
+import javax.ws.rs.NotFoundException;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -86,14 +88,14 @@ public abstract class BlockOperation extends CachedObject<BlockOperation> {
 
     @JsonDetails
     @ApiModelProperty(value = "The minimum block belonging to this operation", required = true)
-    public Vector3i getMin() {
-        return min;
+    public CachedVector3i getMin() {
+        return new CachedVector3i(min);
     }
 
     @JsonDetails
     @ApiModelProperty(value = "The maximum block belonging to this operation", required = true)
-    public Vector3i getMax() {
-        return max;
+    public CachedVector3i getMax() {
+        return new CachedVector3i(max);
     }
 
     @JsonIgnore
@@ -157,13 +159,7 @@ public abstract class BlockOperation extends CachedObject<BlockOperation> {
     private void run() {
         if (status != BlockOperationStatus.RUNNING) return;
 
-        Optional<?> optWorld = world.getLive();
-        if (!optWorld.isPresent()) {
-            stop("Invalid world");
-            return;
-        }
-
-        World world = (World)optWorld.get();
+        World world = this.world.getLive();
 
         int nextLimit = Math.min(currentBlock + blockService.getMaxBlocksPerSecond() / 2, totalBlocks);
         for (; currentBlock < nextLimit; currentBlock++) {
@@ -227,11 +223,17 @@ public abstract class BlockOperation extends CachedObject<BlockOperation> {
         Sponge.getEventManager().post(new BlockOperationStatusChangeEvent(this));
     }
 
+    @Override
+    @JsonIgnore(false)
     public String getLink() {
         return Constants.BASE_PATH + "/block/op/" + uuid;
     }
 
-    public Optional<BlockOperation> getLive() {
-        return WebAPI.getBlockService().getBlockOperation(uuid);
+    public BlockOperation getLive() {
+        Optional<BlockOperation> optOp = WebAPI.getBlockService().getBlockOperation(uuid);
+        if (!optOp.isPresent()) {
+            throw new NotFoundException("Could not find block operation: " + uuid);
+        }
+        return optOp.get();
     }
 }

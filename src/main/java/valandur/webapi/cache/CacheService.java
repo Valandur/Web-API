@@ -480,12 +480,9 @@ public class CacheService {
         return WebAPI.runOnMain(() -> {
             Stream<Extent> extents;
             if (world == null)
-                extents = Sponge.getServer().getWorlds().stream().map(w -> (Extent)w);
+                extents = Sponge.getServer().getWorlds().stream().map(w -> w);
             else {
-                Optional<?> w = world.getLive();
-                if (!w.isPresent())
-                    throw new InternalServerErrorException("Could not get live world");
-                extents = Stream.of((Extent)w.get());
+                extents = Stream.of(world.getLive());
             }
 
             if (min != null) {
@@ -711,12 +708,9 @@ public class CacheService {
         return WebAPI.runOnMain(() -> {
             Stream<Extent> extents;
             if (world == null)
-                extents = Sponge.getServer().getWorlds().stream().map(w -> (Extent)w);
+                extents = Sponge.getServer().getWorlds().stream().map(w -> w);
             else {
-                Optional<?> w = world.getLive();
-                if (!w.isPresent())
-                    throw new InternalServerErrorException("Could not get live world");
-                extents = Stream.of((Extent)w.get());
+                extents = Stream.of(world.getLive());
             }
 
             if (min != null) {
@@ -769,11 +763,7 @@ public class CacheService {
      */
     public Optional<CachedTileEntity> getTileEntity(CachedWorld world, int x, int y, int z) {
         return WebAPI.runOnMain(() -> {
-            Optional<?> w = world.getLive();
-            if (!w.isPresent())
-                throw new InternalServerErrorException("Could not get live world");
-
-            Optional<TileEntity> ent = ((World)w.get()).getTileEntity(x, y, z);
+            Optional<TileEntity> ent = world.getLive().getTileEntity(x, y, z);
             if (!ent.isPresent() || !ent.get().isValid()) {
                 return Optional.empty();
             }
@@ -794,12 +784,7 @@ public class CacheService {
      */
     public Object executeMethod(CachedObject cache, String methodName, Class[] paramTypes, Object[] paramValues) {
         return WebAPI.runOnMain(() -> {
-            Optional<?> obj = cache.getLive();
-
-            if (!obj.isPresent())
-                throw new InternalServerErrorException("Could not get live version of object");
-
-            Object o = obj.get();
+            Object o = cache.getLive();
             Method[] ms = Arrays.stream(Util.getAllMethods(o.getClass())).filter(m -> {
                 if (!m.getName().equalsIgnoreCase(methodName))
                     return false;

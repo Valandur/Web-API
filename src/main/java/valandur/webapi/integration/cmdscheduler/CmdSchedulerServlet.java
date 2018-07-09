@@ -16,19 +16,20 @@ import valandur.webapi.servlet.base.Permission;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.util.Collection;
+import java.util.stream.Collectors;
 
 @Path("cmd-scheduler")
-@Api(tags = { "CmdScheduler" }, value = "Automatic Command Scheduler")
+@Api(tags = { "Integration", "CmdScheduler" }, value = "Automatic Command Scheduler")
 @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 @Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 public class CmdSchedulerServlet extends BaseServlet {
 
     public static void onRegister() {
         SerializeService srv = WebAPI.getSerializeService();
-        srv.registerView(CommandTask.class, CommandTaskView.class);
-        srv.registerView(CronSchedule.class, CronScheduleView.class);
-        srv.registerView(ClassicSchedule.class, ClassicScheduleView.class);
-        srv.registerView(CalendarSchedule.class, CalendarScheduleView.class);
+        srv.registerCache(CommandTask.class, CachedCommandTask.class);
+        srv.registerCache(CronSchedule.class, CachedCronSchedule.class);
+        srv.registerCache(ClassicSchedule.class, CachedClassicSchedule.class);
+        srv.registerCache(CalendarSchedule.class, CachedCalendarSchedule.class);
     }
 
     @GET
@@ -36,8 +37,10 @@ public class CmdSchedulerServlet extends BaseServlet {
     @ApiOperation(
             value = "List tasks",
             notes = "Gets a list of all the registered tasks.")
-    public Collection<CommandTask> listTasks() {
-        return WebAPI.runOnMain(() -> Config.tasks.values());
+    public Collection<CachedCommandTask> listTasks() {
+        return WebAPI.runOnMain(() -> Config.tasks.values().stream()
+                .map(CachedCommandTask::new)
+                .collect(Collectors.toList()));
     }
 
     @DELETE
@@ -46,7 +49,7 @@ public class CmdSchedulerServlet extends BaseServlet {
     @ApiOperation(
             value = "Delete a task",
             notes = "Deletes a task.")
-    public CommandTask deleteTask(
+    public CachedCommandTask deleteTask(
             @PathParam("name") @ApiParam("The name of the task") String name)
             throws NotFoundException {
 
@@ -58,7 +61,7 @@ public class CmdSchedulerServlet extends BaseServlet {
 
             Config.tasks.remove(name);
             task.getTask().stop(WebAPI.getContainer());
-            return task;
+            return new CachedCommandTask(task);
         });
     }
 }

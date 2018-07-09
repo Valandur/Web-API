@@ -1,6 +1,5 @@
 package valandur.webapi.cache.misc;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.spongepowered.api.event.cause.Cause;
@@ -41,12 +40,5 @@ public class CachedCause extends CachedObject<Cause> {
         for (Object entry : cause.all()) {
             causes.add(WebAPI.getCacheService().asCachedObject(entry));
         }
-    }
-
-    @Override
-    @JsonIgnore
-    @ApiModelProperty(hidden = true)
-    public String getLink() {
-        return null;
     }
 }

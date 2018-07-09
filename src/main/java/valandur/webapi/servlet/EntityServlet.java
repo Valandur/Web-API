@@ -93,21 +93,13 @@ public class EntityServlet extends BaseServlet {
         }
 
         return WebAPI.runOnMain(() -> {
-            Optional<Entity> optLive = optEntity.get().getLive();
-            if (!optLive.isPresent())
-                throw new InternalServerErrorException("Could not get live entity");
-
-            Entity live = optLive.get();
+            Entity live = optEntity.get().getLive();
 
             if (req.getWorld().isPresent()) {
-                Optional<World> optWorld = req.getWorld().get().getLive();
-                if (!optWorld.isPresent())
-                    throw new InternalServerErrorException("Could not get live world");
-
                 if (req.getPosition() != null) {
-                    live.transferToWorld(optWorld.get(), req.getPosition());
+                    live.transferToWorld(req.getWorld().get().getLive(), req.getPosition());
                 } else {
-                    live.transferToWorld(optWorld.get());
+                    live.transferToWorld(req.getWorld().get().getLive());
                 }
             } else if (req.getPosition() != null) {
                 live.setLocation(new Location<>(live.getWorld(), req.getPosition()));
@@ -186,15 +178,11 @@ public class EntityServlet extends BaseServlet {
         }
 
         CachedEntity ent = WebAPI.runOnMain(() -> {
-            Optional<World> optLive = optWorld.get().getLive();
-            if (!optLive.isPresent())
-                throw new InternalServerErrorException("Could not get live entity");
-
             Optional<EntityType> optLiveType = optEntType.get().getLive(EntityType.class);
             if (!optLiveType.isPresent())
                 throw new InternalServerErrorException("Could not get live entity type");
 
-            World w = optLive.get();
+            World w = optWorld.get().getLive();
             Entity e = w.createEntity(optLiveType.get(), req.getPosition());
 
             if (w.spawnEntity(e)) {
@@ -252,13 +240,7 @@ public class EntityServlet extends BaseServlet {
             throw new NotFoundException("Entity with UUID '" + uuid + "' could not be found");
         }
 
-        WebAPI.runOnMain(() -> {
-            Optional<Entity> live = optEntity.get().getLive();
-            if (!live.isPresent())
-                throw new InternalServerErrorException("Could not get live entity");
-
-            live.get().remove();
-        });
+        WebAPI.runOnMain(() -> optEntity.get().getLive().remove());
 
         return optEntity.get();
     }

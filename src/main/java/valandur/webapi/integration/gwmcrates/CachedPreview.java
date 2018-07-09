@@ -37,9 +37,4 @@ public class CachedPreview extends CachedObject<Preview> {
             data.put("displayName", ((SecondGuiPreview) value).getDisplayName().orElse(null));
         }
     }
-
-    @Override
-    public String getLink() {
-        return null;
-    }
 }

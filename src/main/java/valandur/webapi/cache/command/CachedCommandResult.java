@@ -1,6 +1,5 @@
 package valandur.webapi.cache.command;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.spongepowered.api.command.CommandResult;
@@ -48,12 +47,5 @@ public class CachedCommandResult extends CachedObject<CachedCommandResult> {
         this.affectedItems = result.getAffectedItems().orElse(null);
         this.queryResult = result.getQueryResult().orElse(null);
         this.successCount = result.getSuccessCount().orElse(null);
-    }
-
-    @Override
-    @JsonIgnore
-    @ApiModelProperty(hidden = true)
-    public String getLink() {
-        return null;
     }
 }

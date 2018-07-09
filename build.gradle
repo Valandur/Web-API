@@ -3,6 +3,7 @@ plugins {
     id "com.qixalite.spongestart" version "1.6.2"
     id "ninja.miserable.blossom" version "1.0.1"
     id "com.github.johnrengelman.shadow" version "2.0.1"
+    id 'com.benjaminsproule.swagger'
 }
 
 group = "valandur.webapi"
@@ -76,10 +77,10 @@ dependencies {
     compile group: "org.glassfish.jersey.inject", name: "jersey-hk2", version: "2.26"
     compile group: "org.bstats", name: "bstats-sponge", version: "1.2"
 
-    compileOnly group: "org.spongepowered", name: "spongeapi", version: "${project.spongeVersion}.0-SNAPSHOT"
-
     compile group: 'redis.clients', name: 'jedis', version: '2.9.0'
     compile group: 'com.rabbitmq', name: 'amqp-client', version: '5.3.0'
+
+    compileOnly group: "org.spongepowered", name: "spongeapi", version: "${project.spongeVersion}.0-SNAPSHOT"
 
     // Integrations
     compileOnly name: "ActiveTime-s7.1-v1.4.0"
@@ -93,6 +94,76 @@ dependencies {
     compileOnly name: "RedProtect-7.3.0-b68-Universal"
     compileOnly name: "UniversalMarket-1.12.2-v1.1"
     compileOnly name: "WebBooks"
+}
+
+swagger {
+    apiSource {
+        locations = [
+                "valandur.webapi.swagger",
+                "valandur.webapi.servlet",
+                "valandur.webapi.integrations"
+        ]
+        swaggerDirectory = "artifacts"
+        swaggerApiReader = "valandur.webapi.ApiReader"
+        schemes = [ 'http', 'https' ]
+        host = "http://localhost:8080"
+        basePath = "/v5"
+        info {
+            title = project.name
+            version = project.version
+            description = "Access Sponge powered Minecraft servers through a WebAPI\n\n" +
+                    "# Introduction\n" +
+                    "This is the documentation of the various API routes offered by the WebAPI plugin.\n\n" +
+                    "This documentation assumes that you are familiar with the basic concepts of Web API's, " +
+                    "such as `GET`, `PUT`, `POST` and `DELETE` methods, request `HEADERS` and `RESPONSE CODES` " +
+                    "and `JSON` data.\n\n" +
+                    "By default this documentation can be found at http:/localhost:8080 " +
+                    "(while your minecraft server is running) and the various routes start with " +
+                    "http:/localhost:8080/api/v5...\n\n" +
+                    "As a quick test try reaching the route http:/localhost:8080/api/v5/info " +
+                    "(remember that you can only access \\\"localhost\\\" routes on the server on which you " +
+                    "are running minecraft).\n" +
+                    "This route should show you basic information about your server, like the motd and " +
+                    "player count.\n\n" +
+                    "# List endpoints\n" +
+                    "Lots of objects offer an endpoint to list all objects (e.g. `GET: /world` to get all worlds). " +
+                    "These endpoints return only the properties marked 'required' by default, because the list " +
+                    "might be quite large. If you want to return ALL data for a list endpoint add the query " +
+                    "parameter `details`, (e.g. `GET: /world?details`).\n\n" +
+                    "> Remember that in this case the data returned by the endpoint might be quite large.\n\n" +
+                    "# Debugging endpoints\n" +
+                    "Apart from the `?details` flag you can also pass some other flags for debugging purposes. " +
+                    "Remember that you must include the first query parameter with `?`, and further ones with `&`:\n\n" +
+                    "`details`: Includes details for list endpoints\n\n" +
+                    "`accept=[json/xml]`: Manually set the accept content type. This is good for browser testing, " +
+                    "**BUT DON'T USE THIS IN PRODUCTION, YOU CAN SUPPLY THE `Accepts` HEADER FOR THAT**\n\n" +
+                    "`pretty`: Pretty prints the data, also good for debugging in the browser.\n\n" +
+                    "An example request might look like this: " +
+                    "`http://localhost:8080/api/v5/world?details&accpet=json&pretty&key=MY-API-KEY`\n\n" +
+                    "# Additional data\n" +
+                    "Certain endpoints (such as `/player`, `/entity` and `/tile-entity` have additional " +
+                    "properties which are not documented here, because the data depends on the concrete " +
+                    "object type (eg. `Sheep` have a wool color, others do not) and on the other plugins/mods " +
+                    "that are running on your server which might add additional data.\n\n" +
+                    "You can also find more information in the github docs " +
+                    "(https:/github.com/Valandur/Web-API/tree/master/docs/DATA.md)"
+            contact {
+                name = "Valandur"
+                email = "inithilian@gmail.com"
+                url = "https://github.com/Valandur"
+            }
+            license {
+                name = "MIT"
+                url = "https://github.com/Valandur/Web-API/blob/master/LICENSE"
+            }
+        }
+        securityDefinition {
+            type = "apiKey"
+            keyLocation = "header"
+            name = "ApiKeyHeader"
+            keyName = "X-WebAPI-Key"
+        }
+    }
 }
 
 shadowJar {
@@ -177,6 +248,11 @@ task copyJars(type: Copy) {
     into project.file("artifacts")
 }
 copyJars.dependsOn(shadowJar)
+
+task removeSwagger(type: Delete) {
+    delete 'artifacts/swagger.json'
+}
+generateSwaggerDocumentation.dependsOn(removeSwagger)
 
 artifacts {
     archives shadowJar

@@ -5,6 +5,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import ninja.leaping.configurate.ConfigurationNode;
 import org.spongepowered.api.item.inventory.ItemStack;
+import valandur.webapi.cache.item.CachedItemStack;
 import valandur.webapi.serialize.JsonDetails;
 
 @ApiModel(value = "HuskyCratesItemReward", parent = CrateRewardObject.class)
@@ -16,17 +17,17 @@ public class ItemCrateReward extends CrateRewardObject {
     }
 
     @JsonDeserialize
-    private ItemStack item;
+    private CachedItemStack item;
     @JsonDetails(value = false, simple = true)
     @ApiModelProperty(value = "The item that is awarded to the player", required = true)
-    public ItemStack getItem() {
+    public CachedItemStack getItem() {
         return item;
     }
 
 
     public ItemCrateReward() {}
     public ItemCrateReward(ItemStack item) {
-        this.item = item;
+        this.item = new CachedItemStack(item);
     }
 
     @Override

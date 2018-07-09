@@ -11,7 +11,6 @@ import org.spongepowered.api.item.inventory.Inventory;
 import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.util.Tuple;
 import org.spongepowered.api.world.Location;
-import org.spongepowered.api.world.World;
 import valandur.webapi.WebAPI;
 import valandur.webapi.cache.player.CachedPlayer;
 import valandur.webapi.serialize.objects.ExecuteMethodRequest;
@@ -69,21 +68,13 @@ public class PlayerServlet extends BaseServlet {
         }
 
         return WebAPI.runOnMain(() -> {
-            Optional<Player> optLive = player.getLive();
-            if (!optLive.isPresent())
-                throw new InternalServerErrorException("Could not get live player");
-
-            Player live = optLive.get();
+            Player live = player.getLive();
 
             if (req.getWorld().isPresent()) {
-                Optional<World> optWorld = req.getWorld().get().getLive();
-                if (!optWorld.isPresent())
-                    throw new InternalServerErrorException("Could not get live world");
-
                 if (req.getPosition() != null) {
-                    live.transferToWorld(optWorld.get(), req.getPosition());
+                    live.transferToWorld(req.getWorld().get().getLive(), req.getPosition());
                 } else {
-                    live.transferToWorld(optWorld.get());
+                    live.transferToWorld(req.getWorld().get().getLive());
                 }
             } else if (req.getPosition() != null) {
                 live.setLocation(new Location<>(live.getWorld(), req.getPosition()));

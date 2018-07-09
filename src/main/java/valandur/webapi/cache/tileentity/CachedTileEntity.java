@@ -1,12 +1,11 @@
 package valandur.webapi.cache.tileentity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.spongepowered.api.CatalogType;
 import org.spongepowered.api.block.tileentity.TileEntity;
 import org.spongepowered.api.block.tileentity.carrier.TileEntityCarrier;
-import org.spongepowered.api.world.Location;
-import org.spongepowered.api.world.World;
 import valandur.webapi.cache.CachedObject;
 import valandur.webapi.cache.misc.CachedCatalogType;
 import valandur.webapi.cache.misc.CachedInventory;
@@ -14,6 +13,7 @@ import valandur.webapi.cache.world.CachedLocation;
 import valandur.webapi.serialize.JsonDetails;
 import valandur.webapi.util.Constants;
 
+import javax.ws.rs.NotFoundException;
 import java.util.Optional;
 
 @ApiModel("TileEntity")
@@ -51,17 +51,21 @@ public class CachedTileEntity extends CachedObject<TileEntity> {
     }
 
     @Override
-    public Optional<TileEntity> getLive() {
-        Optional<Location> obj = location.getLive();
-        return obj.flatMap(o -> ((Location<World>) o).getTileEntity());
+    public TileEntity getLive() {
+        Optional<TileEntity> optEnt = location.getLive().getTileEntity();
+        if (!optEnt.isPresent()) {
+            throw new NotFoundException("Could not find tile entity");
+        }
+        return optEnt.get();
     }
 
     @Override
+    @JsonIgnore(false)
     public String getLink() {
         return Constants.BASE_PATH + "/tile-entity/" +
                 location.getWorld().getUUID() + "/" +
-                location.getPosition().getFloorX() + "/" +
-                location.getPosition().getFloorY() + "/" +
-                location.getPosition().getFloorZ();
+                location.getPosition().x + "/" +
+                location.getPosition().y + "/" +
+                location.getPosition().z;
     }
 }

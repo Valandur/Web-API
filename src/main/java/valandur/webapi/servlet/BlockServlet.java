@@ -2,12 +2,11 @@ package valandur.webapi.servlet;
 
 import com.flowpowered.math.vector.Vector3i;
 import io.swagger.annotations.*;
-import org.spongepowered.api.block.BlockState;
 import valandur.webapi.block.BlockChangeOperation;
 import valandur.webapi.block.BlockGetOperation;
 import valandur.webapi.block.BlockOperation;
+import valandur.webapi.cache.block.CachedBlockState;
 import valandur.webapi.cache.world.CachedWorld;
-import valandur.webapi.serialize.view.block.BlockStateView;
 import valandur.webapi.servlet.base.BaseServlet;
 import valandur.webapi.servlet.base.ExplicitDetails;
 import valandur.webapi.servlet.base.Permission;
@@ -31,13 +30,13 @@ public class BlockServlet extends BaseServlet {
     @ApiOperation(
             value = "Get a block",
             notes = "Gets information about one block in the world.")
-    public BlockStateView getBlock(
+    public CachedBlockState getBlock(
             @PathParam("world") @ApiParam("The uuid of the world to get the block from") CachedWorld world,
             @PathParam("x") @ApiParam("The x-coordinate of the block") int x,
             @PathParam("y") @ApiParam("The y-coordinate of the block") int y,
             @PathParam("z") @ApiParam("The z-coordinate of the block") int z) {
         Vector3i pos = new Vector3i(x, y, z);
-        return new BlockStateView(blockService.getBlockAt(world, pos));
+        return new CachedBlockState(blockService.getBlockAt(world, pos));
     }
 
     @GET
@@ -107,11 +106,11 @@ public class BlockServlet extends BaseServlet {
             }
 
             // Collect a list of blocks we want to update
-            Map<Vector3i, BlockState> blocks = new HashMap<>();
+            Map<Vector3i, CachedBlockState> blocks = new HashMap<>();
 
             if (req.getBlock() != null) {
                 try {
-                    BlockState state = req.getBlock();
+                    CachedBlockState state = req.getBlock();
 
                     for (int x = min.getX(); x <= max.getX(); x++) {
                         for (int y = min.getY(); y <= max.getY(); y++) {
@@ -129,19 +128,19 @@ public class BlockServlet extends BaseServlet {
                 }
 
                 for (int x = 0; x < size.getX(); x++) {
-                    BlockState[][] xBlocks = req.getBlocks()[x];
+                    CachedBlockState[][] xBlocks = req.getBlocks()[x];
 
                     if (xBlocks == null)
                         continue;
 
                     for (int y = 0; y < size.getY(); y++) {
-                        BlockState[] yBlocks = xBlocks[y];
+                        CachedBlockState[] yBlocks = xBlocks[y];
 
                         if (yBlocks == null)
                             continue;
 
                         for (int z = 0; z < size.getZ(); z++) {
-                            BlockState block = yBlocks[z];
+                            CachedBlockState block = yBlocks[z];
 
                             if (block == null)
                                 continue;
@@ -260,15 +259,15 @@ public class BlockServlet extends BaseServlet {
             return max;
         }
 
-        private BlockState block;
+        private CachedBlockState block;
         @ApiModelProperty("The block that we want to change all other blocks into (when using an UPDATE operation")
-        public BlockState getBlock() {
+        public CachedBlockState getBlock() {
             return block;
         }
 
-        private BlockState[][][] blocks;
+        private CachedBlockState[][][] blocks;
         @ApiModelProperty("An array of blocks defining what each block in the spanned cube")
-        public BlockState[][][] getBlocks() {
+        public CachedBlockState[][][] getBlocks() {
             return blocks;
         }
     }

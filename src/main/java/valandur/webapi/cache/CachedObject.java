@@ -9,9 +9,11 @@ import org.spongepowered.api.data.Property;
 import org.spongepowered.api.data.manipulator.DataManipulator;
 import org.spongepowered.api.data.property.PropertyHolder;
 import valandur.webapi.WebAPI;
+import valandur.webapi.exceptions.NotImplementedException;
 import valandur.webapi.serialize.JsonDetails;
 import valandur.webapi.serialize.SerializeService;
 
+import javax.ws.rs.WebApplicationException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -93,7 +95,10 @@ public abstract class CachedObject<T> {
      * @return The link to the details of the object, or null if not applicable.
      */
     @ApiModelProperty(value = "The API link that can be used to obtain more information about this object", required = true, readOnly = true)
-    public abstract String getLink();
+    @JsonIgnore
+    public String getLink() {
+        return null;
+    }
 
     /**
      * Tries to get the live version this object is representing.
@@ -101,8 +106,8 @@ public abstract class CachedObject<T> {
      */
     @ApiModelProperty(hidden = true)
     @JsonIgnore
-    public Optional<T> getLive() {
-        return Optional.empty();
+    public T getLive() throws WebApplicationException {
+        throw new NotImplementedException();
     }
 
     /**

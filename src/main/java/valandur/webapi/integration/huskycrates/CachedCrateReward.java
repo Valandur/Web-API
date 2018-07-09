@@ -10,6 +10,7 @@ import ninja.leaping.configurate.objectmapping.Setting;
 import ninja.leaping.configurate.objectmapping.serialize.ConfigSerializable;
 import org.spongepowered.api.item.inventory.ItemStack;
 import valandur.webapi.cache.CachedObject;
+import valandur.webapi.cache.item.CachedItemStack;
 import valandur.webapi.serialize.JsonDetails;
 
 import java.util.List;
@@ -35,9 +36,9 @@ public class CachedCrateReward extends CachedObject<CrateReward> {
 
     @Setting
     @JsonDetails(value = false, simple = true)
-    private ItemStack displayItem;
+    private CachedItemStack displayItem;
     @ApiModelProperty(value = "The ItemStack that is shown in the UI", required = true)
-    public ItemStack getDisplayItem() {
+    public CachedItemStack getDisplayItem() {
         return displayItem;
     }
 
@@ -69,7 +70,7 @@ public class CachedCrateReward extends CachedObject<CrateReward> {
 
         this.name = reward.getRewardName();
         this.chance = reward.getChance();
-        this.displayItem = reward.getDisplayItem().copy();
+        this.displayItem = new CachedItemStack(reward.getDisplayItem());
         this.announce = reward.shouldAnnounce();
         this.objects = reward.getRewards().stream().map(this::getRewardObject).collect(Collectors.toList());
     }
@@ -79,13 +80,6 @@ public class CachedCrateReward extends CachedObject<CrateReward> {
             return new ItemCrateReward(((ItemStack)obj).copy());
         if (obj instanceof String)
             return new CommandCrateReward(obj.toString());
-        return null;
-    }
-
-    @Override
-    @JsonIgnore
-    @ApiModelProperty(hidden = true)
-    public String getLink() {
         return null;
     }
 }

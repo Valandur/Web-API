@@ -38,7 +38,6 @@ import org.spongepowered.api.entity.EntityArchetype;
 import org.spongepowered.api.entity.EntitySnapshot;
 import org.spongepowered.api.entity.Transform;
 import org.spongepowered.api.entity.living.player.Player;
-import org.spongepowered.api.entity.living.player.gamemode.GameMode;
 import org.spongepowered.api.event.Event;
 import org.spongepowered.api.event.cause.Cause;
 import org.spongepowered.api.event.cause.entity.damage.source.DamageSource;
@@ -61,7 +60,6 @@ import org.spongepowered.api.service.economy.Currency;
 import org.spongepowered.api.service.economy.account.Account;
 import org.spongepowered.api.service.permission.Subject;
 import org.spongepowered.api.service.permission.SubjectCollection;
-import org.spongepowered.api.statistic.Statistic;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.util.Color;
 import org.spongepowered.api.util.RespawnLocation;
@@ -75,40 +73,28 @@ import org.spongepowered.api.world.explosion.Explosion;
 import org.spongepowered.plugin.meta.PluginDependency;
 import valandur.webapi.WebAPI;
 import valandur.webapi.cache.CachedObject;
+import valandur.webapi.cache.block.CachedBlockSnapshot;
+import valandur.webapi.cache.block.CachedBlockState;
 import valandur.webapi.cache.command.CachedCommand;
-import valandur.webapi.cache.entity.CachedEntity;
-import valandur.webapi.cache.misc.CachedCatalogType;
-import valandur.webapi.cache.misc.CachedCause;
-import valandur.webapi.cache.misc.CachedInventory;
-import valandur.webapi.cache.player.CachedAdvancement;
-import valandur.webapi.cache.player.CachedPlayer;
+import valandur.webapi.cache.data.*;
+import valandur.webapi.cache.economy.CachedAccount;
+import valandur.webapi.cache.economy.CachedCurrency;
+import valandur.webapi.cache.entity.*;
+import valandur.webapi.cache.event.CachedDamageSource;
+import valandur.webapi.cache.event.CachedEvent;
+import valandur.webapi.cache.fluid.CachedFluidStack;
+import valandur.webapi.cache.fluid.CachedFluidStackSnapshot;
+import valandur.webapi.cache.item.*;
+import valandur.webapi.cache.misc.*;
+import valandur.webapi.cache.permission.CachedSubject;
+import valandur.webapi.cache.permission.CachedSubjectCollection;
+import valandur.webapi.cache.player.*;
 import valandur.webapi.cache.plugin.CachedPluginContainer;
 import valandur.webapi.cache.plugin.CachedPluginDependency;
+import valandur.webapi.cache.tileentity.CachedPatternLayer;
 import valandur.webapi.cache.tileentity.CachedTileEntity;
 import valandur.webapi.cache.world.*;
 import valandur.webapi.serialize.deserialize.*;
-import valandur.webapi.serialize.view.block.BlockSnapshotView;
-import valandur.webapi.serialize.view.block.BlockStateView;
-import valandur.webapi.serialize.view.data.*;
-import valandur.webapi.serialize.view.economy.AccountView;
-import valandur.webapi.serialize.view.economy.CurrencyView;
-import valandur.webapi.serialize.view.entity.CareerView;
-import valandur.webapi.serialize.view.entity.EntityArchetypeView;
-import valandur.webapi.serialize.view.entity.EntitySnapshotView;
-import valandur.webapi.serialize.view.entity.TradeOfferView;
-import valandur.webapi.serialize.view.event.DamageSourceView;
-import valandur.webapi.serialize.view.event.EventView;
-import valandur.webapi.serialize.view.fluid.FluidStackSnapshotView;
-import valandur.webapi.serialize.view.fluid.FluidStackView;
-import valandur.webapi.serialize.view.item.*;
-import valandur.webapi.serialize.view.misc.*;
-import valandur.webapi.serialize.view.permission.SubjectCollectionView;
-import valandur.webapi.serialize.view.permission.SubjectView;
-import valandur.webapi.serialize.view.player.BanView;
-import valandur.webapi.serialize.view.player.GameModeView;
-import valandur.webapi.serialize.view.player.GameProfileView;
-import valandur.webapi.serialize.view.player.RespawnLocationView;
-import valandur.webapi.serialize.view.tileentity.PatternLayerView;
 import valandur.webapi.util.TreeNode;
 
 import java.lang.reflect.ParameterizedType;
@@ -154,169 +140,167 @@ public class SerializeService {
         registerCache(WorldBorder.class, CachedWorldBorder.class);
 
         // Block
-        registerView(BlockSnapshot.class, BlockSnapshotView.class);
-        registerView(BlockState.class, BlockStateView.class);
+        registerCache(BlockSnapshot.class, CachedBlockSnapshot.class);
+        registerCache(BlockState.class, CachedBlockState.class);
 
         // Data
-        registerView(ListData.class, ListDataView.class);
-        registerView(MappedData.class, MappedDataView.class);
-        registerView(VariantData.class, VariantDataView.class);
+        registerCache(ListData.class, CachedListData.class);
+        registerCache(MappedData.class, CachedMappedData.class);
+        registerCache(VariantData.class, CachedVariantData.class);
 
-        registerView(AbsorptionData.class, AbsorptionDataView.class);
-        //registerView(AchievementData.class, AchievementDataView.class);
-        registerView(AgeableData.class, AgeableDataView.class);
-        registerView(AgentData.class, AgentDataView.class);
-        registerView(AggressiveData.class, AggressiveDataView.class);
-        registerView(AngerableData.class, AngerableDataView.class);
-        registerView(ArmorStandData.class, ArmorStandDataView.class);
-        registerView(AttachedData.class, AttachedDataView.class);
-        registerView(AuthorData.class, AuthorDataView.class);
-        registerView(BannerData.class, BannerDataView.class);
-        registerView(BeaconData.class, BeaconDataView.class);
-        registerView(BlockItemData.class, BlockItemDataView.class);
-        registerView(BreathingData.class, BreathingDataView.class);
-        registerView(BreedableData.class, BreedableDataView.class);
-        registerView(BrewingStandData.class, BrewingStandDataView.class);
-        registerView(ChargedData.class, ChargedDataView.class);
-        registerView(ColoredData.class, ColoredDataView.class);
-        registerView(CommandData.class, CommandDataView.class);
-        registerView(ConnectedDirectionData.class, ConnectedDirectionDataView.class);
-        registerView(CooldownData.class, CooldownDataView.class);
-        registerView(CriticalHitData.class, CriticalHitDataView.class);
-        registerView(CustomNameVisibleData.class, CustomNameVisibleDataView.class);
-        registerView(DamageableData.class, DamageableDataView.class);
-        registerView(DamagingData.class, DamagingDataView.class);
-        registerView(DecayableData.class, DecayableDataView.class);
-        registerView(DelayableData.class, DelayableDataView.class);
-        registerView(DespawnDelayData.class, DespawnDelayDataView.class);
-        registerView(DirectionalData.class, DirectionalDataView.class);
-        registerView(DisarmedData.class, DisarmedDataView.class);
-        registerView(DisplayNameData.class, DisplayNameDataView.class);
-        registerView(DropData.class, DropDataView.class);
-        registerView(DurabilityData.class, DurabilityDataView.class);
-        registerView(EndGatewayData.class, EndGatewayDataView.class);
-        registerView(ExperienceHolderData.class, ExperienceHolderDataView.class);
-        registerView(ExpirableData.class, ExpirableDataView.class);
-        registerView(ExplosionRadiusData.class, ExplosionRadiusDataView.class);
-        registerView(ExpOrbData.class, ExpOrbDataView.class);
-        registerView(ExtendedData.class, ExtendedDataView.class);
-        registerView(FallDistanceData.class, FallDistanceDataView.class);
-        registerView(FallingBlockData.class, FallingBlockDataView.class);
-        registerView(FilledData.class, FilledDataView.class);
-        registerView(FireworkRocketData.class, FireworkRocketDataView.class);
-        registerView(FlammableData.class, FlammableDataView.class);
-        registerView(FluidItemData.class, FluidItemDataView.class);
-        registerView(FluidLevelData.class, FluidLevelDataView.class);
-        registerView(FlyingAbilityData.class, FlyingAbilityDataView.class);
-        registerView(FlyingData.class, FlyingDataView.class);
-        registerView(FoodData.class, FoodDataView.class);
-        registerView(FurnaceData.class, FurnaceDataView.class);
-        registerView(FuseData.class, FuseDataView.class);
-        registerView(GenerationData.class, GenerationDataView.class);
-        registerView(GlowingData.class, GlowingDataView.class);
-        registerView(GriefingData.class, GriefingDataView.class);
-        registerView(GrowthData.class, GrowthDataView.class);
-        registerView(HealthData.class, HealthDataView.class);
-        registerView(HideData.class, HideDataView.class);
-        registerView(HorseData.class, HorseDataView.class);
-        registerView(IgniteableData.class, IgniteableDataView.class);
-        registerView(InventoryItemData.class, InventoryItemDataView.class);
-        registerView(InvisibilityData.class, InvisibilityDataView.class);
-        registerView(InvulnerabilityData.class, InvulnerabilityDataView.class);
-        registerView(InWallData.class, InWallDataView.class);
-        registerView(JoinData.class, JoinDataView.class);
-        registerView(KnockbackData.class, KnockbackDataView.class);
-        registerView(LayeredData.class, LayeredDataView.class);
-        registerView(LeashData.class, LeashDataView.class);
-        registerView(LockableData.class, LockableDataView.class);
-        registerView(MinecartBlockData.class, MinecartBlockDataView.class);
-        registerView(MobSpawnerData.class, MobSpawnerDataView.class);
-        registerView(MoistureData.class, MoistureDataView.class);
-        registerView(NoteData.class, NoteDataView.class);
-        registerView(OccupiedData.class, OccupiedDataView.class);
-        registerView(OpenData.class, OpenDataView.class);
-        registerView(PersistingData.class, PersistingDataView.class);
-        registerView(PickupDelayData.class, PickupDelayDataView.class);
-        registerView(PigSaddleData.class, PigSaddleDataView.class);
-        registerView(PlaceableData.class, PlaceableDataView.class);
-        registerView(PlayerCreatedData.class, PlayerCreatedDataView.class);
-        registerView(PlayingData.class, PlayingDataView.class);
-        registerView(PoweredData.class, PoweredDataView.class);
-        registerView(RedstonePoweredData.class, RedstonePoweredDataView.class);
-        registerView(RepresentedItemData.class, RepresentedItemDataView.class);
-        registerView(RepresentedPlayerData.class, RepresentedPlayerDataView.class);
-        registerView(ScreamingData.class, ScreamingDataView.class);
-        registerView(SeamlessData.class, SeamlessDataView.class);
-        registerView(ShatteringData.class, ShatteringDataView.class);
-        registerView(ShearedData.class, ShearedDataView.class);
-        registerView(SilentData.class, SilentDataView.class);
-        registerView(SittingData.class, SittingDataView.class);
-        registerView(SkinData.class, SkinDataView.class);
-        registerView(SleepingData.class, SleepingDataView.class);
-        registerView(SlimeData.class, SlimeDataView.class);
-        registerView(SneakingData.class, SneakingDataView.class);
-        registerView(SnowedData.class, SnowedDataView.class);
-        registerView(SprintData.class, SprintDataView.class);
-        registerView(StatisticData.class, StatisticDataView.class);
-        registerView(StructureData.class, StructureDataView.class);
-        registerView(StuckArrowsData.class, StuckArrowsDataView.class);
-        registerView(TameableData.class, TameableDataView.class);
-        registerView(TargetedLocationData.class, TargetedLocationDataView.class);
-        registerView(VehicleData.class, VehicleDataView.class);
-        registerView(WetData.class, WetDataView.class);
-        registerView(WireAttachmentData.class, WireAttachmentDataView.class);
+        registerCache(AbsorptionData.class, CachedAbsorptionData.class);
+        //registerCache(AchievementData.class, AchievementDataView.class);
+        registerCache(AgeableData.class, CachedAgeableData.class);
+        registerCache(AgentData.class, CachedAgentData.class);
+        registerCache(AggressiveData.class, CachedAggressiveData.class);
+        registerCache(AngerableData.class, CachedAngerableData.class);
+        registerCache(ArmorStandData.class, CachedArmorStandData.class);
+        registerCache(AttachedData.class, CachedAttachedData.class);
+        registerCache(AuthorData.class, CachedAuthorData.class);
+        registerCache(BannerData.class, CachedBannerData.class);
+        registerCache(BeaconData.class, CachedBeaconData.class);
+        registerCache(BlockItemData.class, CachedBlockItemData.class);
+        registerCache(BreathingData.class, CachedBreathingData.class);
+        registerCache(BreedableData.class, CachedBreedableData.class);
+        registerCache(BrewingStandData.class, CachedBrewingStandData.class);
+        registerCache(ChargedData.class, CachedChargedData.class);
+        registerCache(ColoredData.class, CachedColoredData.class);
+        registerCache(CommandData.class, CachedCommandData.class);
+        registerCache(ConnectedDirectionData.class, CachedConnectedDirectionData.class);
+        registerCache(CooldownData.class, CachedCooldownData.class);
+        registerCache(CriticalHitData.class, CachedCriticalHitData.class);
+        registerCache(CustomNameVisibleData.class, CachedCustomNameVisibleData.class);
+        registerCache(DamageableData.class, CachedDamageableData.class);
+        registerCache(DamagingData.class, CachedDamagingData.class);
+        registerCache(DecayableData.class, CachedDecayableData.class);
+        registerCache(DelayableData.class, CachedDelayableData.class);
+        registerCache(DespawnDelayData.class, CachedDespawnDelayData.class);
+        registerCache(DirectionalData.class, CachedDirectionalData.class);
+        registerCache(DisarmedData.class, CachedDisarmedData.class);
+        registerCache(DisplayNameData.class, CachedDisplayNameData.class);
+        registerCache(DropData.class, CachedDropData.class);
+        registerCache(DurabilityData.class, CachedDurabilityData.class);
+        registerCache(EndGatewayData.class, CachedEndGatewayData.class);
+        registerCache(ExperienceHolderData.class, CachedExperienceHolderData.class);
+        registerCache(ExpirableData.class, CachedExpirableData.class);
+        registerCache(ExplosionRadiusData.class, CachedExplosionRadiusData.class);
+        registerCache(ExpOrbData.class, CachedExpOrbData.class);
+        registerCache(ExtendedData.class, CachedExtendedData.class);
+        registerCache(FallDistanceData.class, CachedFallDistanceData.class);
+        registerCache(FallingBlockData.class, CachedFallingBlockData.class);
+        registerCache(FilledData.class, CachedFilledData.class);
+        registerCache(FireworkRocketData.class, CachedFireworkRocketData.class);
+        registerCache(FlammableData.class, CachedFlammableData.class);
+        registerCache(FluidItemData.class, CachedFluidItemData.class);
+        registerCache(FluidLevelData.class, CachedFluidLevelData.class);
+        registerCache(FlyingAbilityData.class, CachedFlyingAbilityData.class);
+        registerCache(FlyingData.class, CachedFlyingData.class);
+        registerCache(FoodData.class, CachedFoodData.class);
+        registerCache(FurnaceData.class, CachedFurnaceData.class);
+        registerCache(FuseData.class, CachedFuseData.class);
+        registerCache(GenerationData.class, CachedGenerationData.class);
+        registerCache(GlowingData.class, CachedGlowingData.class);
+        registerCache(GriefingData.class, CachedGriefingData.class);
+        registerCache(GrowthData.class, CachedGrowthData.class);
+        registerCache(HealthData.class, CachedHealthData.class);
+        registerCache(HideData.class, CachedHideData.class);
+        registerCache(HorseData.class, CachedHorseData.class);
+        registerCache(IgniteableData.class, CachedIgniteableData.class);
+        registerCache(InventoryItemData.class, CachedInventoryItemData.class);
+        registerCache(InvisibilityData.class, CachedInvisibilityData.class);
+        registerCache(InvulnerabilityData.class, CachedInvulnerabilityData.class);
+        registerCache(InWallData.class, CachedInWallData.class);
+        registerCache(JoinData.class, CachedJoinData.class);
+        registerCache(KnockbackData.class, CachedKnockbackData.class);
+        registerCache(LayeredData.class, CachedLayeredData.class);
+        registerCache(LeashData.class, CachedLeashData.class);
+        registerCache(LockableData.class, CachedLockableData.class);
+        registerCache(MinecartBlockData.class, CachedMinecartBlockData.class);
+        registerCache(MobSpawnerData.class, CachedMobSpawnerData.class);
+        registerCache(MoistureData.class, CachedMoistureData.class);
+        registerCache(NoteData.class, CachedNoteData.class);
+        registerCache(OccupiedData.class, CachedOccupiedData.class);
+        registerCache(OpenData.class, CachedOpenData.class);
+        registerCache(PersistingData.class, CachedPersistingData.class);
+        registerCache(PickupDelayData.class, CachedPickupDelayData.class);
+        registerCache(PigSaddleData.class, CachedPigSaddleData.class);
+        registerCache(PlaceableData.class, CachedPlaceableData.class);
+        registerCache(PlayerCreatedData.class, CachedPlayerCreatedData.class);
+        registerCache(PlayingData.class, CachedPlayingData.class);
+        registerCache(PoweredData.class, CachedPoweredData.class);
+        registerCache(RedstonePoweredData.class, CachedRedstonePoweredData.class);
+        registerCache(RepresentedItemData.class, CachedRepresentedItemData.class);
+        registerCache(RepresentedPlayerData.class, CachedRepresentedPlayerData.class);
+        registerCache(ScreamingData.class, CachedScreamingData.class);
+        registerCache(SeamlessData.class, CachedSeamlessData.class);
+        registerCache(ShatteringData.class, CachedShatteringData.class);
+        registerCache(ShearedData.class, CachedShearedData.class);
+        registerCache(SilentData.class, CachedSilentData.class);
+        registerCache(SittingData.class, CachedSittingData.class);
+        registerCache(SkinData.class, CachedSkinData.class);
+        registerCache(SleepingData.class, CachedSleepingData.class);
+        registerCache(SlimeData.class, CachedSlimeData.class);
+        registerCache(SneakingData.class, CachedSneakingData.class);
+        registerCache(SnowedData.class, CachedSnowedData.class);
+        registerCache(SprintData.class, CachedSprintData.class);
+        registerCache(StatisticData.class, CachedStatisticData.class);
+        registerCache(StructureData.class, CachedStructureData.class);
+        registerCache(StuckArrowsData.class, CachedStuckArrowsData.class);
+        registerCache(TameableData.class, CachedTameableData.class);
+        registerCache(TargetedLocationData.class, CachedTargetedLocationData.class);
+        registerCache(VehicleData.class, CachedVehicleData.class);
+        registerCache(WetData.class, CachedWetData.class);
+        registerCache(WireAttachmentData.class, CachedWireAttachmentData.class);
 
         // Economy
-        registerView(Account.class, AccountView.class);
-        registerView(Currency.class, CurrencyView.class);
+        registerCache(Account.class, CachedAccount.class);
+        registerCache(Currency.class, CachedCurrency.class);
 
         // Entity
-        registerView(Career.class, CareerView.class);
-        registerView(EntityArchetype.class, EntityArchetypeView.class);
-        registerView(EntitySnapshot.class, EntitySnapshotView.class);
-        registerView(TradeOffer.class, TradeOfferView.class);
+        registerCache(Career.class, CachedCareer.class);
+        registerCache(EntityArchetype.class, CachedEntityArchetype.class);
+        registerCache(EntitySnapshot.class, CachedEntitySnapshot.class);
+        registerCache(TradeOffer.class, CachedTradeOffer.class);
 
         // Event
-        registerView(DamageSource.class, DamageSourceView.class);
-        registerView(Event.class, EventView.class);
+        registerCache(DamageSource.class, CachedDamageSource.class);
+        registerCache(Event.class, CachedEvent.class);
 
         // Fluid
-        registerView(FluidStackSnapshot.class, FluidStackSnapshotView.class);
-        registerView(FluidStack.class, FluidStackView.class);
+        registerCache(FluidStackSnapshot.class, CachedFluidStackSnapshot.class);
+        registerCache(FluidStack.class, CachedFluidStack.class);
 
         // Item
-        registerView(FireworkEffect.class, FireworkEffectView.class);
-        registerView(Enchantment.class, EnchantmentView.class);
-        registerView(ItemStackSnapshot.class, ItemStackSnapshotView.class);
-        registerView(ItemStack.class, ItemStackView.class);
-        registerView(PotionEffect.class, PotionEffectView.class);
+        registerCache(FireworkEffect.class, CachedFireworkEffect.class);
+        registerCache(Enchantment.class, CachedEnchantment.class);
+        registerCache(ItemStackSnapshot.class, CachedItemStackSnapshot.class);
+        registerCache(ItemStack.class, CachedItemStack.class);
+        registerCache(PotionEffect.class, CachedPotionEffect.class);
 
         // Misc.
-        registerView(Color.class, ColorView.class);
-        registerView(CommandSource.class, CommandSourceView.class);
-        registerView(DyeColor.class, DyeColorView.class);
-        registerView(Explosion.class, ExplosionView.class);
-        registerView(Instant.class, InstantView.class);
-        registerView(LocalDate.class, LocalDateView.class);
-        registerView(RandomObjectTable.class, RandomObjectTableView.class);
-        registerView(Statistic.class, StatisticView.class);
-        registerView(Text.class, TextView.class);
-        registerView(Vector3d.class, Vector3dView.class);
-        registerView(Vector3i.class, Vector3iView.class);
+        registerCache(Color.class, CachedColor.class);
+        registerCache(CommandSource.class, CachedCommandSource.class);
+        registerCache(DyeColor.class, CachedDyeColor.class);
+        registerCache(Explosion.class, CachedExplosion.class);
+        registerCache(Instant.class, CachedInstant.class);
+        registerCache(LocalDate.class, CachedLocalDate.class);
+        registerCache(RandomObjectTable.class, CachedRandomObjectTable.class);
+        registerCache(Text.class, CachedText.class);
+        registerCache(Vector3d.class, CachedVector3d.class);
+        registerCache(Vector3i.class, CachedVector3i.class);
 
         // Permission
-        registerView(SubjectCollection.class, SubjectCollectionView.class);
-        registerView(Subject.class, SubjectView.class);
+        registerCache(SubjectCollection.class, CachedSubjectCollection.class);
+        registerCache(Subject.class, CachedSubject.class);
 
         // Player
-        //registerView(Achievement.class, AchievementView.class);
-        registerView(Ban.class, BanView.class);
-        registerView(GameMode.class, GameModeView.class);
-        registerView(GameProfile.class, GameProfileView.class);
-        registerView(RespawnLocation.class, RespawnLocationView.class);
+        //registerCache(Achievement.class, AchievementView.class);
+        registerCache(Ban.class, CachedBan.class);
+        registerCache(GameProfile.class, CachedGameProfile.class);
+        registerCache(RespawnLocation.class, CachedRespawnLocation.class);
 
         // Tile-Entity
-        registerView(PatternLayer.class, PatternLayerView.class);
+        registerCache(PatternLayer.class, CachedPatternLayer.class);
 
         // Data
         supportedData = new ConcurrentHashMap<>();
@@ -544,16 +528,6 @@ public class SerializeService {
     }
 
     /**
-     * Registers a view which helps turn an object into json.
-     * @param handledClass The class of the live object which is turned into json using the view class.
-     * @param viewClass The class of the view which helps turn the object into json.
-     * @param <T> The type of the live object.
-     */
-    public <T> void registerView(Class<? extends T> handledClass, Class<? extends BaseView<T>> viewClass) {
-        _register(handledClass, viewClass);
-    }
-
-    /**
      * Gets all DataHolder types that are supported by the Web-API
      * @return A map from json key to DataHolder type
      */
@@ -589,78 +563,6 @@ public class SerializeService {
             }
         }
         return new Type[0];
-    }
-
-    /**
-     * Gets the View class used to represent a certain class, if present
-     * @param clazz The class which should be check for an available view
-     * @return The view class that should be used for serialization instead of the original class, if available.
-     */
-    public Optional<Type> getViewFor(Class clazz) {
-        BaseSerializer ser = serializers.get(clazz);
-        if (ser != null) {
-            return Optional.of(ser.getCacheClass());
-        }
-
-        // Check if we have a variant, list or mapped data type
-        if (VariantData.class.isAssignableFrom(clazz)) {
-            Type[] ts = getGenericTypes(clazz, VariantData.class);
-            return Optional.of(ts[0]);
-        } else if (ListData.class.isAssignableFrom(clazz)) {
-            Type elemType = getGenericTypes(clazz, ListData.class)[0];
-            return Optional.of(new ParameterizedType() {
-                @Override
-                public Type[] getActualTypeArguments() {
-                    return new Type[]{ elemType };
-                }
-
-                @Override
-                public Type getRawType() {
-                    return List.class;
-                }
-
-                @Override
-                public Type getOwnerType() {
-                    return null;
-                }
-            });
-        } else if (MappedData.class.isAssignableFrom(clazz)) {
-            Type[] ts = getGenericTypes(clazz, MappedData.class);
-            return Optional.of(new ParameterizedType() {
-                @Override
-                public Type[] getActualTypeArguments() {
-                    return new Type[]{ ts[0], ts[1] };
-                }
-
-                @Override
-                public Type getRawType() {
-                    return Map.class;
-                }
-
-                @Override
-                public Type getOwnerType() {
-                    return null;
-                }
-            });
-        } else if (AbstractProperty.class.isAssignableFrom(clazz)) {
-            Type[] ts = getGenericTypes(clazz, AbstractProperty.class);
-            return Optional.of(ts[1]);
-        }
-
-        // Try and find a parent class serializer (e.g. CatalogType) which matches closest
-        Optional<BaseSerializer> optSer = serializers.values().stream()
-                .filter(s -> s.getHandledClass().isAssignableFrom(clazz))
-                .sorted((s1, s2) -> {
-                    // Sort possibly multiple serializers by parent-child relation, if available
-                    if (s1.getHandledClass().isAssignableFrom(s2.getHandledClass()))
-                        return 1;
-                    else if (s2.getHandledClass().isAssignableFrom(s1.getHandledClass()))
-                        return -1;
-                    return 0;
-                })
-                .findFirst();
-
-        return optSer.map(BaseSerializer::getHandledClass);
     }
 
     public ObjectMapper getDefaultObjectMapper(boolean xml, boolean details, TreeNode perms) {

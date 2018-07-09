@@ -5,8 +5,8 @@ import io.swagger.annotations.ApiModelProperty;
 import org.spongepowered.api.advancement.Advancement;
 import org.spongepowered.api.advancement.AdvancementTree;
 import org.spongepowered.api.advancement.DisplayInfo;
-import org.spongepowered.api.text.Text;
 import valandur.webapi.cache.misc.CachedCatalogType;
+import valandur.webapi.cache.misc.CachedText;
 import valandur.webapi.serialize.JsonDetails;
 
 @ApiModel("Advancement")
@@ -26,16 +26,16 @@ public class CachedAdvancement extends CachedCatalogType<Advancement> {
         return name;
     }
 
-    private Text title;
+    private CachedText title;
     @ApiModelProperty(value = "The title of the advancement", required = true)
-    public Text getTitle() {
+    public CachedText getTitle() {
         return title;
     }
 
-    private Text description;
+    private CachedText description;
     @JsonDetails
     @ApiModelProperty("The description of the advancement")
-    public Text getDescription() {
+    public CachedText getDescription() {
         return description;
     }
 
@@ -85,8 +85,8 @@ public class CachedAdvancement extends CachedCatalogType<Advancement> {
 
         if (value.getDisplayInfo().isPresent()) {
             DisplayInfo info = value.getDisplayInfo().get();
-            this.title = info.getTitle();
-            this.description = info.getDescription();
+            this.title = new CachedText(info.getTitle());
+            this.description = new CachedText(info.getDescription());
             this.announceToChat = info.doesAnnounceToChat();
             this.showToast = info.doesShowToast();
             this.hidden = info.isHidden();

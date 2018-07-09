@@ -1,7 +1,5 @@
 package valandur.webapi.integration.gwmcrates;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import io.swagger.annotations.ApiModelProperty;
 import org.gwmdevelopments.sponge_plugin.crates.change_mode.DecorativeItemsChangeMode;
 import org.gwmdevelopments.sponge_plugin.crates.open_manager.OpenManager;
 import org.gwmdevelopments.sponge_plugin.crates.open_manager.open_managers.Animation1OpenManager;
@@ -63,12 +61,5 @@ public class CachedOpenManager extends CachedObject<OpenManager> {
             data.put("fence", new CachedCatalogType<>(((Animation1OpenManager) value).getFenceBlockType()));
             data.put("floor", new CachedCatalogType<>(((Animation1OpenManager) value).getFloorBlockType()));
         }
-    }
-
-    @Override
-    @JsonIgnore
-    @ApiModelProperty(hidden = true)
-    public String getLink() {
-        return null;
     }
 }

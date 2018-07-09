@@ -22,7 +22,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Path("red-protect")
-@Api(tags = { "Red Protect"}, value = "Create, edit and delete protected regions on your server")
+@Api(tags = { "Integration", "Red Protect"}, value = "Create, edit and delete protected regions on your server")
 @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 @Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 public class RedProtectServlet extends BaseServlet {
@@ -42,17 +42,9 @@ public class RedProtectServlet extends BaseServlet {
     public Collection<CachedRegion> listRegions(@QueryParam("world") CachedWorld world) {
         Set<CachedRegion> regions;
         if (world != null) {
-            regions = WebAPI.runOnMain(() -> {
-                Optional<World> optLive = world.getLive();
-                if (!optLive.isPresent()) {
-                    return null;
-                }
-
-                World live = optLive.get();
-                return RedProtect.get().rm.getRegionsByWorld(live).stream()
-                        .map(CachedRegion::new)
-                        .collect(Collectors.toSet());
-            });
+            regions = WebAPI.runOnMain(() -> RedProtect.get().rm.getRegionsByWorld(world.getLive()).stream()
+                    .map(CachedRegion::new)
+                    .collect(Collectors.toSet()));
         } else {
             regions = WebAPI.runOnMain(() -> RedProtect.get().rm.getAllRegions().stream()
                     .map(CachedRegion::new)
@@ -100,22 +92,18 @@ public class RedProtectServlet extends BaseServlet {
             if (req.getWorld() == null) {
                 throw new BadRequestException("The region needs a world");
             }
-            Optional<World> optLive = req.getWorld().getLive();
-            if (!optLive.isPresent()) {
-                throw new InternalServerErrorException("Could not get live world");
-            }
 
-            World world = optLive.get();
+            World world = req.getWorld().getLive();
 
             if (req.getMin() == null) {
                 throw new BadRequestException("The region needs min coordinates");
             }
-            Location<World> minLoc = new Location<>(world, req.getMin());
+            Location<World> minLoc = new Location<>(world, req.getMin().getLive());
 
             if (req.getMax() == null) {
                 throw new BadRequestException("The region needs max coordinates");
             }
-            Location<World> maxLoc = new Location<>(world, req.getMax());
+            Location<World> maxLoc = new Location<>(world, req.getMax().getLive());
 
             List<String> leaders;
             if (req.getLeaders() == null) {
@@ -163,14 +151,10 @@ public class RedProtectServlet extends BaseServlet {
             if (req.getTpPoint() == null) {
                 throw new BadRequestException("The region needs a tpPoint");
             }
-            Optional<Location> optLiveTpPoint = req.getTpPoint().getLive();
-            if (!optLiveTpPoint.isPresent()) {
-                throw new InternalServerErrorException("Could not get live world");
-            }
 
             Region region = new Region(name, admins, members, leaders, maxLoc.getBlockX(), minLoc.getBlockX(),
                     maxLoc.getBlockZ(), minLoc.getBlockZ(), minLoc.getBlockY(), maxLoc.getBlockY(), flags, msg,
-                    priority, world.getName(), null, 0, optLiveTpPoint.get(), canDelete);
+                    priority, world.getName(), null, 0, req.getTpPoint().getLive(), canDelete);
             RedProtect.get().rm.add(region, world);
             return new CachedRegion(region);
         });
@@ -240,12 +224,7 @@ public class RedProtectServlet extends BaseServlet {
             }
 
             if (req.getTpPoint() != null) {
-                Optional<Location> optLoc = req.getTpPoint().getLive();
-                if (!optLoc.isPresent()) {
-                    return null;
-                }
-
-                region.setTPPoint(optLoc.get());
+                region.setTPPoint(req.getTpPoint().getLive());
             }
 
             if (req.getCanDelete() != null) {

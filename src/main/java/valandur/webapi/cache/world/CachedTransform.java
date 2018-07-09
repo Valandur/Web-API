@@ -1,15 +1,12 @@
 package valandur.webapi.cache.world;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.flowpowered.math.vector.Vector3d;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.spongepowered.api.entity.Transform;
 import org.spongepowered.api.world.World;
 import valandur.webapi.cache.CachedObject;
+import valandur.webapi.cache.misc.CachedVector3d;
 import valandur.webapi.serialize.JsonDetails;
-
-import java.util.Optional;
 
 @ApiModel("Transform")
 public class CachedTransform extends CachedObject<Transform> {
@@ -21,21 +18,21 @@ public class CachedTransform extends CachedObject<Transform> {
         return world;
     }
 
-    private Vector3d position;
+    private CachedVector3d position;
     @ApiModelProperty(value = "The position within the world", required = true)
-    public Vector3d getPosition() {
+    public CachedVector3d getPosition() {
         return position;
     }
 
-    private Vector3d rotation;
+    private CachedVector3d rotation;
     @ApiModelProperty(value = "The rotation of the object", required = true)
-    public Vector3d getRotation() {
+    public CachedVector3d getRotation() {
         return rotation;
     }
 
-    private Vector3d scale;
+    private CachedVector3d scale;
     @ApiModelProperty(value = "The scale of the object", required = true)
-    public Vector3d getScale() {
+    public CachedVector3d getScale() {
         return scale;
     }
 
@@ -44,21 +41,13 @@ public class CachedTransform extends CachedObject<Transform> {
         super(null);
 
         this.world = cacheService.getWorld(transform.getExtent());
-        this.position = transform.getPosition().clone();
-        this.rotation = transform.getRotation().clone();
-        this.scale = transform.getScale().clone();
+        this.position = new CachedVector3d(transform.getPosition());
+        this.rotation = new CachedVector3d(transform.getRotation());
+        this.scale = new CachedVector3d(transform.getScale());
     }
 
     @Override
-    public Optional<Transform> getLive() {
-        Optional<World> optWorld = world.getLive();
-        return optWorld.map(w -> new Transform<>(w, position));
-    }
-
-    @Override
-    @JsonIgnore
-    @ApiModelProperty(hidden = true)
-    public String getLink() {
-        return null;
+    public Transform getLive() {
+        return new Transform<>(world.getLive(), position.getLive());
     }
 }

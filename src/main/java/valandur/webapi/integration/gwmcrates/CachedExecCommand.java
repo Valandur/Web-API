@@ -1,7 +1,5 @@
 package valandur.webapi.integration.gwmcrates;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import io.swagger.annotations.ApiModelProperty;
 import org.gwmdevelopments.sponge_plugin.crates.drop.drops.CommandsDrop;
 import valandur.webapi.cache.CachedObject;
 
@@ -23,12 +21,5 @@ public class CachedExecCommand extends CachedObject<CommandsDrop.ExecutableComma
 
         this.command = value.getCommand();
         this.console = value.isConsole();
-    }
-
-    @Override
-    @JsonIgnore
-    @ApiModelProperty(hidden = true)
-    public String getLink() {
-        return null;
     }
 }

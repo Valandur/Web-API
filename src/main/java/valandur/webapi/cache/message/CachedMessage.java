@@ -1,11 +1,11 @@
 package valandur.webapi.cache.message;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.channel.MessageReceiver;
 import valandur.webapi.cache.CachedObject;
+import valandur.webapi.cache.misc.CachedText;
 
 import java.util.Collection;
 import java.util.Date;
@@ -27,9 +27,9 @@ public class CachedMessage extends CachedObject {
         return receivers;
     }
 
-    protected Text content;
+    protected CachedText content;
     @ApiModelProperty(value = "The content of the message", required = true)
-    public Text getContent() {
+    public CachedText getContent() {
         return content;
     }
 
@@ -43,13 +43,6 @@ public class CachedMessage extends CachedObject {
                     .map(m -> cacheService.asCachedObject(m))
                     .collect(Collectors.toList()));
         }
-        this.content = content.toBuilder().build();
-    }
-
-    @Override
-    @JsonIgnore
-    @ApiModelProperty(hidden = true)
-    public String getLink() {
-        return null;
+        this.content = new CachedText(content);
     }
 }

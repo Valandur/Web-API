@@ -1,7 +1,6 @@
 package valandur.webapi.cache.world;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.flowpowered.math.vector.Vector3i;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.spongepowered.api.Sponge;
@@ -14,9 +13,11 @@ import org.spongepowered.api.world.storage.WorldProperties;
 import org.spongepowered.api.world.weather.Weather;
 import valandur.webapi.cache.CachedObject;
 import valandur.webapi.cache.misc.CachedCatalogType;
+import valandur.webapi.cache.misc.CachedVector3i;
 import valandur.webapi.serialize.JsonDetails;
 import valandur.webapi.util.Constants;
 
+import javax.ws.rs.NotFoundException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -127,10 +128,10 @@ public class CachedWorld extends CachedObject<World> {
         return seed;
     }
 
-    private Vector3i spawn;
+    private CachedVector3i spawn;
     @JsonDetails
     @ApiModelProperty(value = "The spawn point for new players", required = true)
-    public Vector3i getSpawn() {
+    public CachedVector3i getSpawn() {
         return spawn;
     }
 
@@ -179,22 +180,31 @@ public class CachedWorld extends CachedObject<World> {
         this.gameRules = new HashMap<>(props.getGameRules());
         this.generatorType = new CachedCatalogType<>(props.getGeneratorType());
         this.seed = props.getSeed();
-        this.spawn = props.getSpawnPosition();
+        this.spawn = new CachedVector3i(props.getSpawnPosition());
         this.time = props.getWorldTime();
     }
 
     @Override
-    public Optional<World> getLive() {
-        return Sponge.getServer().getWorld(uuid);
+    public World getLive() {
+        Optional<World> optWorld = Sponge.getServer().getWorld(uuid);
+        if (!optWorld.isPresent()) {
+            throw new NotFoundException("Could not find world: " + uuid);
+        }
+        return optWorld.get();
     }
 
     @JsonIgnore
     @ApiModelProperty(hidden = true)
-    public Optional<WorldProperties> getLiveProps() {
-        return Sponge.getServer().getWorldProperties(uuid);
+    public WorldProperties getLiveProps() {
+        Optional<WorldProperties> optWorldProps = Sponge.getServer().getWorldProperties(uuid);
+        if (!optWorldProps.isPresent()) {
+            throw new NotFoundException("Could not find world properties: " + uuid);
+        }
+        return optWorldProps.get();
     }
 
     @Override
+    @JsonIgnore(false)
     public String getLink() {
         return Constants.BASE_PATH + "/world/" + uuid;
     }

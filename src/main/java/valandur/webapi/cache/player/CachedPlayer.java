@@ -1,7 +1,6 @@
 package valandur.webapi.cache.player;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.flowpowered.math.vector.Vector3d;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.spongepowered.api.Sponge;
@@ -10,14 +9,16 @@ import org.spongepowered.api.advancement.AdvancementProgress;
 import org.spongepowered.api.advancement.AdvancementTree;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.entity.living.player.User;
-import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.service.user.UserStorageService;
 import valandur.webapi.cache.CachedObject;
+import valandur.webapi.cache.item.CachedItemStack;
 import valandur.webapi.cache.misc.CachedInventory;
+import valandur.webapi.cache.misc.CachedVector3d;
 import valandur.webapi.cache.world.CachedLocation;
 import valandur.webapi.serialize.JsonDetails;
 import valandur.webapi.util.Constants;
 
+import javax.ws.rs.NotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -64,52 +65,52 @@ public class CachedPlayer extends CachedObject<Player> {
         return location;
     }
 
-    private Vector3d rotation;
+    private CachedVector3d rotation;
     @JsonDetails
     @ApiModelProperty(value = "The current rotation of the player", required = true)
-    public Vector3d getRotation() {
+    public CachedVector3d getRotation() {
         return rotation;
     }
 
-    private Vector3d velocity;
+    private CachedVector3d velocity;
     @JsonDetails
     @ApiModelProperty(value = "The current velocity of the player", required = true)
-    public Vector3d getVelocity() {
+    public CachedVector3d getVelocity() {
         return velocity;
     }
 
-    private Vector3d scale;
+    private CachedVector3d scale;
     @JsonDetails
     @ApiModelProperty(value = "The current scale of the player", required = true)
-    public Vector3d getScale() {
+    public CachedVector3d getScale() {
         return scale;
     }
 
-    private ItemStack helmet;
+    private CachedItemStack helmet;
     @JsonDetails(simple = true)
     @ApiModelProperty("The item stack that the player is wearing as a helmet")
-    public ItemStack getHelmet() {
+    public CachedItemStack getHelmet() {
         return helmet;
     }
 
-    private ItemStack chestplate;
+    private CachedItemStack chestplate;
     @JsonDetails(simple = true)
     @ApiModelProperty("The item stack that the player is wearing as chestplate")
-    public ItemStack getChestplate() {
+    public CachedItemStack getChestplate() {
         return chestplate;
     }
 
-    private ItemStack leggings;
+    private CachedItemStack leggings;
     @JsonDetails(simple = true)
     @ApiModelProperty("The item stack that the player is wearing as leggings")
-    public ItemStack getLeggings() {
+    public CachedItemStack getLeggings() {
         return leggings;
     }
 
-    private ItemStack boots;
+    private CachedItemStack boots;
     @JsonDetails(simple = true)
     @ApiModelProperty("The item stack that the player is wearing as boots")
-    public ItemStack getBoots() {
+    public CachedItemStack getBoots() {
         return boots;
     }
 
@@ -143,9 +144,9 @@ public class CachedPlayer extends CachedObject<Player> {
         this.isOnline = true;
 
         this.location = new CachedLocation(player.getLocation());
-        this.rotation = player.getRotation().clone();
-        this.velocity = player.getVelocity().clone();
-        this.scale = player.getScale().clone();
+        this.rotation = new CachedVector3d(player.getRotation());
+        this.velocity = new CachedVector3d(player.getVelocity());
+        this.scale = new CachedVector3d(player.getScale());
 
         this.address = player.getConnection().getAddress().toString();
         this.latency = player.getConnection().getLatency();
@@ -156,10 +157,10 @@ public class CachedPlayer extends CachedObject<Player> {
         }
 
         // This will be moved to the other constructor once Sponge implements the offline inventory API
-        this.helmet = player.getHelmet().map(ItemStack::copy).orElse(null);
-        this.chestplate = player.getChestplate().map(ItemStack::copy).orElse(null);
-        this.leggings = player.getLeggings().map(ItemStack::copy).orElse(null);
-        this.boots = player.getBoots().map(ItemStack::copy).orElse(null);
+        this.helmet = player.getHelmet().map(CachedItemStack::new).orElse(null);
+        this.chestplate = player.getChestplate().map(CachedItemStack::new).orElse(null);
+        this.leggings = player.getLeggings().map(CachedItemStack::new).orElse(null);
+        this.boots = player.getBoots().map(CachedItemStack::new).orElse(null);
         this.inventory = new CachedInventory(player.getInventory());
     }
 
@@ -175,8 +176,12 @@ public class CachedPlayer extends CachedObject<Player> {
     }
 
     @Override
-    public Optional<Player> getLive() {
-        return Sponge.getServer().getPlayer(uuid);
+    public Player getLive() {
+        Optional<Player> optPlayer = Sponge.getServer().getPlayer(uuid);
+        if (!optPlayer.isPresent()) {
+            throw new NotFoundException("Could not find player: " + uuid);
+        }
+        return optPlayer.get();
     }
 
     @JsonIgnore
@@ -186,6 +191,7 @@ public class CachedPlayer extends CachedObject<Player> {
     }
 
     @Override
+    @JsonIgnore(false)
     public String getLink() {
         return Constants.BASE_PATH + "/player/" + uuid;
     }

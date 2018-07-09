@@ -37,11 +37,7 @@ public class ChunkServlet extends BaseServlet {
     public List<CachedChunk> listChunks(
             @PathParam("world") @ApiParam("The uuid of the for which to get all chunks") CachedWorld world) {
         return WebAPI.runOnMain(() -> {
-            Optional<World> optWorld = world.getLive();
-            if (!optWorld.isPresent())
-                throw new InternalServerErrorException("Could not get live world");
-
-            World live = optWorld.get();
+            World live = world.getLive();
             List<CachedChunk> chunks = new ArrayList<>();
 
             Iterable<Chunk> iterable = live.getLoadedChunks();
@@ -62,11 +58,7 @@ public class ChunkServlet extends BaseServlet {
             @PathParam("x") @ApiParam("The x-coordinate of the chunk (in chunk coordinates)") int x,
             @PathParam("z") @ApiParam("The z-coordinate of the chunk (in chunk coordinates)") int z) {
         return WebAPI.runOnMain(() -> {
-            Optional<World> optLive = world.getLive();
-            if (!optLive.isPresent())
-                throw new InternalServerErrorException("Could not get live world");
-
-            World live = optLive.get();
+            World live = world.getLive();
             Optional<Chunk> chunk = live.loadChunk(x, 0, z, false);
             return chunk.map(CachedChunk::new).orElse(null);
         });
@@ -85,11 +77,7 @@ public class ChunkServlet extends BaseServlet {
             @PathParam("z") @ApiParam("The z-coordinate of the chunk (in chunk coordinates)") int z)
             throws URISyntaxException {
         CachedChunk chunk = WebAPI.runOnMain(() -> {
-            Optional<World> optLive = world.getLive();
-            if (!optLive.isPresent())
-                throw new InternalServerErrorException("Could not get live world");
-
-            World live = optLive.get();
+            World live = world.getLive();
             Optional<Chunk> optChunk = live.loadChunk(x, 0, z, true);
             if (!optChunk.isPresent())
                 throw new InternalServerErrorException("Could not load live chunk");

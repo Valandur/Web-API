@@ -4,6 +4,7 @@ import io.swagger.annotations.*;
 import org.spongepowered.api.data.manipulator.mutable.entity.ExperienceHolderData;
 import org.spongepowered.api.data.manipulator.mutable.entity.HealthData;
 import org.spongepowered.api.entity.living.player.Player;
+import org.spongepowered.api.entity.living.player.gamemode.GameMode;
 import org.spongepowered.api.event.cause.entity.damage.DamageType;
 import org.spongepowered.api.event.cause.entity.damage.source.DamageSource;
 import org.spongepowered.api.item.inventory.Carrier;
@@ -13,6 +14,7 @@ import org.spongepowered.api.util.Tuple;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 import valandur.webapi.WebAPI;
+import valandur.webapi.cache.misc.CachedCatalogType;
 import valandur.webapi.cache.player.CachedPlayer;
 import valandur.webapi.serialize.objects.ExecuteMethodRequest;
 import valandur.webapi.serialize.objects.ExecuteMethodResponse;
@@ -100,30 +102,41 @@ public class PlayerServlet extends BaseServlet {
             }
 
             if (req.getFoodLevel() != null) {
-                live.getFoodData().foodLevel().set(req.getFoodLevel());
+                live.offer(live.getFoodData().foodLevel().set(req.getFoodLevel()));
             }
             if (req.getExhaustion() != null) {
-                live.getFoodData().exhaustion().set(req.getExhaustion());
+                live.offer(live.getFoodData().exhaustion().set(req.getExhaustion()));
             }
             if (req.getSaturation() != null) {
-                live.getFoodData().saturation().set(req.getSaturation());
+                live.offer(live.getFoodData().saturation().set(req.getSaturation()));
             }
 
             if (req.getTotalExperience() != null) {
-                live.get(ExperienceHolderData.class).map(exp -> exp.totalExperience().set(req.getTotalExperience()));
+                live.get(ExperienceHolderData.class).ifPresent(exp ->
+                        live.offer(exp.totalExperience().set(req.getTotalExperience())));
             }
             if (req.getLevel() != null) {
-                live.get(ExperienceHolderData.class).map(exp -> exp.level().set(req.getLevel()));
+                live.get(ExperienceHolderData.class).ifPresent(exp ->
+                        live.offer(exp.level().set(req.getLevel())));
             }
             if (req.getExperienceSinceLevel() != null) {
-                live.get(ExperienceHolderData.class).map(exp -> exp.experienceSinceLevel().set(req.getExperienceSinceLevel()));
+                live.get(ExperienceHolderData.class).ifPresent(exp ->
+                        live.offer(exp.experienceSinceLevel().set(req.getExperienceSinceLevel())));
             }
 
             if (req.getHealth() != null) {
-                live.get(HealthData.class).map(h -> h.health().set(req.getHealth()));
+                live.offer(live.getHealthData().health().set(req.getHealth()));
             }
             if (req.getMaxHealth() != null) {
-                live.get(HealthData.class).map(h -> h.maxHealth().set(req.getMaxHealth()));
+                live.offer(live.getHealthData().maxHealth().set(req.getMaxHealth()));
+            }
+
+            if (req.getGameMode() != null) {
+                Optional<GameMode> optGm = req.getGameMode().getLive(GameMode.class);
+                if (!optGm.isPresent())
+                    throw new InternalServerErrorException("Could not get live game mode");
+
+                live.offer(live.gameMode().set(optGm.get()));
             }
 
             if (req.getDamage() != null) {
@@ -232,6 +245,12 @@ public class PlayerServlet extends BaseServlet {
         @ApiModelProperty("The maximum health of the player")
         public Double getMaxHealth() {
             return maxHealth;
+        }
+
+        private CachedCatalogType<GameMode> gameMode;
+        @ApiModelProperty(dataType = "string", value = "The game mode of the player")
+        public CachedCatalogType<GameMode> getGameMode() {
+            return gameMode;
         }
     }
 }

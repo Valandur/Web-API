@@ -24,10 +24,12 @@ public class ItemStackDeserializer extends StdDeserializer<ItemStack> {
     @Override
     public ItemStack deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
         JsonNode root = p.readValueAsTree();
-        if (root.path("type").path("id").isMissingNode())
+        if (root.path("type").isMissingNode())
             throw new IOException("Missing item type");
 
-        String id = root.path("type").path("id").asText();
+        String id = root.path("type").isTextual()
+                ? root.path("type").asText()
+                : root.path("type").path("id").asText();
         Optional<ItemType> optType = Sponge.getRegistry().getType(ItemType.class, id);
         if (!optType.isPresent())
             throw new IOException("Invalid item type " + id);

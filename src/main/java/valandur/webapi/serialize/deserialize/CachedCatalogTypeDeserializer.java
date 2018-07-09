@@ -30,9 +30,20 @@ public class CachedCatalogTypeDeserializer<T extends CatalogType> extends StdDes
     @Override
     public CachedCatalogType<T> deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
         JsonNode tree = p.readValueAsTree();
-        if (tree == null) return null;
-        if (tree.path("id").isMissingNode()) return null;
-        Optional<T> type = Sponge.getRegistry().getType((Class<T>) _valueClass, tree.get("id").asText());
-        return type.map(CachedCatalogType::new).orElse(null);
+
+        if (tree == null) {
+            return null;
+        }
+
+        if (tree.isTextual()) {
+            Optional<T> type = Sponge.getRegistry().getType((Class<T>) _valueClass, tree.asText());
+            return type.map(CachedCatalogType::new).orElse(null);
+        } else {
+            if (tree.path("id").isMissingNode()) {
+                return null;
+            }
+            Optional<T> type = Sponge.getRegistry().getType((Class<T>) _valueClass, tree.get("id").asText());
+            return type.map(CachedCatalogType::new).orElse(null);
+        }
     }
 }

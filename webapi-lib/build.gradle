@@ -3,7 +3,7 @@ plugins {
 }
 
 group 'valandur.webapi'
-version '5.1.3-S7.1'
+version = "${project.version}-S${project.spongeVersion}"
 
 sourceCompatibility = 1.8
 

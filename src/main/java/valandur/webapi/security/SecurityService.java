@@ -90,7 +90,7 @@ public class SecurityService {
         return !config.useWhitelist || config.whitelist.contains(addr);
     }
     public boolean blacklistContains(String addr) {
-        return !config.useBlacklist || config.blacklist.contains(addr);
+        return config.useBlacklist && config.blacklist.contains(addr);
     }
 
     public PermissionStruct getDefaultPermissions() {

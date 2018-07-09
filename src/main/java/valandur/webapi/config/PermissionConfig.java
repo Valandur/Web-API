@@ -3,8 +3,8 @@ package valandur.webapi.config;
 import com.google.common.collect.Lists;
 import ninja.leaping.configurate.objectmapping.Setting;
 import ninja.leaping.configurate.objectmapping.serialize.ConfigSerializable;
-import valandur.webapi.security.PermissionService;
 import valandur.webapi.security.PermissionStruct;
+import valandur.webapi.security.SecurityService;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -37,7 +37,7 @@ public class PermissionConfig extends BaseConfig {
     public String accessControlOrigin = "*";
 
     @Setting(value = "default", comment = "These are the default permissions that a client without a key receives")
-    public PermissionStruct def = new PermissionStruct(PermissionService.emptyNode(), 1);
+    public PermissionStruct def = new PermissionStruct(SecurityService.emptyNode(), 1);
 
     @Setting(comment = "This is a map of keys, defining which keys give access to which endpoints.")
     public Map<String, PermissionStruct> keys = new HashMap<>();

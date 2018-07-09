@@ -1,0 +1,26 @@
+plugins {
+    id 'java'
+}
+
+group 'valandur.webapi'
+version = "${project.version}-S${project.spongeVersion}"
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+    maven {
+        url "https://repo.spongepowered.org/maven/"
+    }
+}
+
+dependencies {
+    compileOnly group: "com.fasterxml.jackson.core", name: "jackson-annotations", version: project.jacksonVersion
+
+    compileOnly group: "org.eclipse.jetty", name: "jetty-servlet", version: project.jettyVersion
+
+    compileOnly group: 'org.spongepowered', name: 'configurate-hocon', version: '3.5'
+    compileOnly group: 'org.spongepowered', name: 'configurate-gson', version: '3.5'
+    compileOnly group: 'org.spongepowered', name: 'configurate-yaml', version: '3.5'
+    compileOnly group: 'org.spongepowered', name: 'configurate-xml', version: '3.5'
+}

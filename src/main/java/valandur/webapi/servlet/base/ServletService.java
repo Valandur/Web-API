@@ -2,9 +2,11 @@ package valandur.webapi.servlet.base;
 
 import org.slf4j.Logger;
 import valandur.webapi.WebAPI;
+import valandur.webapi.config.BaseConfig;
 import valandur.webapi.config.ServletsConfig;
 import valandur.webapi.integration.activetime.ActiveTimeServlet;
 import valandur.webapi.integration.cmdscheduler.CmdSchedulerServlet;
+import valandur.webapi.integration.gwmcrates.GWMCratesServlet;
 import valandur.webapi.integration.huskycrates.HuskyCratesServlet;
 import valandur.webapi.integration.mmcrestrict.MMCRestrictServlet;
 import valandur.webapi.integration.mmctickets.MMCTicketsServlet;
@@ -13,7 +15,6 @@ import valandur.webapi.integration.redprotect.RedProtectServlet;
 import valandur.webapi.integration.universalmarket.UniversalMarketServlet;
 import valandur.webapi.integration.webbooks.WebBooksServlet;
 import valandur.webapi.servlet.*;
-import valandur.webapi.util.Util;
 
 import javax.ws.rs.Path;
 import java.lang.reflect.InvocationTargetException;
@@ -39,7 +40,8 @@ public class ServletService {
 
         logger.info("Registering servlets...");
 
-        ServletsConfig config = Util.loadConfig(configFileName, new ServletsConfig());
+        java.nio.file.Path configPath = WebAPI.getConfigPath().resolve(configFileName).normalize();
+        ServletsConfig config = BaseConfig.load(configPath, new ServletsConfig());
 
         servletClasses.clear();
 
@@ -77,6 +79,15 @@ public class ServletService {
                 logger.info("  Integrating with CmdScheduler...");
                 registerServlet(CmdSchedulerServlet.class);
             } catch (ClassNotFoundException ignored) { }
+        }
+
+        if (config.integrations.GWMCrates) {
+            try {
+                Class.forName("org.gwmdevelopments.sponge_plugin.crates.GWMCrates");
+                logger.info("  Integrating with GWMCrates...");
+                registerServlet(GWMCratesServlet.class);
+            } catch (ClassNotFoundException ignored) {
+            }
         }
 
         if (config.integrations.HuskyCrates) {
@@ -162,7 +173,7 @@ public class ServletService {
         } catch (NoSuchMethodException ignored) {
         } catch (IllegalAccessException | InvocationTargetException e) {
             e.printStackTrace();
-            if (WebAPI.reportErrors()) WebAPI.sentryCapture(e);
+            WebAPI.sentryCapture(e);
         }
 
         servletClasses.put(basePath, servlet);

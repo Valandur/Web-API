@@ -30,6 +30,7 @@ import org.spongepowered.api.text.Text;
 import org.spongepowered.api.util.Tuple;
 import valandur.webapi.WebAPI;
 import valandur.webapi.block.BlockOperationStatusChangeEvent;
+import valandur.webapi.config.BaseConfig;
 import valandur.webapi.config.HookConfig;
 import valandur.webapi.hook.filter.BaseWebHookFilter;
 import valandur.webapi.hook.filter.BlockTypeFilter;
@@ -37,10 +38,10 @@ import valandur.webapi.hook.filter.ItemTypeFilter;
 import valandur.webapi.hook.filter.PlayerFilter;
 import valandur.webapi.util.Constants;
 import valandur.webapi.util.Timings;
-import valandur.webapi.util.Util;
 
 import java.io.*;
 import java.net.*;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
@@ -105,7 +106,8 @@ public class WebHookService {
         logger.info("Done loading filters");
 
         // Load config
-        HookConfig config = Util.loadConfig(configFileName, new HookConfig());
+        Path configPath = WebAPI.getConfigPath().resolve(configFileName).normalize();
+        HookConfig config = BaseConfig.load(configPath, new HookConfig());
 
         // Clear hooks
         eventHooks.clear();
@@ -221,7 +223,7 @@ public class WebHookService {
                 stringData = hook.isForm() ? "body=" + URLEncoder.encode(stringData, "UTF-8") : stringData;
             } catch (Exception e) {
                 e.printStackTrace();
-                if (WebAPI.reportErrors()) WebAPI.sentryCapture(e);
+                WebAPI.sentryCapture(e);
             }
         }
         final String finalData = stringData;

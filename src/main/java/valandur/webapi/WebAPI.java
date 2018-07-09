@@ -18,6 +18,7 @@ import org.spongepowered.api.command.CommandManager;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.config.ConfigDir;
 import org.spongepowered.api.entity.living.player.Player;
+import org.spongepowered.api.event.EventManager;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.Order;
 import org.spongepowered.api.event.game.GameReloadEvent;
@@ -25,6 +26,7 @@ import org.spongepowered.api.event.game.state.*;
 import org.spongepowered.api.plugin.Plugin;
 import org.spongepowered.api.plugin.PluginContainer;
 import org.spongepowered.api.scheduler.SpongeExecutorService;
+import org.spongepowered.api.service.ServiceManager;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
 import valandur.webapi.block.BlockOperation;
@@ -33,15 +35,20 @@ import valandur.webapi.block.BlockService;
 import valandur.webapi.cache.CacheService;
 import valandur.webapi.command.CommandRegistry;
 import valandur.webapi.command.CommandSource;
+import valandur.webapi.config.BaseConfig;
 import valandur.webapi.config.MainConfig;
 import valandur.webapi.hook.WebHook;
 import valandur.webapi.hook.WebHookSerializer;
 import valandur.webapi.hook.WebHookService;
+import valandur.webapi.link.LinkService;
+import valandur.webapi.link.internal.InternalHttpRequest;
+import valandur.webapi.link.internal.InternalHttpResponse;
+import valandur.webapi.link.message.RequestMessage;
+import valandur.webapi.link.message.ResponseMessage;
 import valandur.webapi.message.InteractiveMessageService;
-import valandur.webapi.security.AuthenticationProvider;
-import valandur.webapi.security.PermissionService;
 import valandur.webapi.security.PermissionStruct;
 import valandur.webapi.security.PermissionStructSerializer;
+import valandur.webapi.security.SecurityService;
 import valandur.webapi.serialize.SerializeService;
 import valandur.webapi.server.ServerService;
 import valandur.webapi.servlet.base.BaseServlet;
@@ -49,27 +56,22 @@ import valandur.webapi.servlet.base.ServletService;
 import valandur.webapi.swagger.SwaggerModelConverter;
 import valandur.webapi.user.UserPermissionStruct;
 import valandur.webapi.user.UserPermissionStructConfigSerializer;
-import valandur.webapi.user.Users;
+import valandur.webapi.user.UserService;
 import valandur.webapi.util.Constants;
 import valandur.webapi.util.JettyLogger;
 import valandur.webapi.util.Timings;
-import valandur.webapi.util.Util;
 
 import javax.net.ssl.HttpsURLConnection;
-import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.WebApplicationException;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.security.CodeSource;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -164,9 +166,14 @@ public class WebAPI {
         return WebAPI.getInstance().messageService;
     }
 
-    private PermissionService permissionService;
-    public static PermissionService getPermissionService() {
-        return WebAPI.getInstance().permissionService;
+    private LinkService linkService;
+    public static LinkService getLinkService() {
+        return WebAPI.getInstance().linkService;
+    }
+
+    private SecurityService securityService;
+    public static SecurityService getSecurityService() {
+        return WebAPI.getInstance().securityService;
     }
 
     private ServerService serverService;
@@ -179,10 +186,16 @@ public class WebAPI {
         return WebAPI.getInstance().servletService;
     }
 
+    private UserService userService;
+    public static UserService getUserService() {
+        return WebAPI.getInstance().userService;
+    }
+
     private WebHookService webHookService;
     public static WebHookService getWebHookService() {
         return WebAPI.getInstance().webHookService;
     }
+
 
 
     public WebAPI() {
@@ -190,34 +203,6 @@ public class WebAPI {
         System.setProperty("sentry.release", Constants.VERSION.split("-")[0]);
         System.setProperty("sentry.maxmessagelength", "2000");
         System.setProperty("sentry.stacktrace.app.packages", WebAPI.class.getPackage().getName());
-
-        Sentry.init();
-
-        // Add our own jar to the system classloader classpath, because some external libraries don't work otherwise.
-        // (I'm looking at you jna)
-        registerInSystemClasspath(WebAPI.class);
-    }
-    private void registerInSystemClasspath(Class clazz) {
-        try {
-            CodeSource src = clazz.getProtectionDomain().getCodeSource();
-            if (src == null) {
-                throw new IOException("Could not get code source for " + clazz.getName() + "!");
-            }
-
-            URL jar = src.getLocation();
-            String str = jar.toString();
-            if (str.indexOf("!") > 0) {
-                jar = new URL(jar.toString().substring(0, str.indexOf("!") + 2));
-            }
-            URLClassLoader sysloader = (URLClassLoader) ClassLoader.getSystemClassLoader();
-            Class sysclass = URLClassLoader.class;
-
-            Method method = sysclass.getDeclaredMethod("addURL", URL.class);
-            method.setAccessible(true);
-            method.invoke(sysloader, jar);
-        } catch (IOException | NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
-            e.printStackTrace();
-        }
     }
 
     @Listener
@@ -240,7 +225,6 @@ public class WebAPI {
                 Files.createDirectories(configPath);
             } catch (IOException e) {
                 e.printStackTrace();
-                if (WebAPI.reportErrors()) WebAPI.sentryCapture(e);
             }
         }
 
@@ -259,26 +243,33 @@ public class WebAPI {
         // Setup services
         this.blockService = new BlockService();
         this.cacheService = new CacheService();
-        this.serializeService = new SerializeService();
+        this.linkService = new LinkService();
         this.messageService = new InteractiveMessageService();
-        this.permissionService = new PermissionService();
+        this.securityService = new SecurityService();
+        this.serializeService = new SerializeService();
         this.serverService = new ServerService();
         this.servletService = new ServletService();
         this.webHookService = new WebHookService();
+        this.userService = new UserService();
 
         // Register services
-        Sponge.getServiceManager().setProvider(this, BlockService.class, blockService);
-        Sponge.getServiceManager().setProvider(this, CacheService.class, cacheService);
-        Sponge.getServiceManager().setProvider(this, SerializeService.class, serializeService);
-        Sponge.getServiceManager().setProvider(this, InteractiveMessageService.class, messageService);
-        Sponge.getServiceManager().setProvider(this, PermissionService.class, permissionService);
-        Sponge.getServiceManager().setProvider(this, ServerService.class, serverService);
-        Sponge.getServiceManager().setProvider(this, ServletService.class, servletService);
-        Sponge.getServiceManager().setProvider(this, WebHookService.class, webHookService);
+        ServiceManager serviceMan = Sponge.getServiceManager();
+        serviceMan.setProvider(this, BlockService.class, blockService);
+        serviceMan.setProvider(this, CacheService.class, cacheService);
+        serviceMan.setProvider(this, LinkService.class, linkService);
+        serviceMan.setProvider(this, InteractiveMessageService.class, messageService);
+        serviceMan.setProvider(this, SecurityService.class, securityService);
+        serviceMan.setProvider(this, SerializeService.class, serializeService);
+        serviceMan.setProvider(this, ServerService.class, serverService);
+        serviceMan.setProvider(this, ServletService.class, servletService);
+        serviceMan.setProvider(this, WebHookService.class, webHookService);
+        serviceMan.setProvider(this, UserService.class, userService);
 
         // Register events of services
-        Sponge.getEventManager().registerListeners(this, cacheService);
-        Sponge.getEventManager().registerListeners(this, webHookService);
+        EventManager evenMan = Sponge.getEventManager();
+        evenMan.registerListeners(this, cacheService);
+        evenMan.registerListeners(this, linkService);
+        evenMan.registerListeners(this, webHookService);
 
         // Swagger setup stuff
         ModelConverters.getInstance().addConverter(new SwaggerModelConverter());
@@ -319,7 +310,8 @@ public class WebAPI {
 
         logger.info("Loading configuration...");
 
-        MainConfig mainConfig = Util.loadConfig("config.conf", new MainConfig());
+        Path configPath = WebAPI.getConfigPath().resolve("config.conf").normalize();
+        MainConfig mainConfig = BaseConfig.load(configPath, new MainConfig());
 
         // Save important config values to variables
         devMode = mainConfig.devMode;
@@ -340,13 +332,17 @@ public class WebAPI {
             reportErrors = false;
         }
 
-        AuthenticationProvider.init();
+        if (reportErrors) {
+            Sentry.init();
+        }
 
         blockService.init();
 
         cacheService.init();
 
-        webHookService.init();
+        linkService.init();
+
+        securityService.init();
 
         serializeService.init();
 
@@ -354,9 +350,11 @@ public class WebAPI {
 
         servletService.init();
 
-        CommandRegistry.init();
+        userService.init();
 
-        Users.init();
+        webHookService.init();
+
+        CommandRegistry.init();
 
         if (triggeringPlayer != null) {
             triggeringPlayer.sendMessage(Text.builder().color(TextColors.AQUA)
@@ -537,7 +535,7 @@ public class WebAPI {
                     throw (WebApplicationException)e.getCause();
 
                 e.printStackTrace();
-                if (WebAPI.reportErrors()) WebAPI.sentryCapture(e);
+                WebAPI.sentryCapture(e);
                 throw new InternalServerErrorException(e.getMessage());
             }
         }
@@ -560,24 +558,27 @@ public class WebAPI {
                     throw (WebApplicationException)e.getCause();
 
                 e.printStackTrace();
-                if (WebAPI.reportErrors()) WebAPI.sentryCapture(e);
+                WebAPI.sentryCapture(e);
                 throw new InternalServerErrorException(e.getMessage());
             }
         }
     }
 
-    // Sentry logging
-    public static void sentryNewRequest(HttpServletRequest req) {
-        Sentry.clearContext();
-        Context context = Sentry.getContext();
-        context.addExtra("request_protocol", req.getProtocol());
-        context.addExtra("request_method", req.getMethod());
-        context.addExtra("request_uri", req.getRequestURI());
-    }
-    public static void sentryExtra(String name, Object value) {
-        Sentry.getContext().addExtra(name, value);
+    // Emulate HTTP requests from sockets
+    public static ResponseMessage emulateRequest(RequestMessage message) {
+        try {
+            InternalHttpRequest req = new InternalHttpRequest(message);
+            InternalHttpResponse res = new InternalHttpResponse();
+            server.handle(message.getPath(), req, req, res);
+            return new ResponseMessage(message.getId(), res.getStatus(), res.getHeaders(), res.getOuput());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseMessage(message.getId(), HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+                    new HashMap<>(), e.getMessage());
+        }
     }
 
+    // Sentry logging
     private static void addDefaultContext() {
         Context context = Sentry.getContext();
         context.addTag("full_release", Constants.VERSION);
@@ -603,15 +604,15 @@ public class WebAPI {
         context.addExtra("plugins", pluginList);
     }
     public static void sentryCapture(Exception e) {
+        if (!reportErrors())
+            return;
         addDefaultContext();
         Sentry.capture(e);
     }
     public static void sentryCapture(Throwable t) {
+        if (!reportErrors())
+            return;
         addDefaultContext();
         Sentry.capture(t);
-    }
-    public static void sentryCapture(String msg) {
-        addDefaultContext();
-        Sentry.capture(msg);
     }
 }

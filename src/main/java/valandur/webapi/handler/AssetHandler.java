@@ -36,7 +36,7 @@ public class AssetHandler extends AbstractHandler {
                 this.contentType = guessContentType(folderPath);
             } catch (IOException e) {
                 e.printStackTrace();
-                if (WebAPI.reportErrors()) WebAPI.sentryCapture(e);
+                WebAPI.sentryCapture(e);
             }
         } else {
             this.folderPath = folderPath;

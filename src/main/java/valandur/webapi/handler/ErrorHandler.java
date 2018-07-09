@@ -5,8 +5,11 @@ import com.google.gson.JsonObject;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.eclipse.jetty.http.HttpStatus;
+import org.eclipse.jetty.server.Request;
+import valandur.webapi.WebAPI;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
@@ -48,6 +51,12 @@ public class ErrorHandler extends org.eclipse.jetty.server.handler.ErrorHandler 
         writer.write(obj.toString());
     }
 
+    @Override
+    public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException {
+        WebAPI.getLogger().info("ERROR: " + target);
+
+        super.handle(target, baseRequest, request, response);
+    }
 
     @ApiModel("ErrorMessage")
         public static class ErrorMessage {

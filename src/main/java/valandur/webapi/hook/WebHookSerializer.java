@@ -8,7 +8,7 @@ import ninja.leaping.configurate.objectmapping.serialize.TypeSerializer;
 import org.slf4j.Logger;
 import valandur.webapi.WebAPI;
 import valandur.webapi.hook.filter.BaseWebHookFilter;
-import valandur.webapi.security.PermissionService;
+import valandur.webapi.security.SecurityService;
 import valandur.webapi.util.TreeNode;
 
 import javax.ws.rs.HttpMethod;
@@ -44,7 +44,7 @@ public class WebHookSerializer implements TypeSerializer<WebHook> {
         String filterName = filterBase.getNode("name").getString();
         ConfigurationNode filterConfig = filterBase.getNode("config");
 
-        TreeNode permissions = PermissionService.permitAllNode();
+        TreeNode permissions = SecurityService.permitAllNode();
 
         if (headers == null) {
             headers = new ArrayList<>();
@@ -63,7 +63,7 @@ public class WebHookSerializer implements TypeSerializer<WebHook> {
         if (value.getNode("permissions").isVirtual()) {
             logger.warn("    Does not specify 'permissions', defaulting to '*'");
         } else {
-            permissions = WebAPI.getPermissionService().permissionTreeFromConfig(value.getNode("permissions"));
+            permissions = WebAPI.getSecurityService().permissionTreeFromConfig(value.getNode("permissions"));
         }
 
         WebHook hook = new WebHook(address, enabled, method, dataType, form, headers, details, permissions);
@@ -130,7 +130,7 @@ public class WebHookSerializer implements TypeSerializer<WebHook> {
             }
         }
 
-        WebAPI.getPermissionService().permissionTreeToConfig(value.getNode("permissions"), obj.getPermissions());
+        WebAPI.getSecurityService().permissionTreeToConfig(value.getNode("permissions"), obj.getPermissions());
         if (value.getNode("permissions") instanceof CommentedConfigurationNode) {
             ((CommentedConfigurationNode) value.getNode("permissions")).setComment(
                     "Permissions node same as the ones in the permissions.conf file,\n" +

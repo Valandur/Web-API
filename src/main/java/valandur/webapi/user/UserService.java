@@ -3,43 +3,44 @@ package valandur.webapi.user;
 import org.mindrot.jbcrypt.BCrypt;
 import org.slf4j.Logger;
 import valandur.webapi.WebAPI;
+import valandur.webapi.config.BaseConfig;
 import valandur.webapi.config.UserConfig;
-import valandur.webapi.security.AuthenticationProvider;
 import valandur.webapi.util.TreeNode;
-import valandur.webapi.util.Util;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class Users {
+public class UserService {
     private static final String configFileName = "user.conf";
 
-    private static UserConfig config;
-    private static Map<String, UserPermissionStruct> users = new ConcurrentHashMap<>();
-    public static List<UserPermissionStruct> getUsers() {
+    private UserConfig config;
+    private Map<String, UserPermissionStruct> users = new ConcurrentHashMap<>();
+    public List<UserPermissionStruct> getUsers() {
         return new ArrayList<>(users.values());
     }
 
-    public static void init() {
+    public void init() {
         Logger logger = WebAPI.getLogger();
 
         logger.info("Loading users...");
-        config = Util.loadConfig(configFileName, new UserConfig());
+        Path configPath = WebAPI.getConfigPath().resolve(configFileName).normalize();
+        config = BaseConfig.load(configPath, new UserConfig());
 
         users = config.users;
     }
-    public static void save() {
+    public void save() {
         config.save();
     }
 
-    public static Optional<UserPermissionStruct> getUser(String username) {
+    public Optional<UserPermissionStruct> getUser(String username) {
         UserPermissionStruct user = users.get(username);
         return user != null ? Optional.of(user) : Optional.empty();
     }
-    public static Optional<UserPermissionStruct> getUser(String username, String password) {
+    public Optional<UserPermissionStruct> getUser(String username, String password) {
         if (username == null || password == null || !users.containsKey(username)) {
             return Optional.empty();
         }
@@ -56,7 +57,7 @@ public class Users {
         }
     }
 
-    public static Optional<UserPermissionStruct> addUser(String username, String password, TreeNode permissions) {
+    public Optional<UserPermissionStruct> addUser(String username, String password, TreeNode permissions) {
         if (users.containsKey(username))
             return Optional.empty();
 
@@ -66,28 +67,28 @@ public class Users {
 
         return Optional.of(user);
     }
-    public static UserPermissionStruct modifyUser(UserPermissionStruct user, TreeNode permissions) {
+    public UserPermissionStruct modifyUser(UserPermissionStruct user, TreeNode permissions) {
         UserPermissionStruct newUser = user.withPermissions(permissions);
         users.put(newUser.getName(), newUser);
         save();
 
-        AuthenticationProvider.updateAllFrom(newUser);
+        WebAPI.getSecurityService().updateAllFrom(newUser);
 
         return newUser;
     }
-    public static Optional<UserPermissionStruct> removeUser(String username) {
+    public Optional<UserPermissionStruct> removeUser(String username) {
         if (!users.containsKey(username))
             return Optional.empty();
 
         UserPermissionStruct user = users.remove(username);
         save();
 
-        AuthenticationProvider.removeAllFrom(user.getName());
+        WebAPI.getSecurityService().removeAllFrom(user.getName());
 
         return Optional.of(user);
     }
 
-    public static String hashPassword(String password) {
+    public String hashPassword(String password) {
         return BCrypt.hashpw(password, BCrypt.gensalt());
     }
 }

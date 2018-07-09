@@ -50,6 +50,7 @@ import valandur.webapi.cache.world.CachedChunk;
 import valandur.webapi.cache.world.CachedLocation;
 import valandur.webapi.cache.world.CachedTransform;
 import valandur.webapi.cache.world.CachedWorld;
+import valandur.webapi.config.BaseConfig;
 import valandur.webapi.config.CacheConfig;
 import valandur.webapi.util.Timings;
 import valandur.webapi.util.Util;
@@ -95,7 +96,8 @@ public class CacheService {
 
 
     public void init() {
-        CacheConfig config = Util.loadConfig(configFileName, new CacheConfig());
+        Path configPath = WebAPI.getConfigPath().resolve(configFileName).normalize();
+        CacheConfig config = BaseConfig.load(configPath, new CacheConfig());
 
         numChatMessages = config.chat_amount;
         numCommandCalls = config.cmd_amount;

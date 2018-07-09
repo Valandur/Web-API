@@ -6,10 +6,10 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import valandur.webapi.WebAPI;
 import valandur.webapi.cache.world.CachedWorld;
+import valandur.webapi.config.BaseConfig;
 import valandur.webapi.config.MapConfig;
 import valandur.webapi.servlet.base.BaseServlet;
 import valandur.webapi.servlet.base.Permission;
-import valandur.webapi.util.Util;
 
 import javax.imageio.ImageIO;
 import javax.inject.Singleton;
@@ -34,6 +34,8 @@ import java.util.concurrent.ConcurrentHashMap;
 @Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 public class MapServlet extends BaseServlet {
 
+    private static final String configFileName = "map.conf";
+
     private static int TILE_SIZE = 512;
     private static int HALF_TILE_SIZE = TILE_SIZE / 2;
     private Map<String, String> biomeColorMap = new ConcurrentHashMap<>();
@@ -42,7 +44,10 @@ public class MapServlet extends BaseServlet {
     public MapServlet() {
         biomeColorMap.clear();
 
-        MapConfig config = Util.loadConfig("map.conf", new MapConfig());
+        java.nio.file.Path configPath = WebAPI.getConfigPath().resolve(configFileName).normalize();
+        MapConfig config = BaseConfig.load(configPath, new MapConfig());
+
+        config.save(); // Save in case we don't have the default values yet
         biomeColorMap.putAll(config.biomeColors);
     }
 

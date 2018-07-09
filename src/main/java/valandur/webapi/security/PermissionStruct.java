@@ -3,13 +3,11 @@ package valandur.webapi.security;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import ninja.leaping.configurate.objectmapping.serialize.ConfigSerializable;
 import valandur.webapi.util.TreeNode;
 
 import java.security.Principal;
 
 @ApiModel(value = "PermissionStruct", description = "Represents a permissions struct that contains information to access the Web-API")
-@ConfigSerializable
 public class PermissionStruct implements Principal {
 
     protected String key = null;

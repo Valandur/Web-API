@@ -14,7 +14,7 @@ public class UserPermissionStructConfigSerializer implements TypeSerializer<User
         String username = value.getKey().toString();
         String password = value.getNode("password").getString();
 
-        TreeNode perms = WebAPI.getPermissionService().permissionTreeFromConfig(value.getNode("permissions"));
+        TreeNode perms = WebAPI.getSecurityService().permissionTreeFromConfig(value.getNode("permissions"));
 
         return new UserPermissionStruct(username, password, perms);
     }
@@ -22,6 +22,6 @@ public class UserPermissionStructConfigSerializer implements TypeSerializer<User
     @Override
     public void serialize(TypeToken<?> type, UserPermissionStruct obj, ConfigurationNode value) throws ObjectMappingException {
         value.getNode("password").setValue(obj.getPassword());
-        WebAPI.getPermissionService().permissionTreeToConfig(value.getNode("permissions"), obj.getPermissions());
+        WebAPI.getSecurityService().permissionTreeToConfig(value.getNode("permissions"), obj.getPermissions());
     }
 }

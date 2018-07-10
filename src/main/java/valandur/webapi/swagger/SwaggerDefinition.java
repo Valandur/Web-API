@@ -269,6 +269,7 @@ public class SwaggerDefinition implements ReaderListener {
         attachAdditionalProps(defs.get("TileEntity"), props);
         attachAdditionalProps(defs.get("ItemStack"), props);
         attachAdditionalProps(defs.get("FluidStack"), props);
+        attachAdditionalProps(defs.get("Slot"), props);
 
         // Sort tags alphabetically
         webapiTags.sort(String::compareTo);

@@ -32,13 +32,17 @@ public class WSClientSocket {
 
     @OnWebSocketMessage
     public void onMessage(String msg) {
-        RequestMessage req = parseRequest(msg, RequestMessage.class);
+        BaseMessage req = parseRequest(msg, BaseMessage.class);
         if (req == null) {
             return;
         }
 
-        ResponseMessage res = WebAPI.emulateRequest(req);
-        send(res);
+        if (req instanceof RequestMessage) {
+            ResponseMessage res = WebAPI.emulateRequest((RequestMessage) req);
+            send(res);
+        } else {
+            WebAPI.getLogger().warn("Unknown message from WebSocket: " + msg);
+        }
     }
 
     private <T> T parseRequest(String msg, Class<T> clazz) {
@@ -52,6 +56,10 @@ public class WSClientSocket {
     }
 
     public void send(BaseMessage msg) {
+        if (session == null || !session.isOpen()) {
+            return;
+        }
+
         try {
             ObjectMapper mapper = new ObjectMapper();
             session.getRemote().sendString(mapper.writeValueAsString(msg));

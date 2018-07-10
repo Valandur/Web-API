@@ -4,7 +4,12 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import valandur.webapi.util.Util;
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXISTING_PROPERTY)
+@JsonTypeInfo(
+        use = JsonTypeInfo.Id.NAME,
+        include = JsonTypeInfo.As.EXISTING_PROPERTY,
+        property = "type",
+        defaultImpl = BaseMessage.class
+)
 @JsonSubTypes({
         @JsonSubTypes.Type(value=ConnectMessage.class, name = "CONNECT"),
         @JsonSubTypes.Type(value=DisconnectMessage.class, name = "DISCONNECT"),

@@ -1,6 +1,7 @@
 package valandur.webapi.cache.misc;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.spongepowered.api.data.Property;
 import org.spongepowered.api.item.inventory.InventoryProperty;
@@ -11,6 +12,7 @@ import valandur.webapi.cache.CachedObject;
 
 import java.util.Map;
 
+@ApiModel("Slot")
 public class CachedSlot extends CachedObject<Slot> {
 
     private ItemStack stack;

@@ -5,13 +5,11 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.spongepowered.api.item.inventory.Inventory;
 import org.spongepowered.api.item.inventory.InventoryArchetype;
-import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.item.inventory.Slot;
 import valandur.webapi.cache.CachedObject;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @ApiModel("Inventory")
 public class CachedInventory extends CachedObject<Inventory> {
@@ -58,6 +56,9 @@ public class CachedInventory extends CachedObject<Inventory> {
         try {
             this.slots = new ArrayList<>();
             for (Inventory subInv : inv.slots()) {
+                if (subInv.totalItems() == 0) {
+                    continue;
+                }
                 this.slots.add(new CachedSlot((Slot) subInv));
             }
         } catch (AbstractMethodError ignored) {}

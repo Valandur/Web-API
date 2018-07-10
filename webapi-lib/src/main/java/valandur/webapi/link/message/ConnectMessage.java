@@ -13,6 +13,7 @@ public class ConnectMessage extends BaseMessage {
     }
 
 
+    public ConnectMessage() {}
     public ConnectMessage(String key) {
         this.key = key;
     }

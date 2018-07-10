@@ -20,19 +20,17 @@ public class WSMainSocket {
     private String privateKey;
 
 
-    WSMainSocket(WSLinkServer link) {
-        this.link = link;
+    public WSMainSocket() {
+        this.link = WSLinkServer.instance;
     }
 
     @OnWebSocketConnect
     public void onConnect(Session session) {
-        System.out.println("Connected: " + session.getRemoteAddress().getHostName());
         this.session = session;
     }
 
     @OnWebSocketClose
     public void onClose(int statusCode, String reason) {
-        System.out.println("Disconnected: " + session.getRemoteAddress().getHostName());
         if (privateKey != null) {
             link.removeServer(privateKey);
         }

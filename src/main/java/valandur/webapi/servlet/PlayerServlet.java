@@ -2,16 +2,12 @@ package valandur.webapi.servlet;
 
 import io.swagger.annotations.*;
 import org.spongepowered.api.data.manipulator.mutable.entity.ExperienceHolderData;
-import org.spongepowered.api.data.manipulator.mutable.entity.HealthData;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.entity.living.player.gamemode.GameMode;
 import org.spongepowered.api.event.cause.entity.damage.DamageType;
 import org.spongepowered.api.event.cause.entity.damage.source.DamageSource;
-import org.spongepowered.api.item.inventory.Carrier;
 import org.spongepowered.api.item.inventory.Inventory;
-import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.item.inventory.property.SlotIndex;
-import org.spongepowered.api.item.inventory.query.QueryOperation;
 import org.spongepowered.api.util.Tuple;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;

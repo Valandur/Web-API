@@ -25,6 +25,7 @@ public class ResponseMessage extends BaseMessage {
     }
 
 
+    public ResponseMessage() {}
     public ResponseMessage(String id, int status, Map<String, String> headers, String message) {
         super(id);
 

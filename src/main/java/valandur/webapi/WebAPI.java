@@ -55,7 +55,7 @@ import valandur.webapi.servlet.base.BaseServlet;
 import valandur.webapi.servlet.base.ServletService;
 import valandur.webapi.swagger.SwaggerModelConverter;
 import valandur.webapi.user.UserPermissionStruct;
-import valandur.webapi.user.UserPermissionStructConfigSerializer;
+import valandur.webapi.user.UserPermissionStructSerializer;
 import valandur.webapi.user.UserService;
 import valandur.webapi.util.Constants;
 import valandur.webapi.util.JettyLogger;
@@ -236,9 +236,9 @@ public class WebAPI {
         TypeSerializers.getDefaultSerializers().registerType(
                 TypeToken.of(WebHook.class), new WebHookSerializer());
         TypeSerializers.getDefaultSerializers().registerType(
-                TypeToken.of(PermissionStruct.class), new PermissionStructSerializer());
+                TypeToken.of(UserPermissionStruct.class), new UserPermissionStructSerializer());
         TypeSerializers.getDefaultSerializers().registerType(
-                TypeToken.of(UserPermissionStruct.class), new UserPermissionStructConfigSerializer());
+                TypeToken.of(PermissionStruct.class), new PermissionStructSerializer());
 
         // Setup services
         this.blockService = new BlockService();

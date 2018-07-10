@@ -36,6 +36,7 @@ public class LinkService {
         linkClient = createLinkClient(config);
         // Connect if we have a client
         if (linkClient != null) {
+            WebAPI.getLogger().info("Establishing " + config.type + " link to " + config.url + "...");
             linkClient.connect(config.url);
         }
     }
@@ -43,11 +44,11 @@ public class LinkService {
     private LinkClient createLinkClient(LinkConfig config) {
         switch (config.type) {
             case WebSocket:
-                return new WSClient();
+                return new WSClient(config.privateKey);
             case Redis:
-                return new RedisClient();
+                return new RedisClient(config.privateKey);
             case RabbitMQ:
-                return new RabbitMQClient();
+                return new RabbitMQClient(config.privateKey);
         }
         return null;
     }

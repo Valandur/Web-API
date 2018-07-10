@@ -56,6 +56,9 @@ public class CachedInventory extends CachedObject<Inventory> {
         try {
             this.slots = new ArrayList<>();
             for (Inventory subInv : inv.slots()) {
+                if (subInv.totalItems() == 0) {
+                    continue;
+                }
                 this.slots.add(new CachedSlot((Slot) subInv));
             }
         } catch (AbstractMethodError ignored) {}

@@ -13,6 +13,7 @@ public class DisconnectMessage extends BaseMessage {
     }
 
 
+    public DisconnectMessage() {}
     public DisconnectMessage(String key) {
         this.key = key;
     }

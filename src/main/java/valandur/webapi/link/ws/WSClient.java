@@ -14,7 +14,8 @@ public class WSClient extends LinkClient {
     private WSClientSocket socket;
 
 
-    public WSClient() {
+    public WSClient(String privateKey) {
+        super(privateKey);
         client = new WebSocketClient();
     }
 

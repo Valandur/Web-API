@@ -14,6 +14,10 @@ public class RedisClient extends LinkClient {
     private Jedis jedis;
 
 
+    public RedisClient(String privateKey) {
+        super(privateKey);
+    }
+
     @Override
     public void connect(String target) {
         try {

@@ -18,6 +18,10 @@ public abstract class LinkClient {
     }
 
 
+    public LinkClient(String privateKey) {
+        this.privateKey = privateKey;
+    }
+
     public abstract void connect(String target);
 
     public abstract void disconnect();

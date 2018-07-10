@@ -55,7 +55,6 @@ public class MainHandler extends AbstractHandler {
     @Override
     public void handle(String target, Request baseRequest, HttpServletRequest req, HttpServletResponse res)
             throws IOException {
-        System.out.println(target);
         baseRequest.setHandled(true);
 
         Map<String, String> params = Util.getQueryParams(req);

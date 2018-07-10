@@ -9,6 +9,6 @@ public class WSServlet extends WebSocketServlet {
     @Override
     public void configure(WebSocketServletFactory factory) {
         factory.getPolicy().setIdleTimeout(10000);
-        factory.setCreator(new WSCreator());
+        factory.register(WSMainSocket.class);
     }
 }

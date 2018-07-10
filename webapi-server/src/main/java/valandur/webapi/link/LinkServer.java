@@ -4,12 +4,10 @@ import org.eclipse.jetty.server.handler.ContextHandlerCollection;
 import valandur.webapi.link.message.RequestMessage;
 import valandur.webapi.link.message.ResponseMessage;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 public abstract class LinkServer {
 
@@ -17,6 +15,7 @@ public abstract class LinkServer {
 
     // Mapping of server name to server key
     protected Map<String, String> serverKeys;
+
     // Set of connected server keys
     protected Set<String> servers = new ConcurrentSkipListSet<>();
 
@@ -25,11 +24,21 @@ public abstract class LinkServer {
         this.serverKeys = serverKeys;
     }
 
+    public Map<String, Boolean> getServerStatus() {
+        return serverKeys.entrySet().stream()
+                .collect(Collectors.toMap(Map.Entry::getKey, e -> servers.contains(e.getValue())));
+    }
+
     public abstract void init(ContextHandlerCollection handlers);
 
     public boolean addServer(String serverKey) {
-        if (serverKeys.containsValue(serverKey)) {
-            System.out.println("Connected: " + serverKeys.get(serverKey));
+        Optional<String> serverName = serverKeys.entrySet().stream()
+                .filter(e -> e.getValue().equals(serverKey))
+                .map(Map.Entry::getKey)
+                .findAny();
+
+        if (serverName.isPresent()) {
+            System.out.println("Connected: " + serverName.get());
             servers.add(serverKey);
             return true;
         }
@@ -43,7 +52,16 @@ public abstract class LinkServer {
         return serverKeys.containsKey(serverName) && servers.contains(serverKeys.get(serverName));
     }
     public void removeServer(String serverKey) {
-        System.out.println("Disconnected: " + serverKeys.get(serverKey));
+        Optional<String> serverName = serverKeys.entrySet().stream()
+                .filter(e -> e.getValue().equals(serverKey))
+                .map(Map.Entry::getKey)
+                .findAny();
+
+        if (!serverName.isPresent()) {
+            return;
+        }
+
+        System.out.println("Disconnected: " + serverName.get());
         servers.remove(serverKey);
     }
 

@@ -19,6 +19,10 @@ public class RabbitMQClient extends LinkClient {
     private Channel channel;
 
 
+    public RabbitMQClient(String privateKey) {
+        super(privateKey);
+    }
+
     @Override
     public void connect(String target) {
         ConnectionFactory factory = new ConnectionFactory();

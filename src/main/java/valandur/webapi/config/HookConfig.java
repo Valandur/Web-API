@@ -46,12 +46,12 @@ public class HookConfig extends BaseConfig {
 
     @Setting(comment = "The following are event hooks which are all called when the specified event happens. They get passed various data\n" +
             "in the body (if method != GET, described below for each event). The format of the hooks is described in the \"all\"\n" +
-            "event hook. This format can be used anywhere marked with \"HOOKS\".\n" +
+            "event hook. This format can be used for any of the hook lists.\n" +
             "Please note that the hooks don't get called in any particular order, and might even be called concurrently.")
     public HookEvents events = new HookEvents();
 
     @Setting(comment = "These hooks can be used to bind to custom events. You have to use the fully qualified class name as the key, and then\n" +
-            "a hook list just like for the event hooks above. These hooks work just like the event hooks, although the data\n" +
+            "a hook list just like for the event hooks. These hooks work just like the event hooks, although the data\n" +
             "depends on the event you subscribe to.")
     public Map<String, List<WebHook>> custom = new HashMap<>();
 
@@ -63,7 +63,7 @@ public class HookConfig extends BaseConfig {
 
     @ConfigSerializable
     public static class HookEvents {
-        @Setting(comment = "This event is fired for all other events. The \"X-WebAPI-Event\" header specifies the exact event.")
+        @Setting(comment = "This event is fired for all events. The \"X-WebAPI-Event\" header specifies the exact event.")
         public List<WebHook> all = Lists.newArrayList(new WebHook(
                 "http://localhost/test",
                 false,
@@ -78,7 +78,7 @@ public class HookConfig extends BaseConfig {
         @Setting(comment = "This event is fired when a player earns an achievement / advancement")
         public List<WebHook> achievement = new ArrayList<>();
 
-        @Setting(comment = "This event is fired when a block operations changes status")
+        @Setting(comment = "This event is fired when a block operation changes status")
         public List<WebHook> block_operation_status = new ArrayList<>();
 
         @Setting(comment = "This event is fired when a chat message is sent on the server")

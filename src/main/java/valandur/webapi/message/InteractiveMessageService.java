@@ -42,7 +42,7 @@ public class InteractiveMessageService {
             builder.append(msg.getMessage());
         }
 
-        if (msg.isOnce() != null && msg.isOnce()) {
+        if (msg.isOnce()) {
             replied.put(msg.getUUID(), new ConcurrentSkipListSet<>());
         }
 
@@ -57,7 +57,7 @@ public class InteractiveMessageService {
                         Collection<String> replies = replied.get(msg.getUUID());
                         if (replies.contains(source.getIdentifier())) {
                             source.sendMessage(Text
-                                    .builder("You have already replied to this messsage")
+                                    .builder("You have already replied to this message")
                                     .color(TextColors.RED)
                                     .build()
                             );
@@ -66,7 +66,8 @@ public class InteractiveMessageService {
                         replies.add(source.getIdentifier());
                     }
 
-                    InteractiveMessageResponse response = new InteractiveMessageResponse(msg.getId(), data, source.getIdentifier());
+                    InteractiveMessageResponse response = new InteractiveMessageResponse(
+                            msg.getId(), data, source.getIdentifier());
                     WebAPI.getWebHookService().notifyHooks(WebHookService.WebHookType.INTERACTIVE_MESSAGE, response);
                 })).build();
 

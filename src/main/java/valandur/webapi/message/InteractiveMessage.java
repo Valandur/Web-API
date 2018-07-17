@@ -35,7 +35,7 @@ public class InteractiveMessage extends CachedObject<InteractiveMessage> {
      * The id of the message. Useful to identify it in the response.
      * @return The id of the message.
      */
-    @ApiModelProperty(value = "The id of the message. Used for sender of the message to identify responses.", required = true)
+    @ApiModelProperty(value = "The id of the message. Used to identify responses.", required = true)
     public String getId() {
         return id;
     }
@@ -81,8 +81,8 @@ public class InteractiveMessage extends CachedObject<InteractiveMessage> {
      */
     @ApiModelProperty("True if this message can only be replied to once per target, false otherwise")
     @JsonDetails
-    public Boolean isOnce() {
-        return once;
+    public boolean isOnce() {
+        return once != null && once;
     }
 
     private List<InteractiveMessageOption> options;

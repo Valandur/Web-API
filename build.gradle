@@ -16,10 +16,10 @@ blossom {
 spongestart {
     eula true
     minecraft project.minecraftVersion
-    spongeForgeVersion "1.12.2-2705-7.1.0-BETA-3399"
-    spongeVanillaVersion "1.12.2-7.1.0-BETA-105"
-    //spongeForgeVersion "1.12.2-2705-8.0.0-BETA-3398"
-    //spongeVanillaVersion "1.12.2-8.0.0-BETA-444"
+    //spongeForgeVersion "1.12.2-2705-7.1.0-BETA-3399"
+    //spongeVanillaVersion "1.12.2-7.1.0-BETA-105"
+    spongeForgeVersion "1.12.2-2705-8.0.0-BETA-3398"
+    spongeVanillaVersion "1.12.2-8.0.0-BETA-444"
 }
 
 configurations.all {

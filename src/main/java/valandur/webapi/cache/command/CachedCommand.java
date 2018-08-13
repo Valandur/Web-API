@@ -50,8 +50,8 @@ public class CachedCommand extends CachedObject<CommandMapping> {
         this.aliases = cmd.getAllAliases().toArray(new String[cmd.getAllAliases().size()]);
         try {
             this.usage = cmd.getCallable().getUsage(instance).toBuilder().build();
-            this.description = cmd.getCallable().getShortDescription(instance).orElse(Text.EMPTY).toBuilder().build();
-            this.help = cmd.getCallable().getHelp(instance).orElse(Text.EMPTY).toBuilder().build();
+            this.description = cmd.getCallable().getShortDescription(instance).orElse(Text.empty()).toBuilder().build();
+            this.help = cmd.getCallable().getHelp(instance).orElse(Text.empty()).toBuilder().build();
         } catch (Exception ignored) {}
     }
 

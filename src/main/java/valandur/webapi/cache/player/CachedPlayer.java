@@ -156,10 +156,10 @@ public class CachedPlayer extends CachedObject<Player> {
         }
 
         // This will be moved to the other constructor once Sponge implements the offline inventory API
-        this.helmet = player.getHelmet().map(ItemStack::copy).orElse(null);
-        this.chestplate = player.getChestplate().map(ItemStack::copy).orElse(null);
-        this.leggings = player.getLeggings().map(ItemStack::copy).orElse(null);
-        this.boots = player.getBoots().map(ItemStack::copy).orElse(null);
+        this.helmet = player.getHelmet().copy();
+        this.chestplate = player.getChestplate().copy();
+        this.leggings = player.getLeggings().copy();
+        this.boots = player.getBoots().copy();
         this.inventory = new CachedInventory(player.getInventory());
     }
 

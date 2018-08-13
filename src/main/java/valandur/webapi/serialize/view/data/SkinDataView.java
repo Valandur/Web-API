@@ -9,12 +9,12 @@ import java.util.UUID;
 public class SkinDataView extends BaseView<SkinData> {
 
     @JsonValue
-    public UUID uuid;
+    public String name;
 
 
     public SkinDataView(SkinData value) {
         super(value);
 
-        this.uuid = value.skinUniqueId().get();
+        this.name = value.skin().get().getName();
     }
 }

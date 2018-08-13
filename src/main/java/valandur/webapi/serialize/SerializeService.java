@@ -480,9 +480,9 @@ public class SerializeService {
         // Properties
         supportedProperties = new ConcurrentHashMap<>();
 
-        supportedProperties.put(AcceptsItems.class, "acceptsItems");
+        //supportedProperties.put(AcceptsItems.class, "acceptsItems");
         supportedProperties.put(ApplicableEffectProperty.class, "applicableEffect");
-        supportedProperties.put(ArmorSlotType.class, "armorSlotType");
+        //supportedProperties.put(ArmorSlotType.class, "armorSlotType");
         supportedProperties.put(ArmorTypeProperty.class, "armorType");
         supportedProperties.put(BlastResistanceProperty.class, "blastResistance");
         supportedProperties.put(BurningFuelProperty.class, "burningFuel");

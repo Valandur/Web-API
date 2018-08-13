@@ -157,7 +157,7 @@ public class PlayerServlet extends BaseServlet {
                     Inventory inv = live.getInventory();
                     for (EntityServlet.SlotRequest slotReq : req.getInventory()) {
                         for (Inventory slot : inv.slots()) {
-                            Optional<SlotIndex> optIndex = slot.getInventoryProperty(SlotIndex.class);
+                            Optional<SlotIndex> optIndex = slot.getProperty(SlotIndex.class);
                             if (!optIndex.isPresent() || !slotReq.getSlotIndex().equals(optIndex.get().getValue())) {
                                 continue;
                             }

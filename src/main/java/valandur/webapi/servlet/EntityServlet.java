@@ -148,7 +148,7 @@ public class EntityServlet extends BaseServlet {
                     Inventory inv = ((Carrier) live).getInventory();
                     for (SlotRequest slotReq : req.getInventory()) {
                         for (Inventory slot : inv.slots()) {
-                            Optional<SlotIndex> optIndex = slot.getInventoryProperty(SlotIndex.class);
+                            Optional<SlotIndex> optIndex = slot.getProperty(SlotIndex.class);
                             if (!optIndex.isPresent() || !slotReq.getSlotIndex().equals(optIndex.get().getValue())) {
                                 continue;
                             }

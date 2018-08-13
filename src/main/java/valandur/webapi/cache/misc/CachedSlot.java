@@ -25,7 +25,7 @@ public class CachedSlot extends CachedObject<Slot> {
     public CachedSlot(Slot value) {
         super(value);
 
-        this.stack = value.peek().map(ItemStack::copy).orElse(null);
+        this.stack = value.peek().copy();
 
         // Add properties
         Map<Class<? extends Property<?, ?>>, String> props = WebAPI.getSerializeService().getSupportedProperties();
@@ -33,7 +33,7 @@ public class CachedSlot extends CachedObject<Slot> {
             if (InventoryProperty.class.isAssignableFrom(entry.getKey())) {
                 Class<? extends InventoryProperty<?, ?>> propClass =
                         (Class<? extends InventoryProperty<?, ?>>) entry.getKey();
-                value.getInventoryProperty(propClass).ifPresent(val -> data.put(entry.getValue(), val.getValue()));
+                value.getProperty(propClass).ifPresent(val -> data.put(entry.getValue(), val.getValue()));
             }
         }
     }

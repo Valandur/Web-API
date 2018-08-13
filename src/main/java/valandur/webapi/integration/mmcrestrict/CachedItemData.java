@@ -59,6 +59,12 @@ public class CachedItemData extends CachedObject<ItemData> {
         return dropBanned;
     }
 
+    private Boolean craftBanned;
+    @ApiModelProperty(value = "True if crafting this item is banned, false otherwise", required = true)
+    public Boolean getCraftBanned() {
+        return craftBanned;
+    }
+
     private Boolean worldBanned;
     @ApiModelProperty(value = "True if this item is banned from the world, false otherwise?", required = true)
     public Boolean getWorldBanned() {
@@ -79,6 +85,7 @@ public class CachedItemData extends CachedObject<ItemData> {
         this.breakingBanned = value.getBreakingbanned();
         this.placingBanned = value.getPlacingbanned();
         this.dropBanned = value.getDropbanned();
+        this.craftBanned = value.getCraftbanned();
         this.worldBanned = value.getWorldbanned();
     }
 
@@ -93,6 +100,7 @@ public class CachedItemData extends CachedObject<ItemData> {
                 placingBanned != null ? placingBanned : false,
                 ownershipBanned != null ? ownershipBanned : true,
                 dropBanned != null ? dropBanned : false,
+                craftBanned != null ? craftBanned : false,
                 worldBanned != null ? worldBanned : false));
     }
 

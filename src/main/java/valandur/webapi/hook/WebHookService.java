@@ -21,6 +21,7 @@ import org.spongepowered.api.event.entity.living.humanoid.player.KickPlayerEvent
 import org.spongepowered.api.event.filter.cause.First;
 import org.spongepowered.api.event.game.state.GameStartedServerEvent;
 import org.spongepowered.api.event.game.state.GameStoppedServerEvent;
+import org.spongepowered.api.event.game.state.GameStoppingEvent;
 import org.spongepowered.api.event.item.inventory.InteractInventoryEvent;
 import org.spongepowered.api.event.message.MessageChannelEvent;
 import org.spongepowered.api.event.network.ClientConnectionEvent;
@@ -321,7 +322,7 @@ public class WebHookService {
         notifyHooks(WebHookService.WebHookType.SERVER_START, event);
     }
     @Listener(order = Order.PRE)
-    public void onServerStop(GameStoppedServerEvent event) {
+    public void onServerStop(GameStoppingEvent event) {
         notifyHooks(WebHookService.WebHookType.SERVER_STOP, event);
     }
 

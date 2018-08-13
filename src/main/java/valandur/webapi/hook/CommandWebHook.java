@@ -25,7 +25,7 @@ public class CommandWebHook {
 
     @Setting(comment = "Here you have to specify what parameters are used.\n" +
             "These parameters must be included when running the command. So the example command below would have to be\n" +
-            "run using the following syntax: /webapi notfy test {player} {world}\n" +
+            "run using the following syntax: /webapi notify test {player} {world}\n" +
             "\n" +
             "The body automatically contains all the parameters that are listed here. The parameters are expected to\n" +
             "show up in this order when calling the command. There is a special parameter 'source' which is always\n" +

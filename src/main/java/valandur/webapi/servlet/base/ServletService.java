@@ -13,6 +13,7 @@ import valandur.webapi.integration.mmctickets.MMCTicketsServlet;
 import valandur.webapi.integration.nucleus.NucleusServlet;
 import valandur.webapi.integration.redprotect.RedProtectServlet;
 import valandur.webapi.integration.universalmarket.UniversalMarketServlet;
+import valandur.webapi.integration.villagershops.VShopServlet;
 import valandur.webapi.integration.webbooks.WebBooksServlet;
 import valandur.webapi.servlet.*;
 
@@ -135,6 +136,14 @@ public class ServletService {
                 Class.forName("com.xwaffle.universalmarket.UniversalMarket");
                 logger.info("  Integrating with UniversalMarket...");
                 registerServlet(UniversalMarketServlet.class);
+            } catch (ClassNotFoundException ignored) { }
+        }
+
+        if (config.integrations.VillagerShops) {
+            try {
+                Class.forName("de.dosmike.sponge.vshop.VillagerShops");
+                logger.info("  Integrating with VillagerShops...");
+                registerServlet(VShopServlet.class);
             } catch (ClassNotFoundException ignored) { }
         }
 

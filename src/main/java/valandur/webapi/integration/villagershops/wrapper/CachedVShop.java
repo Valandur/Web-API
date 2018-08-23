@@ -5,10 +5,12 @@ import de.dosmike.sponge.vshop.NPCguard;
 import de.dosmike.sponge.vshop.VillagerShops;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import org.spongepowered.api.entity.EntityType;
 import org.spongepowered.api.text.serializer.TextSerializers;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 import valandur.webapi.cache.CachedObject;
+import valandur.webapi.cache.misc.CachedCatalogType;
 import valandur.webapi.cache.world.CachedLocation;
 import valandur.webapi.serialize.JsonDetails;
 import valandur.webapi.util.Constants;
@@ -52,12 +54,12 @@ public class CachedVShop extends CachedObject<NPCguard> {
         return rotation;
     }
 
-    String entityType;
+    CachedCatalogType<EntityType> entityType;
 
     @JsonDetails
     @ApiModelProperty(value = "The minecraft entity type string for this shops visual entity", required = true,
             example = "minecraft:villager")
-    public String getEntityType() {
+    public CachedCatalogType<EntityType> getEntityType() {
         return entityType;
     }
 
@@ -114,17 +116,13 @@ public class CachedVShop extends CachedObject<NPCguard> {
         this.name = TextSerializers.FORMATTING_CODE.serialize(shop.getDisplayName());
         this.location = new CachedLocation(shop.getLoc());
         this.rotation = shop.getRot().getY();
-        this.entityType = shop.getNpcType().getId();
+        this.entityType = new CachedCatalogType<>(shop.getNpcType());
         this.entityVariant = shop.getVariantName();
         this.owner = shop.getShopOwner().orElse(null);
 //		this.isPlayerShop = shop.getShopOwner().isPresent();
 
         Optional<Location<World>> stock = shop.getStockContainer();
-        if (stock.isPresent()) {
-            this.stockContainer = new CachedLocation(shop.getStockContainer().get());
-        } else {
-            this.stockContainer = null;
-        }
+        this.stockContainer = stock.map(CachedLocation::new).orElse(null);
 
         InvPrep inv = shop.getPreparator();
         this.stockItems = new LinkedList<>();

@@ -8,7 +8,9 @@ import de.dosmike.sponge.vshop.VillagerShops;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.spongepowered.api.item.inventory.ItemStackSnapshot;
+import org.spongepowered.api.service.economy.Currency;
 import valandur.webapi.cache.CachedObject;
+import valandur.webapi.cache.misc.CachedCatalogType;
 import valandur.webapi.util.Constants;
 
 import javax.ws.rs.BadRequestException;
@@ -27,7 +29,7 @@ public class CachedStockItem extends CachedObject<StockItem> {
 
     String shopId;
 
-    @ApiModelProperty(value = "The shop uuid offering this item listing")
+    @ApiModelProperty(value = "The shop uuid offering this item listing", required = true)
     public UUID getShopId() {
         return UUID.fromString(shopId);
     }
@@ -35,7 +37,7 @@ public class CachedStockItem extends CachedObject<StockItem> {
     Double buyPrice;
 
     @JsonProperty
-    @ApiModelProperty(value = "The amount of money this stack consts to buy as player")
+    @ApiModelProperty(value = "The amount of money this stack consts to buy as player", required = true)
     public Double getBuyPrice() {
         return buyPrice;
     }
@@ -43,23 +45,23 @@ public class CachedStockItem extends CachedObject<StockItem> {
     Double sellPrice;
 
     @JsonProperty
-    @ApiModelProperty(value = "The amount of money this stack earns the player when selling")
+    @ApiModelProperty(value = "The amount of money this stack earns the player when selling", required = true)
     public Double getSellPrice() {
         return sellPrice;
     }
 
-    String currency;
+    CachedCatalogType<Currency> currency;
 
     @JsonProperty
-    @ApiModelProperty(value = "The currency id for this item listing")
-    public String getCurrency() {
+    @ApiModelProperty(value = "The currency for this item listing", required = true)
+    public CachedCatalogType<Currency> getCurrency() {
         return currency;
     }
 
     Integer stock;
 
     @JsonProperty
-    @ApiModelProperty(value = "If this shop has a limited stock, returns how many items are stocked, otherwise returns items stack size")
+    @ApiModelProperty(value = "If this shop has a limited stock, returns how many items are stocked, otherwise returns items stack size", required = true)
     public Integer getStock() {
         return stock;
     }
@@ -75,7 +77,7 @@ public class CachedStockItem extends CachedObject<StockItem> {
     Boolean hasStock;
 
     @JsonProperty
-    @ApiModelProperty(value = "Returns wether this shop has a limited stock")
+    @ApiModelProperty(value = "Returns wether this shop has a limited stock", required = true)
     public Boolean hasStock() {
         return hasStock;
     }
@@ -100,7 +102,7 @@ public class CachedStockItem extends CachedObject<StockItem> {
         this.shopId = shopID == null ? null : shopID.toString();
         this.buyPrice = item.getBuyPrice();
         this.sellPrice = item.getSellPrice();
-        this.currency = item.getCurrency().getId();
+        this.currency = new CachedCatalogType<>(item.getCurrency());
         this.stock = item.getStocked();
         this.maxStock = item.getMaxStock();
         this.hasStock = this.maxStock > 0;
@@ -108,6 +110,7 @@ public class CachedStockItem extends CachedObject<StockItem> {
     }
 
     @Override
+    @ApiModelProperty(required = false)
     public String getLink() {
         return Constants.BASE_PATH + "/vshop/shop/" + shopId + "/item/" + id;
     }

@@ -72,7 +72,7 @@ public class VShopServlet extends BaseServlet {
 
         CachedVShop shop = WebAPI.runOnMain(() -> {
             //Optional<EntityType> et = Sponge.getRegistry().getType(EntityType.class, req.getEntityType());
-            EntityType et = (EntityType) FieldResolver.getFinalStaticAuto(EntityType.class, req.getEntityType());
+            EntityType et = req.getEntityType().getLive(EntityType.class).orElse(null);
             if (et == null)
                 throw new BadRequestException("EntityType " + req.getEntityType() + " is unknown");
             String va = req.getEntityVariant();
@@ -232,7 +232,7 @@ public class VShopServlet extends BaseServlet {
                     req.getItem().createStack(),
                     req.getSellPrice(),
                     req.getBuyPrice(),
-                    VillagerShops.getInstance().CurrencyByName(req.getCurrency()),
+                    VillagerShops.getInstance().CurrencyByName(req.getCurrency().getId()),
                     req.getMaxStock()));
 
             return new CachedStockItem(inv.getItem(s), s, npc.get().getIdentifier());
@@ -272,7 +272,7 @@ public class VShopServlet extends BaseServlet {
                         req.getItem().createStack(),
                         req.getSellPrice(),
                         req.getBuyPrice(),
-                        VillagerShops.getInstance().CurrencyByName(req.getCurrency()),
+                        VillagerShops.getInstance().CurrencyByName(req.getCurrency().getId()),
                         req.getMaxStock()));
 
                 return new CachedStockItem(inv.getItem(item), item, npc.get().getIdentifier());
@@ -328,7 +328,6 @@ public class VShopServlet extends BaseServlet {
     public static void onRegister() {
         SerializeService srv = WebAPI.getSerializeService();
         srv.registerCache(NPCguard.class, CachedVShop.class);
-        srv.registerCache(StockItem.class, CachedStockItem.class);
     }
 
 }

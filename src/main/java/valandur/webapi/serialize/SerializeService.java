@@ -113,6 +113,7 @@ import valandur.webapi.serialize.view.player.RespawnLocationView;
 import valandur.webapi.serialize.view.tileentity.PatternLayerView;
 import valandur.webapi.util.TreeNode;
 
+import java.io.InvalidClassException;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.time.Instant;
@@ -533,6 +534,15 @@ public class SerializeService {
     }
 
     private void _register(Class handledClass, Class cacheClass) {
+        try {
+            cacheClass.getDeclaredConstructor(handledClass);
+        } catch (NoSuchMethodException e) {
+            WebAPI.getLogger().error("The cache class " + cacheClass.getName() +
+                    " does not contain a constructor accepting one argument of type " +
+                    handledClass.getName() + " (it's handled class)");
+            WebAPI.sentryCapture(e);
+            e.printStackTrace();
+        }
         serializers.put(handledClass, new BaseSerializer<>(handledClass, cacheClass));
     }
 

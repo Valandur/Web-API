@@ -70,3 +70,4 @@ supported routes. You can also find the same documentation [here](https://valand
 - [kawahara](https://github.com/kawahara)
 - [Lantcoder](https://github.com/Lantcoder)
 - [crymates](https://github.com/crymates)
+- [DosMike](https://github.com/DosMike)

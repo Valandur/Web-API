@@ -95,6 +95,9 @@ public class ServletsConfig extends BaseConfig {
         public boolean UniversalMarket = true;
 
         @Setting
+        public boolean VillagerShops = true;
+
+        @Setting
         public boolean WebBooks = true;
     }
 }

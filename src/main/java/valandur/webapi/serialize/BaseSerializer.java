@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import org.eclipse.jetty.io.EofException;
+import valandur.webapi.WebAPI;
 
 import javax.ws.rs.InternalServerErrorException;
 import java.io.IOException;
@@ -32,7 +33,10 @@ public class BaseSerializer<T, U> extends StdSerializer<T> {
         try {
             this.ctr = cache.getDeclaredConstructor(clazz);
         } catch (NoSuchMethodException e) {
-            e.printStackTrace();
+            WebAPI.getLogger().error("The cache class " + cacheClass.getName() +
+                    " does not contain a constructor accepting one argument of type " +
+                    handledClass.getName() + " (it's handled class)");
+            WebAPI.sentryCapture(e);
         }
     }
 

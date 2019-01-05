@@ -120,7 +120,7 @@ public class InteractiveMessage extends CachedObject<InteractiveMessage> {
 
     @Override
     public String getLink() {
-        return Constants.BASE_PATH + "/message/" + uuid;
+        return Constants.BASE_PATH + "/interactive-message/" + uuid;
     }
 
     @Override

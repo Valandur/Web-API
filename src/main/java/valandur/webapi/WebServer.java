@@ -122,9 +122,11 @@ public class WebServer {
                 String loc = config.customKeyStore;
                 String pw = config.customKeyStorePassword;
                 String mgrPw = config.customKeyStoreManagerPassword;
+
                 if (loc == null || loc.isEmpty()) {
                     loc = Sponge.getAssetManager().getAsset(WebAPI.getInstance(), "keystore.jks")
-                            .map(a -> a.getUrl().toString()).orElse("");
+                            .map(a -> a.getUrl().toString())
+                            .orElse("../../src/main/resources/assets/webapi/keystore.jks");
                     pw = "mX4z%&uJ2E6VN#5f";
                     mgrPw = "mX4z%&uJ2E6VN#5f";
                 }

@@ -1,4 +1,4 @@
-package valandur.webapi.integration.huskycrates;
+/*package valandur.webapi.integration.huskycrates;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import io.swagger.annotations.ApiModel;
@@ -32,3 +32,4 @@ public class CommandCrateReward extends CrateRewardObject {
         node.getNode("command").setValue(command);
     }
 }
+*/

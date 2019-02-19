@@ -1,4 +1,4 @@
-package valandur.webapi.integration.huskycrates;
+/*package valandur.webapi.integration.huskycrates;
 
 import com.codehusky.huskycrates.crate.VirtualCrate;
 import com.codehusky.huskycrates.crate.config.CrateReward;
@@ -96,3 +96,4 @@ public class CachedVirtualCrate extends CachedObject<VirtualCrate> {
         return Constants.BASE_PATH + "/husky-crates/crate/" + id;
     }
 }
+*/

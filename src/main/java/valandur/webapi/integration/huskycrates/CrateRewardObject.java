@@ -1,4 +1,4 @@
-package valandur.webapi.integration.huskycrates;
+/*package valandur.webapi.integration.huskycrates;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
@@ -37,3 +37,4 @@ public abstract class CrateRewardObject {
         node.getNode("type").setValue(getType().toString().toLowerCase());
     }
 }
+*/

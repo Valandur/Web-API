@@ -6,6 +6,8 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import valandur.webapi.serialize.BaseView;
 
+import java.util.List;
+
 @ApiModel("CommandTask")
 public class CommandTaskView extends BaseView<CommandTask> {
 
@@ -14,9 +16,9 @@ public class CommandTaskView extends BaseView<CommandTask> {
         return value.getName();
     }
 
-    @ApiModelProperty("The command that is executed")
-    public String getCommand() {
-        return value.getCommand();
+    @ApiModelProperty("The list of commands that are executed")
+    public List<String> getCommands() {
+        return value.getCommands();
     }
 
     @ApiModelProperty("The command that is executed")

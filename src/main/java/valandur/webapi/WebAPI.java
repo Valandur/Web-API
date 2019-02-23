@@ -8,7 +8,7 @@ import io.sentry.Sentry;
 import io.sentry.context.Context;
 import io.swagger.converter.ModelConverters;
 import ninja.leaping.configurate.objectmapping.serialize.TypeSerializers;
-import org.bstats.sponge.Metrics;
+import org.bstats.sponge.Metrics2;
 import org.eclipse.jetty.util.log.Log;
 import org.slf4j.Logger;
 import org.spongepowered.api.Platform;
@@ -93,6 +93,10 @@ import java.util.stream.Collectors;
 )
 public class WebAPI {
 
+    static {
+        System.out.println("Static initialized");
+    }
+
     private static WebAPI instance;
     public static WebAPI getInstance() {
         return WebAPI.instance;
@@ -119,7 +123,7 @@ public class WebAPI {
     private static WebServer server;
 
     @Inject
-    private Metrics metrics;
+    private Metrics2 metrics;
 
     @Inject
     private Logger logger;
@@ -442,7 +446,7 @@ public class WebAPI {
         checkForUpdates();
 
         // Add custom bstats metrics
-        metrics.addCustomChart(new Metrics.DrilldownPie("plugin_version", () -> {
+        metrics.addCustomChart(new Metrics2.DrilldownPie("plugin_version", () -> {
             String[] vers = Constants.VERSION.split("-");
 
             Map<String, Integer> entry = new HashMap<>();
@@ -453,9 +457,9 @@ public class WebAPI {
 
             return map;
         }));
-        metrics.addCustomChart(new Metrics.SimplePie("report_errors", () -> reportErrors ? "Yes" : "No"));
-        metrics.addCustomChart(new Metrics.SimplePie("admin_panel", () -> adminPanelEnabled ? "Yes" : "No"));
-        metrics.addCustomChart(new Metrics.SimpleBarChart("servlets", () -> {
+        metrics.addCustomChart(new Metrics2.SimplePie("report_errors", () -> reportErrors ? "Yes" : "No"));
+        metrics.addCustomChart(new Metrics2.SimplePie("admin_panel", () -> adminPanelEnabled ? "Yes" : "No"));
+        metrics.addCustomChart(new Metrics2.SimpleBarChart("servlets", () -> {
             Map<String, Integer> map = new HashMap<>();
             Collection<Class<? extends BaseServlet>> servlets = servletService.getRegisteredServlets().values();
             for (Class<? extends BaseServlet> servlet : servlets) {

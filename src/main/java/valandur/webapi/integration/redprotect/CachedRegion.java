@@ -146,8 +146,8 @@ public class CachedRegion extends CachedObject<Region> {
             optPlayer.ifPresent(player -> this.members.add(player));
         }
 
-        this.flags = new HashMap<>(region.flags.size());
-        for (Map.Entry<String, Object> entry : region.flags.entrySet()) {
+        this.flags = new HashMap<>(region.getFlags().size());
+        for (Map.Entry<String, Object> entry : region.getFlags().entrySet()) {
             this.flags.put(entry.getKey(), cacheService.asCachedObject(entry.getValue()));
         }
     }

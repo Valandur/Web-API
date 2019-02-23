@@ -5,6 +5,8 @@ import br.net.fabiozumbi12.RedProtect.Sponge.Region;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.spongepowered.api.Sponge;
+import org.spongepowered.api.event.cause.Cause;
+import org.spongepowered.api.event.cause.EventContext;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 import valandur.webapi.WebAPI;
@@ -230,8 +232,10 @@ public class RedProtectServlet extends BaseServlet {
             }
 
             if (req.getFlags() != null) {
+                EventContext ctx = EventContext.builder().build();
+                Cause cause = Cause.builder().append(WebAPI.getInstance()).build(ctx);
                 for (Map.Entry<String, Object> entry : req.getFlags().entrySet()) {
-                    region.setFlag(entry.getKey(), entry.getValue());
+                    region.setFlag(cause, entry.getKey(), entry.getValue());
                 }
             }
 

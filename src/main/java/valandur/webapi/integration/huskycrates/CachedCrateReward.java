@@ -1,4 +1,4 @@
-package valandur.webapi.integration.huskycrates;
+/*package valandur.webapi.integration.huskycrates;
 
 import com.codehusky.huskycrates.crate.config.CrateReward;
 import com.fasterxml.jackson.annotation.JsonGetter;
@@ -89,3 +89,4 @@ public class CachedCrateReward extends CachedObject<CrateReward> {
         return null;
     }
 }
+*/

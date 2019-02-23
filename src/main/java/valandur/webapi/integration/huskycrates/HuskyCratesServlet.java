@@ -1,4 +1,4 @@
-package valandur.webapi.integration.huskycrates;
+/*package valandur.webapi.integration.huskycrates;
 
 import com.codehusky.huskycrates.HuskyCrates;
 import com.codehusky.huskycrates.crate.VirtualCrate;
@@ -224,3 +224,4 @@ public class HuskyCratesServlet extends BaseServlet {
         }
     }
 }
+*/

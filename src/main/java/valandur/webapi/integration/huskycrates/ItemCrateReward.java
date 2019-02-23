@@ -1,4 +1,4 @@
-package valandur.webapi.integration.huskycrates;
+/*package valandur.webapi.integration.huskycrates;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import io.swagger.annotations.ApiModel;
@@ -36,3 +36,4 @@ public class ItemCrateReward extends CrateRewardObject {
         node.getNode("overrideItem", "count").setValue(item.getQuantity());
     }
 }
+*/

@@ -7,7 +7,6 @@ import valandur.webapi.config.ServletsConfig;
 import valandur.webapi.integration.activetime.ActiveTimeServlet;
 import valandur.webapi.integration.cmdscheduler.CmdSchedulerServlet;
 import valandur.webapi.integration.gwmcrates.GWMCratesServlet;
-import valandur.webapi.integration.huskycrates.HuskyCratesServlet;
 import valandur.webapi.integration.mmcrestrict.MMCRestrictServlet;
 import valandur.webapi.integration.mmctickets.MMCTicketsServlet;
 import valandur.webapi.integration.nucleus.NucleusServlet;
@@ -91,13 +90,13 @@ public class ServletService {
             }
         }
 
-        if (config.integrations.HuskyCrates) {
+        /*if (config.integrations.HuskyCrates) {
             try {
                 Class.forName("com.codehusky.huskycrates.HuskyCrates");
                 logger.info("  Integrating with HuskyCrates...");
                 registerServlet(HuskyCratesServlet.class);
             } catch (ClassNotFoundException ignored) { }
-        }
+        }*/
 
         if (config.integrations.MMCRestrict) {
             try {

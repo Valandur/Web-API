@@ -50,6 +50,7 @@ interacts with it. Client libraries for various languages are available at:
 - [Java](https://github.com/Valandur/webapi-client-java)
 - [PHP](https://github.com/Valandur/webapi-client-php)
 - [Python](https://github.com/Valandur/webapi-client-python) 
+- [Javascript/Typescript](https://github.com/Valandur/webapi-client-typescript) 
 
 ## Request / Response types
 The Web-API supports JSON and XML data formats for requests and responses.

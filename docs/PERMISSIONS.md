@@ -115,7 +115,7 @@ keys {
         # No rate limit or zero = unlimited requests
         rateLimit=0    
     }
-}]
+}
 ```
 
 The `keys` array is an array of permission structures similar to the ones explained above. The

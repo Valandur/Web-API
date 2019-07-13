@@ -71,6 +71,12 @@ public class CachedItemData extends CachedObject<ItemData> {
         return worldBanned;
     }
 
+    private Boolean hidden;
+    @ApiModelProperty(value = "True if this item shows up in the public restricted items list, false otherwise", required = true)
+    public Boolean getHidden() {
+        return hidden;
+    }
+
 
     public CachedItemData() {
         super(null);
@@ -87,11 +93,13 @@ public class CachedItemData extends CachedObject<ItemData> {
         this.dropBanned = value.getDropbanned();
         this.craftBanned = value.getCraftbanned();
         this.worldBanned = value.getWorldbanned();
+        this.hidden = value.getHidden();
     }
 
     @Override
     public Optional<ItemData> getLive() {
         return Optional.of(new ItemData(
+                hidden,
                 item.getId(),
                 item.getName(),
                 banReason != null ? banReason : "",

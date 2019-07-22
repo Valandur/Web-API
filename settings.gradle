@@ -1,3 +1,5 @@
-include 'webapi-server'
-include 'webapi-lib'
+rootProject.name = "webapi"
 
+include "webapi-server"
+include "webapi-lib"
+include "webapi-sponge"

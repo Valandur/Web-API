@@ -1,0 +1,120 @@
+{
+  "resourcePackages": [
+    "valandur.webapi"
+  ],
+  "prettyPrint" : true,
+  "openAPI": {
+    "info": {
+      "version": "1.0",
+      "title": "Web-API",
+      "description": "Access Sponge powered Minecraft servers through a WebAPI\n\n# Introduction\nThis is the documentation of the various API routes offered by the WebAPI plugin.\n\nThis documentation assumes that you are familiar with the basic concepts of Web API's, such as `GET`, `PUT`, `POST` and `DELETE` methods,\nrequest `HEADERS` and `RESPONSE CODES` and `JSON` data.\n\nBy default this documentation can be found at http:/localhost:8080 (while your minecraft server is running) and the various routes start with http:/localhost:8080/api/...\n\nAs a quick test try reaching the route http:/localhost:8080/api/info (remember that you can only access \"localhost\" routes on the server on which you are running minecraft).\nThis route should show you basic information about your server, like the motd and player count.\n\n# Additional data\nCertain endpoints (such as `/player`, `/entity` and `/tile-entity` have additional properties which are not documented here, because the data depends on the concrete\nobject type (eg. `Sheep` have a wool color, others do not) and on the other plugins/mods that are running on your server which might add additional data.\n\nYou can also find more information in the github docs (https:/github.com/Valandur/Web-API/tree/master/docs/DATA.md)",
+      "basePath": "/api",
+      "schemes": [
+        "http",
+        "https"
+      ],
+      "produces": [
+        "application/json",
+        "application/xml"
+      ],
+      "consumes": [
+        "application/json",
+        "application/xml"
+      ],
+      "tags": [
+        {
+          "name": "Block",
+          "description": "Get information about blocks and manipulate them."
+        },
+        {
+          "name": "Chunk",
+          "description": "Gets information about chunks, and allow creating new chunks."
+        },
+        {
+          "name": "Class",
+          "description": "Provides information about the classes loaded on the server."
+        },
+        {
+          "name": "Command",
+          "description": "List all commands on the server and execute them."
+        },
+        {
+          "name": "Entity",
+          "description": "List all entities and get detailed information about them."
+        },
+        {
+          "name": "History",
+          "description": "Provides access to the command and chat history."
+        },
+        {
+          "name": "Info",
+          "description": "Get information about the minecraft server"
+        },
+        {
+          "name": "Message",
+          "description": "Send (interactive) messages to clients."
+        },
+        {
+          "name": "Player",
+          "description": "List all players and get detailed information about them."
+        },
+        {
+          "name": "Plugin",
+          "description": "List all plugins and get detailed information about them."
+        },
+        {
+          "name": "Registry",
+          "description": "Query Sponge registry values, such as DimensionTypes and EntityTypes."
+        },
+        {
+          "name": "Servlet",
+          "description": "Get information about the runnings servlets on the server."
+        },
+        {
+          "name": "Tile Entity",
+          "description": "List all tile entities and get detailed information about them."
+        },
+        {
+          "name": "User",
+          "description": "Authenticate and get user information."
+        },
+        {
+          "name": "World",
+          "description": "List all worlds and get detailed information about them."
+        }
+      ],
+      "x-tagGroups": [
+        {
+          "name": "WebAPI",
+          "tags": [
+            "Block",
+            "Chunk",
+            "Class",
+            "Command",
+            "Entity",
+            "History",
+            "Info",
+            "Message",
+            "Player",
+            "Plugin",
+            "Registry",
+            "Servlet",
+            "Tile Entity",
+            "User",
+            "World"
+          ]
+        },
+        {
+          "name": "Integrations",
+          "tags": [
+            "Husky Crates",
+            "MMC Restrict",
+            "MMC Tickets",
+            "Nucleus",
+            "Web Books"
+          ]
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,154 @@
+plugins {
+    id "com.qixalite.spongestart2" version "4.0.0"
+    id "ninja.miserable.blossom" version "1.0.1"
+}
+
+blossom {
+    def locMain = "src/main/java/valandur/webapi/util/Constants.java"
+    replaceToken "@version@", project.version, locMain
+}
+
+spongestart {
+    minecraft project.minecraftVersion
+    //spongeForgeVersion "1.12.2-2705-8.0.0-BETA-3398"
+    //spongeVanillaVersion "1.12.2-8.0.0-BETA-444"
+}
+
+configurations.all {
+    // Exclude because included by Sponge/Minecraft
+    exclude group: "org.apache.commons"
+    exclude group: "com.google.common"
+
+    resolutionStrategy {
+        force "com.google.guava:guava:23.0"
+        force "org.reflections:reflections:0.9.10"      // Fixes some logging issues in 0.9.11
+    }
+}
+
+repositories {
+    maven {
+        url "http://repo.bstats.org/content/repositories/releases/"
+    }
+    maven {
+        url = "http://repo.aikar.co/nexus/content/groups/aikar/"
+    }
+    flatDir {
+        dirs "lib"
+    }
+}
+
+dependencies {
+    compile project(":webapi-lib")
+
+    compile group: "co.aikar", name: "minecraft-timings", version: "1.0.4"
+
+    compile group: "com.fasterxml.jackson.core", name: "jackson-core", version: project.jacksonVersion
+    compile group: "com.fasterxml.jackson.core", name: "jackson-databind", version: project.jacksonVersion
+    compile group: "com.fasterxml.jackson.core", name: "jackson-annotations", version: project.jacksonVersion
+    compile group: "com.fasterxml.jackson.dataformat", name: "jackson-dataformat-xml", version: project.jacksonVersion
+    compile group: "com.fasterxml.jackson.jaxrs", name: "jackson-jaxrs-json-provider", version: project.jacksonVersion
+    // compile group: "io.swagger.core.v3", name: "swagger-jaxrs2", version: "2.0.0-rc3"    // This if for Swagger 3.0
+
+    compile group: "org.codehaus.woodstox", name: "woodstox-core-asl", version: "4.4.1"
+
+    compile group: "org.eclipse.jetty", name: "jetty-server", version: project.jettyVersion
+    compile group: "org.eclipse.jetty", name: "jetty-servlet", version: project.jettyVersion
+    compile group: "org.eclipse.jetty", name: "jetty-rewrite", version: project.jettyVersion
+    compile group: "org.eclipse.jetty.websocket", name: "websocket-server", version: project.jettyVersion
+    compile group: "org.eclipse.jetty.websocket", name: "websocket-servlet", version: project.jettyVersion
+    compile group: "org.eclipse.jetty.websocket", name: "websocket-client", version: project.jettyVersion
+
+    compile group: "io.swagger", name: "swagger-jersey2-jaxrs", version: "1.5.18"
+    // compile group: "io.sentry", name: "sentry", version: "1.6.4"
+
+    compile group: "org.mindrot", name: "jbcrypt", version: "0.4"
+    compile group: "org.glassfish.jersey.containers", name: "jersey-container-servlet", version: "2.26"
+    compile group: "org.glassfish.jersey.inject", name: "jersey-hk2", version: "2.26"
+    compile group: "org.bstats", name: "bstats-sponge", version: "1.4"
+
+    compileOnly group: "org.spongepowered", name: "spongeapi", version: "${project.spongeVersion}-SNAPSHOT"
+
+    compile group: 'redis.clients', name: 'jedis', version: '2.9.0'
+    compile group: 'com.rabbitmq', name: 'amqp-client', version: '5.3.0'
+
+    // Integrations
+    compileOnly name: "ActiveTime-s7.1-v1.4.3"
+    compileOnly name: "CmdScheduler-s7.1-v1.1.1"
+    compileOnly name: "GWMLibrary 1.3.4"
+    compileOnly name: "GWMCrates 3.1.13"
+    compileOnly name: "MMCRestrict-1.7.1-API-7"
+    compileOnly name: "MMCTickets-2.0.7-API-7"
+    compileOnly name: "Nucleus-1.12.1-S7.1-api"
+    compileOnly name: "RedProtect-7.5.5-b130-Universal"
+    compileOnly name: "UniversalMarket-1.12.2-v1.3"
+    compileOnly name: "VillagerShops-2.0.1"
+    compileOnly name: "WebBooks"
+}
+
+shadowJar {
+    configurations  = [project.configurations.compile]
+
+    mergeServiceFiles()
+
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
+    relocate ("com", "valandur.webapi.shadow.com") {
+        include "com.ctc.*"
+        include "com.fasterxml.*"
+        include "com.google.errorprone.*"
+        include "com.google.j2objc.*"
+        include "com.google.thirdparty.*"
+        include "com.sun.research.*"
+        include "com.rabbitmq.*"
+    }
+    relocate ("co", "valandur.webapi.shadow.co") {
+        include "co.aikar.timings.lib.*"
+    }
+    relocate "edu", "valandur.webapi.shadow.edu"
+    relocate "io", "valandur.webapi.shadow.io"
+    relocate "net", "valandur.webapi.shadow.net"
+    relocate "javassist", "valandur.webapi.shadow.javassist"
+    relocate ("javax", "valandur.webapi.shadow.javax") {
+        include "javax.annotation.*"
+        include "javax.inject.*"
+        include "javax.servlet.*"
+        include "javax.validation.*"
+        include "javax.ws.*"
+        include "javax.xml.stream.*"
+    }
+    relocate "jersey", "valandur.webapi.shadow.jersey"
+    relocate ("org", "valandur.webapi.shadow.org") {
+        exclude "org.spongepowered.*"
+        exclude "org.slf4j.*"
+        exclude "org.w3c.*"
+        exclude "org.apache.commons.*"
+        exclude "org.xml.sax.*"
+    }
+    relocate "redis", "valandur.webapi.shadow.redis"
+
+    // Provided by Sponge/Minecraft
+    dependencies {
+        exclude(dependency("org.apache.commons.*:"))
+        exclude(dependency("com.google.guava.*:"))
+        exclude(dependency("org.slf4j.*:"))
+    }
+
+    exclude "/about.html"
+    exclude "/jetty-dir.css"
+    exclude "/org/eclipse/jetty/favicon.ico"
+
+    archiveName = "webapi-${version}.jar"
+}
+
+task copyJars(type: Copy) {
+    from([shadowJar])
+    into project.file("${rootDir}/artifacts")
+}
+copyJars.dependsOn(shadowJar)
+
+artifacts {
+    archives shadowJar
+}
+
+build.dependsOn(shadowJar)
+build.dependsOn(copyJars)

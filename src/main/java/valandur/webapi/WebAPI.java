@@ -104,6 +104,9 @@ public class WebAPI {
 
     private static SpongeExecutorService syncExecutor;
     private static SpongeExecutorService asyncExecutor;
+    public static SpongeExecutorService getAsyncExecutor() {
+        return WebAPI.asyncExecutor;
+    }
 
     private boolean devMode = false;
     public static boolean isDevMode() {

@@ -312,7 +312,7 @@ public class WebHookService {
                     connection.disconnect();
                 }
             }
-        });
+        }, WebAPI.getAsyncExecutor());
     }
 
 

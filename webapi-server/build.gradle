@@ -1,20 +1,3 @@
-plugins {
-    id 'java'
-    id "com.github.johnrengelman.shadow"
-}
-
-group = "valandur.webapi"
-version = "${project.version}-S${project.spongeVersion}"
-
-sourceCompatibility = 1.8
-
-repositories {
-    mavenCentral()
-    maven {
-        url "https://repo.spongepowered.org/maven/"
-    }
-}
-
 dependencies {
     compile project(":webapi-lib")
 

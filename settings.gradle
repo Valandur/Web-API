@@ -3,3 +3,5 @@ rootProject.name = "webapi"
 include "webapi-server"
 include "webapi-lib"
 include "webapi-sponge"
+include 'webapi-common'
+

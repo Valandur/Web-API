@@ -4,12 +4,12 @@ import br.net.fabiozumbi12.RedProtect.Sponge.Region;
 import com.flowpowered.math.vector.Vector3d;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import valandur.webapi.Constants;
 import valandur.webapi.cache.CachedObject;
 import valandur.webapi.cache.player.CachedPlayer;
 import valandur.webapi.cache.world.CachedLocation;
 import valandur.webapi.cache.world.CachedWorld;
 import valandur.webapi.serialize.JsonDetails;
-import valandur.webapi.util.Constants;
 
 import java.util.*;
 

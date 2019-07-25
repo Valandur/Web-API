@@ -16,9 +16,9 @@ import io.swagger.models.properties.ObjectProperty;
 import io.swagger.models.properties.Property;
 import io.swagger.models.properties.StringProperty;
 import org.spongepowered.api.data.manipulator.DataManipulator;
+import valandur.webapi.Constants;
 import valandur.webapi.WebAPI;
 import valandur.webapi.servlet.base.BaseServlet;
-import valandur.webapi.util.Constants;
 
 import javax.ws.rs.core.MediaType;
 import java.lang.reflect.Field;

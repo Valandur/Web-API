@@ -1,4 +1,5 @@
 plugins {
+    id "org.spongepowered.plugin" version "0.9.0"
     id "com.qixalite.spongestart2" version "4.0.0"
     id "ninja.miserable.blossom" version "1.0.1"
 }
@@ -7,6 +8,8 @@ blossom {
     def locMain = "src/main/java/valandur/webapi/util/Constants.java"
     replaceToken "@version@", project.version, locMain
 }
+
+sponge.plugin.id = 'webapi'
 
 spongestart {
     minecraft project.minecraftVersion
@@ -38,32 +41,20 @@ repositories {
 }
 
 dependencies {
-    compile project(":webapi-lib")
+    compile project(":webapi-common")
 
     compile group: "co.aikar", name: "minecraft-timings", version: "1.0.4"
-
-    compile group: "com.fasterxml.jackson.core", name: "jackson-core", version: project.jacksonVersion
-    compile group: "com.fasterxml.jackson.core", name: "jackson-databind", version: project.jacksonVersion
-    compile group: "com.fasterxml.jackson.core", name: "jackson-annotations", version: project.jacksonVersion
+    
     compile group: "com.fasterxml.jackson.dataformat", name: "jackson-dataformat-xml", version: project.jacksonVersion
     compile group: "com.fasterxml.jackson.jaxrs", name: "jackson-jaxrs-json-provider", version: project.jacksonVersion
     // compile group: "io.swagger.core.v3", name: "swagger-jaxrs2", version: "2.0.0-rc3"    // This if for Swagger 3.0
 
     compile group: "org.codehaus.woodstox", name: "woodstox-core-asl", version: "4.4.1"
 
-    compile group: "org.eclipse.jetty", name: "jetty-server", version: project.jettyVersion
-    compile group: "org.eclipse.jetty", name: "jetty-servlet", version: project.jettyVersion
-    compile group: "org.eclipse.jetty", name: "jetty-rewrite", version: project.jettyVersion
-    compile group: "org.eclipse.jetty.websocket", name: "websocket-server", version: project.jettyVersion
-    compile group: "org.eclipse.jetty.websocket", name: "websocket-servlet", version: project.jettyVersion
-    compile group: "org.eclipse.jetty.websocket", name: "websocket-client", version: project.jettyVersion
-
     compile group: "io.swagger", name: "swagger-jersey2-jaxrs", version: "1.5.18"
     // compile group: "io.sentry", name: "sentry", version: "1.6.4"
 
     compile group: "org.mindrot", name: "jbcrypt", version: "0.4"
-    compile group: "org.glassfish.jersey.containers", name: "jersey-container-servlet", version: "2.26"
-    compile group: "org.glassfish.jersey.inject", name: "jersey-hk2", version: "2.26"
     compile group: "org.bstats", name: "bstats-sponge", version: "1.4"
 
     compileOnly group: "org.spongepowered", name: "spongeapi", version: "${project.spongeVersion}-SNAPSHOT"
@@ -92,7 +83,7 @@ shadowJar {
 
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 
-    relocate ("com", "valandur.webapi.shadow.com") {
+    /*relocate ("com", "valandur.webapi.shadow.com") {
         include "com.ctc.*"
         include "com.fasterxml.*"
         include "com.google.errorprone.*"
@@ -100,7 +91,8 @@ shadowJar {
         include "com.google.thirdparty.*"
         include "com.sun.research.*"
         include "com.rabbitmq.*"
-    }
+    }*/
+    relocate "com", "valandur.webapi.shadow.com"
     relocate ("co", "valandur.webapi.shadow.co") {
         include "co.aikar.timings.lib.*"
     }
@@ -108,14 +100,15 @@ shadowJar {
     relocate "io", "valandur.webapi.shadow.io"
     relocate "net", "valandur.webapi.shadow.net"
     relocate "javassist", "valandur.webapi.shadow.javassist"
-    relocate ("javax", "valandur.webapi.shadow.javax") {
+    /*relocate ("javax", "valandur.webapi.shadow.javax") {
         include "javax.annotation.*"
         include "javax.inject.*"
         include "javax.servlet.*"
         include "javax.validation.*"
         include "javax.ws.*"
         include "javax.xml.stream.*"
-    }
+    }*/
+    relocate "javax", "valandur.webapi.shadow.javax"
     relocate "jersey", "valandur.webapi.shadow.jersey"
     relocate ("org", "valandur.webapi.shadow.org") {
         exclude "org.spongepowered.*"

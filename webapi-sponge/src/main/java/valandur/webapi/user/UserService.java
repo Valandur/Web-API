@@ -24,7 +24,7 @@ public class UserService {
     }
 
     public void init() {
-        Logger logger = WebAPI.getLogger();
+        Logger logger = WebAPI.getInstance().getLogger();
 
         logger.info("Loading users...");
         Path configPath = WebAPI.getConfigPath().resolve(configFileName).normalize();

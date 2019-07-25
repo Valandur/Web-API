@@ -5,10 +5,10 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.world.Chunk;
+import valandur.webapi.Constants;
 import valandur.webapi.WebAPI;
 import valandur.webapi.cache.CachedObject;
 import valandur.webapi.serialize.JsonDetails;
-import valandur.webapi.util.Constants;
 
 import java.util.Optional;
 import java.util.UUID;

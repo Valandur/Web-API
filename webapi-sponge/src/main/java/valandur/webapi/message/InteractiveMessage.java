@@ -5,9 +5,9 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.serializer.TextSerializers;
+import valandur.webapi.Constants;
 import valandur.webapi.cache.CachedObject;
 import valandur.webapi.serialize.JsonDetails;
-import valandur.webapi.util.Constants;
 
 import java.util.ArrayList;
 import java.util.List;

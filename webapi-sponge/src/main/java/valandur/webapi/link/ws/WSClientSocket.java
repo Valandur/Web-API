@@ -41,7 +41,7 @@ public class WSClientSocket {
             ResponseMessage res = WebAPI.emulateRequest((RequestMessage) req);
             send(res);
         } else {
-            WebAPI.getLogger().warn("Unknown message from WebSocket: " + msg);
+            WebAPI.getInstance().getLogger().warn("Unknown message from WebSocket: " + msg);
         }
     }
 

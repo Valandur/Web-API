@@ -150,7 +150,7 @@ public class WorldServlet extends BaseServlet {
                         props = optProps.get();
                     }
                 } else {
-                    WebAPI.getLogger().warn("World should be unloaded but isn't present");
+                    WebAPI.getInstance().getLogger().warn("World should be unloaded but isn't present");
                     throw new InternalServerErrorException("World should be unloaded but isn't present");
                 }
             }

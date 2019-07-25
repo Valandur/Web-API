@@ -5,9 +5,9 @@ import io.swagger.annotations.ApiModelProperty;
 import net.moddedminecraft.mmcrestrict.Data.ItemData;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.item.ItemType;
+import valandur.webapi.Constants;
 import valandur.webapi.cache.CachedObject;
 import valandur.webapi.cache.misc.CachedCatalogType;
-import valandur.webapi.util.Constants;
 
 import java.util.Optional;
 

@@ -8,7 +8,7 @@ public class JettyLogger implements Logger {
     private boolean enableDebug;
 
     public JettyLogger() {
-        logger = WebAPI.getLogger();
+        logger = WebAPI.getInstance().getLogger();
         enableDebug = WebAPI.isDevMode();
     }
 

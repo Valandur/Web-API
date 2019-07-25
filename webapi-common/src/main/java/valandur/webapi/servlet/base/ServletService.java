@@ -1,20 +1,8 @@
 package valandur.webapi.servlet.base;
 
 import org.slf4j.Logger;
-import valandur.webapi.WebAPI;
-import valandur.webapi.config.BaseConfig;
+import valandur.webapi.IPlugin;
 import valandur.webapi.config.IServletsConfig;
-import valandur.webapi.integration.activetime.ActiveTimeServlet;
-import valandur.webapi.integration.cmdscheduler.CmdSchedulerServlet;
-import valandur.webapi.integration.gwmcrates.GWMCratesServlet;
-import valandur.webapi.integration.mmcrestrict.MMCRestrictServlet;
-import valandur.webapi.integration.mmctickets.MMCTicketsServlet;
-import valandur.webapi.integration.nucleus.NucleusServlet;
-import valandur.webapi.integration.redprotect.RedProtectServlet;
-import valandur.webapi.integration.universalmarket.UniversalMarketServlet;
-import valandur.webapi.integration.villagershops.VShopServlet;
-import valandur.webapi.integration.webbooks.WebBooksServlet;
-import valandur.webapi.servlet.*;
 
 import javax.ws.rs.Path;
 import java.lang.reflect.InvocationTargetException;
@@ -28,28 +16,29 @@ import static valandur.webapi.Constants.*;
 /**
  * This service allows registering servlets with the Web-API, which it will serve for clients.
  * Your servlet must inherit from {@link BaseServlet} and have the
- * {@link javax.ws.rs.Path} annotation specifying the base path at which the servlet will
+ * {@link Path} annotation specifying the base path at which the servlet will
  * be accessible.
  */
 public class ServletService {
-    private static final String configFileName = "servlets.conf";
     private static final int maxNameWidth = 15; // Length of "UniversalMarket"
     private static final String STATUS_ON = "ON";
     private static final String STATUS_OFF = "DISABLED";
     private static final String STATUS_NOTFOUND = "NOT FOUND";
 
-    private Logger logger;
+    private final IPlugin plugin;
+    private final Logger logger;
 
     private Map<String, Class<? extends BaseServlet>> servletClasses = new HashMap<>();
 
+    public ServletService(IPlugin plugin) {
+        this.plugin = plugin;
+        this.logger = plugin.getLogger();
+    }
 
     public void init() {
-        this.logger = WebAPI.getInstance().getLogger();
-
         logger.info("Registering servlets...");
 
-        java.nio.file.Path configPath = WebAPI.getConfigPath().resolve(configFileName).normalize();
-        IServletsConfig config = BaseConfig.load(configPath, new IServletsConfig());
+        IServletsConfig config = plugin.getServletsConfig();
 
         servletClasses.clear();
 
@@ -235,8 +224,7 @@ public class ServletService {
             m.invoke(null);
         } catch (NoSuchMethodException ignored) {
         } catch (IllegalAccessException | InvocationTargetException e) {
-            e.printStackTrace();
-            WebAPI.sentryCapture(e);
+            plugin.captureException(e);
         }
 
         servletClasses.put(basePath, servlet);

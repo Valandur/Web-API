@@ -142,7 +142,7 @@ public class UserServlet extends BaseServlet {
 
         Optional<UserPermissionStruct> optPerm = WebAPI.getUserService().getUser(req.getUsername(), req.getPassword());
         if (!optPerm.isPresent()) {
-            WebAPI.getLogger().warn(req.getUsername() + " tried to login from " +
+            WebAPI.getInstance().getLogger().warn(req.getUsername() + " tried to login from " +
                     request.getAttribute("ip") + " (invalid username or password)");
             throw new ForbiddenException("Invalid username or password");
         }
@@ -152,7 +152,7 @@ public class UserServlet extends BaseServlet {
 
         WebAPI.getSecurityService().addTempKey(key, perm);
 
-        WebAPI.getLogger().info(req.getUsername() + " logged in from " + request.getAttribute("ip"));
+        WebAPI.getInstance().getLogger().info(req.getUsername() + " logged in from " + request.getAttribute("ip"));
 
         return perm.withKey(key);
     }
@@ -168,7 +168,7 @@ public class UserServlet extends BaseServlet {
         SecurityContext context = (SecurityContext)request.getAttribute("security");
         WebAPI.getSecurityService().removeTempKey(context.getPermissionStruct().getKey());
 
-        WebAPI.getLogger().info(context.getPermissionStruct().getName() + " logged out");
+        WebAPI.getInstance().getLogger().info(context.getPermissionStruct().getName() + " logged out");
 
         return context.getPermissionStruct();
     }
@@ -182,7 +182,7 @@ public class UserServlet extends BaseServlet {
         SecurityContext context = (SecurityContext)request.getAttribute("security");
         WebAPI.getSecurityService().removeTempKey(context.getPermissionStruct().getKey());
 
-        WebAPI.getLogger().info(context.getPermissionStruct().getName() + " logged out");
+        WebAPI.getInstance().getLogger().info(context.getPermissionStruct().getName() + " logged out");
 
         return Response.status(Response.Status.FOUND).build();
     }

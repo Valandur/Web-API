@@ -35,7 +35,7 @@ public class CommandRegistry {
 
     public static void init() {
         CommandManager manager = Sponge.getCommandManager();
-        Logger logger = WebAPI.getLogger();
+        Logger logger = WebAPI.getInstance().getLogger();
 
         // Register commands
         logger.info("Registering commands...");

@@ -6,9 +6,9 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.plugin.PluginContainer;
+import valandur.webapi.Constants;
 import valandur.webapi.cache.CachedObject;
 import valandur.webapi.serialize.JsonDetails;
-import valandur.webapi.util.Constants;
 
 import java.io.IOException;
 import java.nio.file.Files;

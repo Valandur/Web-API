@@ -42,7 +42,7 @@ public class SecurityService {
 
 
     public void init() {
-        this.logger = WebAPI.getLogger();
+        this.logger = WebAPI.getInstance().getLogger();
         logger.info("Loading keys & permissions...");
 
         start = System.nanoTime();

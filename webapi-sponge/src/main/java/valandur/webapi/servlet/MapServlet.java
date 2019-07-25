@@ -95,7 +95,7 @@ public class MapServlet extends BaseServlet {
                     hexColor = biomeColorMap.get(biome.replace("mutated_", ""));
 
                 if (hexColor == null) {
-                    WebAPI.getLogger().info("No color for biome: " + biome + ". You can set one in the map.conf file");
+                    WebAPI.getInstance().getLogger().info("No color for biome: " + biome + ". You can set one in the map.conf file");
 
                     hexColor = "FFFFFF";
                     biomeColorMap.put(biome, hexColor);

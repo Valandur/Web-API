@@ -7,7 +7,7 @@ import org.spongepowered.api.service.permission.SubjectReference;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.channel.MessageChannel;
 import org.spongepowered.api.util.Tristate;
-import valandur.webapi.util.Constants;
+import valandur.webapi.Constants;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;

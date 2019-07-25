@@ -36,7 +36,7 @@ public class LinkService {
         linkClient = createLinkClient(config);
         // Connect if we have a client
         if (linkClient != null) {
-            WebAPI.getLogger().info("Establishing " + config.type + " link to " + config.url + "...");
+            WebAPI.getInstance().getLogger().info("Establishing " + config.type + " link to " + config.url + "...");
             linkClient.connect(config.url);
         }
     }

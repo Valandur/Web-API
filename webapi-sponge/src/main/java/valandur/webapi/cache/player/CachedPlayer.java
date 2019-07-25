@@ -12,11 +12,11 @@ import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.service.user.UserStorageService;
+import valandur.webapi.Constants;
 import valandur.webapi.cache.CachedObject;
 import valandur.webapi.cache.misc.CachedInventory;
 import valandur.webapi.cache.world.CachedLocation;
 import valandur.webapi.serialize.JsonDetails;
-import valandur.webapi.util.Constants;
 
 import java.util.ArrayList;
 import java.util.List;

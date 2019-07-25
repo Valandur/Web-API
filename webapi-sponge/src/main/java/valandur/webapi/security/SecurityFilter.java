@@ -66,10 +66,10 @@ public class SecurityFilter implements ContainerRequestFilter {
         }
 
         if (!srv.whitelistContains(addr)) {
-            WebAPI.getLogger().warn(addr + " is not on whitelist: " + target);
+            WebAPI.getInstance().getLogger().warn(addr + " is not on whitelist: " + target);
             throw new ForbiddenException();
         } else if (srv.blacklistContains(addr)) {
-            WebAPI.getLogger().warn(addr + " is on blacklist: " + target);
+            WebAPI.getInstance().getLogger().warn(addr + " is on blacklist: " + target);
             throw new ForbiddenException();
         }
 
@@ -102,7 +102,7 @@ public class SecurityFilter implements ContainerRequestFilter {
             double time = System.nanoTime() / 1000000000d;
 
             if (lastCall.containsKey(key) && time - lastCall.get(key) < 1d / permStruct.getRateLimit()) {
-                WebAPI.getLogger().warn(addr + " has exceeded the rate limit when requesting " +
+                WebAPI.getInstance().getLogger().warn(addr + " has exceeded the rate limit when requesting " +
                         request.getRequestURI());
                 throw new ClientErrorException("Rate limit exceeded", Response.Status.TOO_MANY_REQUESTS);
             }
@@ -139,7 +139,7 @@ public class SecurityFilter implements ContainerRequestFilter {
 
             TreeNode methodPerms = SecurityService.subPermissions(perms, reqPermList);
             if (!methodPerms.getValue()) {
-                WebAPI.getLogger().warn(addr + " does not have permisson to access " + target);
+                WebAPI.getInstance().getLogger().warn(addr + " does not have permisson to access " + target);
                 if (key.equalsIgnoreCase(DEFAULT_KEY)) {
                     throw new NotAuthorizedException("Bearer realm=\"Web-API Access\"");
                 } else {
@@ -161,7 +161,7 @@ public class SecurityFilter implements ContainerRequestFilter {
 
         // First check the actual IP that we got. If that is not a trusted proxy we're done.
         if (!srv.containsProxyIP(addr)) {
-            WebAPI.getLogger().warn(addr + " sent " + HttpHeaders.X_FORWARDED_FOR +
+            WebAPI.getInstance().getLogger().warn(addr + " sent " + HttpHeaders.X_FORWARDED_FOR +
                     " header, but is not a proxy. Header will be ignored!");
             return addr;
         }
@@ -176,7 +176,7 @@ public class SecurityFilter implements ContainerRequestFilter {
             }
 
             if (i > 0) {
-                WebAPI.getLogger().warn(ips[i].trim() + " sent " + HttpHeaders.X_FORWARDED_FOR +
+                WebAPI.getInstance().getLogger().warn(ips[i].trim() + " sent " + HttpHeaders.X_FORWARDED_FOR +
                         " header, but is not a proxy. Header will be ignored!");
             }
             return ips[i];

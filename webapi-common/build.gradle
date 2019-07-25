@@ -1,0 +1,25 @@
+idea {
+    module {
+        inheritOutputDirs = true
+    }
+}
+
+dependencies {
+    compile project(":webapi-lib")
+
+    compileOnly group: "org.slf4j", name: "slf4j-api", version: "1.7.25"
+
+    compile group: "com.fasterxml.jackson.core", name: "jackson-core", version: project.jacksonVersion
+    compile group: "com.fasterxml.jackson.core", name: "jackson-databind", version: project.jacksonVersion
+    compile group: "com.fasterxml.jackson.core", name: "jackson-annotations", version: project.jacksonVersion
+
+    compile group: "org.eclipse.jetty", name: "jetty-server", version: project.jettyVersion
+    compile group: "org.eclipse.jetty", name: "jetty-servlet", version: project.jettyVersion
+    compile group: "org.eclipse.jetty", name: "jetty-rewrite", version: project.jettyVersion
+    compile group: "org.eclipse.jetty.websocket", name: "websocket-server", version: project.jettyVersion
+    compile group: "org.eclipse.jetty.websocket", name: "websocket-servlet", version: project.jettyVersion
+    compile group: "org.eclipse.jetty.websocket", name: "websocket-client", version: project.jettyVersion
+
+    compile group: "org.glassfish.jersey.containers", name: "jersey-container-servlet", version: "2.26"
+    compile group: "org.glassfish.jersey.inject", name: "jersey-hk2", version: "2.26"
+}

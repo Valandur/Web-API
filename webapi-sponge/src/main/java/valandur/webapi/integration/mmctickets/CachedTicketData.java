@@ -4,11 +4,11 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import net.moddedminecraft.mmctickets.data.TicketData;
 import net.moddedminecraft.mmctickets.data.ticketStatus;
+import valandur.webapi.Constants;
 import valandur.webapi.cache.CachedObject;
 import valandur.webapi.cache.player.CachedPlayer;
 import valandur.webapi.cache.world.CachedLocation;
 import valandur.webapi.serialize.JsonDetails;
-import valandur.webapi.util.Constants;
 
 @ApiModel("MMCTicketsTicket")
 public class CachedTicketData extends CachedObject<TicketData> {

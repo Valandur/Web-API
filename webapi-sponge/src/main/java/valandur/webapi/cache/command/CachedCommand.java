@@ -4,8 +4,8 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.spongepowered.api.command.CommandMapping;
 import org.spongepowered.api.text.Text;
+import valandur.webapi.Constants;
 import valandur.webapi.cache.CachedObject;
-import valandur.webapi.util.Constants;
 
 import static valandur.webapi.command.CommandSource.instance;
 

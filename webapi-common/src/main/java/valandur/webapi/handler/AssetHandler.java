@@ -2,10 +2,7 @@ package valandur.webapi.handler;
 
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.AbstractHandler;
-import org.spongepowered.api.Sponge;
-import org.spongepowered.api.asset.Asset;
-import org.spongepowered.api.util.Tuple;
-import valandur.webapi.WebAPI;
+import valandur.webapi.IPlugin;
 
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
@@ -19,6 +16,7 @@ import java.util.Optional;
 import java.util.function.Function;
 
 public class AssetHandler extends AbstractHandler {
+    private final IPlugin plugin;
 
     private String contentType;
     private String assetString;
@@ -26,23 +24,23 @@ public class AssetHandler extends AbstractHandler {
     private Function<String, Function<byte[], byte[]>> assetFunc;
 
     private String folderPath;
-    private Map<String, Tuple<String, byte[]>> cachedAssets = new HashMap<>();
+    private Map<String, CachedAsset> cachedAssets = new HashMap<>();
 
-    public AssetHandler(String folderPath) {
-        Optional<Asset> asset = Sponge.getAssetManager().getAsset(WebAPI.getInstance(), folderPath);
-        if (folderPath.contains(".") && asset.isPresent()) {
-            try {
-                this.assetString = asset.get().readString();
+    public AssetHandler(IPlugin plugin, String folderPath) {
+        this.plugin = plugin;
+
+        if (folderPath.contains(".")) {
+            Optional<String> asset = this.plugin.getAssetContent(folderPath).map(String::new);
+            if (asset.isPresent()) {
+                this.assetString = asset.get();
                 this.contentType = guessContentType(folderPath);
-            } catch (IOException e) {
-                e.printStackTrace();
-                WebAPI.sentryCapture(e);
             }
         } else {
             this.folderPath = folderPath;
         }
     }
-    public AssetHandler(String folderPath, Function<String, Function<byte[], byte[]>> processAssets) {
+    public AssetHandler(IPlugin plugin, String folderPath, Function<String, Function<byte[], byte[]>> processAssets) {
+        this.plugin = plugin;
         this.folderPath = folderPath;
         this.assetFunc = processAssets;
     }
@@ -70,18 +68,18 @@ public class AssetHandler extends AbstractHandler {
 
             ServletOutputStream stream = response.getOutputStream();
             if (cachedAssets.containsKey(path)) {
-                Tuple<String, byte[]> asset = cachedAssets.get(path);
+                CachedAsset asset = cachedAssets.get(path);
 
-                response.setContentType(asset.getFirst());
+                response.setContentType(asset.type);
                 response.setStatus(HttpServletResponse.SC_OK);
-                stream.write(asset.getSecond());
+                stream.write(asset.data);
                 baseRequest.setHandled(true);
                 return;
             }
 
-            Optional<Asset> asset = Sponge.getAssetManager().getAsset(WebAPI.getInstance(), path);
+            Optional<byte[]> asset = this.plugin.getAssetContent(path);
             if (asset.isPresent()) {
-                byte[] data = asset.get().readBytes();
+                byte[] data = asset.get();
                 if (assetFunc != null) {
                     Function<byte[], byte[]> func = assetFunc.apply(path);
                     if (func != null) {
@@ -90,13 +88,13 @@ public class AssetHandler extends AbstractHandler {
                 }
 
                 String type = guessContentType(path);
-                cachedAssets.put(path, new Tuple<>(type, data));
+                cachedAssets.put(path, new CachedAsset(type, data));
 
                 response.setContentType(type);
                 response.setStatus(HttpServletResponse.SC_OK);
                 stream.write(data);
             } else {
-                WebAPI.getLogger().warn("Could not load asset: " + path);
+                this.plugin.getLogger().warn("Could not load asset: " + path);
                 response.sendError(HttpServletResponse.SC_NOT_FOUND, "File not found");
             }
 
@@ -124,5 +122,15 @@ public class AssetHandler extends AbstractHandler {
         }
 
         return "text/plain";
+    }
+
+    private class CachedAsset {
+        public String type;
+        public byte[] data;
+
+        public CachedAsset(String type, byte[] data) {
+            this.type = type;
+            this.data = data;
+        }
     }
 }

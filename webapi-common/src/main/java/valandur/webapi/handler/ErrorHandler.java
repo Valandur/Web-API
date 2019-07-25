@@ -1,12 +1,9 @@
 package valandur.webapi.handler;
 
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
-import com.google.gson.JsonObject;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
 import org.eclipse.jetty.http.HttpStatus;
 import org.eclipse.jetty.server.Request;
-import valandur.webapi.WebAPI;
+import valandur.webapi.IPlugin;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -19,6 +16,8 @@ import java.io.Writer;
 
 @Provider
 public class ErrorHandler extends org.eclipse.jetty.server.handler.ErrorHandler implements ExceptionMapper<Throwable> {
+
+    public static IPlugin plugin;
 
     @Override
     public Response toResponse(Throwable exception) {
@@ -42,28 +41,21 @@ public class ErrorHandler extends org.eclipse.jetty.server.handler.ErrorHandler 
 
     @Override
     protected void handleErrorPage(HttpServletRequest request, Writer writer, int code, String message) throws IOException {
-        if (message == null)
+        if (message == null) {
             message = HttpStatus.getMessage(code);
+        }
 
-        JsonObject obj = new JsonObject();
-        obj.addProperty("code", code);
-        obj.addProperty("message", message);
-        writer.write(obj.toString());
+        writer.write("{\"code\":\"" + code + "\",\"message\":\"" + message + "\"}");
     }
 
     @Override
     public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException {
-        WebAPI.getLogger().info("ERROR: " + target);
-
+        this.plugin.getLogger().error(target);
         super.handle(target, baseRequest, request, response);
     }
 
-    @ApiModel("ErrorMessage")
-        public static class ErrorMessage {
-        @ApiModelProperty("The status code of the error. This is also returned as the HTTP status code.")
+    public static class ErrorMessage {
         public int status;
-
-        @ApiModelProperty("A description of the error that occured")
         public String error;
 
         public ErrorMessage(int status, String error) {

@@ -5,13 +5,11 @@ import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 import ninja.leaping.configurate.objectmapping.serialize.TypeSerializer;
-import org.slf4j.Logger;
 import valandur.webapi.WebAPI;
 import valandur.webapi.hook.filter.BaseWebHookFilter;
 import valandur.webapi.security.SecurityService;
 import valandur.webapi.util.TreeNode;
 
-import javax.ws.rs.HttpMethod;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -19,19 +17,13 @@ import java.util.List;
 import java.util.Optional;
 
 public class WebHookSerializer implements TypeSerializer<WebHook> {
-
     @Override
     public WebHook deserialize(TypeToken<?> type, ConfigurationNode value) throws ObjectMappingException {
-        Logger logger = WebAPI.getLogger();
-
         String address = value.getNode("address").getString();
 
         if (address == null) {
-            logger.error("No address specified for web hook!");
-            return null;
+            throw new ObjectMappingException("No address specified for web hook!");
         }
-
-        logger.info("  - " + address);
 
         boolean enabled = value.getNode("enabled").getBoolean();
         String method = value.getNode("method").getString();
@@ -44,26 +36,24 @@ public class WebHookSerializer implements TypeSerializer<WebHook> {
         String filterName = filterBase.getNode("name").getString();
         ConfigurationNode filterConfig = filterBase.getNode("config");
 
-        TreeNode permissions = SecurityService.permitAllNode();
+        TreeNode permissions;
 
         if (headers == null) {
             headers = new ArrayList<>();
         }
 
         if (method == null) {
-            method = HttpMethod.POST;
-            logger.warn("    Does not specify 'method', defaulting to 'POST'");
+            throw new ObjectMappingException("Webhook " + address + " is missing property 'method'.");
         }
 
         if (dataType == null) {
-            dataType = WebHook.WebHookDataType.JSON;
-            logger.warn("    Does not specify 'dataType', defaulting to 'JSON'");
+            throw new ObjectMappingException("Webhook " + address + " is missing property 'dataType'.");
         }
 
         if (value.getNode("permissions").isVirtual()) {
-            logger.warn("    Does not specify 'permissions', defaulting to '*'");
+            throw new ObjectMappingException("Webhook " + address + " is missing property 'permissions'.");
         } else {
-            permissions = WebAPI.getSecurityService().permissionTreeFromConfig(value.getNode("permissions"));
+            permissions = SecurityService.permissionTreeFromConfig(value.getNode("permissions"));
         }
 
         WebHook hook = new WebHook(address, enabled, method, dataType, form, headers, details, permissions);
@@ -71,21 +61,15 @@ public class WebHookSerializer implements TypeSerializer<WebHook> {
         if (filterName != null) {
             Optional<Class<? extends BaseWebHookFilter>> opt = WebAPI.getWebHookService().getFilter(filterName);
             if (!opt.isPresent()) {
-                logger.error("    Could not find filter with name '" + filterName + "'");
+                throw new ObjectMappingException("Could not find filter with name '" + filterName + "'");
             } else {
                 try {
                     Constructor ctor = opt.get().getConstructor(WebHook.class, ConfigurationNode.class);
                     hook.setFilter((BaseWebHookFilter) ctor.newInstance(hook, filterConfig));
                 } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
-                    logger.error("    Could not setup filter '" + filterName + "': " + e.getMessage());
+                    throw new ObjectMappingException("Could not setup filter '" + filterName + "': " + e.getMessage());
                 }
             }
-        }
-
-        if (enabled) {
-            logger.info("    -> Ok");
-        } else {
-            logger.info("    -> Disabled");
         }
 
         return hook;

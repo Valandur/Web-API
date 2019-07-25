@@ -4,10 +4,10 @@ import com.xwaffle.universalmarket.market.MarketItem;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.spongepowered.api.item.inventory.ItemStack;
+import valandur.webapi.Constants;
 import valandur.webapi.WebAPI;
 import valandur.webapi.cache.CachedObject;
 import valandur.webapi.cache.player.CachedPlayer;
-import valandur.webapi.util.Constants;
 
 @ApiModel("UniversalMarketItem")
 public class CachedMarketItem extends CachedObject<MarketItem> {

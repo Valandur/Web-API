@@ -141,7 +141,7 @@ public class BlockService {
                     int newZ = z * BIOME_INTERVAL.getZ();
                     biomes[x][z] = vol.getBiome(newX, 0, newZ).getId();
                     if (biomes[x][z] == null) {
-                        WebAPI.getLogger().warn("Unknown biome at [" + (min.getX() + newX) + "," + (min.getZ() + newZ) + "]");
+                        WebAPI.getInstance().getLogger().warn("Unknown biome at [" + (min.getX() + newX) + "," + (min.getZ() + newZ) + "]");
                         biomes[x][z] = UNKOWN_BIOME_ID;
                     }
                 }

@@ -12,11 +12,11 @@ import org.spongepowered.api.event.cause.EventContext;
 import org.spongepowered.api.scheduler.Task;
 import org.spongepowered.api.world.Chunk;
 import org.spongepowered.api.world.World;
+import valandur.webapi.Constants;
 import valandur.webapi.WebAPI;
 import valandur.webapi.cache.CachedObject;
 import valandur.webapi.cache.world.CachedWorld;
 import valandur.webapi.serialize.JsonDetails;
-import valandur.webapi.util.Constants;
 
 import java.util.Optional;
 import java.util.UUID;

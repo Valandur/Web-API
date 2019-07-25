@@ -34,6 +34,7 @@ import valandur.webapi.cache.CacheService;
 import valandur.webapi.command.CommandRegistry;
 import valandur.webapi.command.CommandSource;
 import valandur.webapi.config.BaseConfig;
+import valandur.webapi.config.IMainConfig;
 import valandur.webapi.config.MainConfig;
 import valandur.webapi.hook.WebHook;
 import valandur.webapi.hook.WebHookSerializer;
@@ -55,7 +56,6 @@ import valandur.webapi.swagger.SwaggerModelConverter;
 import valandur.webapi.user.UserPermissionStruct;
 import valandur.webapi.user.UserPermissionStructSerializer;
 import valandur.webapi.user.UserService;
-import valandur.webapi.util.Constants;
 import valandur.webapi.util.JettyLogger;
 import valandur.webapi.util.Timings;
 
@@ -70,10 +70,7 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Supplier;
@@ -89,12 +86,7 @@ import java.util.stream.Collectors;
                 "Valandur"
         }
 )
-public class WebAPI {
-
-    static {
-        System.out.println("Static initialized");
-    }
-
+public class WebAPI implements IPlugin {
     private static WebAPI instance;
     public static WebAPI getInstance() {
         return WebAPI.instance;
@@ -104,6 +96,12 @@ public class WebAPI {
     private static SpongeExecutorService asyncExecutor;
     public static SpongeExecutorService getAsyncExecutor() {
         return WebAPI.asyncExecutor;
+    }
+
+    private MainConfig mainConfig;
+    @Override
+    public IMainConfig getMainConfig() {
+        return mainConfig;
     }
 
     private boolean devMode = false;
@@ -128,8 +126,8 @@ public class WebAPI {
 
     @Inject
     private Logger logger;
-    public static Logger getLogger() {
-        return WebAPI.getInstance().logger;
+    public Logger getLogger() {
+        return this.logger;
     }
 
     @Inject
@@ -285,7 +283,7 @@ public class WebAPI {
     public void onInitialization(GameInitializationEvent event) {
         Timings.STARTUP.startTiming();
 
-        logger.info(Constants.NAME + " v" + Constants.VERSION + " is starting...");
+        this.printInfo();
 
         logger.info("Setting up jetty logger...");
         Log.setLog(new JettyLogger());
@@ -309,6 +307,26 @@ public class WebAPI {
         Timings.STARTUP.stopTiming();
     }
 
+    private void printInfo() {
+        int width = 33;
+        String line = String.join("", Collections.nCopies(width, "-"));
+
+        String name = Constants.NAME;
+        int nameSpace = width - name.length() - 2;
+        String namePre = String.join("", Collections.nCopies((int) Math.floor(nameSpace / 2d), " "));
+        String namePost = String.join("", Collections.nCopies((int) Math.ceil(nameSpace / 2d), " "));
+
+        String version = Constants.VERSION;
+        int versionSpace = width - version.length() - 2;
+        String versionPre = String.join("", Collections.nCopies((int) Math.floor(versionSpace / 2d), " "));
+        String versionPost = String.join("", Collections.nCopies((int) Math.ceil(versionSpace / 2d), " "));
+
+        logger.info(line);
+        logger.info("|" + namePre + Constants.NAME + namePost + "|");
+        logger.info("|" + versionPre + Constants.VERSION + versionPost + "|");
+        logger.info(line);
+    }
+
     // Reusable setup function, for starting and reloading
     private void init(Player triggeringPlayer) {
         Timings.STARTUP.startTiming();
@@ -316,7 +334,7 @@ public class WebAPI {
         logger.info("Loading configuration...");
 
         Path configPath = WebAPI.getConfigPath().resolve("config.conf").normalize();
-        MainConfig mainConfig = BaseConfig.load(configPath, new MainConfig());
+        this.mainConfig = BaseConfig.load(configPath, new MainConfig());
 
         // Save important config values to variables
         devMode = mainConfig.devMode;
@@ -324,7 +342,7 @@ public class WebAPI {
         adminPanelEnabled = mainConfig.adminPanel;
 
         // Create our WebServer
-        server = new WebServer(logger, mainConfig);
+        server = new WebServer(this);
 
         if (devMode) {
             logger.warn("Web-API IS RUNNING IN DEV MODE. ERROR REPORTING IS OFF!");
@@ -442,7 +460,7 @@ public class WebAPI {
     // Event listeners
     @Listener
     public void onServerStart(GameStartedServerEvent event) {
-        server.start(null);
+        server.start();
 
         checkForUpdates();
 
@@ -486,7 +504,11 @@ public class WebAPI {
 
         init(p.orElse(null));
 
-        server.start(p.orElse(null));
+        p.ifPresent(player -> player.sendMessage(Text.builder()
+                .color(TextColors.AQUA)
+                .append(Text.of("[" + Constants.NAME + "] The web server has been restarted!"))
+                .toText()
+        ));
 
         checkForUpdates();
 
@@ -619,5 +641,27 @@ public class WebAPI {
             return;
         addDefaultContext();
         //Sentry.capture(t);
+    }
+
+    @Override
+    public void captureException(Throwable e) {
+        e.printStackTrace();
+        WebAPI.sentryCapture(e);
+    }
+
+    @Override
+    public Optional<String> getAssetLocation(String asset) {
+        return Sponge.getAssetManager().getAsset(WebAPI.getInstance(), asset).map(a -> a.getUrl().toString());
+    }
+
+    @Override
+    public Optional<byte[]> getAssetContent(String asset) {
+        return Sponge.getAssetManager().getAsset(WebAPI.getInstance(), asset).flatMap(a -> {
+            try {
+                return Optional.of(a.readBytes());
+            } catch (IOException e) {
+                return Optional.empty();
+            }
+        });
     }
 }

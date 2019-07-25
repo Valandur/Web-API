@@ -26,9 +26,9 @@ public class ServerService {
 
     private final static String configFileName = "server.conf";
 
-    // Record every 5 seconds. (17280 entries = 24 hours, 4320 entries = 6 hours)
-    private static int STATS_INTERVAL = 5;
-    private static int MAX_STATS_ENTRIES = 4320;
+    // Record every 10 seconds. (8640 entries = 24 hours, 2160 entries = 6 hours)
+    private static int STATS_INTERVAL = 10;
+    private static int MAX_STATS_ENTRIES = 2160;
 
     private OperatingSystemMXBean systemMXBean;
     private Map<String, ServerProperty> properties = new ConcurrentHashMap<>();

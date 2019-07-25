@@ -33,7 +33,7 @@ public class BaseSerializer<T, U> extends StdSerializer<T> {
         try {
             this.ctr = cache.getDeclaredConstructor(clazz);
         } catch (NoSuchMethodException e) {
-            WebAPI.getLogger().error("The cache class " + cacheClass.getName() +
+            WebAPI.getInstance().getLogger().error("The cache class " + cacheClass.getName() +
                     " does not contain a constructor accepting one argument of type " +
                     handledClass.getName() + " (it's handled class)");
             WebAPI.sentryCapture(e);

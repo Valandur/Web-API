@@ -133,7 +133,7 @@ public class SerializeService {
 
 
     public void init() {
-        Logger logger = WebAPI.getLogger();
+        Logger logger = WebAPI.getInstance().getLogger();
 
         logger.info("Loading serializers...");
 
@@ -537,7 +537,7 @@ public class SerializeService {
         try {
             cacheClass.getDeclaredConstructor(handledClass);
         } catch (NoSuchMethodException e) {
-            WebAPI.getLogger().error("The cache class " + cacheClass.getName() +
+            WebAPI.getInstance().getLogger().error("The cache class " + cacheClass.getName() +
                     " does not contain a constructor accepting one argument of type " +
                     handledClass.getName() + " (it's handled class)");
             WebAPI.sentryCapture(e);

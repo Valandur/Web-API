@@ -3,6 +3,12 @@ plugins {
     id "ninja.miserable.blossom" version "1.0.1"
 }
 
+idea {
+    module {
+        inheritOutputDirs = true
+    }
+}
+
 blossom {
     def locMain = "src/main/java/valandur/webapi/util/Constants.java"
     replaceToken "@version@", project.version, locMain

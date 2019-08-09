@@ -82,6 +82,7 @@ public class CacheService {
 
     private static final String configFileName = "cache.conf";
 
+    private List<String> pluginFolders = new ArrayList<>();
     private List<String> censoredCommands = new ArrayList<>();
     private Map<String, Long> cacheDurations = new HashMap<>();
     private int numChatMessages;
@@ -101,6 +102,9 @@ public class CacheService {
 
         numChatMessages = config.chat_amount;
         numCommandCalls = config.cmd_amount;
+
+        pluginFolders.clear();
+        pluginFolders.addAll(config.pluginFolders);
 
         censoredCommands.clear();
         for (String cmd : config.censoredCommands) {
@@ -544,14 +548,16 @@ public class CacheService {
             plugins.put(plugin.getId(), new CachedPluginContainer(plugin));
         }
 
-        // Look for .jar files in the current directory, and compare their "mcmod.info" file
+        // Look for .jar files in the specified directories, and compare their "mcmod.info" file
         // with the data we have of the loaded plugins to see if there are any unloaded ones.
         try {
-            List<Path> paths = Files.walk(Paths.get("./"))
+            List<Path> paths = new ArrayList<>();
+            for (String folder : pluginFolders) {
+                paths.addAll(Files.walk(Paths.get(folder))
                     .map(Path::normalize)
-                    .filter(p -> Files.isRegularFile(p) && !p.toString().startsWith("libraries"))
-                    .filter(p -> p.toString().endsWith(".jar") || p.toString().endsWith(".disabled"))
-                    .collect(Collectors.toList());
+                    .filter(p -> Files.isRegularFile(p) && (p.toString().endsWith(".jar") || p.toString().endsWith(".jar.disabled")))
+                    .collect(Collectors.toList()));
+            }
 
             for (Path path : paths) {
                 JarFile jarFile = new JarFile(path.toFile());

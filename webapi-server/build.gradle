@@ -1,3 +1,9 @@
+idea {
+    module {
+        inheritOutputDirs = true
+    }
+}
+
 dependencies {
     compile project(":webapi-lib")
 

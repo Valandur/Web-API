@@ -6,17 +6,17 @@ import valandur.webapi.WebAPI;
 import valandur.webapi.config.BaseConfig;
 import valandur.webapi.config.PermissionConfig;
 import valandur.webapi.user.UserPermissionStruct;
-import valandur.webapi.util.SubnetUtils;
+import valandur.webapi.util.CIDRAddress;
 import valandur.webapi.util.TreeNode;
 
 import javax.ws.rs.ForbiddenException;
+import java.net.UnknownHostException;
 import java.util.*;
 
 /**
  * The security service handles access permissions to routes within the Web-API.
  */
 public class SecurityService {
-
     private static final String configFileName = "permissions.conf";
 
     public static final String API_KEY_HEADER = "X-WEBAPI-KEY";
@@ -27,8 +27,9 @@ public class SecurityService {
     public static final String ACCESS_CONTROL_HEADERS = "origin, content-type, x-webapi-key";
 
     private Set<String> allowedProxyIps = new HashSet<>();
-    private Set<SubnetUtils.SubnetInfo> allowedProxyCidrs = new HashSet<>();
+    private Set<CIDRAddress> allowedProxyCidrs = new HashSet<>();
 
+    private Logger logger;
     private long start = System.nanoTime();
 
     private PermissionConfig config;
@@ -41,7 +42,7 @@ public class SecurityService {
 
 
     public void init() {
-        Logger logger = WebAPI.getLogger();
+        this.logger = WebAPI.getLogger();
         logger.info("Loading keys & permissions...");
 
         start = System.nanoTime();
@@ -52,9 +53,13 @@ public class SecurityService {
 
         for (String proxy : config.allowedProxies) {
             if (proxy.contains("/")) {
-                SubnetUtils utils = new SubnetUtils(proxy);
-                utils.setInclusiveHostCount(true);
-                allowedProxyCidrs.add(utils.getInfo());
+                try {
+                    allowedProxyCidrs.add(new CIDRAddress(proxy));
+                } catch (UnknownHostException e) {
+                    logger.error("Unknown host: " + proxy, e);
+                } catch (IllegalArgumentException e) {
+                    logger.error("Invalid CIDR address: " + proxy, e);
+                }
             } else {
                 allowedProxyIps.add(proxy);
             }
@@ -113,7 +118,14 @@ public class SecurityService {
     }
 
     public boolean containsProxyIP(String ip) {
-        return allowedProxyIps.contains(ip) || allowedProxyCidrs.stream().anyMatch(c -> c.isInRange(ip));
+        return allowedProxyIps.contains(ip) || allowedProxyCidrs.stream().anyMatch(c -> {
+            try {
+                return c.isInRange(ip);
+            } catch (UnknownHostException e) {
+                logger.error("Unknown host: " + ip, e);
+                return false;
+            }
+        });
     }
 
     public void addTempKey(String key, UserPermissionStruct user) {

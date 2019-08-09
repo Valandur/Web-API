@@ -20,6 +20,9 @@ public class CacheConfig extends BaseConfig {
     @Setting(comment = "The number of seconds that the different types of data is cached for")
     public Map<String, Long> duration = new HashMap<>();
 
+    @Setting(comment = "The folders in which Web-API looks for other plugins.")
+    public List<String> pluginFolders = Lists.newArrayList("./mods", "./plugins");
+
     @Setting(comment = "These are commands that should not show up in the command log.\n" +
             "For example if you have a second auth plugin, or something where\n" +
             "players enter private data, put the command here, so that it's\n" +

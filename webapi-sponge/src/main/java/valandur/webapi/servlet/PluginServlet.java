@@ -135,6 +135,8 @@ public class PluginServlet extends BaseServlet {
 
         List<java.nio.file.Path> paths = getConfigFiles(optPlugin.get());
         for (java.nio.file.Path path : paths) {
+            if (!Files.exists(path)) continue;
+
             Object node = configs.get(path.getFileName().toString());
             if (node == null) continue;
 

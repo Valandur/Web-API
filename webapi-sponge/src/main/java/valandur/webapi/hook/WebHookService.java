@@ -47,6 +47,8 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
+import static valandur.webapi.util.Constants.*;
+
 /**
  * The web hook service provides access to the Web-API web hooks.
  */
@@ -94,17 +96,12 @@ public class WebHookService {
                 " Minecraft/" + mc +
                 " Java/" + System.getProperty("java.version");
 
-        // Load filters
-        logger.info("Loading filters...");
-
         filters.clear();
 
-        // Add some default filters
+        // Add filters
         filters.put(BlockTypeFilter.name, BlockTypeFilter.class);
         filters.put(PlayerFilter.name, PlayerFilter.class);
         filters.put(ItemTypeFilter.name, ItemTypeFilter.class);
-
-        logger.info("Done loading filters");
 
         // Load config
         Path configPath = WebAPI.getConfigPath().resolve(configFileName).normalize();
@@ -115,41 +112,88 @@ public class WebHookService {
         customHooks.clear();
         commandHooks.clear();
 
+        // Calculate max width of any hook text for printing
+        int maxAddressLength = 0;
+        for (CommandWebHook cmdHook : config.command.values()) {
+            maxAddressLength = Math.max(
+                    maxAddressLength,
+                    cmdHook.getHooks().stream().map(h -> h.getAddress().length()).max(Comparator.comparingInt(a -> a)).orElse(0)
+            );
+        }
+        for (List<WebHook> hooks : config.events.asMap().values()) {
+            maxAddressLength = Math.max(
+                    maxAddressLength,
+                    hooks.stream().map(h -> h.getAddress().length()).max(Comparator.comparingInt(a -> a)).orElse(0)
+            );
+        }
+        for (List<WebHook> hooks : config.custom.values()) {
+            maxAddressLength = Math.max(
+                    maxAddressLength,
+                    hooks.stream().map(h -> h.getAddress().length()).max(Comparator.comparingInt(a -> a)).orElse(0)
+            );
+        }
+
         // Add command hooks
         for (Map.Entry<String, CommandWebHook> entry : config.command.entrySet()) {
-            if (!entry.getValue().isEnabled())
-                continue;
-            commandHooks.put(entry.getKey(), entry.getValue());
+            String cmd = entry.getKey();
+            CommandWebHook cmdHook = entry.getValue();
+
+            String separator = String.join("", Collections.nCopies(maxAddressLength - cmd.length() - 7, " "));
+            logger.info("  Command: " + cmd + separator + " [" + (cmdHook.isEnabled() ? ANSI_GREEN + "ON" : ANSI_RED + "DISABLED") + ANSI_RESET + "]");
+            for (WebHook hook : cmdHook.getHooks()) {
+                separator = String.join("", Collections.nCopies(maxAddressLength - hook.getAddress().length(), " "));
+                logger.info("    " + hook.getAddress() + separator + " [" + (hook.isEnabled() ? ANSI_GREEN + "ON" : ANSI_RED + "DISABLED") + ANSI_RESET + "]");
+            }
+
+            if (cmdHook.isEnabled()) {
+                commandHooks.put(cmd, cmdHook);
+            }
         }
 
         // Add event hooks
         for (Map.Entry<WebHookType, List<WebHook>> entry : config.events.asMap().entrySet()) {
-            eventHooks.put(
-                    entry.getKey(),
-                    entry.getValue().stream().filter(WebHook::isEnabled).collect(Collectors.toList())
-            );
+            WebHookType type = entry.getKey();
+            List<WebHook> hooks = entry.getValue();
+
+            eventHooks.put(type, hooks.stream().filter(WebHook::isEnabled).collect(Collectors.toList()));
+
+            if (hooks.size() == 0) {
+                continue;
+            }
+
+            logger.info("  Event: " + type);
+            for (WebHook hook : hooks) {
+                String separator = String.join("", Collections.nCopies(maxAddressLength - hook.getAddress().length(), " "));
+                logger.info("    " + hook.getAddress() + separator + " [" + (hook.isEnabled() ? ANSI_GREEN + "ON" : ANSI_RED + "DISABLED") + ANSI_RESET + "]");
+            }
         }
 
         // Add custom event hooks
         for (Map.Entry<String, List<WebHook>> entry : config.custom.entrySet()) {
             String className = entry.getKey();
+            List<WebHook> hooks = entry.getValue();
 
             try {
                 Class c = Class.forName(className);
-                if (!Event.class.isAssignableFrom(c))
+                if (!Event.class.isAssignableFrom(c)) {
                     throw new InvalidClassException("Class " + c.toString() + " must be a subclass of " +
                             Event.class.toString() + " so that it can be used as a custom web hook");
+                }
                 Class<? extends Event> clazz = (Class<? extends Event>) c;
 
                 WebHookEventListener listener = new WebHookEventListener(clazz);
-                List<WebHook> hooks = entry.getValue().stream().filter(WebHook::isEnabled).collect(Collectors.toList());
-
                 Sponge.getEventManager().registerListener(WebAPI.getInstance(), clazz, listener);
-                customHooks.put(clazz, new Tuple<>(hooks, listener));
+                customHooks.put(clazz, new Tuple<>(hooks.stream().filter(WebHook::isEnabled).collect(Collectors.toList()), listener));
+
+                logger.info("  Custom Event: " + c.getName());
+                for (WebHook hook : hooks) {
+                    String separator = String.join("", Collections.nCopies(maxAddressLength - hook.getAddress().length(), " "));
+                    logger.info("    " + hook.getAddress() + separator + " [" + (hook.isEnabled() ? ANSI_GREEN + "ON" : ANSI_RED + "DISABLED") + ANSI_RESET + "]");
+                }
             } catch (ClassNotFoundException e) {
-                logger.error("Could not find class for custom web hook: " + className);
+                logger.error("  Could not find class for custom web hook: " + className);
             } catch (InvalidClassException e) {
-                logger.error(e.getMessage());
+                logger.error("  " + e.getMessage());
             }
         }
     }
@@ -166,8 +210,18 @@ public class WebHookService {
     public void notifyHooks(WebHookType type, Object data) {
         Timings.WEBHOOK_NOTIFY.startTimingIfSync();
 
-        List<WebHook> notifyHooks = new ArrayList<>(eventHooks.get(type));
-        notifyHooks.addAll(eventHooks.get(WebHookType.ALL));
+        List<WebHook> notifyHooks = new ArrayList<>();
+
+        List<WebHook> origHooks = eventHooks.get(type);
+        if (origHooks != null) {
+            notifyHooks.addAll(origHooks);
+        }
+
+        List<WebHook> allHooks = eventHooks.get(WebHookType.ALL);
+        if (allHooks != null) {
+            notifyHooks.addAll(allHooks);
+        }
+
         for (WebHook hook : notifyHooks) {
             notifyHook(hook, type, null, data);
         }
@@ -192,7 +246,7 @@ public class WebHookService {
     public void notifyHooks(Class<? extends Event> clazz, Object data) {
         Timings.WEBHOOK_NOTIFY.startTimingIfSync();
 
-        List<WebHook> notifyHooks = new ArrayList<>(customHooks.get(clazz).getFirst());
+        List<WebHook> notifyHooks = customHooks.get(clazz).getFirst();
         for (WebHook hook : notifyHooks) {
             notifyHook(hook, WebHookType.CUSTOM_EVENT, null, data);
         }

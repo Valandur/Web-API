@@ -72,7 +72,7 @@ dependencies {
     compile group: "org.glassfish.jersey.inject", name: "jersey-hk2", version: "2.26"
     compile group: "org.bstats", name: "bstats-sponge", version: "1.4"
 
-    compileOnly group: "org.spongepowered", name: "spongeapi", version: "${project.spongeVersion}-SNAPSHOT"
+    compileOnly group: "org.spongepowered", name: "spongeapi", version: project.spongeVersion
 
     compile group: 'redis.clients', name: 'jedis', version: '2.9.0'
     compile group: 'com.rabbitmq', name: 'amqp-client', version: '5.3.0'

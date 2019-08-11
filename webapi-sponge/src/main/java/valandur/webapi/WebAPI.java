@@ -91,10 +91,6 @@ import java.util.stream.Collectors;
 )
 public class WebAPI {
 
-    static {
-        System.out.println("Static initialized");
-    }
-
     private static WebAPI instance;
     public static WebAPI getInstance() {
         return WebAPI.instance;

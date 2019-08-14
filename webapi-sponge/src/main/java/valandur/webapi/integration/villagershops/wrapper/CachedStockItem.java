@@ -1,9 +1,9 @@
 package valandur.webapi.integration.villagershops.wrapper;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import de.dosmike.sponge.vshop.InvPrep;
-import de.dosmike.sponge.vshop.NPCguard;
-import de.dosmike.sponge.vshop.StockItem;
+import de.dosmike.sponge.vshop.menus.InvPrep;
+import de.dosmike.sponge.vshop.shops.NPCguard;
+import de.dosmike.sponge.vshop.shops.StockItem;
 import de.dosmike.sponge.vshop.VillagerShops;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -14,6 +14,7 @@ import valandur.webapi.cache.misc.CachedCatalogType;
 import valandur.webapi.util.Constants;
 
 import javax.ws.rs.BadRequestException;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -90,6 +91,26 @@ public class CachedStockItem extends CachedObject<StockItem> {
         return item;
     }
 
+    String oreDictEntry;
+
+    @JsonProperty
+    @ApiModelProperty(value = "If the filter is set to use the OreDictionary, this field will hold the OreDict entry accepted by the shop")
+    public String getOreDictEntry() {
+        return oreDictEntry;
+    }
+
+    String filter;
+
+    @JsonProperty
+    @ApiModelProperty(value = "This allowes some values of items being ignored when selling", required = true)
+    public StockItem.FilterOptions getFilter() {
+        try {
+            return StockItem.FilterOptions.of(filter);
+        } catch (NoSuchElementException e) {
+            return StockItem.FilterOptions.NORMAL;
+        }
+    }
+
 
     public CachedStockItem() {
         super(null);
@@ -107,6 +128,10 @@ public class CachedStockItem extends CachedObject<StockItem> {
         this.maxStock = item.getMaxStock();
         this.hasStock = this.maxStock > 0;
         this.item = item.getItem().createSnapshot();
+        this.filter = item.getNbtFilter().toString();
+        if (item.getNbtFilter().equals(StockItem.FilterOptions.OREDICT)) {
+            this.oreDictEntry = item.getOreDictEntry().get();
+        }
     }
 
     @Override
@@ -141,5 +166,7 @@ public class CachedStockItem extends CachedObject<StockItem> {
             throw new BadRequestException("Buy price can't be negative");
         if (item == null)
             throw new BadRequestException("Missing item snapshot");
+        if ("OreDict".equalsIgnoreCase(filter) != (oreDictEntry == null))
+            throw new BadRequestException("The oreDictEntry value is tied to the filter type being OreDict");
     }
 }

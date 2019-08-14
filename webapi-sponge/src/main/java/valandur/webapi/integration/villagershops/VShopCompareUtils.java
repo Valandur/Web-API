@@ -1,7 +1,12 @@
 package valandur.webapi.integration.villagershops;
 
 import com.flowpowered.math.vector.Vector3d;
-import de.dosmike.sponge.vshop.*;
+import de.dosmike.sponge.vshop.menus.InvPrep;
+import de.dosmike.sponge.vshop.shops.NPCguard;
+import de.dosmike.sponge.vshop.shops.StockItem;
+import de.dosmike.sponge.vshop.VillagerShops;
+import de.dosmike.sponge.vshop.Utilities;
+import de.dosmike.sponge.vshop.API;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.EntityType;
 import org.spongepowered.api.text.serializer.TextSerializers;
@@ -83,7 +88,7 @@ class VShopCompareUtils {
                             item.getItem().createStack(),
                             item.getSellPrice(),
                             item.getBuyPrice(),
-                            VillagerShops.getInstance().CurrencyByName(item.getCurrency().getId()),
+                            Utilities.CurrencyByName(item.getCurrency().getId()),
                             item.getMaxStock()));
                 } else if (i >= newS) {
                     inv.removeIndex(i);
@@ -93,7 +98,7 @@ class VShopCompareUtils {
                             item.getItem().createStack(),
                             item.getSellPrice(),
                             item.getBuyPrice(),
-                            VillagerShops.getInstance().CurrencyByName(item.getCurrency().getId()),
+                            Utilities.CurrencyByName(item.getCurrency().getId()),
                             item.getMaxStock()));
                 }
             }

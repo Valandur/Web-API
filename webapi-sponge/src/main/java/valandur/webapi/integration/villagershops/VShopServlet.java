@@ -1,6 +1,11 @@
 package valandur.webapi.integration.villagershops;
 
-import de.dosmike.sponge.vshop.*;
+import de.dosmike.sponge.vshop.menus.InvPrep;
+import de.dosmike.sponge.vshop.shops.NPCguard;
+import de.dosmike.sponge.vshop.shops.StockItem;
+import de.dosmike.sponge.vshop.Utilities;
+import de.dosmike.sponge.vshop.VillagerShops;
+import de.dosmike.sponge.vshop.API;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.spongepowered.api.entity.EntityType;
@@ -35,6 +40,7 @@ public class VShopServlet extends BaseServlet {
             value = "List Shops",
             notes = "Return a list of all shops")
     public Collection<CachedVShop> listShops() {
+
         return WebAPI.runOnMain(() -> API.list().stream().map(CachedVShop::new).collect(Collectors.toList()));
     }
 
@@ -232,7 +238,7 @@ public class VShopServlet extends BaseServlet {
                     req.getItem().createStack(),
                     req.getSellPrice(),
                     req.getBuyPrice(),
-                    VillagerShops.getInstance().CurrencyByName(req.getCurrency().getId()),
+                    Utilities.CurrencyByName(req.getCurrency().getId()),
                     req.getMaxStock()));
 
             return new CachedStockItem(inv.getItem(s), s, npc.get().getIdentifier());
@@ -272,7 +278,7 @@ public class VShopServlet extends BaseServlet {
                         req.getItem().createStack(),
                         req.getSellPrice(),
                         req.getBuyPrice(),
-                        VillagerShops.getInstance().CurrencyByName(req.getCurrency().getId()),
+                        Utilities.CurrencyByName(req.getCurrency().getId()),
                         req.getMaxStock()));
 
                 return new CachedStockItem(inv.getItem(item), item, npc.get().getIdentifier());

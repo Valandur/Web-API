@@ -36,7 +36,10 @@ repositories {
         url "http://repo.bstats.org/content/repositories/releases/"
     }
     maven {
-        url = "http://repo.aikar.co/nexus/content/groups/aikar/"
+        url "http://repo.aikar.co/nexus/content/groups/aikar/"
+    }
+    maven {
+        url 'https://jitpack.io'
     }
     flatDir {
         dirs "lib"
@@ -87,7 +90,7 @@ dependencies {
     compileOnly name: "Nucleus-1.12.1-S7.1-api"
     compileOnly name: "RedProtect-7.5.5-b130-Universal"
     compileOnly name: "UniversalMarket-1.12.2-v1.3"
-    compileOnly name: "VillagerShops-2.0.1"
+    compileOnly "com.github.DosMike:VillagerShops:development-SNAPSHOT"
     compileOnly name: "WebBooks"
 }
 

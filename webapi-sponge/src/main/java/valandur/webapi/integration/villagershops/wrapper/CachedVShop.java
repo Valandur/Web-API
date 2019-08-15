@@ -1,7 +1,7 @@
 package valandur.webapi.integration.villagershops.wrapper;
 
-import de.dosmike.sponge.vshop.InvPrep;
-import de.dosmike.sponge.vshop.NPCguard;
+import de.dosmike.sponge.vshop.menus.InvPrep;
+import de.dosmike.sponge.vshop.shops.NPCguard;
 import de.dosmike.sponge.vshop.VillagerShops;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;

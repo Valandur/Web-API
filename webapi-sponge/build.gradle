@@ -90,7 +90,7 @@ dependencies {
     compileOnly name: "Nucleus-1.12.1-S7.1-api"
     compileOnly name: "RedProtect-7.5.5-b130-Universal"
     compileOnly name: "UniversalMarket-1.12.2-v1.3"
-    compileOnly "com.github.DosMike:VillagerShops:development-SNAPSHOT"
+    compileOnly "com.github.DosMike:VillagerShops:2.2.1"
     compileOnly name: "WebBooks"
 }
 

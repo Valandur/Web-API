@@ -20,7 +20,7 @@ import java.util.function.Supplier;
         id = "webapi-sponge",
         name = "WebAPI",
         description = "http(s) API for minecraft",
-        url = "https://github.com/Valandur/web-api-2",
+        url = "https://github.com/Valandur/web-api",
         authors = {
                 "Valandur"
         }

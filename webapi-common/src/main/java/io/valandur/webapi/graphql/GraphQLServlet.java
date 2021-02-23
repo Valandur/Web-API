@@ -179,4 +179,3 @@ public class GraphQLServlet extends HttpServlet {
         resp.getWriter().println(mapper.writeValueAsString(executionResult.toSpecification()));
     }
 }
-

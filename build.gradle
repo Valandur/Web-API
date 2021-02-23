@@ -1,0 +1,45 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+
+    dependencies {
+        classpath 'com.github.jengelman.gradle.plugins:shadow:6.1.0'
+    }
+}
+
+group = 'io.valandur'
+version = '1.0-SNAPSHOT'
+
+subprojects {
+    apply plugin: 'com.github.johnrengelman.shadow'
+    apply plugin: 'java'
+    apply plugin: 'maven'
+
+    group = project.group
+    version = project.version
+
+    sourceCompatibility = '1.8'
+    targetCompatibility = '1.8'
+
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        compileOnly group: 'org.slf4j', name: 'slf4j-api', version: '1.7.30'
+    }
+
+    shadowJar {
+        dependencies {
+            exclude(dependency('org.slf4j:'))
+            exclude("module-info.class") // Removing this file stops Sponge from breaking
+        }
+
+        mergeServiceFiles()
+
+        relocate 'org.eclipse', 'io.valandur.shadow.org.eclipse'
+        relocate 'javax.servlet', 'io.valandur.shadow.javax.servlet'
+        relocate 'com.fasterxml', 'io.valandur.shadow.com.fasterxml'
+    }
+}

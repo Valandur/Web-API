@@ -1,0 +1,27 @@
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile group: "com.fasterxml.jackson.core", name: "jackson-core", version: project.jacksonVersion
+    compile group: "com.fasterxml.jackson.core", name: "jackson-databind", version: project.jacksonVersion
+    compile group: "com.fasterxml.jackson.core", name: "jackson-annotations", version: project.jacksonVersion
+    compile group: 'com.fasterxml.jackson.jr', name: 'jackson-jr-objects', version: '2.12.0'
+
+    compile group: 'org.eclipse.jetty', name: 'jetty-server', version: project.jettyVersion
+    compile group: 'org.eclipse.jetty', name: 'jetty-servlet', version: project.jettyVersion
+
+    compile group: 'org.glassfish.jersey.core', name: 'jersey-server', version: project.jerseyVersion
+    compile group: 'org.glassfish.jersey.media', name: 'jersey-media-json-jackson', version: project.jerseyVersion
+    compile group: 'org.glassfish.jersey.inject', name: 'jersey-hk2', version: project.jerseyVersion
+    compile group: 'org.glassfish.jersey.containers', name: 'jersey-container-servlet', version: project.jerseyVersion
+
+    compile group: 'com.graphql-java', name: 'graphql-java', version: '16.2'
+    compile group: 'io.leangen.graphql', name: 'spqr', version: '0.11.1'
+}
+
+shadowJar {
+    dependencies
+}
+
+tasks.build.dependsOn tasks.shadowJar

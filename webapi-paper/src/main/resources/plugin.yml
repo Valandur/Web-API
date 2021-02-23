@@ -1,0 +1,9 @@
+name: WebAPI
+version: $version
+main: io.valandur.webapi.WebAPIPaperPlugin
+api-version: 1.16
+prefix: WEB-API
+load: STARTUP
+authors: [ Valandur ]
+description: http(s) API for minecraft
+website: https://github.com/Valandur/web-api-2

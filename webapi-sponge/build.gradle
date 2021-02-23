@@ -1,0 +1,35 @@
+plugins {
+    id "org.spongepowered.plugin" version "0.9.0"
+    id "org.spongepowered.gradle.vanilla" version "0.1"
+}
+
+dependencies {
+    compile project(":webapi-common")
+
+    compileOnly "org.spongepowered:spongeapi:7.3.0"
+    annotationProcessor "org.spongepowered:spongeapi:7.3.0"
+}
+
+sponge.plugin.id = "webapi-sponge"
+
+minecraft {
+    version("21w06a")
+    runs {
+        server()
+        client()
+    }
+}
+
+shadowJar {
+    dependencies
+}
+
+task copyJarToRun(type: Copy) {
+    from shadowJar
+    into "run/mods/"
+}
+
+tasks.copyJarToRun.dependsOn tasks.shadowJar
+tasks.build.dependsOn tasks.copyJarToRun
+
+tasks.build.dependsOn tasks.shadowJar

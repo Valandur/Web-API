@@ -1,0 +1,36 @@
+repositories {
+    maven {
+        name = 'papermc-repo'
+        url = 'https://papermc.io/repo/repository/maven-public/'
+    }
+    maven {
+        name = 'sonatype'
+        url = 'https://oss.sonatype.org/content/groups/public/'
+    }
+}
+
+dependencies {
+    compile project(":webapi-common")
+
+    compileOnly 'com.destroystokyo.paper:paper-api:1.16.5-R0.1-SNAPSHOT'
+}
+
+processResources {
+    from(sourceSets.main.resources.srcDirs) {
+        expand 'version': project.version
+    }
+}
+
+shadowJar {
+    dependencies
+}
+
+task copyJarToRun(type: Copy) {
+    from shadowJar
+    into "run/plugins/"
+}
+
+tasks.copyJarToRun.dependsOn tasks.shadowJar
+tasks.build.dependsOn tasks.copyJarToRun
+
+tasks.build.dependsOn tasks.shadowJar

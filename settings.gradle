@@ -1,0 +1,3 @@
+rootProject.name = 'webapi'
+
+include 'webapi-common', 'webapi-spigot', 'webapi-paper', 'webapi-sponge'

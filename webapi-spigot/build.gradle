@@ -10,9 +10,9 @@ repositories {
 }
 
 dependencies {
-    compile project(":webapi-common")
+    implementation project(":webapi-common")
 
-    compileOnly 'org.spigotmc:spigot-api:1.16.5-R0.1-SNAPSHOT'
+    compileOnly group: 'org.spigotmc', name: 'spigot-api', version: '1.16.5-R0.1-SNAPSHOT'
 }
 
 processResources {
@@ -20,9 +20,3 @@ processResources {
         expand 'version': project.version
     }
 }
-
-shadowJar {
-    dependencies
-}
-
-tasks.build.dependsOn tasks.shadowJar

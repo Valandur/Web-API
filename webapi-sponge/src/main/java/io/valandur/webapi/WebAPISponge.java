@@ -3,184 +3,271 @@ package io.valandur.webapi;
 import io.valandur.webapi.info.ServerInfo;
 import io.valandur.webapi.item.ItemStack;
 import io.valandur.webapi.player.Player;
+import io.valandur.webapi.player.PlayerInventory;
 import io.valandur.webapi.user.User;
 import io.valandur.webapi.world.GameRule;
 import io.valandur.webapi.world.World;
-import org.slf4j.Logger;
-import org.spongepowered.api.Server;
+import org.spongepowered.api.ResourceKey;
 import org.spongepowered.api.Sponge;
-import org.spongepowered.api.data.key.Keys;
-import org.spongepowered.api.data.manipulator.mutable.DisplayNameData;
-import org.spongepowered.api.data.manipulator.mutable.item.AuthorData;
-import org.spongepowered.api.data.manipulator.mutable.item.EnchantmentData;
-import org.spongepowered.api.data.manipulator.mutable.item.PagedData;
-import org.spongepowered.api.data.persistence.DataFormats;
-import org.spongepowered.api.item.inventory.Carrier;
+import org.spongepowered.api.adventure.SpongeComponents;
+import org.spongepowered.api.data.Keys;
 import org.spongepowered.api.item.inventory.Inventory;
-import org.spongepowered.api.item.inventory.type.CarriedInventory;
-import org.spongepowered.api.profile.GameProfile;
-import org.spongepowered.api.service.user.UserStorageService;
-import org.spongepowered.api.text.Text;
-import org.spongepowered.api.world.storage.WorldProperties;
+import org.spongepowered.api.item.inventory.equipment.EquipmentTypes;
+import org.spongepowered.api.registry.RegistryTypes;
 
-import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public class WebAPISponge extends WebAPI<SpongeConfig> {
 
     private final WebAPISpongePlugin plugin;
+    private final ExecutorService syncExecutor;
 
     public WebAPISponge(WebAPISpongePlugin plugin) {
         super();
 
         this.plugin = plugin;
-    }
-
-    @Override
-    public Logger getLogger() {
-        return plugin.getLogger();
+        this.syncExecutor = Sponge.server().scheduler().createExecutor(plugin.getContainer());
     }
 
 
     @Override
     public Collection<User> getUsers() {
-        ArrayList<User> users = new ArrayList<>();
-        Optional<UserStorageService> userStorage = Sponge.getServiceManager().provide(UserStorageService.class);
-        if (userStorage.isEmpty()) {
-            return users;
-        }
+        var mgr = Sponge.server().userManager();
+        return mgr.streamAll()
+                .map(mgr::find)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .map(this::toUser).
+                        collect(Collectors.toList());
+    }
 
-        for (GameProfile profile : userStorage.get().getAll()) {
-            users.add(new User(profile.getUniqueId().toString(), profile.getName().orElse(null)));
-        }
-        return users;
+    @Override
+    public User getUser(UUID uuid) {
+        var mgr = Sponge.server().userManager();
+        var profile = mgr.find(uuid);
+        return profile.map(this::toUser).orElse(null);
+    }
+
+    private User toUser(org.spongepowered.api.entity.living.player.User user) {
+        return new User(user.uniqueId().toString(), user.name());
     }
 
     @Override
     public Collection<Player> getPlayers() {
-        ArrayList<Player> players = new ArrayList<>();
-        for (org.spongepowered.api.entity.living.player.Player player : Sponge.getServer().getOnlinePlayers()) {
-            final ItemStack[] equipment = {null, null, null, null};
-            player.getHelmet().ifPresent((stack) -> equipment[0] = this.toItemStack(stack));
-            player.getChestplate().ifPresent((stack) -> equipment[1] = this.toItemStack(stack));
-            player.getLeggings().ifPresent((stack) -> equipment[2] = this.toItemStack(stack));
-            player.getBoots().ifPresent((stack) -> equipment[3] = this.toItemStack(stack));
-
-            CarriedInventory<? extends Carrier> inv = player.getInventory();
-            Collection<ItemStack> stacks = new ArrayList<>(inv.totalItems());
-            for (Inventory slot : inv.slots()) {
-                slot.peek().ifPresent(stack -> stacks.add(this.toItemStack(stack)));
-            }
-
-            players.add(new Player(player.getIdentifier(), player.getName(),
-                    player.getConnection().getAddress().toString(), equipment[0], equipment[1], equipment[2],
-                    equipment[3], stacks));
+        var players = new ArrayList<Player>();
+        for (var player : Sponge.server().onlinePlayers()) {
+            players.add(this.toPlayer(player));
         }
         return players;
     }
 
     @Override
-    public Collection<World> getWorlds() {
-        ArrayList<World> worlds = new ArrayList<>();
-        for (org.spongepowered.api.world.World world : Sponge.getServer().getWorlds()) {
-            WorldProperties props = world.getProperties();
-            Collection<GameRule> gameRules = new ArrayList<>(props.getGameRules().size());
-            for (Map.Entry<String, String> gameRule : props.getGameRules().entrySet()) {
-                Object value = null;
-                String rawValue = gameRule.getValue();
-                if (rawValue.equalsIgnoreCase("true")) {
-                    value = true;
-                } else if (rawValue.equalsIgnoreCase("false")) {
-                    value = false;
-                }
-                if (value == null) {
-                    try {
-                        value = Integer.parseInt(rawValue);
-                    } catch (NumberFormatException ignored) {
-                    }
-                }
-                if (value == null) {
-                    try {
-                        value = Double.parseDouble(rawValue);
-                    } catch (NumberFormatException ignored) {
-                    }
-                }
-                gameRules.add(new GameRule(gameRule.getKey(), value));
+    public Player getPlayer(UUID uuid) {
+        var player = Sponge.server().player(uuid);
+        return player.map(this::toPlayer).orElse(null);
+    }
+
+    private Player toPlayer(org.spongepowered.api.entity.living.player.server.ServerPlayer player) {
+        return new Player(
+                player.uniqueId().toString(),
+                player.name(),
+                player.connection().address().toString()
+        );
+    }
+
+    @Override
+    public PlayerInventory getPlayerInventory(UUID uuid) {
+        var player = Sponge.server().player(uuid);
+        if (player.isEmpty()) {
+            return null;
+        }
+
+        var inv = player.get().inventory();
+        var armor = inv.armor();
+
+        var helmet = armor.peek(EquipmentTypes.HEAD)
+                .map(stack -> !stack.isEmpty() ? this.toItemStack(stack) : null)
+                .orElse(null);
+
+        var chestplate = armor.peek(EquipmentTypes.CHEST)
+                .map(stack -> !stack.isEmpty() ? this.toItemStack(stack) : null)
+                .orElse(null);
+
+        var leggings = armor.peek(EquipmentTypes.LEGS)
+                .map(stack -> !stack.isEmpty() ? this.toItemStack(stack) : null)
+                .orElse(null);
+
+        var boots = armor.peek(EquipmentTypes.FEET)
+                .map(stack -> !stack.isEmpty() ? this.toItemStack(stack) : null)
+                .orElse(null);
+
+        var stacks = new ArrayList<ItemStack>();
+        for (Inventory slot : inv.slots()) {
+            var item = slot.peek();
+            if (!item.isEmpty()) {
+                stacks.add(this.toItemStack(item));
             }
-            worlds.add(new World(world.getUniqueId().toString(), world.getName(),
-                    world.getDimension().getType().getName(), world.getDifficulty().getName(), props.getSeed(),
-                    gameRules));
+        }
+
+        return new PlayerInventory(
+                helmet,
+                chestplate,
+                leggings,
+                boots,
+                stacks
+        );
+    }
+
+    @Override
+    public void addToPlayerInventory(UUID uuid, ItemStack stack) {
+        var player = Sponge.server().player(uuid);
+        if (player.isEmpty()) {
+            return;
+        }
+
+        var itemStack = this.fromItemStack(stack);
+        if (itemStack == null) {
+            return;
+        }
+
+        var inv = player.get().inventory();
+        inv.offer(itemStack);
+    }
+
+    @Override
+    public Collection<World> getWorlds() {
+        var worlds = new ArrayList<World>();
+        for (var world : Sponge.server().worldManager().worlds()) {
+            worlds.add(this.toWorld(world));
         }
         return worlds;
     }
 
+    private World toWorld(org.spongepowered.api.world.server.ServerWorld world) {
+        var props = world.properties();
+        var gameRules = new ArrayList<GameRule>();
+        for (var gameRule : props.gameRules().entrySet()) {
+            Object value = null;
+            var rawValue = gameRule.getValue().toString();
+            if (rawValue.equalsIgnoreCase("true")) {
+                value = true;
+            } else if (rawValue.equalsIgnoreCase("false")) {
+                value = false;
+            }
+            if (value == null) {
+                try {
+                    value = Integer.parseInt(rawValue);
+                } catch (NumberFormatException ignored) {
+                }
+            }
+            if (value == null) {
+                try {
+                    value = Double.parseDouble(rawValue);
+                } catch (NumberFormatException ignored) {
+                }
+            }
+            gameRules.add(new GameRule(gameRule.getKey().toString(), value));
+        }
+
+        return new World(
+                world.uniqueId().toString(),
+                props.displayName().map(Object::toString).orElse(null),
+                world.properties().worldType().toString(),
+                world.difficulty().toString(),
+                world.seed(),
+                gameRules
+        );
+    }
 
     @Override
     public ServerInfo getInfo() {
-        Server server = Sponge.getServer();
+        var server = Sponge.server();
 
         return new ServerInfo(
-                server.getMotd().toPlainSingle(),
-                server.getOnlinePlayers().size(),
-                server.getMaxPlayers(),
-                server.getBoundAddress().map(InetSocketAddress::toString).orElse(null),
-                server.getOnlineMode(),
+                SpongeComponents.plainSerializer().serialize(server.motd()),
+                server.onlinePlayers().size(),
+                server.maxPlayers(),
+                server.isOnlineModeEnabled(),
                 plugin.getUptime(),
-                server.getTicksPerSecond(),
-                Sponge.getPlatform().getMinecraftVersion().getName()
+                Sponge.platform().minecraftVersion().name()
         );
+    }
+
+    private ItemStack toItemStack(org.spongepowered.api.item.inventory.ItemStack stack) {
+        var enchantments = new HashMap<String, Integer>();
+        stack.get(Keys.APPLIED_ENCHANTMENTS).ifPresent(enchantmentData -> {
+            for (var enchantment : enchantmentData) {
+                enchantments.put(enchantment.type().key(RegistryTypes.ENCHANTMENT_TYPE).asString(),
+                        enchantment.level());
+            }
+        });
+
+        var meta = new HashMap<String, Object>();
+        stack.get(Keys.PAGES).ifPresent(pages -> {
+            meta.put("pages",
+                    pages.stream().map(page -> SpongeComponents.plainSerializer().serialize(page)).toArray());
+        });
+        stack.get(Keys.PLAIN_PAGES).ifPresent(pages -> {
+            meta.put("pages", pages);
+        });
+        stack.get(Keys.AUTHOR).ifPresent(author -> {
+            meta.put("author", SpongeComponents.plainSerializer().serialize(author));
+        });
+
+        if (stack.supports(Keys.DISPLAY_NAME)) {
+            stack.get(Keys.DISPLAY_NAME).ifPresent(displayName -> {
+                meta.put("displayName", SpongeComponents.plainSerializer().serialize(displayName));
+            });
+        }
+
+        return new ItemStack(
+                stack.type().key(RegistryTypes.ITEM_TYPE).asString(),
+                stack.quantity(),
+                meta,
+                enchantments
+        );
+    }
+
+    private org.spongepowered.api.item.inventory.ItemStack fromItemStack(ItemStack stack) {
+        var key = ResourceKey.resolve(stack.type);
+        var entry = RegistryTypes.ITEM_TYPE.get().findEntry(key);
+        if (entry.isEmpty()) {
+            return null;
+        }
+
+        return org.spongepowered.api.item.inventory.ItemStack.of(entry.get().value(), stack.amount);
     }
 
 
     @Override
     public SpongeConfig getConfig(String name) {
-        String confName = name + ".conf";
+        var confName = name + ".conf";
         return new SpongeConfig(confName, plugin.getConfigPath().resolve(confName));
     }
 
+
     @Override
     public void runOnMain(Runnable runnable) throws ExecutionException, InterruptedException {
-        plugin.runOnMain(runnable);
+        if (Sponge.server().onMainThread()) {
+            runnable.run();
+        } else {
+            var future = CompletableFuture.runAsync(runnable, syncExecutor);
+            future.get();
+        }
     }
 
     @Override
     public <T> T runOnMain(Supplier<T> supplier) throws ExecutionException, InterruptedException {
-        return plugin.runOnMain(supplier);
-    }
-
-    private ItemStack toItemStack(org.spongepowered.api.item.inventory.ItemStack stack) {
-        Map<String, Integer> enchantments = new HashMap<>();
-        stack.get(EnchantmentData.class).ifPresent(enchantmentData -> {
-            enchantmentData.enchantments().forEach(enchantment -> {
-                enchantments.put(enchantment.getType().getId(), enchantment.getLevel());
-            });
-        });
-
-        List<String> lore = stack.get(Keys.ITEM_LORE)
-                .map(rawLore -> rawLore.stream().map(Text::toPlainSingle).collect(Collectors.toList()))
-                .orElse(null);
-
-        Map<String, Object> meta = new HashMap<>();
-        stack.get(PagedData.class).ifPresent(pagedData -> {
-            meta.put("pages", pagedData.pages().get().stream().map(Text::toPlainSingle).toArray(String[]::new));
-        });
-        stack.get(AuthorData.class).ifPresent(authorData -> {
-            meta.put("author", authorData.author().get().toPlainSingle());
-        });
-        stack.get(DisplayNameData.class).ifPresent(displayNameData -> {
-            meta.put("displayName", displayNameData.displayName().get().toPlainSingle());
-        });
-
-        try {
-            getLogger().info(DataFormats.JSON.write(stack.toContainer()));
-        } catch (IOException e) {
-            e.printStackTrace();
+        if (Sponge.server().onMainThread()) {
+            return supplier.get();
+        } else {
+            var future = CompletableFuture.supplyAsync(supplier, syncExecutor);
+            return future.get();
         }
-
-        return new ItemStack(stack.getType().getName(), stack.getQuantity(), meta, enchantments, lore);
     }
 }

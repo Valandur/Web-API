@@ -18,7 +18,6 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.slf4j.Logger;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -33,7 +32,6 @@ public class GraphQLServlet extends HttpServlet {
     private static final String APPLICATION_JSON = "application/json";
 
     private final WebAPI<?> webapi;
-    private final Logger logger;
     private GraphQL graphQL;
     private ObjectMapper mapper;
 
@@ -41,7 +39,6 @@ public class GraphQLServlet extends HttpServlet {
         super();
 
         this.webapi = WebAPI.getInstance();
-        this.logger = webapi.getLogger();
     }
 
     /**
@@ -49,7 +46,7 @@ public class GraphQLServlet extends HttpServlet {
      */
     @Override
     public void init() throws ServletException {
-        logger.debug("Initialize GraphQLServlet servlets.");
+        //logger.debug("Initialize GraphQLServlet servlets.");
         mapper = new ObjectMapper(new JsonFactory());
 
         GraphQLSchema schema = new GraphQLSchemaGenerator()
@@ -70,7 +67,7 @@ public class GraphQLServlet extends HttpServlet {
      */
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        logger.debug("GET GraphQL endpoint");
+        //logger.debug("GET GraphQL endpoint");
         String query = req.getParameter("query");
         String operationName = req.getParameter("operationName");
         String variables = req.getParameter("variables");
@@ -133,7 +130,7 @@ public class GraphQLServlet extends HttpServlet {
      */
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        logger.debug("POST GraphQL endpoint");
+        //logger.debug("POST GraphQL endpoint");
         String query = "";
         String operationName = "";
         Map<String, Object> variableMap = new HashMap<>();

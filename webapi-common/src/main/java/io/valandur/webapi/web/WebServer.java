@@ -18,14 +18,12 @@ import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.servlet.ServletContainer;
-import org.slf4j.Logger;
 
 import java.net.SocketException;
 
 public class WebServer {
 
     private final WebAPI<?> webapi;
-    private Logger logger;
 
     private Server server;
 
@@ -41,8 +39,6 @@ public class WebServer {
     }
 
     public void load() {
-        logger = webapi.getLogger();
-
         Config conf = webapi.getConfig("web");
         conf.load();
 
@@ -56,18 +52,16 @@ public class WebServer {
 
     public void start() {
         // Start web server
-        logger.info("Starting Web Server...");
+        //logger.info("Starting Web Server...");
 
         try {
-
             QueuedThreadPool threadPool = new QueuedThreadPool(maxThreads, minThreads, idleTimeout);
-            threadPool.setName("API-POOL");
+            threadPool.setName("WEB-API-POOL");
             server = new Server(threadPool);
 
             // Add error handler to jetty (will also be picked up by jersey
             ErrorHandler errHandler = new ErrorHandler();
             server.setErrorHandler(errHandler);
-            server.addBean(errHandler);
 
             // HTTP config
             HttpConfiguration httpConfig = new HttpConfiguration();
@@ -77,11 +71,11 @@ public class WebServer {
             // HTTP
             if (portHttp >= 0) {
                 if (portHttp < 1024) {
-                    logger.warn("You are using an HTTP port < 1024 which is not recommended! \n" +
+                    /*logger.warn("You are using an HTTP port < 1024 which is not recommended! \n" +
                             "This might cause errors when not running the server as root/admin. \n" +
                             "Running the server as root/admin is not recommended. " +
                             "Please use a port above 1024 for HTTP."
-                    );
+                    );*/
                 }
                 ServerConnector httpConn = new ServerConnector(server, new HttpConnectionFactory(httpConfig));
                 httpConn.setHost(host);
@@ -93,32 +87,28 @@ public class WebServer {
             }
 
             if (baseUri == null) {
-                logger.error("You have disabled both HTTP and HTTPS - The Web-API will be unreachable!");
+                //logger.error("You have disabled both HTTP and HTTPS - The Web-API will be unreachable!");
             }
 
             // Servlet context
             ServletContextHandler servletsContext = new ServletContextHandler();
             servletsContext.setContextPath(basePath);
+            servletsContext.setErrorHandler(errHandler);
 
             // GraphQL
             servletsContext.addServlet(GraphQLServlet.class, "/graphql");
 
             ResourceConfig conf = new ResourceConfig();
             conf.register(WorldServlet.class);
-            conf.register(WorldServlet.class.getPackage().getName());
-
             conf.register(PlayerServlet.class);
-            conf.register(PlayerServlet.class.getPackage().getName());
-
             conf.register(UserServlet.class);
-            conf.register(UserServlet.class.getPackage().getName());
-
             conf.register(InfoServlet.class);
-            conf.register(InfoServlet.class.getPackage().getName());
 
             conf.register(JacksonFeature.class);
 
-            ServletHolder jerseyServlet = new ServletHolder(new ServletContainer(conf));
+            // Jersey
+            ServletContainer container = new ServletContainer(conf);
+            ServletHolder jerseyServlet = new ServletHolder(container);
             jerseyServlet.setInitOrder(0);
             servletsContext.addServlet(jerseyServlet, "/*");
 
@@ -126,14 +116,16 @@ public class WebServer {
             server.setHandler(servletsContext);
 
             server.start();
+
+            System.out.println("Started");
         } catch (SocketException e) {
-            logger.error("Web-API web server could not start, probably because one of the ports needed for HTTP " +
-                    "and/or HTTPS are in use or not accessible (ports below 1024 are protected)");
+            /*logger.error("Web-API web server could not start, probably because one of the ports needed for HTTP " +
+                    "and/or HTTPS are in use or not accessible (ports below 1024 are protected)");*/
         } catch (MultiException e) {
             e.getThrowables().forEach(t -> {
                 if (t instanceof SocketException) {
-                    logger.error("Web-API web server could not start, probably because one of the ports needed for " +
-                            "HTTP and/or HTTPS are in use or not accessible (ports below 1024 are protected)");
+                    /*logger.error("Web-API web server could not start, probably because one of the ports needed for " +
+                            "HTTP and/or HTTPS are in use or not accessible (ports below 1024 are protected)");*/
                 } else {
                     t.printStackTrace();
                 }

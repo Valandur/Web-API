@@ -1,27 +1,33 @@
+import org.spongepowered.gradle.plugin.config.PluginLoaders
+import org.spongepowered.plugin.metadata.PluginDependency
+
 plugins {
-    id "org.spongepowered.plugin" version "0.9.0"
-    id "org.spongepowered.gradle.vanilla" version "0.1"
+    id "org.spongepowered.gradle.plugin" version "1.0.2"
 }
 
 dependencies {
-    compile project(":webapi-common")
-
-    compileOnly "org.spongepowered:spongeapi:7.3.0"
-    annotationProcessor "org.spongepowered:spongeapi:7.3.0"
+    implementation project(":webapi-common")
 }
 
-sponge.plugin.id = "webapi-sponge"
-
-minecraft {
-    version("21w06a")
-    runs {
-        server()
-        client()
+sponge {
+    apiVersion("8.0.0")
+    plugin("webapi-sponge") {
+        loader(PluginLoaders.JAVA_PLAIN)
+        displayName("WebAPI")
+        mainClass("io.valandur.webapi.WebAPISpongePlugin")
+        description("")
+        contributor("Valandur") {
+            description("Lead Developer")
+        }
+        dependency("spongeapi") {
+            loadOrder(PluginDependency.LoadOrder.AFTER)
+            optional(false)
+        }
     }
 }
 
 shadowJar {
-    dependencies
+    exclude "module-info.class" // Removing this file stops Sponge from breaking
 }
 
 task copyJarToRun(type: Copy) {
@@ -30,6 +36,3 @@ task copyJarToRun(type: Copy) {
 }
 
 tasks.copyJarToRun.dependsOn tasks.shadowJar
-tasks.build.dependsOn tasks.copyJarToRun
-
-tasks.build.dependsOn tasks.shadowJar

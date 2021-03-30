@@ -10,9 +10,9 @@ repositories {
 }
 
 dependencies {
-    compile project(":webapi-common")
+    implementation project(":webapi-common")
 
-    compileOnly 'com.destroystokyo.paper:paper-api:1.16.5-R0.1-SNAPSHOT'
+    compileOnly group: 'com.destroystokyo.paper', name: 'paper-api', version: '1.16.5-R0.1-SNAPSHOT'
 }
 
 processResources {
@@ -21,16 +21,9 @@ processResources {
     }
 }
 
-shadowJar {
-    dependencies
-}
-
 task copyJarToRun(type: Copy) {
     from shadowJar
     into "run/plugins/"
 }
 
 tasks.copyJarToRun.dependsOn tasks.shadowJar
-tasks.build.dependsOn tasks.copyJarToRun
-
-tasks.build.dependsOn tasks.shadowJar

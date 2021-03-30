@@ -1,32 +1,20 @@
 package io.valandur.webapi.player;
 
-import io.valandur.webapi.item.ItemStack;
-
-import java.util.Collection;
+import io.leangen.graphql.annotations.GraphQLQuery;
 
 public class Player {
+    @GraphQLQuery(name = "uuid", description = "The UUID of this player")
     public final String uuid;
+
+    @GraphQLQuery(name = "name", description = "The name of this player")
     public final String name;
+
+    @GraphQLQuery(name = "address", description = "The remote address of the player")
     public final String address;
 
-    public final ItemStack helmet;
-    public final ItemStack chestplate;
-    public final ItemStack leggings;
-    public final ItemStack boots;
-
-    public final Collection<ItemStack> inventory;
-
-    public Player(String uuid, String name, String address, ItemStack helmet, ItemStack chestplate,
-                  ItemStack leggings, ItemStack boots, Collection<ItemStack> inventory) {
+    public Player(String uuid, String name, String address) {
         this.uuid = uuid;
         this.name = name;
         this.address = address;
-
-        this.helmet = helmet;
-        this.chestplate = chestplate;
-        this.leggings = leggings;
-        this.boots = boots;
-
-        this.inventory = inventory;
     }
 }

@@ -1,9 +1,10 @@
 package io.valandur.webapi;
 
 import io.valandur.webapi.config.Config;
-import ninja.leaping.configurate.commented.CommentedConfigurationNode;
-import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
-import ninja.leaping.configurate.loader.ConfigurationLoader;
+import org.spongepowered.configurate.CommentedConfigurationNode;
+import org.spongepowered.configurate.hocon.HoconConfigurationLoader;
+import org.spongepowered.configurate.loader.ConfigurationLoader;
+import org.spongepowered.configurate.serialize.SerializationException;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -16,8 +17,8 @@ public class SpongeConfig extends Config {
     public SpongeConfig(String name, Path path) {
         super(name);
 
-        loader = HoconConfigurationLoader.builder().setPath(path).build();
-        node = loader.createEmptyNode();
+        loader = HoconConfigurationLoader.builder().path(path).build();
+        node = loader.createNode();
     }
 
     @Override
@@ -40,6 +41,11 @@ public class SpongeConfig extends Config {
 
     @Override
     public <T> T get(String path, T def) {
-        return (T) node.getNode(path).getValue(def);
+        try {
+            CommentedConfigurationNode n = node.node(path);
+            return (T) n.get(def.getClass(), def);
+        } catch (SerializationException e) {
+            return def;
+        }
     }
 }

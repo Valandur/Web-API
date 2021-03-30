@@ -7,12 +7,16 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;
 
+import java.util.Arrays;
+
 @Provider
 public class ErrorHandler extends org.eclipse.jetty.server.handler.ErrorHandler implements ExceptionMapper<Throwable> {
 
     @Override
     public Response toResponse(Throwable exception) {
         int status = Response.Status.INTERNAL_SERVER_ERROR.getStatusCode();
+
+        System.out.println("Its an error");
 
         if (exception instanceof WebApplicationException) {
             status = ((WebApplicationException) exception).getResponse().getStatus();
@@ -21,22 +25,34 @@ public class ErrorHandler extends org.eclipse.jetty.server.handler.ErrorHandler 
         } else {
             // Print the stack trace as this is an "unexpected" exception,
             // and we want to make sure we can track it down
-            exception.printStackTrace();
+            //exception.printStackTrace(System.out);
+            //WebAPI.getInstance().getLogger().error("Server Error", exception);
         }
+
+        exception.printStackTrace(System.out);
 
         return Response
                 .status(status)
-                .entity(new ErrorMessage(status, exception.getMessage()))
+                .entity(new ErrorMessage(
+                        status,
+                        exception.getMessage(),
+                        exception.getCause() != null ? exception.getCause().toString() : "",
+                        Arrays.toString(exception.getStackTrace())
+                ))
                 .build();
     }
 
     public static class ErrorMessage {
         public int status;
         public String error;
+        public String cause;
+        public String trace;
 
-        public ErrorMessage(int status, String error) {
+        public ErrorMessage(int status, String error, String cause, String trace) {
             this.status = status;
             this.error = error;
+            this.cause = cause;
+            this.trace = trace;
         }
     }
 }

@@ -1,11 +1,5 @@
-buildscript {
-    repositories {
-        jcenter()
-    }
-
-    dependencies {
-        classpath 'com.github.jengelman.gradle.plugins:shadow:6.1.0'
-    }
+plugins {
+    id "com.github.johnrengelman.shadow" version "6.1.0"
 }
 
 group = 'io.valandur'
@@ -19,27 +13,65 @@ subprojects {
     group = project.group
     version = project.version
 
-    sourceCompatibility = '1.8'
-    targetCompatibility = '1.8'
+    sourceCompatibility = '11'
+    targetCompatibility = '11'
 
     repositories {
         mavenCentral()
     }
 
-    dependencies {
-        compileOnly group: 'org.slf4j', name: 'slf4j-api', version: '1.7.30'
+    jar {
+        enabled = false
+        dependsOn(shadowJar)
     }
 
     shadowJar {
-        dependencies {
-            exclude(dependency('org.slf4j:'))
-            exclude("module-info.class") // Removing this file stops Sponge from breaking
-        }
+        project.configurations.implementation.canBeResolved = true
+        configurations = [project.configurations.implementation]
+
+        archiveClassifier.set('')
 
         mergeServiceFiles()
 
-        relocate 'org.eclipse', 'io.valandur.shadow.org.eclipse'
-        relocate 'javax.servlet', 'io.valandur.shadow.javax.servlet'
         relocate 'com.fasterxml', 'io.valandur.shadow.com.fasterxml'
+        relocate 'com.sun.research', 'io.valandur.shadow.com.sun.research'
+
+        relocate 'graphql', 'io.valandur.shadow.graphql'
+
+        relocate 'io.github', 'io.valandur.shadow.io.github'
+        relocate 'io.leangen', 'io.valandur.shadow.io.leangen'
+
+        relocate 'jakarta.annotation', 'io.valandur.shadow.jakarta.annotation'
+        relocate 'jakarta.inject', 'io.valandur.shadow.jakarta.inject'
+        relocate 'jakarta.servlet', 'io.valandur.shadow.jakarta.servlet'
+        relocate 'jakarta.validation', 'io.valandur.shadow.jakarta.validation'
+        relocate 'jakarta.ws', 'io.valandur.shadow.jakarta.ws'
+
+        relocate 'javassist', 'io.valandur.shadow.javassist'
+
+        relocate 'javax.activation', 'io.valandur.shadow.javax.activation'
+        relocate 'javax.servlet', 'io.valandur.shadow.javax.servlet'
+        /*relocate 'javax.xml', 'io.valandur.shadow.javax.xml'*/
+
+        relocate 'jersey.repackaged', 'io.valandur.shadow.jersey.repackaged'
+
+        relocate 'net.dongliu', 'io.valandur.shadow.net.dongliu'
+
+        relocate 'nonapi.io', 'io.valandur.shadow.nonapi.io'
+
+        relocate 'org.antlr', 'io.valandur.shadow.org.antlr'
+        relocate 'org.aopalliance', 'io.valandur.shadow.org.aopalliance'
+        relocate 'org.dataloader', 'io.valandur.shadow.org.dataloader'
+        relocate 'org.eclipse', 'io.valandur.shadow.org.eclipse'
+        relocate 'org.glassfish', 'io.valandur.shadow.org.glassfish'
+        relocate 'org.jvnet', 'io.valandur.shadow.org.jvnet'
+        relocate 'org.reactivestreams', 'io.valandur.shadow.org.reactivestreams'
+
+        exclude "jetty-dir.css"
     }
+}
+
+tasks.withType(AbstractArchiveTask) {
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
 }

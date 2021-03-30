@@ -2,13 +2,15 @@ package io.valandur.webapi;
 
 import io.valandur.webapi.config.Config;
 import io.valandur.webapi.info.ServerInfo;
+import io.valandur.webapi.item.ItemStack;
 import io.valandur.webapi.player.Player;
+import io.valandur.webapi.player.PlayerInventory;
 import io.valandur.webapi.user.User;
 import io.valandur.webapi.web.WebServer;
 import io.valandur.webapi.world.World;
-import org.slf4j.Logger;
 
 import java.util.Collection;
+import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Supplier;
 
@@ -30,7 +32,7 @@ public abstract class WebAPI<Conf extends Config> {
     public void load() {
         this.webServer.load();
     }
-    
+
     public void start() {
         this.webServer.start();
     }
@@ -39,12 +41,18 @@ public abstract class WebAPI<Conf extends Config> {
         this.webServer.stop();
     }
 
-    public abstract Logger getLogger();
-
 
     public abstract Collection<User> getUsers();
 
+    public abstract User getUser(UUID uuid);
+
     public abstract Collection<Player> getPlayers();
+
+    public abstract Player getPlayer(UUID uuid);
+
+    public abstract PlayerInventory getPlayerInventory(UUID uuid);
+
+    public abstract void addToPlayerInventory(UUID uuid, ItemStack stack);
 
     public abstract Collection<World> getWorlds();
 

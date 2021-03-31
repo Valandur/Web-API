@@ -5,7 +5,6 @@ import io.valandur.webapi.config.Config;
 import io.valandur.webapi.graphql.GraphQLServlet;
 import io.valandur.webapi.info.InfoServlet;
 import io.valandur.webapi.player.PlayerServlet;
-import io.valandur.webapi.user.UserServlet;
 import io.valandur.webapi.world.WorldServlet;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
@@ -101,7 +100,6 @@ public class WebServer {
             ResourceConfig conf = new ResourceConfig();
             conf.register(WorldServlet.class);
             conf.register(PlayerServlet.class);
-            conf.register(UserServlet.class);
             conf.register(InfoServlet.class);
 
             conf.register(JacksonFeature.class);

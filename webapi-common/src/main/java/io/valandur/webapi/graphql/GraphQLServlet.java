@@ -11,7 +11,6 @@ import io.leangen.graphql.GraphQLSchemaGenerator;
 import io.valandur.webapi.WebAPI;
 import io.valandur.webapi.info.InfoServlet;
 import io.valandur.webapi.player.PlayerServlet;
-import io.valandur.webapi.user.UserServlet;
 import io.valandur.webapi.world.WorldServlet;
 import jakarta.inject.Singleton;
 import jakarta.servlet.ServletException;
@@ -53,7 +52,6 @@ public class GraphQLServlet extends HttpServlet {
                 .withBasePackages("io.valandur.webapi")
                 .withOperationsFromSingleton(new InfoServlet())
                 .withOperationsFromSingleton(new PlayerServlet())
-                .withOperationsFromSingleton(new UserServlet())
                 .withOperationsFromSingleton(new WorldServlet())
                 .generate();
 

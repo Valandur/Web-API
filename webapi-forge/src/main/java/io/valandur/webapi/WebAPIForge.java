@@ -4,9 +4,12 @@ import io.valandur.webapi.info.ServerInfo;
 import io.valandur.webapi.item.ItemStack;
 import io.valandur.webapi.player.Player;
 import io.valandur.webapi.player.PlayerInventory;
-import io.valandur.webapi.user.User;
 import io.valandur.webapi.world.GameRule;
 import io.valandur.webapi.world.World;
+import jakarta.ws.rs.BadRequestException;
+import jakarta.ws.rs.InternalServerErrorException;
+import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.WebApplicationException;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.inventory.EquipmentSlotType;
@@ -35,17 +38,6 @@ public class WebAPIForge extends WebAPI<ForgeConfig> {
         this.plugin = plugin;
     }
 
-
-    @Override
-    public Collection<User> getUsers() {
-        return null;
-    }
-
-    @Override
-    public User getUser(UUID uuid) {
-        return null;
-    }
-
     @Override
     public Collection<Player> getPlayers() {
         var players = new ArrayList<Player>();
@@ -57,10 +49,13 @@ public class WebAPIForge extends WebAPI<ForgeConfig> {
     }
 
     @Override
-    public Player getPlayer(UUID uuid) {
+    public Player getPlayer(UUID uuid) throws WebApplicationException {
         var server = ServerLifecycleHooks.getCurrentServer();
         var player = server.getPlayerList().getPlayerByUUID(uuid);
-        return player != null ? this.toPlayer(player) : null;
+        if (player == null) {
+            throw new NotFoundException("Player not found: " + uuid);
+        }
+        return this.toPlayer(player);
     }
 
     private Player toPlayer(ServerPlayerEntity player) {
@@ -73,11 +68,11 @@ public class WebAPIForge extends WebAPI<ForgeConfig> {
 
 
     @Override
-    public PlayerInventory getPlayerInventory(UUID uuid) {
+    public PlayerInventory getPlayerInventory(UUID uuid) throws WebApplicationException {
         var server = ServerLifecycleHooks.getCurrentServer();
         var player = server.getPlayerList().getPlayerByUUID(uuid);
         if (player == null) {
-            return null;
+            throw new NotFoundException("Player not found: " + uuid);
         }
 
         var helmetStack = player.getItemStackFromSlot(EquipmentSlotType.HEAD);
@@ -111,19 +106,26 @@ public class WebAPIForge extends WebAPI<ForgeConfig> {
     }
 
     @Override
-    public void addToPlayerInventory(UUID uuid, ItemStack stack) {
+    public void addToPlayerInventory(UUID uuid, Collection<ItemStack> stacks) throws WebApplicationException {
         var server = ServerLifecycleHooks.getCurrentServer();
         var player = server.getPlayerList().getPlayerByUUID(uuid);
         if (player == null) {
-            return;
+            throw new NotFoundException("Player not found: " + uuid);
         }
 
-        var itemStack = this.fromItemStack(stack);
-        if (itemStack == null) {
-            return;
-        }
+        var itemStacks = stacks.stream().map(this::fromItemStack).collect(Collectors.toList());
 
-        player.addItemStackToInventory(itemStack);
+        for (var itemStack : itemStacks) {
+            var success = player.addItemStackToInventory(itemStack);
+            if (!success) {
+                throw new InternalServerErrorException("Could not add item stacks to inventory");
+            }
+        }
+    }
+
+    @Override
+    public void removeFromPlayerInventory(UUID uuid, Collection<ItemStack> stacks) throws WebApplicationException {
+        throw new InternalServerErrorException("Method not implemented");
     }
 
     @Override
@@ -213,10 +215,10 @@ public class WebAPIForge extends WebAPI<ForgeConfig> {
         );
     }
 
-    private net.minecraft.item.ItemStack fromItemStack(ItemStack stack) {
+    private net.minecraft.item.ItemStack fromItemStack(ItemStack stack) throws WebApplicationException {
         var loc = ResourceLocation.tryCreate(stack.type);
         if (loc == null) {
-            return null;
+            throw new BadRequestException("Invalid item: " + stack.type);
         }
 
         var item = ForgeRegistries.ITEMS.getValue(loc);

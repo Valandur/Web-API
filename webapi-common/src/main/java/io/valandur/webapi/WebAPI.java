@@ -5,9 +5,9 @@ import io.valandur.webapi.info.ServerInfo;
 import io.valandur.webapi.item.ItemStack;
 import io.valandur.webapi.player.Player;
 import io.valandur.webapi.player.PlayerInventory;
-import io.valandur.webapi.user.User;
 import io.valandur.webapi.web.WebServer;
 import io.valandur.webapi.world.World;
+import jakarta.ws.rs.WebApplicationException;
 
 import java.util.Collection;
 import java.util.UUID;
@@ -42,17 +42,15 @@ public abstract class WebAPI<Conf extends Config> {
     }
 
 
-    public abstract Collection<User> getUsers();
-
-    public abstract User getUser(UUID uuid);
-
     public abstract Collection<Player> getPlayers();
 
-    public abstract Player getPlayer(UUID uuid);
+    public abstract Player getPlayer(UUID uuid) throws WebApplicationException;
 
-    public abstract PlayerInventory getPlayerInventory(UUID uuid);
+    public abstract PlayerInventory getPlayerInventory(UUID uuid) throws WebApplicationException;
 
-    public abstract void addToPlayerInventory(UUID uuid, ItemStack stack);
+    public abstract void addToPlayerInventory(UUID uuid, Collection<ItemStack> stacks) throws WebApplicationException;
+
+    public abstract void removeFromPlayerInventory(UUID uuid, Collection<ItemStack> stacks) throws WebApplicationException;
 
     public abstract Collection<World> getWorlds();
 

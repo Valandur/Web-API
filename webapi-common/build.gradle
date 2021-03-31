@@ -1,7 +1,3 @@
-repositories {
-    mavenCentral()
-}
-
 dependencies {
     implementation group: "com.fasterxml.jackson.core", name: "jackson-core", version: project.jacksonVersion
     implementation group: "com.fasterxml.jackson.core", name: "jackson-databind", version: project.jacksonVersion
@@ -11,10 +7,10 @@ dependencies {
     implementation group: 'org.eclipse.jetty', name: 'jetty-server', version: project.jettyVersion
     implementation group: 'org.eclipse.jetty', name: 'jetty-servlet', version: project.jettyVersion
 
-    implementation group: 'org.glassfish.jersey.core', name: 'jersey-server', version: project.jerseyVersion
-    implementation group: 'org.glassfish.jersey.media', name: 'jersey-media-json-jackson', version: project.jerseyVersion
-    implementation group: 'org.glassfish.jersey.inject', name: 'jersey-hk2', version: project.jerseyVersion
-    implementation group: 'org.glassfish.jersey.containers', name: 'jersey-container-servlet', version: project.jerseyVersion
+    api group: 'org.glassfish.jersey.core', name: 'jersey-server', version: project.jerseyVersion
+    api group: 'org.glassfish.jersey.media', name: 'jersey-media-json-jackson', version: project.jerseyVersion
+    api group: 'org.glassfish.jersey.inject', name: 'jersey-hk2', version: project.jerseyVersion
+    api group: 'org.glassfish.jersey.containers', name: 'jersey-container-servlet', version: project.jerseyVersion
 
     implementation group: 'com.graphql-java', name: 'graphql-java', version: '16.2'
     implementation group: 'io.leangen.graphql', name: 'spqr', version: '0.11.1'

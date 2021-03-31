@@ -8,6 +8,7 @@ version = '1.0-SNAPSHOT'
 subprojects {
     apply plugin: 'com.github.johnrengelman.shadow'
     apply plugin: 'java'
+    apply plugin: 'java-library'
     apply plugin: 'maven'
 
     group = project.group
@@ -27,7 +28,7 @@ subprojects {
 
     shadowJar {
         project.configurations.implementation.canBeResolved = true
-        configurations = [project.configurations.implementation]
+        configurations = [project.configurations.implementation, project.configurations.api]
 
         archiveClassifier.set('')
 

@@ -4,11 +4,13 @@ import io.valandur.webapi.info.ServerInfo;
 import io.valandur.webapi.item.ItemStack;
 import io.valandur.webapi.player.Player;
 import io.valandur.webapi.player.PlayerInventory;
-import io.valandur.webapi.user.User;
 import io.valandur.webapi.world.GameRule;
 import io.valandur.webapi.world.World;
+import jakarta.ws.rs.BadRequestException;
+import jakarta.ws.rs.InternalServerErrorException;
+import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.WebApplicationException;
 import org.bukkit.Material;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.inventory.meta.BookMeta;
 
 import java.util.ArrayList;
@@ -17,6 +19,7 @@ import java.util.HashMap;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 public class WebAPISpigot extends WebAPI<SpigotConfig> {
 
@@ -26,26 +29,6 @@ public class WebAPISpigot extends WebAPI<SpigotConfig> {
         super();
 
         this.plugin = plugin;
-    }
-
-
-    @Override
-    public Collection<User> getUsers() {
-        var users = new ArrayList<User>();
-        for (var user : plugin.getServer().getOfflinePlayers()) {
-            users.add(this.toUser(user));
-        }
-        return users;
-    }
-
-    @Override
-    public User getUser(UUID uuid) {
-        var user = plugin.getServer().getOfflinePlayer(uuid);
-        return this.toUser(user);
-    }
-
-    private User toUser(OfflinePlayer user) {
-        return new User(user.getUniqueId().toString(), user.getName());
     }
 
     @Override
@@ -58,9 +41,12 @@ public class WebAPISpigot extends WebAPI<SpigotConfig> {
     }
 
     @Override
-    public Player getPlayer(UUID uuid) {
+    public Player getPlayer(UUID uuid) throws WebApplicationException {
         var player = plugin.getServer().getPlayer(uuid);
-        return player == null ? null : this.toPlayer(player);
+        if (player == null) {
+            throw new NotFoundException("Player not found: " + uuid);
+        }
+        return this.toPlayer(player);
     }
 
     private Player toPlayer(org.bukkit.entity.Player player) {
@@ -72,10 +58,10 @@ public class WebAPISpigot extends WebAPI<SpigotConfig> {
     }
 
     @Override
-    public io.valandur.webapi.player.PlayerInventory getPlayerInventory(UUID uuid) {
+    public io.valandur.webapi.player.PlayerInventory getPlayerInventory(UUID uuid) throws WebApplicationException {
         var player = plugin.getServer().getPlayer(uuid);
         if (player == null) {
-            return null;
+            throw new NotFoundException("Player not found: " + uuid);
         }
 
         var inv = player.getInventory();
@@ -88,7 +74,7 @@ public class WebAPISpigot extends WebAPI<SpigotConfig> {
 
         var leggingsStack = inv.getLeggings();
         var leggings = leggingsStack != null ? this.toItemStack(leggingsStack) : null;
-        
+
         var bootsStack = inv.getBoots();
         var boots = bootsStack != null ? this.toItemStack(bootsStack) : null;
 
@@ -109,19 +95,37 @@ public class WebAPISpigot extends WebAPI<SpigotConfig> {
     }
 
     @Override
-    public void addToPlayerInventory(UUID uuid, ItemStack stack) {
+    public void addToPlayerInventory(UUID uuid, Collection<ItemStack> stacks) throws WebApplicationException {
         var player = plugin.getServer().getPlayer(uuid);
         if (player == null) {
-            return;
+            throw new NotFoundException("Player not found: " + uuid);
         }
 
-        var itemStack = this.fromItemStack(stack);
-        if (itemStack == null) {
-            return;
-        }
-
+        var itemStacks = stacks.stream().map(this::fromItemStack).collect(Collectors.toList());
         var inv = player.getInventory();
-        inv.addItem(itemStack);
+        for (var itemStack : itemStacks) {
+            var result = inv.addItem(itemStack);
+            if (result.size() > 0) {
+                throw new InternalServerErrorException("Could not add item stacks to inventory");
+            }
+        }
+    }
+
+    @Override
+    public void removeFromPlayerInventory(UUID uuid, Collection<ItemStack> stacks) throws WebApplicationException {
+        var player = plugin.getServer().getPlayer(uuid);
+        if (player == null) {
+            throw new NotFoundException("Player not found: " + uuid);
+        }
+
+        var itemStacks = stacks.stream().map(this::fromItemStack).collect(Collectors.toList());
+        var inv = player.getInventory();
+        for (var itemStack : itemStacks) {
+            var result = inv.removeItem(itemStack);
+            if (result.size() > 0) {
+                throw new InternalServerErrorException("Could not remove item stacks from inventory");
+            }
+        }
     }
 
     @Override
@@ -204,11 +208,12 @@ public class WebAPISpigot extends WebAPI<SpigotConfig> {
         );
     }
 
-    private org.bukkit.inventory.ItemStack fromItemStack(ItemStack stack) {
+    private org.bukkit.inventory.ItemStack fromItemStack(ItemStack stack) throws WebApplicationException {
         var material = Material.getMaterial(stack.type);
         if (material == null) {
-            return null;
+            throw new BadRequestException("Invalid item: " + stack.type);
         }
+
         return new org.bukkit.inventory.ItemStack(material, stack.amount);
     }
 

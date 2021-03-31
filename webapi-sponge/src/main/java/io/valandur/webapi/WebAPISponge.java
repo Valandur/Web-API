@@ -4,18 +4,25 @@ import io.valandur.webapi.info.ServerInfo;
 import io.valandur.webapi.item.ItemStack;
 import io.valandur.webapi.player.Player;
 import io.valandur.webapi.player.PlayerInventory;
-import io.valandur.webapi.user.User;
 import io.valandur.webapi.world.GameRule;
 import io.valandur.webapi.world.World;
+import jakarta.ws.rs.BadRequestException;
+import jakarta.ws.rs.InternalServerErrorException;
+import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.WebApplicationException;
 import org.spongepowered.api.ResourceKey;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.adventure.SpongeComponents;
 import org.spongepowered.api.data.Keys;
 import org.spongepowered.api.item.inventory.Inventory;
 import org.spongepowered.api.item.inventory.equipment.EquipmentTypes;
+import org.spongepowered.api.item.inventory.transaction.InventoryTransactionResult;
 import org.spongepowered.api.registry.RegistryTypes;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -34,29 +41,6 @@ public class WebAPISponge extends WebAPI<SpongeConfig> {
         this.syncExecutor = Sponge.server().scheduler().createExecutor(plugin.getContainer());
     }
 
-
-    @Override
-    public Collection<User> getUsers() {
-        var mgr = Sponge.server().userManager();
-        return mgr.streamAll()
-                .map(mgr::find)
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .map(this::toUser).
-                        collect(Collectors.toList());
-    }
-
-    @Override
-    public User getUser(UUID uuid) {
-        var mgr = Sponge.server().userManager();
-        var profile = mgr.find(uuid);
-        return profile.map(this::toUser).orElse(null);
-    }
-
-    private User toUser(org.spongepowered.api.entity.living.player.User user) {
-        return new User(user.uniqueId().toString(), user.name());
-    }
-
     @Override
     public Collection<Player> getPlayers() {
         var players = new ArrayList<Player>();
@@ -67,9 +51,12 @@ public class WebAPISponge extends WebAPI<SpongeConfig> {
     }
 
     @Override
-    public Player getPlayer(UUID uuid) {
+    public Player getPlayer(UUID uuid) throws WebApplicationException {
         var player = Sponge.server().player(uuid);
-        return player.map(this::toPlayer).orElse(null);
+        if (player.isEmpty()) {
+            throw new NotFoundException("Player not found: " + uuid);
+        }
+        return this.toPlayer(player.get());
     }
 
     private Player toPlayer(org.spongepowered.api.entity.living.player.server.ServerPlayer player) {
@@ -81,10 +68,10 @@ public class WebAPISponge extends WebAPI<SpongeConfig> {
     }
 
     @Override
-    public PlayerInventory getPlayerInventory(UUID uuid) {
+    public PlayerInventory getPlayerInventory(UUID uuid) throws WebApplicationException {
         var player = Sponge.server().player(uuid);
         if (player.isEmpty()) {
-            return null;
+            throw new NotFoundException("Player not found: " + uuid);
         }
 
         var inv = player.get().inventory();
@@ -124,19 +111,26 @@ public class WebAPISponge extends WebAPI<SpongeConfig> {
     }
 
     @Override
-    public void addToPlayerInventory(UUID uuid, ItemStack stack) {
+    public void addToPlayerInventory(UUID uuid, Collection<ItemStack> stacks) throws WebApplicationException {
         var player = Sponge.server().player(uuid);
         if (player.isEmpty()) {
-            return;
+            throw new NotFoundException("Player not found: " + uuid);
         }
 
-        var itemStack = this.fromItemStack(stack);
-        if (itemStack == null) {
-            return;
-        }
-
+        var itemStacks = stacks.stream().map(this::fromItemStack).collect(Collectors.toList());
         var inv = player.get().inventory();
-        inv.offer(itemStack);
+
+        for (var itemStack : itemStacks) {
+            var result = inv.offer(itemStack);
+            if (result.type() != InventoryTransactionResult.Type.SUCCESS) {
+                throw new InternalServerErrorException("Could not add item stacks to inventory");
+            }
+        }
+    }
+
+    @Override
+    public void removeFromPlayerInventory(UUID uuid, Collection<ItemStack> stacks) throws WebApplicationException {
+        throw new InternalServerErrorException("Method not implemented");
     }
 
     @Override
@@ -233,11 +227,11 @@ public class WebAPISponge extends WebAPI<SpongeConfig> {
         );
     }
 
-    private org.spongepowered.api.item.inventory.ItemStack fromItemStack(ItemStack stack) {
+    private org.spongepowered.api.item.inventory.ItemStack fromItemStack(ItemStack stack) throws WebApplicationException {
         var key = ResourceKey.resolve(stack.type);
         var entry = RegistryTypes.ITEM_TYPE.get().findEntry(key);
         if (entry.isEmpty()) {
-            return null;
+            throw new BadRequestException("Invalid item: " + stack.type);
         }
 
         return org.spongepowered.api.item.inventory.ItemStack.of(entry.get().value(), stack.amount);

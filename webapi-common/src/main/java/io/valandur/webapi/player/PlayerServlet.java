@@ -35,7 +35,7 @@ public class PlayerServlet extends BaseServlet {
             UUID uuid = UUID.fromString(uuidString);
             return webapi.runOnMain(() -> webapi.getPlayer(uuid));
         } catch (IllegalArgumentException ignored) {
-            throw new BadRequestException("Invalid uuid");
+            throw new BadRequestException("Invalid uuid " + uuidString);
         }
     }
 
@@ -49,7 +49,7 @@ public class PlayerServlet extends BaseServlet {
             UUID uuid = UUID.fromString(uuidString);
             return webapi.runOnMain(() -> webapi.getPlayerInventory(uuid));
         } catch (IllegalArgumentException ignored) {
-            throw new BadRequestException("Invalid uuid");
+            throw new BadRequestException("Invalid uuid " + uuidString);
         }
     }
 
@@ -58,13 +58,28 @@ public class PlayerServlet extends BaseServlet {
     @GraphQLMutation(name = "addToPlayerInventory")
     public void addToPlayerInventory(
             @PathParam("player") @GraphQLArgument(name = "uuid", description = "The UUID of the player") String uuidString,
-            @GraphQLArgument(name = "itemStack", description = "The item stack to add") ItemStack stack)
+            @GraphQLArgument(name = "itemStacks", description = "The item stacks to add") Collection<ItemStack> stacks)
             throws ExecutionException, InterruptedException {
         try {
             UUID uuid = UUID.fromString(uuidString);
-            webapi.runOnMain(() -> webapi.addToPlayerInventory(uuid, stack));
+            webapi.runOnMain(() -> webapi.addToPlayerInventory(uuid, stacks));
         } catch (IllegalArgumentException ignored) {
-            throw new BadRequestException("Invalid uuid");
+            throw new BadRequestException("Invalid uuid " + uuidString);
+        }
+    }
+
+    @DELETE
+    @Path("{player}/inventory")
+    @GraphQLMutation(name = "removeFromPlayerInventory")
+    public void removeFromPlayerInventory(
+            @PathParam("player") @GraphQLArgument(name = "uuid", description = "The UUID of the player") String uuidString,
+            @GraphQLArgument(name = "itemStacks", description = "The item stacks to remove") Collection<ItemStack> stacks)
+            throws ExecutionException, InterruptedException {
+        try {
+            UUID uuid = UUID.fromString(uuidString);
+            webapi.runOnMain(() -> webapi.removeFromPlayerInventory(uuid, stacks));
+        } catch (IllegalArgumentException ignored) {
+            throw new BadRequestException("Invalid uuid " + uuidString);
         }
     }
 }

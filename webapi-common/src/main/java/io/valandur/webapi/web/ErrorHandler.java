@@ -16,8 +16,6 @@ public class ErrorHandler extends org.eclipse.jetty.server.handler.ErrorHandler 
     public Response toResponse(Throwable exception) {
         int status = Response.Status.INTERNAL_SERVER_ERROR.getStatusCode();
 
-        System.out.println("Its an error");
-
         if (exception instanceof WebApplicationException) {
             status = ((WebApplicationException) exception).getResponse().getStatus();
         } else if (exception instanceof UnrecognizedPropertyException) {
@@ -28,8 +26,6 @@ public class ErrorHandler extends org.eclipse.jetty.server.handler.ErrorHandler 
             //exception.printStackTrace(System.out);
             //WebAPI.getInstance().getLogger().error("Server Error", exception);
         }
-
-        exception.printStackTrace(System.out);
 
         return Response
                 .status(status)

@@ -54,16 +54,16 @@ public class WebServer {
         //logger.info("Starting Web Server...");
 
         try {
-            QueuedThreadPool threadPool = new QueuedThreadPool(maxThreads, minThreads, idleTimeout);
+            var threadPool = new QueuedThreadPool(maxThreads, minThreads, idleTimeout);
             threadPool.setName("WEB-API-POOL");
             server = new Server(threadPool);
 
             // Add error handler to jetty (will also be picked up by jersey
-            ErrorHandler errHandler = new ErrorHandler();
+            var errHandler = new ErrorHandler();
             server.setErrorHandler(errHandler);
 
             // HTTP config
-            HttpConfiguration httpConfig = new HttpConfiguration();
+            var httpConfig = new HttpConfiguration();
 
             String baseUri = null;
 
@@ -90,25 +90,28 @@ public class WebServer {
             }
 
             // Servlet context
-            ServletContextHandler servletsContext = new ServletContextHandler();
+            var servletsContext = new ServletContextHandler();
             servletsContext.setContextPath(basePath);
             servletsContext.setErrorHandler(errHandler);
 
             // GraphQL
-            servletsContext.addServlet(GraphQLServlet.class, "/graphql");
+            var graphqlServlet = new GraphQLServlet();
+            var graphqlHolder = new ServletHolder(graphqlServlet);
+            servletsContext.addServlet(graphqlHolder, "/graphql");
 
-            ResourceConfig conf = new ResourceConfig();
+            var conf = new ResourceConfig();
             conf.register(WorldServlet.class);
             conf.register(PlayerServlet.class);
             conf.register(InfoServlet.class);
 
             conf.register(JacksonFeature.class);
 
+            conf.register(errHandler);
+
             // Jersey
-            ServletContainer container = new ServletContainer(conf);
-            ServletHolder jerseyServlet = new ServletHolder(container);
-            jerseyServlet.setInitOrder(0);
-            servletsContext.addServlet(jerseyServlet, "/*");
+            var jerseyServlet = new ServletContainer(conf);
+            var jerseyHolder = new ServletHolder(jerseyServlet);
+            servletsContext.addServlet(jerseyHolder, "/*");
 
             // Add main context to server
             server.setHandler(servletsContext);

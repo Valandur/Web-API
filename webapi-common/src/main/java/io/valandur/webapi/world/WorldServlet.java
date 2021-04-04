@@ -1,7 +1,7 @@
 package io.valandur.webapi.world;
 
 import io.leangen.graphql.annotations.GraphQLQuery;
-import io.valandur.webapi.BaseServlet;
+import io.valandur.webapi.web.BaseServlet;
 import jakarta.inject.Singleton;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
@@ -21,6 +21,6 @@ public class WorldServlet extends BaseServlet {
     @GET
     @GraphQLQuery(name = "worlds")
     public Collection<World> getWorlds() throws ExecutionException, InterruptedException {
-        return webapi.runOnMain(() -> webapi.getWorlds());
+        return webapi.runOnMain(() -> worldService.getWorlds());
     }
 }

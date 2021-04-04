@@ -3,6 +3,7 @@ package io.valandur.webapi.player;
 import io.leangen.graphql.annotations.GraphQLQuery;
 
 public class Player {
+
     @GraphQLQuery(name = "uuid", description = "The UUID of this player")
     public final String uuid;
 

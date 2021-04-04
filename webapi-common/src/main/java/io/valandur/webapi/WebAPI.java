@@ -2,15 +2,11 @@ package io.valandur.webapi;
 
 import io.valandur.webapi.config.Config;
 import io.valandur.webapi.info.ServerInfo;
-import io.valandur.webapi.item.ItemStack;
-import io.valandur.webapi.player.Player;
-import io.valandur.webapi.player.PlayerInventory;
+import io.valandur.webapi.logger.Logger;
+import io.valandur.webapi.player.PlayerService;
 import io.valandur.webapi.web.WebServer;
-import io.valandur.webapi.world.World;
-import jakarta.ws.rs.WebApplicationException;
+import io.valandur.webapi.world.WorldService;
 
-import java.util.Collection;
-import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Supplier;
 
@@ -22,43 +18,56 @@ public abstract class WebAPI<Conf extends Config> {
         return WebAPI.instance;
     }
 
+    protected Logger logger;
+
+    public Logger getLogger() {
+        return logger;
+    }
+
+    protected WorldService worldService;
+
+    public WorldService getWorldService() {
+        return worldService;
+    }
+
+    protected PlayerService playerService;
+
+    public PlayerService getPlayerService() {
+        return playerService;
+    }
+
     protected WebServer webServer;
+
 
     public WebAPI() {
         WebAPI.instance = this;
-        this.webServer = new WebServer(this);
     }
 
     public void load() {
-        this.webServer.load();
+        logger = createLogger();
+        worldService = createWorldService();
+        playerService = createPlayerService();
+        webServer = new WebServer(this);
+        webServer.load();
     }
 
     public void start() {
-        this.webServer.start();
+        webServer.start();
     }
 
     public void stop() {
-        this.webServer.stop();
+        webServer.stop();
     }
 
-
-    public abstract Collection<Player> getPlayers();
-
-    public abstract Player getPlayer(UUID uuid) throws WebApplicationException;
-
-    public abstract PlayerInventory getPlayerInventory(UUID uuid) throws WebApplicationException;
-
-    public abstract void addToPlayerInventory(UUID uuid, Collection<ItemStack> stacks) throws WebApplicationException;
-
-    public abstract void removeFromPlayerInventory(UUID uuid, Collection<ItemStack> stacks) throws WebApplicationException;
-
-    public abstract Collection<World> getWorlds();
-
-    public abstract ServerInfo getInfo();
-
+    protected abstract Logger createLogger();
 
     public abstract Conf getConfig(String name);
 
+    protected abstract WorldService createWorldService();
+
+    protected abstract PlayerService createPlayerService();
+
+    public abstract ServerInfo getInfo();
 
     public abstract void runOnMain(Runnable runnable) throws ExecutionException, InterruptedException;
 

@@ -1,6 +1,0 @@
-basePath: /
-host: 0.0.0.0
-portHttp: 8080
-minThreads: 1
-maxThreads: 5
-idleTimeout: 60

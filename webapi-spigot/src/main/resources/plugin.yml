@@ -1,6 +1,0 @@
-name: webAPI
-version: $version
-main: io.valandur.webapi.WebapiSpigotPlugin
-api-version: 1.16
-prefix: WEB-API
-load: STARTUP

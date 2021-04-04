@@ -1,7 +1,7 @@
 package io.valandur.webapi.info;
 
 import io.leangen.graphql.annotations.GraphQLQuery;
-import io.valandur.webapi.BaseServlet;
+import io.valandur.webapi.web.BaseServlet;
 import jakarta.inject.Singleton;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;

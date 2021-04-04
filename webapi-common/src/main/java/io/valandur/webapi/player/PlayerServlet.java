@@ -3,8 +3,8 @@ package io.valandur.webapi.player;
 import io.leangen.graphql.annotations.GraphQLArgument;
 import io.leangen.graphql.annotations.GraphQLMutation;
 import io.leangen.graphql.annotations.GraphQLQuery;
-import io.valandur.webapi.BaseServlet;
 import io.valandur.webapi.item.ItemStack;
+import io.valandur.webapi.web.BaseServlet;
 import jakarta.inject.Singleton;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -22,7 +22,7 @@ public class PlayerServlet extends BaseServlet {
     @GET
     @GraphQLQuery(name = "players")
     public Collection<Player> getPlayers() throws ExecutionException, InterruptedException {
-        return webapi.runOnMain(() -> webapi.getPlayers());
+        return webapi.runOnMain(() -> playerService.getPlayers());
     }
 
     @GET
@@ -33,7 +33,7 @@ public class PlayerServlet extends BaseServlet {
             throws ExecutionException, InterruptedException {
         try {
             UUID uuid = UUID.fromString(uuidString);
-            return webapi.runOnMain(() -> webapi.getPlayer(uuid));
+            return webapi.runOnMain(() -> playerService.getPlayer(uuid));
         } catch (IllegalArgumentException ignored) {
             throw new BadRequestException("Invalid uuid " + uuidString);
         }
@@ -43,11 +43,12 @@ public class PlayerServlet extends BaseServlet {
     @Path("{player}/inventory")
     @GraphQLQuery(name = "playerInventory")
     public PlayerInventory getPlayerInventory(
-            @PathParam("player") @GraphQLArgument(name = "uuid", description = "The UUID of the player") String uuidString)
+            @PathParam("player") @GraphQLArgument(name = "uuid", description = "The UUID of the player") String uuidString,
+            @QueryParam("type") @GraphQLArgument(name = "type", description = "The type of item to filter") String type)
             throws ExecutionException, InterruptedException {
         try {
             UUID uuid = UUID.fromString(uuidString);
-            return webapi.runOnMain(() -> webapi.getPlayerInventory(uuid));
+            return webapi.runOnMain(() -> playerService.getPlayerInventory(uuid, type));
         } catch (IllegalArgumentException ignored) {
             throw new BadRequestException("Invalid uuid " + uuidString);
         }
@@ -62,7 +63,7 @@ public class PlayerServlet extends BaseServlet {
             throws ExecutionException, InterruptedException {
         try {
             UUID uuid = UUID.fromString(uuidString);
-            webapi.runOnMain(() -> webapi.addToPlayerInventory(uuid, stacks));
+            webapi.runOnMain(() -> playerService.addToPlayerInventory(uuid, stacks));
         } catch (IllegalArgumentException ignored) {
             throw new BadRequestException("Invalid uuid " + uuidString);
         }
@@ -77,7 +78,7 @@ public class PlayerServlet extends BaseServlet {
             throws ExecutionException, InterruptedException {
         try {
             UUID uuid = UUID.fromString(uuidString);
-            webapi.runOnMain(() -> webapi.removeFromPlayerInventory(uuid, stacks));
+            webapi.runOnMain(() -> playerService.removeFromPlayerInventory(uuid, stacks));
         } catch (IllegalArgumentException ignored) {
             throw new BadRequestException("Invalid uuid " + uuidString);
         }

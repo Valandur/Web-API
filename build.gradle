@@ -8,7 +8,6 @@ version = '1.0-SNAPSHOT'
 subprojects {
     apply plugin: 'com.github.johnrengelman.shadow'
     apply plugin: 'java'
-    apply plugin: 'java-library'
     apply plugin: 'maven'
 
     group = project.group
@@ -26,9 +25,12 @@ subprojects {
         dependsOn(shadowJar)
     }
 
+    configurations {
+        implementation.extendsFrom include
+    }
+
     shadowJar {
-        project.configurations.implementation.canBeResolved = true
-        configurations = [project.configurations.implementation, project.configurations.api]
+        configurations = [project.configurations.include]
 
         archiveClassifier.set('')
 
@@ -37,7 +39,8 @@ subprojects {
         relocate 'com.fasterxml', 'io.valandur.shadow.com.fasterxml'
         relocate 'com.sun.research', 'io.valandur.shadow.com.sun.research'
 
-        relocate 'graphql', 'io.valandur.shadow.graphql'
+        // If we enable this then we have to fix strings in our code
+        // relocate 'graphql', 'io.valandur.shadow.graphql'
 
         relocate 'io.github', 'io.valandur.shadow.io.github'
         relocate 'io.leangen', 'io.valandur.shadow.io.leangen'
@@ -52,7 +55,8 @@ subprojects {
 
         relocate 'javax.activation', 'io.valandur.shadow.javax.activation'
         relocate 'javax.servlet', 'io.valandur.shadow.javax.servlet'
-        /*relocate 'javax.xml', 'io.valandur.shadow.javax.xml'*/
+        // If we enable this then Sponge (and others?) just break
+        // relocate 'javax.xml', 'io.valandur.shadow.javax.xml'
 
         relocate 'jersey.repackaged', 'io.valandur.shadow.jersey.repackaged'
 
@@ -67,9 +71,12 @@ subprojects {
         relocate 'org.glassfish', 'io.valandur.shadow.org.glassfish'
         relocate 'org.jvnet', 'io.valandur.shadow.org.jvnet'
         relocate 'org.reactivestreams', 'io.valandur.shadow.org.reactivestreams'
-
-        exclude "jetty-dir.css"
+        relocate 'org.slf4j', 'io.valandur.shadow.org.slf4j'
     }
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = "UTF-8"
 }
 
 tasks.withType(AbstractArchiveTask) {

@@ -1,6 +1,6 @@
 package io.valandur.webapi.player;
 
-import io.valandur.webapi.WebAPI;
+import io.valandur.webapi.ForgeWebAPI;
 import io.valandur.webapi.item.ItemStack;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.InternalServerErrorException;
@@ -10,7 +10,9 @@ import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.inventory.EquipmentSlotType;
 import net.minecraft.item.Item;
-import net.minecraft.nbt.*;
+import net.minecraft.nbt.INBT;
+import net.minecraft.nbt.IntNBT;
+import net.minecraft.nbt.ListNBT;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.server.ServerLifecycleHooks;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -21,9 +23,9 @@ import java.util.HashMap;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-public class ForgePlayerService extends PlayerService {
+public class ForgePlayerService extends PlayerService<ForgeWebAPI> {
 
-    public ForgePlayerService(WebAPI<?> webapi) {
+    public ForgePlayerService(ForgeWebAPI webapi) {
         super(webapi);
     }
 
@@ -148,7 +150,7 @@ public class ForgePlayerService extends PlayerService {
         if (tag != null) {
             var pagesTag = tag.get("pages");
             if (pagesTag != null && pagesTag.getType() == ListNBT.TYPE) {
-                pages = ((ListNBT)pagesTag).stream().map(INBT::getString).collect(Collectors.toList());
+                pages = ((ListNBT) pagesTag).stream().map(INBT::getString).collect(Collectors.toList());
             }
 
             var authorTag = tag.get("author");
@@ -158,7 +160,7 @@ public class ForgePlayerService extends PlayerService {
 
             var damageTag = tag.get("damage");
             if (damageTag != null && damageTag.getType() == IntNBT.TYPE) {
-                damage = ((IntNBT)damageTag).getInt();
+                damage = ((IntNBT) damageTag).getInt();
             }
         }
 

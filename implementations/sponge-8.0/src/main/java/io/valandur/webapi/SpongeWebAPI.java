@@ -1,24 +1,29 @@
 package io.valandur.webapi;
 
 import io.valandur.webapi.config.SpongeConfig;
-import io.valandur.webapi.info.ServerInfo;
 import io.valandur.webapi.logger.Logger;
 import io.valandur.webapi.logger.SpongeLogger;
 import io.valandur.webapi.player.PlayerService;
 import io.valandur.webapi.player.SpongePlayerService;
+import io.valandur.webapi.server.ServerService;
+import io.valandur.webapi.server.SpongeServerService;
 import io.valandur.webapi.world.SpongeWorldService;
 import io.valandur.webapi.world.WorldService;
 import org.spongepowered.api.Sponge;
-import org.spongepowered.api.adventure.SpongeComponents;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Supplier;
 
-public class SpongeWebAPI extends WebAPI<SpongeConfig> {
+public class SpongeWebAPI extends WebAPIBase<SpongeWebAPI, SpongeConfig> {
 
     private final SpongeWebAPIPlugin plugin;
+
+    public SpongeWebAPIPlugin getPlugin() {
+        return plugin;
+    }
+
     private final ExecutorService syncExecutor;
 
     public SpongeWebAPI(SpongeWebAPIPlugin plugin) {
@@ -29,38 +34,29 @@ public class SpongeWebAPI extends WebAPI<SpongeConfig> {
     }
 
     @Override
-    protected Logger createLogger() {
-        return new SpongeLogger(plugin.getLogger());
-    }
-
-    @Override
     public SpongeConfig getConfig(String name) {
         var confName = name + ".conf";
         return new SpongeConfig(confName, plugin.getConfigPath().resolve(confName));
     }
 
     @Override
-    protected WorldService createWorldService() {
+    protected Logger createLogger() {
+        return new SpongeLogger(plugin.getLogger());
+    }
+
+    @Override
+    protected WorldService<SpongeWebAPI> createWorldService() {
         return new SpongeWorldService(this);
     }
 
     @Override
-    protected PlayerService createPlayerService() {
+    protected PlayerService<SpongeWebAPI> createPlayerService() {
         return new SpongePlayerService(this);
     }
 
     @Override
-    public ServerInfo getInfo() {
-        var server = Sponge.server();
-
-        return new ServerInfo(
-                SpongeComponents.plainSerializer().serialize(server.motd()),
-                server.onlinePlayers().size(),
-                server.maxPlayers(),
-                server.isOnlineModeEnabled(),
-                plugin.getUptime(),
-                Sponge.platform().minecraftVersion().name()
-        );
+    protected ServerService<SpongeWebAPI> createServerService() {
+        return new SpongeServerService(this);
     }
 
     @Override

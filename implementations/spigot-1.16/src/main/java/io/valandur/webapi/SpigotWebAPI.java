@@ -1,18 +1,19 @@
 package io.valandur.webapi;
 
 import io.valandur.webapi.config.SpigotConfig;
-import io.valandur.webapi.info.ServerInfo;
 import io.valandur.webapi.logger.Logger;
 import io.valandur.webapi.logger.SpigotLogger;
 import io.valandur.webapi.player.PlayerService;
 import io.valandur.webapi.player.SpigotPlayerService;
+import io.valandur.webapi.server.ServerService;
+import io.valandur.webapi.server.SpigotServerService;
 import io.valandur.webapi.world.SpigotWorldService;
 import io.valandur.webapi.world.WorldService;
 
 import java.util.concurrent.ExecutionException;
 import java.util.function.Supplier;
 
-public class SpigotWebAPI extends WebAPI<SpigotConfig> {
+public class SpigotWebAPI extends WebAPIBase<SpigotWebAPI, SpigotConfig> {
 
     private final SpigotWebAPIPlugin plugin;
 
@@ -37,27 +38,20 @@ public class SpigotWebAPI extends WebAPI<SpigotConfig> {
     }
 
     @Override
-    protected WorldService createWorldService() {
+    protected WorldService<SpigotWebAPI> createWorldService() {
         return new SpigotWorldService(this);
     }
 
     @Override
-    protected PlayerService createPlayerService() {
+    protected PlayerService<SpigotWebAPI> createPlayerService() {
         return new SpigotPlayerService(this);
     }
 
     @Override
-    public ServerInfo getInfo() {
-        var server = plugin.getServer();
-        return new ServerInfo(
-                server.getMotd(),
-                server.getOnlinePlayers().size(),
-                server.getMaxPlayers(),
-                server.getOnlineMode(),
-                plugin.getUptime(),
-                server.getVersion()
-        );
+    protected ServerService<SpigotWebAPI> createServerService() {
+        return new SpigotServerService(this);
     }
+
 
     @Override
     public void runOnMain(Runnable runnable) throws ExecutionException, InterruptedException {

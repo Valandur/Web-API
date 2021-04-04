@@ -1,0 +1,17 @@
+plugins {
+    id 'java-library'
+}
+
+dependencies {
+    api group: 'org.glassfish.jersey.core', name: 'jersey-server', version: project.jerseyVersion
+
+    api group: 'io.leangen.graphql', name: 'spqr', version: '0.11.1'
+}
+
+jar {
+    enabled = true
+}
+
+shadowJar {
+    enabled = false
+}

@@ -1,21 +1,17 @@
 package io.valandur.webapi.player;
 
+import io.valandur.webapi.Service;
 import io.valandur.webapi.WebAPI;
 import io.valandur.webapi.item.ItemStack;
-import io.valandur.webapi.logger.Logger;
 import jakarta.ws.rs.WebApplicationException;
 
 import java.util.Collection;
 import java.util.UUID;
 
-public abstract class PlayerService {
+public abstract class PlayerService<T extends WebAPI<?, ?>> extends Service<T> {
 
-    protected WebAPI<?> webapi;
-    protected Logger logger;
-
-    public PlayerService(WebAPI<?> webapi) {
-        this.webapi = webapi;
-        this.logger = webapi.getLogger();
+    public PlayerService(T webapi) {
+        super(webapi);
     }
 
     public abstract Collection<Player> getPlayers();

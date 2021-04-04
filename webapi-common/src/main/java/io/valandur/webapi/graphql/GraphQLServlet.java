@@ -8,9 +8,9 @@ import graphql.ExecutionResult;
 import graphql.GraphQL;
 import graphql.schema.GraphQLSchema;
 import io.leangen.graphql.GraphQLSchemaGenerator;
-import io.valandur.webapi.WebAPI;
 import io.valandur.webapi.info.InfoServlet;
 import io.valandur.webapi.player.PlayerServlet;
+import io.valandur.webapi.server.ServerServlet;
 import io.valandur.webapi.world.WorldServlet;
 import jakarta.inject.Singleton;
 import jakarta.servlet.ServletException;
@@ -30,15 +30,8 @@ public class GraphQLServlet extends HttpServlet {
     private static final String APPLICATION_GRAPHQL = "application/graphql";
     private static final String APPLICATION_JSON = "application/json";
 
-    private final WebAPI<?> webapi;
     private GraphQL graphQL;
     private ObjectMapper mapper;
-
-    public GraphQLServlet() {
-        super();
-
-        this.webapi = WebAPI.getInstance();
-    }
 
     /**
      * Initialize and configure GraphQL servlet.
@@ -53,6 +46,7 @@ public class GraphQLServlet extends HttpServlet {
                 .withOperationsFromSingleton(new InfoServlet())
                 .withOperationsFromSingleton(new PlayerServlet())
                 .withOperationsFromSingleton(new WorldServlet())
+                .withOperationsFromSingleton(new ServerServlet())
                 .generate();
 
         graphQL = GraphQL.newGraphQL(schema).build();

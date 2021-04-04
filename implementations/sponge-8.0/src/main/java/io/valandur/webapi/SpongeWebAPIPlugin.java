@@ -1,7 +1,6 @@
 package io.valandur.webapi;
 
 import com.google.inject.Inject;
-import io.valandur.webapi.config.SpongeConfig;
 import org.apache.logging.log4j.Logger;
 import org.spongepowered.api.Server;
 import org.spongepowered.api.config.ConfigDir;
@@ -17,7 +16,7 @@ import java.nio.file.Path;
 @Plugin("webapi")
 public class SpongeWebAPIPlugin {
 
-    private WebAPI<SpongeConfig> webapi;
+    private SpongeWebAPI webapi;
     private long serverStart;
 
     public long getUptime() {

@@ -23,7 +23,7 @@ import java.util.HashMap;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-public class SpongePlayerService extends PlayerService {
+public class SpongePlayerService extends PlayerService<SpongeWebAPI> {
 
     public SpongePlayerService(SpongeWebAPI webapi) {
         super(webapi);

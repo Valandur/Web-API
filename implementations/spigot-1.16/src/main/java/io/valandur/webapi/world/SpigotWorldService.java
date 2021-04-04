@@ -6,7 +6,7 @@ import org.bukkit.Server;
 import java.util.ArrayList;
 import java.util.Collection;
 
-public class SpigotWorldService extends WorldService {
+public class SpigotWorldService extends WorldService<SpigotWebAPI> {
 
     private final Server server;
 

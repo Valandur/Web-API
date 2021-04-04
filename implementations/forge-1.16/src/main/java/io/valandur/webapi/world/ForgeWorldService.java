@@ -1,6 +1,6 @@
 package io.valandur.webapi.world;
 
-import io.valandur.webapi.WebAPI;
+import io.valandur.webapi.ForgeWebAPI;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.storage.IServerWorldInfo;
 import net.minecraftforge.fml.server.ServerLifecycleHooks;
@@ -8,9 +8,9 @@ import net.minecraftforge.fml.server.ServerLifecycleHooks;
 import java.util.ArrayList;
 import java.util.Collection;
 
-public class ForgeWorldService extends WorldService {
+public class ForgeWorldService extends WorldService<ForgeWebAPI> {
 
-    public ForgeWorldService(WebAPI<?> webapi) {
+    public ForgeWorldService(ForgeWebAPI webapi) {
         super(webapi);
     }
 

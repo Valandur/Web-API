@@ -3,6 +3,8 @@ plugins {
 }
 
 dependencies {
+    api project(":webapi-api")
+
     include group: "com.fasterxml.jackson.core", name: "jackson-core", version: project.jacksonVersion
     include group: "com.fasterxml.jackson.core", name: "jackson-databind", version: project.jacksonVersion
     include group: "com.fasterxml.jackson.core", name: "jackson-annotations", version: project.jacksonVersion

@@ -17,7 +17,7 @@ import java.util.HashMap;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-public class SpigotPlayerService extends PlayerService {
+public class SpigotPlayerService extends PlayerService<SpigotWebAPI> {
 
     private final Server server;
 

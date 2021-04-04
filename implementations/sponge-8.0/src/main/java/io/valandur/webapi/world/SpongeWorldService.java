@@ -6,7 +6,7 @@ import org.spongepowered.api.Sponge;
 import java.util.ArrayList;
 import java.util.Collection;
 
-public class SpongeWorldService extends WorldService {
+public class SpongeWorldService extends WorldService<SpongeWebAPI> {
 
     public SpongeWorldService(SpongeWebAPI webapi) {
         super(webapi);

@@ -1,6 +1,5 @@
 package io.valandur.webapi;
 
-import io.valandur.webapi.config.ForgeConfig;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ExtensionPoint;
@@ -24,7 +23,7 @@ public class ForgeWebAPIPlugin {
         return logger;
     }
 
-    private WebAPI<ForgeConfig> webapi;
+    private ForgeWebAPI webapi;
 
     private long serverStart;
 

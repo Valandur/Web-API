@@ -1,5 +1,8 @@
 rootProject.name = 'webapi'
 
+include ':webapi-api'
+project(':webapi-api').projectDir = "$rootDir/webapi-api" as File
+
 include ':webapi-common'
 project(':webapi-common').projectDir = "$rootDir/webapi-common" as File
 

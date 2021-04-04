@@ -1,6 +1,7 @@
-package io.valandur.webapi.info;
+package io.valandur.webapi.server;
 
 import io.leangen.graphql.annotations.GraphQLQuery;
+import io.valandur.webapi.info.ServerInfo;
 import io.valandur.webapi.web.BaseServlet;
 import jakarta.inject.Singleton;
 import jakarta.ws.rs.Consumes;
@@ -12,13 +13,13 @@ import jakarta.ws.rs.core.MediaType;
 import java.util.concurrent.ExecutionException;
 
 @Singleton
-@Path("info")
+@Path("server")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-public class InfoServlet extends BaseServlet {
+public class ServerServlet extends BaseServlet {
 
     @GET
-    @GraphQLQuery(name = "info")
+    @GraphQLQuery(name = "server")
     public ServerInfo getInfo() throws ExecutionException, InterruptedException {
         return webapi.runOnMain(() -> serverService.getInfo());
     }

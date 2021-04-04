@@ -5,6 +5,7 @@ import io.valandur.webapi.config.Config;
 import io.valandur.webapi.graphql.GraphQLServlet;
 import io.valandur.webapi.info.InfoServlet;
 import io.valandur.webapi.player.PlayerServlet;
+import io.valandur.webapi.server.ServerServlet;
 import io.valandur.webapi.world.WorldServlet;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
@@ -22,7 +23,7 @@ import java.net.SocketException;
 
 public class WebServer {
 
-    private final WebAPI<?> webapi;
+    private final WebAPI<?, ?> webapi;
 
     private Server server;
 
@@ -33,7 +34,7 @@ public class WebServer {
     private int maxThreads;
     private int idleTimeout;
 
-    public WebServer(WebAPI<?> webapi) {
+    public WebServer(WebAPI<?, ?> webapi) {
         this.webapi = webapi;
     }
 
@@ -100,9 +101,10 @@ public class WebServer {
             servletsContext.addServlet(graphqlHolder, "/graphql");
 
             var conf = new ResourceConfig();
-            conf.register(WorldServlet.class);
-            conf.register(PlayerServlet.class);
-            conf.register(InfoServlet.class);
+            conf.register(new WorldServlet());
+            conf.register(new PlayerServlet());
+            conf.register(new InfoServlet());
+            conf.register(new ServerServlet());
 
             conf.register(JacksonFeature.class);
 

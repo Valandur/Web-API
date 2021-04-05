@@ -127,7 +127,36 @@ public class ForgePlayerService extends PlayerService<ForgeWebAPI> {
 
     @Override
     public void removeFromPlayerInventory(UUID uuid, Collection<ItemStack> stacks) throws WebApplicationException {
-        throw new InternalServerErrorException("Method not implemented");
+        var server = ServerLifecycleHooks.getCurrentServer();
+        var player = server.getPlayerList().getPlayerByUUID(uuid);
+        if (player == null) {
+            throw new NotFoundException("Player not found: " + uuid);
+        }
+
+        var itemStacks = stacks.stream().map(this::fromItemStack).collect(Collectors.toList());
+
+        var inv = player.inventory;
+        for (var itemStack : itemStacks) {
+            for (int i = 0; i < itemStacks.size(); i++) {
+                var stack = inv.getStackInSlot(i);
+                if (stack.isEmpty() || stack.getItem() != itemStack.getItem()) {
+                    continue;
+                }
+
+                var stackCount = stack.getCount();
+                var toRemove = Math.min(stackCount, itemStack.getCount());
+                stack.setCount(stackCount - toRemove);
+                itemStack.setCount(itemStack.getCount() - toRemove);
+
+                if (itemStack.isEmpty()) {
+                    break;
+                }
+            }
+
+            if (!itemStack.isEmpty()) {
+                throw new InternalServerErrorException("Could not remove item stacks from inventory");
+            }
+        }
     }
 
     @Override
@@ -180,7 +209,36 @@ public class ForgePlayerService extends PlayerService<ForgeWebAPI> {
 
     @Override
     public void removeFromPlayerEnderChest(UUID uuid, Collection<ItemStack> stacks) throws WebApplicationException {
-        throw new InternalServerErrorException("Method not implemented");
+        var server = ServerLifecycleHooks.getCurrentServer();
+        var player = server.getPlayerList().getPlayerByUUID(uuid);
+        if (player == null) {
+            throw new NotFoundException("Player not found: " + uuid);
+        }
+
+        var itemStacks = stacks.stream().map(this::fromItemStack).collect(Collectors.toList());
+
+        var inv = player.getInventoryEnderChest();
+        for (var itemStack : itemStacks) {
+            for (int i = 0; i < itemStacks.size(); i++) {
+                var stack = inv.getStackInSlot(i);
+                if (stack.isEmpty() || stack.getItem() != itemStack.getItem()) {
+                    continue;
+                }
+
+                var stackCount = stack.getCount();
+                var toRemove = Math.min(stackCount, itemStack.getCount());
+                stack.setCount(stackCount - toRemove);
+                itemStack.setCount(itemStack.getCount() - toRemove);
+
+                if (itemStack.isEmpty()) {
+                    break;
+                }
+            }
+
+            if (!itemStack.isEmpty()) {
+                throw new InternalServerErrorException("Could not remove item stacks from ender chest");
+            }
+        }
     }
 
     private ItemStack toItemStack(net.minecraft.item.ItemStack stack) {

@@ -30,39 +30,39 @@ public class SpongeWorldService extends WorldService<SpongeWebAPI> {
     }
 
     @Override
-    public Block getBlockAt(String worldType, int x, int y, int z) {
-        var key = ResourceKey.resolve(worldType);
+    public Block getBlockAt(String world, int x, int y, int z) {
+        var key = ResourceKey.resolve(world);
         var entry = RegistryTypes.WORLD_TYPE.get().findEntry(key);
         if (entry.isEmpty()) {
-            throw new BadRequestException("Invalid world type: " + worldType);
+            throw new BadRequestException("Invalid world type: " + world);
         }
 
         var optWorld = Sponge.server().worldManager().world(key);
         if (optWorld.isEmpty()) {
-            throw new Error("Invalid world type: " + worldType);
+            throw new Error("World not found: " + world);
         }
 
-        var world = optWorld.get();
-        var block = world.block(x, y, z);
+        var serverWorld = optWorld.get();
+        var block = serverWorld.block(x, y, z);
         return new Block(block.type().key(RegistryTypes.BLOCK_TYPE).asString());
     }
 
     @Override
-    public void setBlockAt(String worldType, int x, int y, int z, Block block) {
-        var key = ResourceKey.resolve(worldType);
+    public void setBlockAt(String world, int x, int y, int z, Block block) {
+        var key = ResourceKey.resolve(world);
         var entry = RegistryTypes.WORLD_TYPE.get().findEntry(key);
         if (entry.isEmpty()) {
-            throw new BadRequestException("Invalid world type: " + worldType);
+            throw new BadRequestException("Invalid world type: " + world);
         }
 
         var optWorld = Sponge.server().worldManager().world(key);
         if (optWorld.isEmpty()) {
-            throw new Error("Invalid world type: " + worldType);
+            throw new Error("World not found: " + world);
         }
 
-        var world = optWorld.get();
+        var serverWorld = optWorld.get();
         var blockState = this.fromBlock(block);
-        var success = world.setBlock(x, y, z, blockState);
+        var success = serverWorld.setBlock(x, y, z, blockState);
         if (!success) {
             throw new Error("Could not set block");
         }

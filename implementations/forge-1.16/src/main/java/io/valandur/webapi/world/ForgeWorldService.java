@@ -1,23 +1,18 @@
 package io.valandur.webapi.world;
 
 import io.valandur.webapi.ForgeWebAPI;
-import io.valandur.webapi.item.ItemStack;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.InternalServerErrorException;
 import jakarta.ws.rs.WebApplicationException;
 import net.minecraft.block.BlockState;
-import net.minecraft.item.Item;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.registry.Registry;
-import net.minecraft.world.DimensionType;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.GameRules;
-import net.minecraft.world.storage.DimensionSavedDataManager;
 import net.minecraft.world.storage.IServerWorldInfo;
-import net.minecraftforge.common.world.ForgeWorldType;
-import net.minecraftforge.fml.RegistryObject;
 import net.minecraftforge.fml.server.ServerLifecycleHooks;
 import net.minecraftforge.registries.ForgeRegistries;
 
+import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -38,13 +33,48 @@ public class ForgeWorldService extends WorldService<ForgeWebAPI> {
     }
 
     @Override
-    public Block getBlockAt(String worldType, int x, int y, int z) {
-        throw new InternalServerErrorException("Method not implemented");
+    public Block getBlockAt(String world, int x, int y, int z) {
+        var server = ServerLifecycleHooks.getCurrentServer();
+
+        var loc = ResourceLocation.tryCreate(world);
+        if (loc == null) {
+            throw new BadRequestException("Invalid world type: " + world);
+        }
+
+        for (var forgeWorld : server.getWorlds()) {
+            if (!forgeWorld.getDimensionKey().getLocation().equals(loc)) {
+                continue;
+            }
+
+            var blockState = forgeWorld.getBlockState(new BlockPos(x, y, z));
+            return this.toBlock(blockState);
+        }
+
+        throw new InternalServerErrorException("World not found: " + world);
     }
 
     @Override
-    public void setBlockAt(String worldType, int x, int y, int z, Block block) {
-        throw new InternalServerErrorException("Method not implemented");
+    public void setBlockAt(String world, int x, int y, int z, Block block) {
+        var server = ServerLifecycleHooks.getCurrentServer();
+
+        var loc = ResourceLocation.tryCreate(world);
+        if (loc == null) {
+            throw new BadRequestException("Invalid world type: " + world);
+        }
+
+        for (var forgeWorld : server.getWorlds()) {
+            if (!forgeWorld.getDimensionKey().getLocation().equals(loc)) {
+                continue;
+            }
+
+            var blockState = this.fromBlock(block);
+            var success = forgeWorld.setBlockState(new BlockPos(x, y, z), blockState);
+            if (!success) {
+                throw new InternalServerErrorException("Could not set block");
+            }
+        }
+
+        throw new InternalServerErrorException("World not found: " + world);
     }
 
     private World toWorld(net.minecraft.world.server.ServerWorld world) {
@@ -52,7 +82,9 @@ public class ForgeWorldService extends WorldService<ForgeWebAPI> {
         var rules = world.getGameRules();
         GameRules.visitAll(new GameRules.IRuleEntryVisitor() {
             @Override
-            public <T extends GameRules.RuleValue<T>> void visit(GameRules.RuleKey<T> key, GameRules.RuleType<T> type) {
+            @ParametersAreNonnullByDefault
+            public <T extends GameRules.RuleValue<T>> void visit(GameRules.RuleKey<T> key,
+                                                                 GameRules.RuleType<T> type) {
                 gameRules.add(new GameRule(key.getName(), rules.get(key).stringValue()));
             }
         });
@@ -66,9 +98,14 @@ public class ForgeWorldService extends WorldService<ForgeWebAPI> {
         );
     }
 
+    private Block toBlock(BlockState block) {
+        var loc = block.getBlock().getRegistryName();
+        return new Block(loc != null ? loc.toString() : "");
+    }
+
     private BlockState fromBlock(Block block) throws WebApplicationException {
         var type = this.fromType(block.type);
-        return new BlockState(type, null, null);
+        return type.getDefaultState();
     }
 
     private net.minecraft.block.Block fromType(String type) {

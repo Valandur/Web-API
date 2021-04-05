@@ -2,8 +2,11 @@ package io.valandur.webapi.world;
 
 import io.valandur.webapi.SpigotWebAPI;
 import jakarta.ws.rs.BadRequestException;
+import jakarta.ws.rs.WebApplicationException;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Server;
+import org.bukkit.block.data.BlockData;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -28,32 +31,31 @@ public class SpigotWorldService extends WorldService<SpigotWebAPI> {
     }
 
     @Override
-    public Block getBlockAt(String worldType, int x, int y, int z) {
-        var optWorld = server.getWorlds().stream().filter(w -> w.getEnvironment().name().equalsIgnoreCase(worldType)).findAny();
+    public Block getBlockAt(String world, int x, int y, int z) {
+        var optWorld =
+                server.getWorlds().stream().filter(w -> w.getEnvironment().name().equalsIgnoreCase(world)).findAny();
         if (optWorld.isEmpty()) {
-            throw new BadRequestException("World with type not found: " + worldType);
+            throw new BadRequestException("World not found: " + world);
         }
 
-        var world = optWorld.get();
-        var block = world.getBlockAt(x, y, z);
-        return new Block(block.getType().name());
+        var bukkitWorld = optWorld.get();
+
+        var block = bukkitWorld.getBlockAt(x, y, z);
+        return this.toBlock(block.getBlockData());
     }
 
     @Override
-    public void setBlockAt(String worldType, int x, int y, int z, Block block) {
-        var optWorld = server.getWorlds().stream().filter(w -> w.getEnvironment().name().equalsIgnoreCase(worldType)).findAny();
+    public void setBlockAt(String world, int x, int y, int z, Block block) {
+        var optWorld =
+                server.getWorlds().stream().filter(w -> w.getEnvironment().name().equalsIgnoreCase(world)).findAny();
         if (optWorld.isEmpty()) {
-            throw new BadRequestException("World with type not found: " + worldType);
+            throw new BadRequestException("World not found: " + world);
         }
 
-        var world = optWorld.get();
+        var bukkitWorld = optWorld.get();
 
-        var material = Material.getMaterial(block.type);
-        if (material == null) {
-            throw new BadRequestException("Invalid block type: " + block.type);
-        }
-
-        world.getBlockAt(x, y, z).setType(material);
+        var blockData = this.fromBlock(block);
+        bukkitWorld.getBlockAt(x, y, z).setBlockData(blockData);
     }
 
     private World toWorld(org.bukkit.World world) {
@@ -76,5 +78,23 @@ public class SpigotWorldService extends WorldService<SpigotWebAPI> {
         );
     }
 
+    private Block toBlock(BlockData block) {
+        return new Block(
+                block.getMaterial().name()
+        );
+    }
 
+    private BlockData fromBlock(Block block) throws WebApplicationException {
+        var material = this.fromType(block.type);
+        return Bukkit.createBlockData(material);
+    }
+
+    private Material fromType(String type) {
+        var material = Material.matchMaterial(type);
+        if (material == null) {
+            throw new BadRequestException("Invalid block type: " + type);
+        }
+
+        return material;
+    }
 }

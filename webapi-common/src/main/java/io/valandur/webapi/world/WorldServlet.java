@@ -23,27 +23,27 @@ public class WorldServlet extends BaseServlet {
     }
 
     @GET
-    @Path("{type}/{x}/{y}/{z}")
+    @Path("{world}/{x}/{y}/{z}")
     @GraphQLQuery(name = "block")
     public Block getBlockAt(
-            @PathParam("type") @GraphQLArgument(name = "type", description = "The world type") String type,
+            @PathParam("world") @GraphQLArgument(name = "world", description = "The world type") String world,
             @PathParam("x") @GraphQLArgument(name = "x", description = "The x coordinate") int x,
             @PathParam("y") @GraphQLArgument(name = "y", description = "The y coordinate") int y,
             @PathParam("z") @GraphQLArgument(name = "z", description = "The z coordinate") int z
     ) throws ExecutionException, InterruptedException {
-        return webapi.runOnMain(() -> worldService.getBlockAt(type, x, y, z));
+        return webapi.runOnMain(() -> worldService.getBlockAt(world, x, y, z));
     }
 
     @PUT
-    @Path("{type}/{x}/{y}/{z}")
+    @Path("{world}/{x}/{y}/{z}")
     @GraphQLQuery(name = "setBlock")
     public void setBlockAt(
-            @PathParam("type") @GraphQLArgument(name = "type", description = "The world type") String type,
+            @PathParam("world") @GraphQLArgument(name = "world", description = "The world type") String world,
             @PathParam("x") @GraphQLArgument(name = "x", description = "The x coordinate") int x,
             @PathParam("y") @GraphQLArgument(name = "y", description = "The y coordinate") int y,
             @PathParam("z") @GraphQLArgument(name = "z", description = "The z coordinate") int z,
             @GraphQLArgument(name = "block", description = "The block to set") Block block
     ) throws ExecutionException, InterruptedException {
-        webapi.runOnMain(() -> worldService.setBlockAt(type, x, y, z, block));
+        webapi.runOnMain(() -> worldService.setBlockAt(world, x, y, z, block));
     }
 }

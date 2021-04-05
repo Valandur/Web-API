@@ -244,7 +244,7 @@ public class SpigotPlayerService extends PlayerService<SpigotWebAPI> {
     }
 
     private Material fromType(String type) {
-        var material = Material.getMaterial(type);
+        var material = Material.matchMaterial(type);
         if (material == null) {
             throw new BadRequestException("Invalid item type: " + type);
         }

@@ -1,6 +1,7 @@
 package io.valandur.webapi.player;
 
 import io.valandur.webapi.SpigotWebAPI;
+import io.valandur.webapi.item.Inventory;
 import io.valandur.webapi.item.ItemStack;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.InternalServerErrorException;
@@ -46,22 +47,6 @@ public class SpigotPlayerService extends PlayerService<SpigotWebAPI> {
     }
 
     private Player toPlayer(org.bukkit.entity.Player player) {
-        return new Player(
-                player.getUniqueId().toString(),
-                player.getName(),
-                player.getAddress() != null ? player.getAddress().toString() : null
-        );
-    }
-
-    @Override
-    public PlayerInventory getPlayerInventory(UUID uuid, String type) throws WebApplicationException {
-        var player = server.getPlayer(uuid);
-        if (player == null) {
-            throw new NotFoundException("Player not found: " + uuid);
-        }
-
-        var itemType = type != null ? this.fromType(type) : null;
-
         var inv = player.getInventory();
 
         var helmetStack = inv.getHelmet();
@@ -76,6 +61,28 @@ public class SpigotPlayerService extends PlayerService<SpigotWebAPI> {
         var bootsStack = inv.getBoots();
         var boots = bootsStack != null ? this.toItemStack(bootsStack) : null;
 
+        return new Player(
+                player.getUniqueId().toString(),
+                player.getName(),
+                player.getAddress() != null ? player.getAddress().toString() : null,
+                helmet,
+                chestplate,
+                leggings,
+                boots
+        );
+    }
+
+    @Override
+    public Inventory getPlayerInventory(UUID uuid, String type) throws WebApplicationException {
+        var player = server.getPlayer(uuid);
+        if (player == null) {
+            throw new NotFoundException("Player not found: " + uuid);
+        }
+
+        var itemType = type != null ? this.fromType(type) : null;
+
+        var inv = player.getInventory();
+
         var stacks = new ArrayList<ItemStack>();
         var slots = itemType != null ? inv.all(itemType).values() : inv;
         for (var stack : slots) {
@@ -84,11 +91,8 @@ public class SpigotPlayerService extends PlayerService<SpigotWebAPI> {
             }
         }
 
-        return new PlayerInventory(
-                helmet,
-                chestplate,
-                leggings,
-                boots,
+        return new Inventory(
+                inv.getSize(),
                 stacks
         );
     }
@@ -119,6 +123,65 @@ public class SpigotPlayerService extends PlayerService<SpigotWebAPI> {
 
         var itemStacks = stacks.stream().map(this::fromItemStack).collect(Collectors.toList());
         var inv = player.getInventory();
+        for (var itemStack : itemStacks) {
+            var result = inv.removeItem(itemStack);
+            if (result.size() > 0) {
+                throw new InternalServerErrorException("Could not remove item stacks from inventory");
+            }
+        }
+    }
+
+    @Override
+    public Inventory getPlayerEnderChest(UUID uuid, String type) throws WebApplicationException {
+        var player = server.getPlayer(uuid);
+        if (player == null) {
+            throw new NotFoundException("Player not found: " + uuid);
+        }
+
+        var itemType = type != null ? this.fromType(type) : null;
+
+        var inv = player.getEnderChest();
+
+        var stacks = new ArrayList<ItemStack>();
+        var slots = itemType != null ? inv.all(itemType).values() : inv;
+        for (var stack : slots) {
+            if (stack != null) {
+                stacks.add(this.toItemStack(stack));
+            }
+        }
+
+        return new Inventory(
+                inv.getSize(),
+                stacks
+        );
+    }
+
+    @Override
+    public void addToPlayerEnderChest(UUID uuid, Collection<ItemStack> stacks) throws WebApplicationException {
+        var player = server.getPlayer(uuid);
+        if (player == null) {
+            throw new NotFoundException("Player not found: " + uuid);
+        }
+
+        var itemStacks = stacks.stream().map(this::fromItemStack).collect(Collectors.toList());
+        var inv = player.getEnderChest();
+        for (var itemStack : itemStacks) {
+            var result = inv.addItem(itemStack);
+            if (result.size() > 0) {
+                throw new InternalServerErrorException("Could not add item stacks to inventory");
+            }
+        }
+    }
+
+    @Override
+    public void removeFromPlayerEnderChest(UUID uuid, Collection<ItemStack> stacks) throws WebApplicationException {
+        var player = server.getPlayer(uuid);
+        if (player == null) {
+            throw new NotFoundException("Player not found: " + uuid);
+        }
+
+        var itemStacks = stacks.stream().map(this::fromItemStack).collect(Collectors.toList());
+        var inv = player.getEnderChest();
         for (var itemStack : itemStacks) {
             var result = inv.removeItem(itemStack);
             if (result.size() > 0) {

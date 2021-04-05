@@ -3,6 +3,7 @@ package io.valandur.webapi.player;
 import io.leangen.graphql.annotations.GraphQLArgument;
 import io.leangen.graphql.annotations.GraphQLMutation;
 import io.leangen.graphql.annotations.GraphQLQuery;
+import io.valandur.webapi.item.Inventory;
 import io.valandur.webapi.item.ItemStack;
 import io.valandur.webapi.web.BaseServlet;
 import jakarta.inject.Singleton;
@@ -42,7 +43,7 @@ public class PlayerServlet extends BaseServlet {
     @GET
     @Path("{player}/inventory")
     @GraphQLQuery(name = "playerInventory")
-    public PlayerInventory getPlayerInventory(
+    public Inventory getPlayerInventory(
             @PathParam("player") @GraphQLArgument(name = "uuid", description = "The UUID of the player") String uuidString,
             @QueryParam("type") @GraphQLArgument(name = "type", description = "The type of item to filter") String type)
             throws ExecutionException, InterruptedException {
@@ -79,6 +80,52 @@ public class PlayerServlet extends BaseServlet {
         try {
             UUID uuid = UUID.fromString(uuidString);
             webapi.runOnMain(() -> playerService.removeFromPlayerInventory(uuid, stacks));
+        } catch (IllegalArgumentException ignored) {
+            throw new BadRequestException("Invalid uuid " + uuidString);
+        }
+    }
+
+
+    @GET
+    @Path("{player}/ender-chest")
+    @GraphQLQuery(name = "playerEnderChest")
+    public Inventory getPlayerEnderChest(
+            @PathParam("player") @GraphQLArgument(name = "uuid", description = "The UUID of the player") String uuidString,
+            @QueryParam("type") @GraphQLArgument(name = "type", description = "The type of item to filter") String type)
+            throws ExecutionException, InterruptedException {
+        try {
+            UUID uuid = UUID.fromString(uuidString);
+            return webapi.runOnMain(() -> playerService.getPlayerEnderChest(uuid, type));
+        } catch (IllegalArgumentException ignored) {
+            throw new BadRequestException("Invalid uuid " + uuidString);
+        }
+    }
+
+    @POST
+    @Path("{player}/ender-chest")
+    @GraphQLMutation(name = "addToPlayerEnderChest")
+    public void addToPlayerEnderChest(
+            @PathParam("player") @GraphQLArgument(name = "uuid", description = "The UUID of the player") String uuidString,
+            @GraphQLArgument(name = "itemStacks", description = "The item stacks to add") Collection<ItemStack> stacks)
+            throws ExecutionException, InterruptedException {
+        try {
+            UUID uuid = UUID.fromString(uuidString);
+            webapi.runOnMain(() -> playerService.addToPlayerEnderChest(uuid, stacks));
+        } catch (IllegalArgumentException ignored) {
+            throw new BadRequestException("Invalid uuid " + uuidString);
+        }
+    }
+
+    @DELETE
+    @Path("{player}/ender-chest")
+    @GraphQLMutation(name = "removeFromPlayerEnderChest")
+    public void removeFromPlayerEnderChest(
+            @PathParam("player") @GraphQLArgument(name = "uuid", description = "The UUID of the player") String uuidString,
+            @GraphQLArgument(name = "itemStacks", description = "The item stacks to remove") Collection<ItemStack> stacks)
+            throws ExecutionException, InterruptedException {
+        try {
+            UUID uuid = UUID.fromString(uuidString);
+            webapi.runOnMain(() -> playerService.removeFromPlayerEnderChest(uuid, stacks));
         } catch (IllegalArgumentException ignored) {
             throw new BadRequestException("Invalid uuid " + uuidString);
         }

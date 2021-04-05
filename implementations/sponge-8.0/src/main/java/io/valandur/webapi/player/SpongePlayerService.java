@@ -1,6 +1,7 @@
 package io.valandur.webapi.player;
 
 import io.valandur.webapi.SpongeWebAPI;
+import io.valandur.webapi.item.Inventory;
 import io.valandur.webapi.item.ItemStack;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.InternalServerErrorException;
@@ -11,7 +12,6 @@ import org.spongepowered.api.Sponge;
 import org.spongepowered.api.adventure.SpongeComponents;
 import org.spongepowered.api.data.Keys;
 import org.spongepowered.api.item.ItemType;
-import org.spongepowered.api.item.inventory.Inventory;
 import org.spongepowered.api.item.inventory.equipment.EquipmentTypes;
 import org.spongepowered.api.item.inventory.query.QueryTypes;
 import org.spongepowered.api.item.inventory.transaction.InventoryTransactionResult;
@@ -48,24 +48,7 @@ public class SpongePlayerService extends PlayerService<SpongeWebAPI> {
     }
 
     private Player toPlayer(org.spongepowered.api.entity.living.player.server.ServerPlayer player) {
-        return new Player(
-                player.uniqueId().toString(),
-                player.name(),
-                player.connection().address().toString()
-        );
-    }
-
-    @Override
-    public PlayerInventory getPlayerInventory(UUID uuid, String type) throws WebApplicationException {
-        var player = Sponge.server().player(uuid);
-        if (player.isEmpty()) {
-            throw new NotFoundException("Player not found: " + uuid);
-        }
-
-        var itemType = type != null ? this.fromType(type) : null;
-
-        var inv = player.get().inventory();
-        var armor = inv.armor();
+        var armor = player.inventory().armor();
 
         var helmet = armor.peek(EquipmentTypes.HEAD)
                 .map(stack -> !stack.isEmpty() ? this.toItemStack(stack) : null)
@@ -83,20 +66,39 @@ public class SpongePlayerService extends PlayerService<SpongeWebAPI> {
                 .map(stack -> !stack.isEmpty() ? this.toItemStack(stack) : null)
                 .orElse(null);
 
+        return new Player(
+                player.uniqueId().toString(),
+                player.name(),
+                player.connection().address().toString(),
+                helmet,
+                chestplate,
+                leggings,
+                boots
+        );
+    }
+
+    @Override
+    public Inventory getPlayerInventory(UUID uuid, String type) throws WebApplicationException {
+        var player = Sponge.server().player(uuid);
+        if (player.isEmpty()) {
+            throw new NotFoundException("Player not found: " + uuid);
+        }
+
+        var itemType = type != null ? this.fromType(type) : null;
+
+        var inv = player.get().inventory();
+
         var stacks = new ArrayList<ItemStack>();
         var slots = (itemType != null ? inv.query(QueryTypes.ITEM_TYPE.get().of(itemType)) : inv).slots();
-        for (Inventory slot : slots) {
+        for (org.spongepowered.api.item.inventory.Inventory slot : slots) {
             var item = slot.peek();
             if (!item.isEmpty()) {
                 stacks.add(this.toItemStack(item));
             }
         }
 
-        return new PlayerInventory(
-                helmet,
-                chestplate,
-                leggings,
-                boots,
+        return new Inventory(
+                inv.capacity(),
                 stacks
         );
     }
@@ -128,6 +130,69 @@ public class SpongePlayerService extends PlayerService<SpongeWebAPI> {
 
         var itemStacks = stacks.stream().map(this::fromItemStack).collect(Collectors.toList());
         var inv = player.get().inventory();
+
+        for (var itemStack : itemStacks) {
+            var result =
+                    inv.query(QueryTypes.ITEM_STACK_IGNORE_QUANTITY.get().of(itemStack)).poll(itemStack.quantity());
+            if (result.type() != InventoryTransactionResult.Type.SUCCESS) {
+                throw new InternalServerErrorException("Could not remove item stacks from inventory");
+            }
+        }
+    }
+
+    @Override
+    public Inventory getPlayerEnderChest(UUID uuid, String type) throws WebApplicationException {
+        var player = Sponge.server().player(uuid);
+        if (player.isEmpty()) {
+            throw new NotFoundException("Player not found: " + uuid);
+        }
+
+        var itemType = type != null ? this.fromType(type) : null;
+
+        var inv = player.get().enderChestInventory();
+
+        var stacks = new ArrayList<ItemStack>();
+        var slots = (itemType != null ? inv.query(QueryTypes.ITEM_TYPE.get().of(itemType)) : inv).slots();
+        for (org.spongepowered.api.item.inventory.Inventory slot : slots) {
+            var item = slot.peek();
+            if (!item.isEmpty()) {
+                stacks.add(this.toItemStack(item));
+            }
+        }
+
+        return new Inventory(
+                inv.capacity(),
+                stacks
+        );
+    }
+
+    @Override
+    public void addToPlayerEnderChest(UUID uuid, Collection<ItemStack> stacks) throws WebApplicationException {
+        var player = Sponge.server().player(uuid);
+        if (player.isEmpty()) {
+            throw new NotFoundException("Player not found: " + uuid);
+        }
+
+        var itemStacks = stacks.stream().map(this::fromItemStack).collect(Collectors.toList());
+        var inv = player.get().enderChestInventory();
+
+        for (var itemStack : itemStacks) {
+            var result = inv.offer(itemStack);
+            if (result.type() != InventoryTransactionResult.Type.SUCCESS) {
+                throw new InternalServerErrorException("Could not add item stacks to inventory");
+            }
+        }
+    }
+
+    @Override
+    public void removeFromPlayerEnderChest(UUID uuid, Collection<ItemStack> stacks) throws WebApplicationException {
+        var player = Sponge.server().player(uuid);
+        if (player.isEmpty()) {
+            throw new NotFoundException("Player not found: " + uuid);
+        }
+
+        var itemStacks = stacks.stream().map(this::fromItemStack).collect(Collectors.toList());
+        var inv = player.get().enderChestInventory();
 
         for (var itemStack : itemStacks) {
             var result =

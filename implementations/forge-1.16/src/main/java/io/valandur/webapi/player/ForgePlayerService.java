@@ -1,6 +1,7 @@
 package io.valandur.webapi.player;
 
 import io.valandur.webapi.ForgeWebAPI;
+import io.valandur.webapi.item.Inventory;
 import io.valandur.webapi.item.ItemStack;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.InternalServerErrorException;
@@ -50,24 +51,6 @@ public class ForgePlayerService extends PlayerService<ForgeWebAPI> {
     }
 
     private Player toPlayer(ServerPlayerEntity player) {
-        return new Player(
-                player.getUniqueID().toString(),
-                player.getName().getString(),
-                player.getPlayerIP()
-        );
-    }
-
-
-    @Override
-    public PlayerInventory getPlayerInventory(UUID uuid, String type) throws WebApplicationException {
-        var server = ServerLifecycleHooks.getCurrentServer();
-        var player = server.getPlayerList().getPlayerByUUID(uuid);
-        if (player == null) {
-            throw new NotFoundException("Player not found: " + uuid);
-        }
-
-        var itemType = type != null ? this.fromType(type) : null;
-
         var helmetStack = player.getItemStackFromSlot(EquipmentSlotType.HEAD);
         var helmet = !helmetStack.isEmpty() ? this.toItemStack(helmetStack) : null;
 
@@ -80,10 +63,32 @@ public class ForgePlayerService extends PlayerService<ForgeWebAPI> {
         var bootsStack = player.getItemStackFromSlot(EquipmentSlotType.FEET);
         var boots = !bootsStack.isEmpty() ? this.toItemStack(bootsStack) : null;
 
-        int size = player.inventory.getSizeInventory();
+        return new Player(
+                player.getUniqueID().toString(),
+                player.getName().getString(),
+                player.getPlayerIP(),
+                helmet,
+                chestplate,
+                leggings,
+                boots
+        );
+    }
+
+    @Override
+    public Inventory getPlayerInventory(UUID uuid, String type) throws WebApplicationException {
+        var server = ServerLifecycleHooks.getCurrentServer();
+        var player = server.getPlayerList().getPlayerByUUID(uuid);
+        if (player == null) {
+            throw new NotFoundException("Player not found: " + uuid);
+        }
+
+        var itemType = type != null ? this.fromType(type) : null;
+
+        var inv = player.inventory;
+        int size = inv.getSizeInventory();
         var stacks = new ArrayList<ItemStack>();
         for (int i = 0; i < size; i++) {
-            var stack = player.inventory.getStackInSlot(i);
+            var stack = inv.getStackInSlot(i);
             if (itemType != null && stack.getItem() != itemType) {
                 continue;
             }
@@ -92,11 +97,8 @@ public class ForgePlayerService extends PlayerService<ForgeWebAPI> {
             }
         }
 
-        return new PlayerInventory(
-                helmet,
-                chestplate,
-                leggings,
-                boots,
+        return new Inventory(
+                size,
                 stacks
         );
     }
@@ -111,8 +113,9 @@ public class ForgePlayerService extends PlayerService<ForgeWebAPI> {
 
         var itemStacks = stacks.stream().map(this::fromItemStack).collect(Collectors.toList());
 
+        var inv = player.inventory;
         for (var itemStack : itemStacks) {
-            var success = player.addItemStackToInventory(itemStack);
+            var success = inv.addItemStackToInventory(itemStack);
             if (!success) {
                 throw new InternalServerErrorException("Could not add item stacks to inventory");
             }
@@ -124,6 +127,59 @@ public class ForgePlayerService extends PlayerService<ForgeWebAPI> {
 
     @Override
     public void removeFromPlayerInventory(UUID uuid, Collection<ItemStack> stacks) throws WebApplicationException {
+        throw new InternalServerErrorException("Method not implemented");
+    }
+
+    @Override
+    public Inventory getPlayerEnderChest(UUID uuid, String type) throws WebApplicationException {
+        var server = ServerLifecycleHooks.getCurrentServer();
+        var player = server.getPlayerList().getPlayerByUUID(uuid);
+        if (player == null) {
+            throw new NotFoundException("Player not found: " + uuid);
+        }
+
+        var itemType = type != null ? this.fromType(type) : null;
+
+        var inv = player.getInventoryEnderChest();
+        int size = inv.getSizeInventory();
+        var stacks = new ArrayList<ItemStack>();
+        for (int i = 0; i < size; i++) {
+            var stack = inv.getStackInSlot(i);
+            if (itemType != null && stack.getItem() != itemType) {
+                continue;
+            }
+            if (!stack.isEmpty()) {
+                stacks.add(this.toItemStack(stack));
+            }
+        }
+
+        return new Inventory(
+                size,
+                stacks
+        );
+    }
+
+    @Override
+    public void addToPlayerEnderChest(UUID uuid, Collection<ItemStack> stacks) throws WebApplicationException {
+        var server = ServerLifecycleHooks.getCurrentServer();
+        var player = server.getPlayerList().getPlayerByUUID(uuid);
+        if (player == null) {
+            throw new NotFoundException("Player not found: " + uuid);
+        }
+
+        var itemStacks = stacks.stream().map(this::fromItemStack).collect(Collectors.toList());
+
+        var inv = player.getInventoryEnderChest();
+        for (var itemStack : itemStacks) {
+            var result = inv.addItem(itemStack);
+            if (!result.isEmpty()) {
+                throw new InternalServerErrorException("Could not add item stacks to inventory");
+            }
+        }
+    }
+
+    @Override
+    public void removeFromPlayerEnderChest(UUID uuid, Collection<ItemStack> stacks) throws WebApplicationException {
         throw new InternalServerErrorException("Method not implemented");
     }
 

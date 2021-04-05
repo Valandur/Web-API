@@ -8,7 +8,6 @@ import graphql.ExecutionResult;
 import graphql.GraphQL;
 import graphql.schema.GraphQLSchema;
 import io.leangen.graphql.GraphQLSchemaGenerator;
-import io.valandur.webapi.info.InfoServlet;
 import io.valandur.webapi.player.PlayerServlet;
 import io.valandur.webapi.server.ServerServlet;
 import io.valandur.webapi.world.WorldServlet;
@@ -43,7 +42,6 @@ public class GraphQLServlet extends HttpServlet {
 
         GraphQLSchema schema = new GraphQLSchemaGenerator()
                 .withBasePackages("io.valandur.webapi")
-                .withOperationsFromSingleton(new InfoServlet())
                 .withOperationsFromSingleton(new PlayerServlet())
                 .withOperationsFromSingleton(new WorldServlet())
                 .withOperationsFromSingleton(new ServerServlet())

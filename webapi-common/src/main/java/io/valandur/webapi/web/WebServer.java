@@ -3,7 +3,6 @@ package io.valandur.webapi.web;
 import io.valandur.webapi.WebAPI;
 import io.valandur.webapi.config.Config;
 import io.valandur.webapi.graphql.GraphQLServlet;
-import io.valandur.webapi.info.InfoServlet;
 import io.valandur.webapi.player.PlayerServlet;
 import io.valandur.webapi.server.ServerServlet;
 import io.valandur.webapi.world.WorldServlet;
@@ -101,10 +100,9 @@ public class WebServer {
             servletsContext.addServlet(graphqlHolder, "/graphql");
 
             var conf = new ResourceConfig();
-            conf.register(new WorldServlet());
-            conf.register(new PlayerServlet());
-            conf.register(new InfoServlet());
-            conf.register(new ServerServlet());
+            conf.register(WorldServlet.class);
+            conf.register(PlayerServlet.class);
+            conf.register(ServerServlet.class);
 
             conf.register(JacksonFeature.class);
 

@@ -1,6 +1,8 @@
 package io.valandur.webapi.world;
 
 import io.valandur.webapi.SpigotWebAPI;
+import jakarta.ws.rs.BadRequestException;
+import org.bukkit.Material;
 import org.bukkit.Server;
 
 import java.util.ArrayList;
@@ -25,6 +27,35 @@ public class SpigotWorldService extends WorldService<SpigotWebAPI> {
         return worlds;
     }
 
+    @Override
+    public Block getBlockAt(String worldType, int x, int y, int z) {
+        var optWorld = server.getWorlds().stream().filter(w -> w.getEnvironment().name().equalsIgnoreCase(worldType)).findAny();
+        if (optWorld.isEmpty()) {
+            throw new BadRequestException("World with type not found: " + worldType);
+        }
+
+        var world = optWorld.get();
+        var block = world.getBlockAt(x, y, z);
+        return new Block(block.getType().name());
+    }
+
+    @Override
+    public void setBlockAt(String worldType, int x, int y, int z, Block block) {
+        var optWorld = server.getWorlds().stream().filter(w -> w.getEnvironment().name().equalsIgnoreCase(worldType)).findAny();
+        if (optWorld.isEmpty()) {
+            throw new BadRequestException("World with type not found: " + worldType);
+        }
+
+        var world = optWorld.get();
+
+        var material = Material.getMaterial(block.type);
+        if (material == null) {
+            throw new BadRequestException("Invalid block type: " + block.type);
+        }
+
+        world.getBlockAt(x, y, z).setType(material);
+    }
+
     private World toWorld(org.bukkit.World world) {
         var gameRuleNames = world.getGameRules();
         var gameRules = new ArrayList<GameRule>();
@@ -37,12 +68,13 @@ public class SpigotWorldService extends WorldService<SpigotWebAPI> {
         }
 
         return new World(
-                world.getUID().toString(),
-                world.getName(),
                 world.getEnvironment().name(),
+                world.getName(),
                 world.getDifficulty().name(),
                 world.getSeed(),
                 gameRules
         );
     }
+
+
 }

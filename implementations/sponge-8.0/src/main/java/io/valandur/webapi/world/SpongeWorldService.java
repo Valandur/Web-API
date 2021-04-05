@@ -1,7 +1,14 @@
 package io.valandur.webapi.world;
 
 import io.valandur.webapi.SpongeWebAPI;
+import jakarta.ws.rs.BadRequestException;
+import jakarta.ws.rs.WebApplicationException;
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.spongepowered.api.ResourceKey;
 import org.spongepowered.api.Sponge;
+import org.spongepowered.api.block.BlockState;
+import org.spongepowered.api.block.BlockType;
+import org.spongepowered.api.registry.RegistryTypes;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -15,10 +22,50 @@ public class SpongeWorldService extends WorldService<SpongeWebAPI> {
     @Override
     public Collection<World> getWorlds() {
         var worlds = new ArrayList<World>();
-        for (var world : Sponge.server().worldManager().worlds()) {
+        var rawWorlds = Sponge.server().worldManager().worlds();
+        for (var world : rawWorlds) {
             worlds.add(this.toWorld(world));
         }
         return worlds;
+    }
+
+    @Override
+    public Block getBlockAt(String worldType, int x, int y, int z) {
+        var key = ResourceKey.resolve(worldType);
+        var entry = RegistryTypes.WORLD_TYPE.get().findEntry(key);
+        if (entry.isEmpty()) {
+            throw new BadRequestException("Invalid world type: " + worldType);
+        }
+
+        var optWorld = Sponge.server().worldManager().world(key);
+        if (optWorld.isEmpty()) {
+            throw new Error("Invalid world type: " + worldType);
+        }
+
+        var world = optWorld.get();
+        var block = world.block(x, y, z);
+        return new Block(block.type().key(RegistryTypes.BLOCK_TYPE).asString());
+    }
+
+    @Override
+    public void setBlockAt(String worldType, int x, int y, int z, Block block) {
+        var key = ResourceKey.resolve(worldType);
+        var entry = RegistryTypes.WORLD_TYPE.get().findEntry(key);
+        if (entry.isEmpty()) {
+            throw new BadRequestException("Invalid world type: " + worldType);
+        }
+
+        var optWorld = Sponge.server().worldManager().world(key);
+        if (optWorld.isEmpty()) {
+            throw new Error("Invalid world type: " + worldType);
+        }
+
+        var world = optWorld.get();
+        var blockState = this.fromBlock(block);
+        var success = world.setBlock(x, y, z, blockState);
+        if (!success) {
+            throw new Error("Could not set block");
+        }
     }
 
     private World toWorld(org.spongepowered.api.world.server.ServerWorld world) {
@@ -48,12 +95,26 @@ public class SpongeWorldService extends WorldService<SpongeWebAPI> {
         }
 
         return new World(
-                world.uniqueId().toString(),
+                world.properties().worldType().key(RegistryTypes.WORLD_TYPE).asString(),
                 props.displayName().map(Object::toString).orElse(null),
-                world.properties().worldType().toString(),
                 world.difficulty().toString(),
                 world.seed(),
                 gameRules
         );
+    }
+
+    private @NonNull BlockState fromBlock(Block block) throws WebApplicationException {
+        var type = this.fromType(block.type);
+        return BlockState.builder().blockType(type).build();
+    }
+
+    private BlockType fromType(String type) {
+        var key = ResourceKey.resolve(type);
+        var entry = RegistryTypes.BLOCK_TYPE.get().findEntry(key);
+        if (entry.isEmpty()) {
+            throw new BadRequestException("Invalid block type: " + type);
+        }
+
+        return entry.get().value();
     }
 }

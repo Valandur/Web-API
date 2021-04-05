@@ -1,12 +1,10 @@
 package io.valandur.webapi.world;
 
+import io.leangen.graphql.annotations.GraphQLArgument;
 import io.leangen.graphql.annotations.GraphQLQuery;
 import io.valandur.webapi.web.BaseServlet;
 import jakarta.inject.Singleton;
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 
 import java.util.Collection;
@@ -22,5 +20,30 @@ public class WorldServlet extends BaseServlet {
     @GraphQLQuery(name = "worlds")
     public Collection<World> getWorlds() throws ExecutionException, InterruptedException {
         return webapi.runOnMain(() -> worldService.getWorlds());
+    }
+
+    @GET
+    @Path("{type}/{x}/{y}/{z}")
+    @GraphQLQuery(name = "block")
+    public Block getBlockAt(
+            @PathParam("type") @GraphQLArgument(name = "type", description = "The world type") String type,
+            @PathParam("x") @GraphQLArgument(name = "x", description = "The x coordinate") int x,
+            @PathParam("y") @GraphQLArgument(name = "y", description = "The y coordinate") int y,
+            @PathParam("z") @GraphQLArgument(name = "z", description = "The z coordinate") int z
+    ) throws ExecutionException, InterruptedException {
+        return webapi.runOnMain(() -> worldService.getBlockAt(type, x, y, z));
+    }
+
+    @PUT
+    @Path("{type}/{x}/{y}/{z}")
+    @GraphQLQuery(name = "setBlock")
+    public void setBlockAt(
+            @PathParam("type") @GraphQLArgument(name = "type", description = "The world type") String type,
+            @PathParam("x") @GraphQLArgument(name = "x", description = "The x coordinate") int x,
+            @PathParam("y") @GraphQLArgument(name = "y", description = "The y coordinate") int y,
+            @PathParam("z") @GraphQLArgument(name = "z", description = "The z coordinate") int z,
+            @GraphQLArgument(name = "block", description = "The block to set") Block block
+    ) throws ExecutionException, InterruptedException {
+        webapi.runOnMain(() -> worldService.setBlockAt(type, x, y, z, block));
     }
 }

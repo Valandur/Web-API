@@ -43,7 +43,7 @@ subprojects {
         // relocate 'graphql', 'io.valandur.shadow.graphql'
 
         relocate 'io.github', 'io.valandur.shadow.io.github'
-        relocate 'io.leangen', 'io.valandur.shadow.io.leangen'
+        relocate 'io.leangen.graphql', 'io.valandur.shadow.io.leangen.graphql'
 
         relocate 'jakarta.annotation', 'io.valandur.shadow.jakarta.annotation'
         relocate 'jakarta.inject', 'io.valandur.shadow.jakarta.inject'

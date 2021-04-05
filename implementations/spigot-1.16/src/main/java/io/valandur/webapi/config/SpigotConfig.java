@@ -1,6 +1,8 @@
 package io.valandur.webapi.config;
 
+import io.leangen.geantyref.TypeToken;
 import io.valandur.webapi.SpigotWebAPIPlugin;
+import io.valandur.webapi.WebAPI;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -33,7 +35,7 @@ public class SpigotConfig extends Config {
         try {
             config.load(file);
         } catch (IOException | InvalidConfigurationException e) {
-            e.printStackTrace();
+            WebAPI.getInstance().getLogger().error(e.getMessage());
         }
     }
 
@@ -42,12 +44,18 @@ public class SpigotConfig extends Config {
         try {
             config.save(file);
         } catch (IOException e) {
-            e.printStackTrace();
+            WebAPI.getInstance().getLogger().error(e.getMessage());
         }
     }
 
     @Override
-    public <T> T get(String path, T def) {
+    public <T> T get(String path, TypeToken<T> type, T def) {
         return (T) config.get(path, def);
+    }
+
+    @Override
+    public <T> boolean set(String path, TypeToken<T> type, T value) {
+        config.set(path, value);
+        return true;
     }
 }

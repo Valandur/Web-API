@@ -2,6 +2,7 @@ package io.valandur.webapi.web;
 
 
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
+import io.valandur.webapi.WebAPI;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
@@ -23,8 +24,7 @@ public class ErrorHandler extends org.eclipse.jetty.server.handler.ErrorHandler 
         } else {
             // Print the stack trace as this is an "unexpected" exception,
             // and we want to make sure we can track it down
-            //exception.printStackTrace(System.out);
-            //WebAPI.getInstance().getLogger().error("Server Error", exception);
+            WebAPI.getInstance().getLogger().error(exception.getMessage());
         }
 
         return Response

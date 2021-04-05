@@ -1,11 +1,15 @@
 package io.valandur.webapi.web;
 
+import io.leangen.geantyref.TypeToken;
 import io.valandur.webapi.WebAPI;
 import io.valandur.webapi.config.Config;
 import io.valandur.webapi.graphql.GraphQLServlet;
+import io.valandur.webapi.logger.Logger;
 import io.valandur.webapi.player.PlayerServlet;
+import io.valandur.webapi.security.SecurityFilter;
 import io.valandur.webapi.server.ServerServlet;
 import io.valandur.webapi.world.WorldServlet;
+import jakarta.servlet.DispatcherType;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.Server;
@@ -19,10 +23,12 @@ import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.servlet.ServletContainer;
 
 import java.net.SocketException;
+import java.util.EnumSet;
 
 public class WebServer {
 
     private final WebAPI<?, ?> webapi;
+    private final Logger logger;
 
     private Server server;
 
@@ -35,23 +41,24 @@ public class WebServer {
 
     public WebServer(WebAPI<?, ?> webapi) {
         this.webapi = webapi;
+        this.logger = webapi.getLogger();
     }
 
     public void load() {
         Config conf = webapi.getConfig("web");
         conf.load();
 
-        basePath = conf.get("basePath", "/");
-        host = conf.get("host", "0.0.0.0");
-        portHttp = conf.get("portHttp", 8080);
-        minThreads = conf.get("minThreads", 1);
-        maxThreads = conf.get("maxThreads", 5);
-        idleTimeout = conf.get("idleTimeout", 60);
+        basePath = conf.get("basePath", TypeToken.get(String.class), "/");
+        host = conf.get("host", TypeToken.get(String.class), "0.0.0.0");
+        portHttp = conf.get("portHttp", TypeToken.get(Integer.class), 8080);
+        minThreads = conf.get("minThreads", TypeToken.get(Integer.class), 1);
+        maxThreads = conf.get("maxThreads", TypeToken.get(Integer.class), 5);
+        idleTimeout = conf.get("idleTimeout", TypeToken.get(Integer.class), 60);
     }
 
     public void start() {
         // Start web server
-        //logger.info("Starting Web Server...");
+        logger.info("Starting web server...");
 
         try {
             var threadPool = new QueuedThreadPool(maxThreads, minThreads, idleTimeout);
@@ -70,11 +77,11 @@ public class WebServer {
             // HTTP
             if (portHttp >= 0) {
                 if (portHttp < 1024) {
-                    /*logger.warn("You are using an HTTP port < 1024 which is not recommended! \n" +
+                    logger.warn("You are using an HTTP port < 1024 which is not recommended! \n" +
                             "This might cause errors when not running the server as root/admin. \n" +
                             "Running the server as root/admin is not recommended. " +
                             "Please use a port above 1024 for HTTP."
-                    );*/
+                    );
                 }
                 ServerConnector httpConn = new ServerConnector(server, new HttpConnectionFactory(httpConfig));
                 httpConn.setHost(host);
@@ -86,13 +93,14 @@ public class WebServer {
             }
 
             if (baseUri == null) {
-                //logger.error("You have disabled both HTTP and HTTPS - The Web-API will be unreachable!");
+                logger.error("You have disabled both HTTP and HTTPS - The Web-API will be unreachable!");
             }
 
             // Servlet context
             var servletsContext = new ServletContextHandler();
             servletsContext.setContextPath(basePath);
             servletsContext.setErrorHandler(errHandler);
+            servletsContext.addFilter(SecurityFilter.class, "/*", EnumSet.of(DispatcherType.REQUEST));
 
             // GraphQL
             var graphqlServlet = new GraphQLServlet();
@@ -118,21 +126,21 @@ public class WebServer {
 
             server.start();
 
-            System.out.println("Started");
+            logger.info("Web server running: " + baseUri);
         } catch (SocketException e) {
-            /*logger.error("Web-API web server could not start, probably because one of the ports needed for HTTP " +
-                    "and/or HTTPS are in use or not accessible (ports below 1024 are protected)");*/
+            logger.error("Web-API web server could not start, probably because one of the ports needed for HTTP " +
+                    "and/or HTTPS are in use or not accessible (ports below 1024 are protected)");
         } catch (MultiException e) {
             e.getThrowables().forEach(t -> {
                 if (t instanceof SocketException) {
-                    /*logger.error("Web-API web server could not start, probably because one of the ports needed for " +
-                            "HTTP and/or HTTPS are in use or not accessible (ports below 1024 are protected)");*/
+                    logger.error("Web-API web server could not start, probably because one of the ports needed for " +
+                            "HTTP and/or HTTPS are in use or not accessible (ports below 1024 are protected)");
                 } else {
-                    t.printStackTrace();
+                    logger.error(t.getMessage());
                 }
             });
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         }
     }
 
@@ -142,7 +150,7 @@ public class WebServer {
                 server.stop();
                 server = null;
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.error(e.getMessage());
             }
         }
     }

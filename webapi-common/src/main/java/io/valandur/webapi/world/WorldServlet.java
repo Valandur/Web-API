@@ -2,6 +2,8 @@ package io.valandur.webapi.world;
 
 import io.leangen.graphql.annotations.GraphQLArgument;
 import io.leangen.graphql.annotations.GraphQLQuery;
+import io.valandur.webapi.security.Access;
+import io.valandur.webapi.security.AccessControl;
 import io.valandur.webapi.web.BaseServlet;
 import jakarta.inject.Singleton;
 import jakarta.ws.rs.*;
@@ -37,6 +39,7 @@ public class WorldServlet extends BaseServlet {
     @PUT
     @Path("{world}/{x}/{y}/{z}")
     @GraphQLQuery(name = "setBlock")
+    @AccessControl(Access.WRITE)
     public void setBlockAt(
             @PathParam("world") @GraphQLArgument(name = "world", description = "The world type") String world,
             @PathParam("x") @GraphQLArgument(name = "x", description = "The x coordinate") int x,

@@ -3,17 +3,13 @@ package io.valandur.webapi.security;
 import io.leangen.geantyref.TypeToken;
 import io.valandur.webapi.WebAPI;
 import io.valandur.webapi.config.Config;
-import io.valandur.webapi.logger.Logger;
-import jakarta.ws.rs.ForbiddenException;
-import jakarta.ws.rs.NotAuthorizedException;
-import jakarta.ws.rs.WebApplicationException;
-import jakarta.ws.rs.core.Response;
 
 import java.security.SecureRandom;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class SecurityService {
+
     public static final String API_KEY = "X-WebAPI-Key";
     public static final String X_FORWARDED_FOR = "X-Forwarded-For";
     public static final String ACCESS_CONTROL_ALLOW_ORIGIN = "Access-Control-Allow-Origin";
@@ -31,7 +27,6 @@ public class SecurityService {
     private static final TypeToken<Map<String, KeyPermissions>> KEYS_TYPE = new TypeToken<>() {
     };
 
-    private final Logger logger;
     private final Config conf;
     private final Set<String> whitelist;
     private final Set<String> blacklist;
@@ -40,8 +35,6 @@ public class SecurityService {
     private final Map<String, Double> lastCall = new ConcurrentHashMap<>();
 
     public SecurityService(WebAPI<?, ?> webapi) {
-        this.logger = webapi.getLogger();
-
         this.conf = webapi.getConfig("security");
         this.conf.load();
 
@@ -56,7 +49,7 @@ public class SecurityService {
             this.conf.set("keys", KEYS_TYPE, this.keys);
             this.conf.save();
 
-            this.logger.info("Generated access key: " + key);
+            webapi.getLogger().info("Generated access key: " + key);
         }
     }
 
@@ -76,45 +69,23 @@ public class SecurityService {
         return this.blacklist.contains(address);
     }
 
-    public void check(String address, String path, String key, Access perm) {
-        if (!whitelistContains(address)) {
-            this.logger.warn(address + " | " + path + " | Not on whitelist");
-            throw new NotAuthorizedException("Access denied");
+    public KeyPermissions getPerms(String key) {
+        return this.keys.get(key);
+    }
+
+    public boolean isRateLimited(String key, KeyPermissions perms) {
+        if (perms.rateLimit <= 0) {
+            return false;
         }
 
-        if (blacklistContains(address)) {
-            this.logger.warn(address + " | " + path + " | On blacklist");
-            throw new NotAuthorizedException("Access denied");
+        double time = System.nanoTime() / 1000000000d;
+
+        if (lastCall.containsKey(key) && time - lastCall.get(key) < 1d / perms.rateLimit) {
+            return true;
         }
 
-        if (key == null || key.isEmpty()) {
-            this.logger.warn(address + " | " + path + " | No key");
-            throw new NotAuthorizedException("Access denied");
-        }
-
-        var perms = this.keys.get(key);
-        if (perms == null) {
-            this.logger.warn(address + " | " + path + " | Invalid key: " + key);
-            throw new ForbiddenException("Access denied");
-        }
-
-        if (perms.access == Access.READ && perm == Access.WRITE) {
-            this.logger.warn(address + " | " + path + " | No write access: " + key);
-            throw new ForbiddenException("Access denied");
-        }
-
-        // Do rate limiting
-        if (perms.rateLimit > 0) {
-            double time = System.nanoTime() / 1000000000d;
-
-            if (lastCall.containsKey(key) && time - lastCall.get(key) < 1d / perms.rateLimit) {
-                this.logger.warn(address + " | " + path + " | Rate limited key: " + key);
-                throw new WebApplicationException("Rate limited",
-                        Response.status(Response.Status.TOO_MANY_REQUESTS).build());
-            }
-
-            lastCall.put(key, time);
-        }
+        lastCall.put(key, time);
+        return false;
     }
 
     public boolean containsProxyIP(String ip) {

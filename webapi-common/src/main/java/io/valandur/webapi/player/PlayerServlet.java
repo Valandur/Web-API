@@ -5,6 +5,8 @@ import io.leangen.graphql.annotations.GraphQLMutation;
 import io.leangen.graphql.annotations.GraphQLQuery;
 import io.valandur.webapi.item.Inventory;
 import io.valandur.webapi.item.ItemStack;
+import io.valandur.webapi.security.Access;
+import io.valandur.webapi.security.AccessControl;
 import io.valandur.webapi.web.BaseServlet;
 import jakarta.inject.Singleton;
 import jakarta.ws.rs.*;
@@ -58,6 +60,7 @@ public class PlayerServlet extends BaseServlet {
     @POST
     @Path("{player}/inventory")
     @GraphQLMutation(name = "addToPlayerInventory")
+    @AccessControl(Access.WRITE)
     public void addToPlayerInventory(
             @PathParam("player") @GraphQLArgument(name = "uuid", description = "The UUID of the player") String uuidString,
             @GraphQLArgument(name = "itemStacks", description = "The item stacks to add") Collection<ItemStack> stacks)
@@ -73,6 +76,7 @@ public class PlayerServlet extends BaseServlet {
     @DELETE
     @Path("{player}/inventory")
     @GraphQLMutation(name = "removeFromPlayerInventory")
+    @AccessControl(Access.WRITE)
     public void removeFromPlayerInventory(
             @PathParam("player") @GraphQLArgument(name = "uuid", description = "The UUID of the player") String uuidString,
             @GraphQLArgument(name = "itemStacks", description = "The item stacks to remove") Collection<ItemStack> stacks)
@@ -104,6 +108,7 @@ public class PlayerServlet extends BaseServlet {
     @POST
     @Path("{player}/ender-chest")
     @GraphQLMutation(name = "addToPlayerEnderChest")
+    @AccessControl(Access.WRITE)
     public void addToPlayerEnderChest(
             @PathParam("player") @GraphQLArgument(name = "uuid", description = "The UUID of the player") String uuidString,
             @GraphQLArgument(name = "itemStacks", description = "The item stacks to add") Collection<ItemStack> stacks)
@@ -119,6 +124,7 @@ public class PlayerServlet extends BaseServlet {
     @DELETE
     @Path("{player}/ender-chest")
     @GraphQLMutation(name = "removeFromPlayerEnderChest")
+    @AccessControl(Access.WRITE)
     public void removeFromPlayerEnderChest(
             @PathParam("player") @GraphQLArgument(name = "uuid", description = "The UUID of the player") String uuidString,
             @GraphQLArgument(name = "itemStacks", description = "The item stacks to remove") Collection<ItemStack> stacks)

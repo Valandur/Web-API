@@ -2,23 +2,32 @@ package io.valandur.webapi.security;
 
 import io.valandur.webapi.WebAPIBase;
 import io.valandur.webapi.logger.Logger;
-import jakarta.servlet.*;
+import jakarta.annotation.Priority;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.ws.rs.HttpMethod;
-import jakarta.ws.rs.InternalServerErrorException;
-import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.container.*;
+import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.ext.Provider;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 
 import static io.valandur.webapi.security.SecurityService.*;
 
-public class SecurityFilter implements Filter {
+@Provider
+@Priority(Priorities.AUTHENTICATION)
+public class SecurityFilter implements ContainerRequestFilter, ContainerResponseFilter {
 
     private final SecurityService srv;
     private final Logger logger;
+
+    @Context
+    private ResourceInfo info;
+
+    @Context
+    private HttpServletRequest request;
 
     public SecurityFilter() {
         var webapi = WebAPIBase.getInstance();
@@ -27,53 +36,70 @@ public class SecurityFilter implements Filter {
     }
 
     @Override
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException,
-            ServletException {
-        if (request instanceof HttpServletRequest && response instanceof HttpServletResponse) {
-            var resume = this.filter((HttpServletRequest) request, (HttpServletResponse) response);
-            if (resume) {
-                chain.doFilter(request, response);
-            }
-        } else {
-            throw new InternalServerErrorException("Could not filter: req: " + request + ", res: " + response);
-        }
-    }
-
-    private boolean filter(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        response.setHeader(ACCESS_CONTROL_ALLOW_ORIGIN, ACCESS_CONTROL_ORIGIN);
-        response.setHeader(ACCESS_CONTROL_ALLOW_METHODS, ACCESS_CONTROL_METHODS);
-        response.setHeader(ACCESS_CONTROL_ALLOW_HEADERS, ACCESS_CONTROL_HEADERS);
-
+    public void filter(ContainerRequestContext reqContext) throws IOException {
         // Exit early on options requests
-        if (HttpMethod.OPTIONS.equalsIgnoreCase(request.getMethod())) {
-            response.setStatus(Response.Status.OK.getStatusCode());
-            return false;
+        if (HttpMethod.OPTIONS.equalsIgnoreCase(reqContext.getMethod())) {
+            reqContext.abortWith(Response.ok().build());
+            return;
         }
 
-        String key = request.getHeader(API_KEY);
+        String address = getRealAddress(request.getRemoteAddr(), reqContext.getHeaderString(X_FORWARDED_FOR));
+
+        String key = reqContext.getHeaderString(API_KEY);
         if (key == null || key.isEmpty()) {
-            key = request.getParameter("key");
+            key = reqContext.getUriInfo().getQueryParameters().getFirst("key");
         }
         if (key == null || key.isEmpty()) {
-            key = request.getHeader(HttpHeaders.AUTHORIZATION);
+            key = reqContext.getHeaderString(HttpHeaders.AUTHORIZATION);
             if (key != null) key = key.substring(key.indexOf(" ") + 1);
         }
 
-        try {
-            String path = request.getPathInfo();
-            String address = getRealAddress(request);
-            srv.check(address, path, key, Access.WRITE);
-        } catch (WebApplicationException ex) {
-            response.sendError(ex.getResponse().getStatus());
-            return false;
+        if (!srv.whitelistContains(address)) {
+            logger.warn(address + " | Not on whitelist");
+            throw new NotAuthorizedException("Access denied");
         }
 
-        return true;
+        if (srv.blacklistContains(address)) {
+            logger.warn(address + " | On blacklist");
+            throw new NotAuthorizedException("Access denied");
+        }
+
+        if (key == null || key.isEmpty()) {
+            logger.warn(address + " | No key");
+            throw new NotAuthorizedException("Access denied");
+        }
+
+        var perms = srv.getPerms(key);
+        if (perms == null) {
+            logger.warn(address + " | Invalid key: " + key);
+            throw new ForbiddenException("Access denied");
+        }
+
+        if (srv.isRateLimited(key, perms)) {
+            logger.warn(address + " | Rate limited: " + key);
+            throw new WebApplicationException("Rate limited",
+                    Response.status(Response.Status.TOO_MANY_REQUESTS).build());
+        }
+
+        Method method = info.getResourceMethod();
+        AccessControl[] accessControls = method.getAnnotationsByType(AccessControl.class);
+        for (AccessControl control : accessControls) {
+            if (control.value() == Access.WRITE && perms.access == Access.READ) {
+                logger.warn(address + " | No access: " + key);
+                throw new ForbiddenException("Access denied");
+            }
+        }
     }
 
-    private String getRealAddress(HttpServletRequest request) {
-        final String address = request.getRemoteAddr();
-        String forwardedFor = request.getHeader(X_FORWARDED_FOR);
+    @Override
+    public void filter(ContainerRequestContext reqContext, ContainerResponseContext resContext) throws IOException {
+        var headers = resContext.getHeaders();
+        headers.add(ACCESS_CONTROL_ALLOW_ORIGIN, ACCESS_CONTROL_ORIGIN);
+        headers.add(ACCESS_CONTROL_ALLOW_METHODS, ACCESS_CONTROL_METHODS);
+        headers.add(ACCESS_CONTROL_ALLOW_HEADERS, ACCESS_CONTROL_HEADERS);
+    }
+
+    private String getRealAddress(String address, String forwardedFor) {
         if (forwardedFor == null)
             return address;
 

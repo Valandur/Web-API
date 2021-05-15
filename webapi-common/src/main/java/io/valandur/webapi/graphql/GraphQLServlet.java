@@ -16,6 +16,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.ws.rs.Path;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -23,6 +24,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Singleton
+@Path("graphql")
 public class GraphQLServlet extends HttpServlet {
 
     private static final String APPLICATION_JSON_UTF8 = "application/json;charset=UTF-8";
@@ -127,7 +129,7 @@ public class GraphQLServlet extends HttpServlet {
         String body = req.getReader().lines().collect(Collectors.joining(System.lineSeparator()));
 
         if (APPLICATION_JSON.equals(req.getContentType())) {
-            Map<String, Object> bodyMap = mapper.readValue(body, new TypeReference<Map<String, Object>>() {
+            Map<String, Object> bodyMap = mapper.readValue(body, new TypeReference<>() {
             });
 
             // if query is present as request parameter use that instead of json query.
@@ -140,8 +142,7 @@ public class GraphQLServlet extends HttpServlet {
         } else {
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             resp.getWriter().println("Unknown content type.");
-            resp.getWriter().println("This endpoint understands application/json and application/graphql " +
-                    "content-types.");
+            resp.getWriter().println("This endpoint understands application/json and application/graphql");
             return;
         }
 

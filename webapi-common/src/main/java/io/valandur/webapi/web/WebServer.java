@@ -9,7 +9,6 @@ import io.valandur.webapi.player.PlayerServlet;
 import io.valandur.webapi.security.SecurityFilter;
 import io.valandur.webapi.server.ServerServlet;
 import io.valandur.webapi.world.WorldServlet;
-import jakarta.servlet.DispatcherType;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.Server;
@@ -23,7 +22,6 @@ import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.servlet.ServletContainer;
 
 import java.net.SocketException;
-import java.util.EnumSet;
 
 public class WebServer {
 
@@ -64,10 +62,7 @@ public class WebServer {
             var threadPool = new QueuedThreadPool(maxThreads, minThreads, idleTimeout);
             threadPool.setName("WEB-API-POOL");
             server = new Server(threadPool);
-
-            // Add error handler to jetty (will also be picked up by jersey
-            var errHandler = new ErrorHandler();
-            server.setErrorHandler(errHandler);
+            server.setErrorHandler(new ErrorHandler());
 
             // HTTP config
             var httpConfig = new HttpConfiguration();
@@ -99,22 +94,20 @@ public class WebServer {
             // Servlet context
             var servletsContext = new ServletContextHandler();
             servletsContext.setContextPath(basePath);
-            servletsContext.setErrorHandler(errHandler);
-            servletsContext.addFilter(SecurityFilter.class, "/*", EnumSet.of(DispatcherType.REQUEST));
-
-            // GraphQL
-            var graphqlServlet = new GraphQLServlet();
-            var graphqlHolder = new ServletHolder(graphqlServlet);
-            servletsContext.addServlet(graphqlHolder, "/graphql");
 
             var conf = new ResourceConfig();
+            conf.register(JacksonFeature.class);
+
+            conf.register(SecurityFilter.class);
+
+            conf.register(ErrorHandler.class);
+
+            conf.register(GraphQLServlet.class);
             conf.register(WorldServlet.class);
             conf.register(PlayerServlet.class);
             conf.register(ServerServlet.class);
 
-            conf.register(JacksonFeature.class);
-
-            conf.register(errHandler);
+            conf.property("jersey.config.server.wadl.disableWadl", true);
 
             // Jersey
             var jerseyServlet = new ServletContainer(conf);

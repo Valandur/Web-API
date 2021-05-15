@@ -5,6 +5,7 @@ import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.InternalServerErrorException;
 import jakarta.ws.rs.WebApplicationException;
 import net.minecraft.block.BlockState;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.GameRules;
@@ -18,14 +19,17 @@ import java.util.Collection;
 
 public class ForgeWorldService extends WorldService<ForgeWebAPI> {
 
+    private final MinecraftServer server;
+
     public ForgeWorldService(ForgeWebAPI webapi) {
         super(webapi);
+
+        this.server = ServerLifecycleHooks.getCurrentServer();
     }
 
     @Override
     public Collection<World> getWorlds() {
         var worlds = new ArrayList<World>();
-        var server = ServerLifecycleHooks.getCurrentServer();
         for (var world : server.getWorlds()) {
             worlds.add(this.toWorld(world));
         }
@@ -34,8 +38,6 @@ public class ForgeWorldService extends WorldService<ForgeWebAPI> {
 
     @Override
     public Block getBlockAt(String world, int x, int y, int z) {
-        var server = ServerLifecycleHooks.getCurrentServer();
-
         var loc = ResourceLocation.tryCreate(world);
         if (loc == null) {
             throw new BadRequestException("Invalid world type: " + world);
@@ -55,8 +57,6 @@ public class ForgeWorldService extends WorldService<ForgeWebAPI> {
 
     @Override
     public void setBlockAt(String world, int x, int y, int z, Block block) {
-        var server = ServerLifecycleHooks.getCurrentServer();
-
         var loc = ResourceLocation.tryCreate(world);
         if (loc == null) {
             throw new BadRequestException("Invalid world type: " + world);
@@ -76,6 +76,7 @@ public class ForgeWorldService extends WorldService<ForgeWebAPI> {
 
         throw new InternalServerErrorException("World not found: " + world);
     }
+
 
     private World toWorld(net.minecraft.world.server.ServerWorld world) {
         var gameRules = new ArrayList<GameRule>();

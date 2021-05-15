@@ -50,30 +50,6 @@ public class ForgePlayerService extends PlayerService<ForgeWebAPI> {
         return this.toPlayer(player);
     }
 
-    private Player toPlayer(ServerPlayerEntity player) {
-        var helmetStack = player.getItemStackFromSlot(EquipmentSlotType.HEAD);
-        var helmet = !helmetStack.isEmpty() ? this.toItemStack(helmetStack) : null;
-
-        var chestplateStack = player.getItemStackFromSlot(EquipmentSlotType.CHEST);
-        var chestplate = !chestplateStack.isEmpty() ? this.toItemStack(chestplateStack) : null;
-
-        var leggingsStack = player.getItemStackFromSlot(EquipmentSlotType.LEGS);
-        var leggings = !leggingsStack.isEmpty() ? this.toItemStack(leggingsStack) : null;
-
-        var bootsStack = player.getItemStackFromSlot(EquipmentSlotType.FEET);
-        var boots = !bootsStack.isEmpty() ? this.toItemStack(bootsStack) : null;
-
-        return new Player(
-                player.getUniqueID().toString(),
-                player.getName().getString(),
-                player.getPlayerIP(),
-                helmet,
-                chestplate,
-                leggings,
-                boots
-        );
-    }
-
     @Override
     public Inventory getPlayerInventory(UUID uuid, String type) throws WebApplicationException {
         var server = ServerLifecycleHooks.getCurrentServer();
@@ -239,6 +215,31 @@ public class ForgePlayerService extends PlayerService<ForgeWebAPI> {
                 throw new InternalServerErrorException("Could not remove item stacks from ender chest");
             }
         }
+    }
+
+
+    private Player toPlayer(ServerPlayerEntity player) {
+        var helmetStack = player.getItemStackFromSlot(EquipmentSlotType.HEAD);
+        var helmet = !helmetStack.isEmpty() ? this.toItemStack(helmetStack) : null;
+
+        var chestplateStack = player.getItemStackFromSlot(EquipmentSlotType.CHEST);
+        var chestplate = !chestplateStack.isEmpty() ? this.toItemStack(chestplateStack) : null;
+
+        var leggingsStack = player.getItemStackFromSlot(EquipmentSlotType.LEGS);
+        var leggings = !leggingsStack.isEmpty() ? this.toItemStack(leggingsStack) : null;
+
+        var bootsStack = player.getItemStackFromSlot(EquipmentSlotType.FEET);
+        var boots = !bootsStack.isEmpty() ? this.toItemStack(bootsStack) : null;
+
+        return new Player(
+                player.getUniqueID().toString(),
+                player.getName().getString(),
+                player.getPlayerIP(),
+                helmet,
+                chestplate,
+                leggings,
+                boots
+        );
     }
 
     private ItemStack toItemStack(net.minecraft.item.ItemStack stack) {

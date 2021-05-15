@@ -47,36 +47,6 @@ public class SpongePlayerService extends PlayerService<SpongeWebAPI> {
         return this.toPlayer(player.get());
     }
 
-    private Player toPlayer(org.spongepowered.api.entity.living.player.server.ServerPlayer player) {
-        var armor = player.inventory().armor();
-
-        var helmet = armor.peek(EquipmentTypes.HEAD)
-                .map(stack -> !stack.isEmpty() ? this.toItemStack(stack) : null)
-                .orElse(null);
-
-        var chestplate = armor.peek(EquipmentTypes.CHEST)
-                .map(stack -> !stack.isEmpty() ? this.toItemStack(stack) : null)
-                .orElse(null);
-
-        var leggings = armor.peek(EquipmentTypes.LEGS)
-                .map(stack -> !stack.isEmpty() ? this.toItemStack(stack) : null)
-                .orElse(null);
-
-        var boots = armor.peek(EquipmentTypes.FEET)
-                .map(stack -> !stack.isEmpty() ? this.toItemStack(stack) : null)
-                .orElse(null);
-
-        return new Player(
-                player.uniqueId().toString(),
-                player.name(),
-                player.connection().address().toString(),
-                helmet,
-                chestplate,
-                leggings,
-                boots
-        );
-    }
-
     @Override
     public Inventory getPlayerInventory(UUID uuid, String type) throws WebApplicationException {
         var player = Sponge.server().player(uuid);
@@ -203,6 +173,36 @@ public class SpongePlayerService extends PlayerService<SpongeWebAPI> {
         }
     }
 
+
+    private Player toPlayer(org.spongepowered.api.entity.living.player.server.ServerPlayer player) {
+        var armor = player.inventory().armor();
+
+        var helmet = armor.peek(EquipmentTypes.HEAD)
+                .map(stack -> !stack.isEmpty() ? this.toItemStack(stack) : null)
+                .orElse(null);
+
+        var chestplate = armor.peek(EquipmentTypes.CHEST)
+                .map(stack -> !stack.isEmpty() ? this.toItemStack(stack) : null)
+                .orElse(null);
+
+        var leggings = armor.peek(EquipmentTypes.LEGS)
+                .map(stack -> !stack.isEmpty() ? this.toItemStack(stack) : null)
+                .orElse(null);
+
+        var boots = armor.peek(EquipmentTypes.FEET)
+                .map(stack -> !stack.isEmpty() ? this.toItemStack(stack) : null)
+                .orElse(null);
+
+        return new Player(
+                player.uniqueId().toString(),
+                player.name(),
+                player.connection().address().toString(),
+                helmet,
+                chestplate,
+                leggings,
+                boots
+        );
+    }
 
     private ItemStack toItemStack(org.spongepowered.api.item.inventory.ItemStack stack) {
         var enchantments = new HashMap<String, Integer>();

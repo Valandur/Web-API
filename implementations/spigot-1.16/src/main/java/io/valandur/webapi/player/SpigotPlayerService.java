@@ -46,32 +46,6 @@ public class SpigotPlayerService extends PlayerService<SpigotWebAPI> {
         return this.toPlayer(player);
     }
 
-    private Player toPlayer(org.bukkit.entity.Player player) {
-        var inv = player.getInventory();
-
-        var helmetStack = inv.getHelmet();
-        var helmet = helmetStack != null ? this.toItemStack(helmetStack) : null;
-
-        var chestplateStack = inv.getChestplate();
-        var chestplate = chestplateStack != null ? this.toItemStack(chestplateStack) : null;
-
-        var leggingsStack = inv.getLeggings();
-        var leggings = leggingsStack != null ? this.toItemStack(leggingsStack) : null;
-
-        var bootsStack = inv.getBoots();
-        var boots = bootsStack != null ? this.toItemStack(bootsStack) : null;
-
-        return new Player(
-                player.getUniqueId().toString(),
-                player.getName(),
-                player.getAddress() != null ? player.getAddress().toString() : null,
-                helmet,
-                chestplate,
-                leggings,
-                boots
-        );
-    }
-
     @Override
     public Inventory getPlayerInventory(UUID uuid, String type) throws WebApplicationException {
         var player = server.getPlayer(uuid);
@@ -190,6 +164,32 @@ public class SpigotPlayerService extends PlayerService<SpigotWebAPI> {
         }
     }
 
+
+    private Player toPlayer(org.bukkit.entity.Player player) {
+        var inv = player.getInventory();
+
+        var helmetStack = inv.getHelmet();
+        var helmet = helmetStack != null ? this.toItemStack(helmetStack) : null;
+
+        var chestplateStack = inv.getChestplate();
+        var chestplate = chestplateStack != null ? this.toItemStack(chestplateStack) : null;
+
+        var leggingsStack = inv.getLeggings();
+        var leggings = leggingsStack != null ? this.toItemStack(leggingsStack) : null;
+
+        var bootsStack = inv.getBoots();
+        var boots = bootsStack != null ? this.toItemStack(bootsStack) : null;
+
+        return new Player(
+                player.getUniqueId().toString(),
+                player.getName(),
+                player.getAddress() != null ? player.getAddress().toString() : null,
+                helmet,
+                chestplate,
+                leggings,
+                boots
+        );
+    }
 
     private ItemStack toItemStack(org.bukkit.inventory.ItemStack stack) {
         var rawEnchants = stack.getEnchantments();

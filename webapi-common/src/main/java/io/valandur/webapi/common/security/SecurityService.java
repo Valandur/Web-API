@@ -28,7 +28,7 @@ public class SecurityService {
 
   private final Map<String, Double> lastCall = new ConcurrentHashMap<>();
 
-  public SecurityService(WebAPI<?, ?> webapi) {
+  public SecurityService(WebAPI<?> webapi) {
     var config = webapi.getSecurityConfig();
     try {
       config.load();

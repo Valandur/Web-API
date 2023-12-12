@@ -1,8 +1,6 @@
 package io.valandur.webapi.sponge;
 
 import io.valandur.webapi.common.WebAPIBase;
-import io.valandur.webapi.config.SecurityConfig;
-import io.valandur.webapi.config.ServerConfig;
 import io.valandur.webapi.entity.EntityService;
 import io.valandur.webapi.logger.Logger;
 import io.valandur.webapi.player.PlayerService;
@@ -21,7 +19,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.function.Supplier;
 import org.spongepowered.api.Sponge;
 
-public class SpongeWebAPI extends WebAPIBase<SpongeWebAPI, SpongeSecurityConfig> {
+public class SpongeWebAPI extends WebAPIBase<SpongeWebAPI> {
 
   private final SpongeWebAPIPlugin plugin;
 

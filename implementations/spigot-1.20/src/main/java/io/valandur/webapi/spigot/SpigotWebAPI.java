@@ -1,8 +1,6 @@
 package io.valandur.webapi.spigot;
 
 import io.valandur.webapi.common.WebAPIBase;
-import io.valandur.webapi.config.SecurityConfig;
-import io.valandur.webapi.config.ServerConfig;
 import io.valandur.webapi.entity.EntityService;
 import io.valandur.webapi.logger.Logger;
 import io.valandur.webapi.player.PlayerService;
@@ -18,7 +16,7 @@ import io.valandur.webapi.world.WorldService;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Supplier;
 
-public class SpigotWebAPI extends WebAPIBase<SpigotWebAPI, SpigotSecurityConfig> {
+public class SpigotWebAPI extends WebAPIBase<SpigotWebAPI> {
 
   private final SpigotWebAPIPlugin plugin;
 

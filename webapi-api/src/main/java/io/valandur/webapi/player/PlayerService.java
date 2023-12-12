@@ -8,7 +8,7 @@ import jakarta.ws.rs.WebApplicationException;
 import java.util.Collection;
 import java.util.UUID;
 
-public abstract class PlayerService<T extends WebAPI<?, ?>> extends Service<T> {
+public abstract class PlayerService<T extends WebAPI<?>> extends Service<T> {
 
   public PlayerService(T webapi) {
     super(webapi);

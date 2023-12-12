@@ -1,3 +1,13 @@
+pluginManagement {
+    repositories {
+        maven {
+            name = 'Fabric'
+            url = 'https://maven.fabricmc.net/'
+        }
+        gradlePluginPortal()
+    }
+}
+
 rootProject.name = 'webapi'
 
 include ':webapi-api'
@@ -11,3 +21,6 @@ project(':webapi-sponge-11.0').projectDir = "$rootDir/implementations/sponge-11.
 
 include ':webapi-spigot-1.20'
 project(':webapi-spigot-1.20').projectDir = "$rootDir/implementations/spigot-1.20" as File
+
+include ':webapi-fabric-1.20'
+project(':webapi-fabric-1.20').projectDir = "$rootDir/implementations/fabric-1.20" as File

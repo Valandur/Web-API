@@ -5,22 +5,22 @@ plugins {
 dependencies {
     api project(":webapi-api")
 
-    include group: "com.fasterxml.jackson.core", name: "jackson-core", version: project.jacksonVersion
-    include group: "com.fasterxml.jackson.core", name: "jackson-databind", version: project.jacksonVersion
-    include group: "com.fasterxml.jackson.core", name: "jackson-annotations", version: project.jacksonVersion
-    include group: 'com.fasterxml.jackson.jr', name: 'jackson-jr-objects', version: '2.12.0'
+    shade group: "com.fasterxml.jackson.core", name: "jackson-core", version: project.jacksonVersion
+    shade group: "com.fasterxml.jackson.core", name: "jackson-databind", version: project.jacksonVersion
+    shade group: "com.fasterxml.jackson.core", name: "jackson-annotations", version: project.jacksonVersion
+    shade group: 'com.fasterxml.jackson.jr', name: 'jackson-jr-objects', version: '2.12.0'
 
-    include group: 'org.eclipse.jetty', name: 'jetty-server', version: project.jettyVersion
-    include group: 'org.eclipse.jetty', name: 'jetty-servlet', version: project.jettyVersion
+    shade group: 'org.eclipse.jetty', name: 'jetty-server', version: project.jettyVersion
+    shade group: 'org.eclipse.jetty', name: 'jetty-servlet', version: project.jettyVersion
 
-    include group: 'org.glassfish.jersey.core', name: 'jersey-server', version: project.jerseyVersion
-    include group: 'org.glassfish.jersey.media', name: 'jersey-media-json-jackson', version: project.jerseyVersion
-    include group: 'org.glassfish.jersey.inject', name: 'jersey-hk2', version: project.jerseyVersion
-    include group: 'org.glassfish.jersey.containers', name: 'jersey-container-servlet', version: project.jerseyVersion
+    shade group: 'org.glassfish.jersey.core', name: 'jersey-server', version: project.jerseyVersion
+    shade group: 'org.glassfish.jersey.media', name: 'jersey-media-json-jackson', version: project.jerseyVersion
+    shade group: 'org.glassfish.jersey.inject', name: 'jersey-hk2', version: project.jerseyVersion
+    shade group: 'org.glassfish.jersey.containers', name: 'jersey-container-servlet', version: project.jerseyVersion
 
-    include group: 'com.graphql-java', name: 'graphql-java', version: '21.3'
-    include group: 'com.graphql-java-kickstart', name: 'graphql-java-servlet', version: '15.1.0'
-    include group: 'io.leangen.graphql', name: 'spqr', version: project.spqrVersion
+    shade group: 'com.graphql-java', name: 'graphql-java', version: '21.3'
+    shade group: 'com.graphql-java-kickstart', name: 'graphql-java-servlet', version: '15.1.0'
+    shade group: 'io.leangen.graphql', name: 'spqr', version: project.spqrVersion
 }
 
 jar {

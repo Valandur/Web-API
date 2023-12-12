@@ -19,7 +19,7 @@ import org.glassfish.jersey.servlet.ServletContainer;
 
 public class WebServer {
 
-  private final WebAPIBase<?, ?> webapi;
+  private final WebAPIBase<?> webapi;
   private final Logger logger;
   private final String basePath;
   private final String host;
@@ -30,7 +30,7 @@ public class WebServer {
 
   private Server server;
 
-  public WebServer(WebAPIBase<?, ?> webapi) {
+  public WebServer(WebAPIBase<?> webapi) {
     this.webapi = webapi;
     this.logger = webapi.getLogger();
 

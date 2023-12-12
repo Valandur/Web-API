@@ -10,11 +10,11 @@ import io.valandur.webapi.world.WorldService;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Supplier;
 
-public abstract class WebAPI<T extends WebAPI<T, Conf>, Conf extends SecurityConfig> {
+public abstract class WebAPI<T extends WebAPI<T>> {
 
-  protected static WebAPI<?, ?> instance;
+  protected static WebAPI<?> instance;
 
-  public static WebAPI<?, ?> getInstance() {
+  public static WebAPI<?> getInstance() {
     return WebAPI.instance;
   }
 

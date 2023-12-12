@@ -11,7 +11,7 @@ repositories {
 }
 
 dependencies {
-    include project(":webapi-common")
+    shade project(":webapi-common")
 
     api "org.spigotmc:spigot-api:1.20.2-R0.1-SNAPSHOT"
 }

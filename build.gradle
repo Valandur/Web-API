@@ -26,11 +26,11 @@ subprojects {
     }
 
     configurations {
-        implementation.extendsFrom include
+        implementation.extendsFrom shade
     }
 
     shadowJar {
-        configurations = [project.configurations.include]
+        configurations = [project.configurations.shade]
 
         archiveClassifier.set('')
 

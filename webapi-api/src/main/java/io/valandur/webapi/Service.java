@@ -2,7 +2,7 @@ package io.valandur.webapi;
 
 import io.valandur.webapi.logger.Logger;
 
-public abstract class Service<T extends WebAPI<?, ?>> {
+public abstract class Service<T extends WebAPI<?>> {
 
   protected T webapi;
   protected Logger logger;

@@ -8,7 +8,7 @@ import io.valandur.webapi.world.WorldService;
 
 public abstract class BaseServlet {
 
-  protected WebAPI<?, ?> webapi;
+  protected WebAPI<?> webapi;
 
   protected WorldService<?> worldService;
   protected PlayerService<?> playerService;

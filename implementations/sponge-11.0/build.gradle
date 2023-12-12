@@ -6,7 +6,7 @@ plugins {
 }
 
 dependencies {
-    include project(":webapi-common")
+    shade project(":webapi-common")
 }
 
 sponge {

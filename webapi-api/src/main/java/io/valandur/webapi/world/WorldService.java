@@ -5,7 +5,7 @@ import io.valandur.webapi.WebAPI;
 import java.util.Collection;
 import java.util.UUID;
 
-public abstract class WorldService<T extends WebAPI<?, ?>> extends Service<T> {
+public abstract class WorldService<T extends WebAPI<?>> extends Service<T> {
 
     public WorldService(T webapi) {
         super(webapi);

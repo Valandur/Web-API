@@ -13,11 +13,10 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-public abstract class WebAPIBase<T extends WebAPIBase<T, Conf>, Conf extends SecurityConfig> extends
-    WebAPI<T, Conf> {
+public abstract class WebAPIBase<T extends WebAPIBase<T>> extends WebAPI<T> {
 
-  public static WebAPIBase<?, ?> getInstance() {
-    return (WebAPIBase<?, ?>) WebAPI.instance;
+  public static WebAPIBase<?> getInstance() {
+    return (WebAPIBase<?>) WebAPI.instance;
   }
 
   protected Set<BaseServlet> servlets = new HashSet<>();

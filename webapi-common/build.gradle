@@ -13,13 +13,14 @@ dependencies {
     include group: 'org.eclipse.jetty', name: 'jetty-server', version: project.jettyVersion
     include group: 'org.eclipse.jetty', name: 'jetty-servlet', version: project.jettyVersion
 
-    api group: 'org.glassfish.jersey.core', name: 'jersey-server', version: project.jerseyVersion
-    api group: 'org.glassfish.jersey.media', name: 'jersey-media-json-jackson', version: project.jerseyVersion
-    api group: 'org.glassfish.jersey.inject', name: 'jersey-hk2', version: project.jerseyVersion
-    api group: 'org.glassfish.jersey.containers', name: 'jersey-container-servlet', version: project.jerseyVersion
+    include group: 'org.glassfish.jersey.core', name: 'jersey-server', version: project.jerseyVersion
+    include group: 'org.glassfish.jersey.media', name: 'jersey-media-json-jackson', version: project.jerseyVersion
+    include group: 'org.glassfish.jersey.inject', name: 'jersey-hk2', version: project.jerseyVersion
+    include group: 'org.glassfish.jersey.containers', name: 'jersey-container-servlet', version: project.jerseyVersion
 
-    include group: 'com.graphql-java', name: 'graphql-java', version: '16.2'
-    include group: 'io.leangen.graphql', name: 'spqr', version: '0.11.1'
+    include group: 'com.graphql-java', name: 'graphql-java', version: '21.3'
+    include group: 'com.graphql-java-kickstart', name: 'graphql-java-servlet', version: '15.1.0'
+    include group: 'io.leangen.graphql', name: 'spqr', version: project.spqrVersion
 }
 
 jar {

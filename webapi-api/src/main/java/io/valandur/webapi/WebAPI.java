@@ -1,69 +1,97 @@
 package io.valandur.webapi;
 
-import io.valandur.webapi.config.Config;
+import io.valandur.webapi.config.SecurityConfig;
+import io.valandur.webapi.config.ServerConfig;
+import io.valandur.webapi.entity.EntityService;
 import io.valandur.webapi.logger.Logger;
 import io.valandur.webapi.player.PlayerService;
 import io.valandur.webapi.server.ServerService;
 import io.valandur.webapi.world.WorldService;
-
 import java.util.concurrent.ExecutionException;
 import java.util.function.Supplier;
 
-public abstract class WebAPI<T extends WebAPI<T, Conf>, Conf extends Config> {
+public abstract class WebAPI<T extends WebAPI<T, Conf>, Conf extends SecurityConfig> {
 
-    protected static WebAPI<?, ?> instance;
+  protected static WebAPI<?, ?> instance;
 
-    public static WebAPI<?, ?> getInstance() {
-        return WebAPI.instance;
-    }
+  public static WebAPI<?, ?> getInstance() {
+    return WebAPI.instance;
+  }
 
-    protected Logger logger;
+  protected Logger logger;
 
-    public Logger getLogger() {
-        return logger;
-    }
-
-    protected WorldService<T> worldService;
-
-    public WorldService<T> getWorldService() {
-        return worldService;
-    }
-
-    protected PlayerService<T> playerService;
-
-    public PlayerService<T> getPlayerService() {
-        return playerService;
-    }
-
-    protected ServerService<T> serverService;
-
-    public ServerService<T> getServerService() {
-        return serverService;
-    }
+  public Logger getLogger() {
+    return logger;
+  }
 
 
-    public WebAPI() {
-        WebAPI.instance = this;
-    }
+  protected SecurityConfig securityConfig;
 
-    public void load() {
-        logger = createLogger();
-        worldService = createWorldService();
-        playerService = createPlayerService();
-        serverService = createServerService();
-    }
+  public SecurityConfig getSecurityConfig() {
+    return securityConfig;
+  }
 
-    public abstract Conf getConfig(String name);
+  protected ServerConfig serverConfig;
 
-    protected abstract Logger createLogger();
+  public ServerConfig getServerConfig() {
+    return serverConfig;
+  }
 
-    protected abstract WorldService<T> createWorldService();
+  protected WorldService<T> worldService;
 
-    protected abstract PlayerService<T> createPlayerService();
+  public WorldService<T> getWorldService() {
+    return worldService;
+  }
 
-    protected abstract ServerService<T> createServerService();
+  protected PlayerService<T> playerService;
 
-    public abstract void runOnMain(Runnable runnable) throws ExecutionException, InterruptedException;
+  public PlayerService<T> getPlayerService() {
+    return playerService;
+  }
 
-    public abstract <S> S runOnMain(Supplier<S> supplier) throws ExecutionException, InterruptedException;
+  protected EntityService<T> entityService;
+
+  public EntityService<T> getEntityService() {
+    return entityService;
+  }
+
+  protected ServerService<T> serverService;
+
+  public ServerService<T> getServerService() {
+    return serverService;
+  }
+
+
+  public WebAPI() {
+    WebAPI.instance = this;
+  }
+
+  public void load() {
+    logger = createLogger();
+    securityConfig = createSecurityConfig();
+    serverConfig = createServerConfig();
+    worldService = createWorldService();
+    playerService = createPlayerService();
+    entityService = createEntityService();
+    serverService = createServerService();
+  }
+
+  protected abstract SecurityConfig createSecurityConfig();
+
+  protected abstract ServerConfig createServerConfig();
+
+  protected abstract Logger createLogger();
+
+  protected abstract WorldService<T> createWorldService();
+
+  protected abstract PlayerService<T> createPlayerService();
+
+  protected abstract EntityService<T> createEntityService();
+
+  protected abstract ServerService<T> createServerService();
+
+  public abstract void runOnMain(Runnable runnable) throws ExecutionException, InterruptedException;
+
+  public abstract <S> S runOnMain(Supplier<S> supplier)
+      throws ExecutionException, InterruptedException;
 }

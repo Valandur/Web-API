@@ -1,0 +1,4 @@
+name: webapi
+version: '${version}'
+main: io.valandur.webapi.spigot.SpigotWebAPIPlugin
+api-version: '1.20'

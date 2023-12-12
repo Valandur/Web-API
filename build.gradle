@@ -1,5 +1,5 @@
 plugins {
-    id "com.github.johnrengelman.shadow" version "6.1.0"
+    id "com.github.johnrengelman.shadow" version "8.1.1"
 }
 
 group = 'io.valandur'
@@ -7,14 +7,14 @@ version = '1.0-SNAPSHOT'
 
 subprojects {
     apply plugin: 'com.github.johnrengelman.shadow'
-    apply plugin: 'java'
-    apply plugin: 'maven'
+    apply plugin: 'maven-publish'
+    apply plugin: 'java-library'
 
     group = project.group
     version = project.version
 
-    sourceCompatibility = '11'
-    targetCompatibility = '11'
+    sourceCompatibility = '17'
+    targetCompatibility = '17'
 
     repositories {
         mavenCentral()
@@ -75,11 +75,11 @@ subprojects {
     }
 }
 
-tasks.withType(JavaCompile) {
+tasks.withType(JavaCompile).configureEach {
     options.encoding = "UTF-8"
 }
 
-tasks.withType(AbstractArchiveTask) {
+tasks.withType(AbstractArchiveTask).configureEach {
     preserveFileTimestamps = false
     reproducibleFileOrder = true
 }

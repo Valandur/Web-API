@@ -6,11 +6,8 @@ project(':webapi-api').projectDir = "$rootDir/webapi-api" as File
 include ':webapi-common'
 project(':webapi-common').projectDir = "$rootDir/webapi-common" as File
 
-include ':spigot-1.16'
-project(':spigot-1.16').projectDir = "$rootDir/implementations/spigot-1.16" as File
+include ':webapi-sponge-11.0'
+project(':webapi-sponge-11.0').projectDir = "$rootDir/implementations/sponge-11.0" as File
 
-include ':sponge-8.0'
-project(':sponge-8.0').projectDir = "$rootDir/implementations/sponge-8.0" as File
-
-include ':forge-1.16'
-project(':forge-1.16').projectDir = "$rootDir/implementations/forge-1.16" as File
+include ':webapi-spigot-1.20'
+project(':webapi-spigot-1.20').projectDir = "$rootDir/implementations/spigot-1.20" as File

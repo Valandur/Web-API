@@ -1,10 +1,17 @@
 package io.valandur.webapi.common.web;
 
+import com.fasterxml.jackson.jakarta.rs.json.JacksonJsonProvider;
+import com.fasterxml.jackson.jakarta.rs.xml.JacksonXMLProvider;
+import io.swagger.v3.jaxrs2.integration.resources.OpenApiResource;
+import io.swagger.v3.oas.integration.SwaggerConfiguration;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.info.Info;
 import io.valandur.webapi.common.WebAPIBase;
 import io.valandur.webapi.common.graphql.GraphQLServlet;
 import io.valandur.webapi.common.security.SecurityFilter;
 import io.valandur.webapi.logger.Logger;
 import java.net.SocketException;
+import java.util.stream.Collectors;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.Server;
@@ -13,13 +20,12 @@ import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.MultiException;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
-import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.servlet.ServletContainer;
 
 public class WebServer {
 
-  private final WebAPIBase<?> webapi;
+  private final WebAPIBase<?, ?> webapi;
   private final Logger logger;
   private final String basePath;
   private final String host;
@@ -30,7 +36,7 @@ public class WebServer {
 
   private Server server;
 
-  public WebServer(WebAPIBase<?> webapi) {
+  public WebServer(WebAPIBase<?, ?> webapi) {
     this.webapi = webapi;
     this.logger = webapi.getLogger();
 
@@ -93,28 +99,8 @@ public class WebServer {
         logger.error("You have disabled both HTTP and HTTPS - The Web-API will be unreachable!");
       }
 
-      // Servlet context
-      var servletsContext = new ServletContextHandler();
-      servletsContext.setContextPath(basePath);
-
-      var conf = new ResourceConfig();
-      conf.register(JacksonFeature.class);
-      conf.register(SecurityFilter.class);
-      conf.register(ErrorHandler.class);
-      for (var servlet : webapi.getServlets()) {
-        conf.register(servlet);
-      }
-      conf.register(GraphQLServlet.class);
-
-      conf.property("jersey.config.server.wadl.disableWadl", true);
-
-      // Jersey
-      var jerseyServlet = new ServletContainer(conf);
-      var jerseyHolder = new ServletHolder(jerseyServlet);
-      servletsContext.addServlet(jerseyHolder, "/*");
-
-      // Add main context to server
-      server.setHandler(servletsContext);
+      var handler = generateHandler();
+      server.setHandler(handler);
 
       server.start();
 
@@ -136,6 +122,58 @@ public class WebServer {
     } catch (Exception e) {
       logger.error(e.getMessage());
     }
+  }
+
+  private ServletContextHandler generateHandler() {
+    var servletsContext = new ServletContextHandler();
+    servletsContext.setContextPath(basePath);
+
+    var jerseyHolder = generateServletHolder();
+    servletsContext.addServlet(jerseyHolder, "/*");
+
+    return servletsContext;
+  }
+
+  private ServletHolder generateServletHolder() {
+    var conf = new ResourceConfig();
+    conf.register(CorsFilter.class);
+    conf.register(JacksonJsonProvider.class);
+    conf.register(JacksonXMLProvider.class);
+    conf.register(ObjectMapperProvider.class);
+    conf.register(SecurityFilter.class);
+    conf.register(ErrorHandler.class);
+    for (var servlet : webapi.getServlets()) {
+      conf.register(servlet);
+    }
+    conf.register(GraphQLServlet.class);
+    conf.register(generateOpenAPIResource());
+
+    conf.property("jersey.config.server.wadl.disableWadl", true);
+
+    var jerseyServlet = new ServletContainer(conf);
+
+    return new ServletHolder(jerseyServlet);
+  }
+
+  private OpenApiResource generateOpenAPIResource() {
+    var info = new Info()
+        .title("Web-API")
+        .description("RESTful Web-API for minecraft servers")
+        .version(webapi.getVersion());
+
+    var oas = new OpenAPI()
+        .info(info);
+
+    var oasConfig = new SwaggerConfiguration()
+        .openAPI(oas)
+        .prettyPrint(true)
+        .resourceClasses(
+            webapi.getServlets().stream().map(s -> s.getClass().getName()).collect(Collectors.toSet())
+        );
+
+    var res = new OpenApiResource();
+    res.setOpenApiConfiguration(oasConfig);
+    return res;
   }
 
   public void stop() {

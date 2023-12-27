@@ -2,8 +2,9 @@ package io.valandur.webapi.spigot.entity;
 
 import io.valandur.webapi.entity.Entity;
 import io.valandur.webapi.entity.EntityService;
-import io.valandur.webapi.entity.Location;
+import io.valandur.webapi.world.Location;
 import io.valandur.webapi.spigot.SpigotWebAPI;
+import io.valandur.webapi.world.Position;
 import java.util.ArrayList;
 import java.util.Collection;
 import org.bukkit.Server;
@@ -31,9 +32,11 @@ public class SpigotEntityService extends EntityService<SpigotWebAPI> {
     return new Entity(
         entity.getUniqueId(),
         entity.getType().name(),
-        entity.getWorld().getUID(),
-        new Location(entity.getLocation().getX(), entity.getLocation().getY(),
-            entity.getLocation().getZ()),
+        new Location(
+            entity.getWorld().getUID(),
+            new Position(entity.getLocation().getX(), entity.getLocation().getY(),
+                entity.getLocation().getZ())
+        ),
         entity.getName()
     );
   }

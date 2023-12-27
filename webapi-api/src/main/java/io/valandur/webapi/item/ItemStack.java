@@ -1,44 +1,44 @@
 package io.valandur.webapi.item;
 
+import io.leangen.graphql.annotations.GraphQLNonNull;
 import io.leangen.graphql.annotations.GraphQLQuery;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.Schema.RequiredMode;
 import java.util.Collection;
 import java.util.Map;
 
-public class ItemStack {
+@GraphQLNonNull
+public record ItemStack(
+    @GraphQLNonNull
+    @GraphQLQuery(description = typeDescr)
+    @Schema(description = typeDescr, requiredMode = RequiredMode.REQUIRED)
+    String type,
+    @GraphQLNonNull
+    @GraphQLQuery(description = amountDescr)
+    @Schema(description = amountDescr, requiredMode = RequiredMode.REQUIRED)
+    int amount,
+    @GraphQLQuery(description = enchantmentsDescr)
+    @Schema(description = enchantmentsDescr)
+    Map<String, Integer> enchantments,
+    @GraphQLQuery(description = displayNameDescr)
+    @Schema(description = displayNameDescr)
+    String displayName,
+    @GraphQLQuery(description = damageDescr)
+    @Schema(description = damageDescr)
+    Integer damage,
+    @GraphQLQuery(description = authorDescr)
+    @Schema(description = authorDescr)
+    String author,
+    @GraphQLQuery(description = pagesDescr)
+    @Schema(description = pagesDescr)
+    Collection<String> pages) {
 
-  @GraphQLQuery(name = "type", description = "The item type, for example 'minecraft:dirt'")
-  public String type;
+  private static final String typeDescr = "The item type, for example 'minecraft:dirt'";
+  private static final String amountDescr = "The amount of the item in this stack";
+  private static final String enchantmentsDescr = "Enchantments and their level attached to this item";
+  private static final String displayNameDescr = "The display name of this item (if set)";
+  private static final String damageDescr = "The damage this item has received (durability)";
+  private static final String authorDescr = "The author of this book";
+  private static final String pagesDescr = "The pages contained in this book";
 
-  @GraphQLQuery(name = "amount", description = "The amount of the item in this stack")
-  public int amount;
-
-  @GraphQLQuery(name = "enchantments", description = "Enchantments and their level attached to this item")
-  public Map<String, Integer> enchantments;
-
-  @GraphQLQuery(name = "displayName", description = "The display name of this item (if set)")
-  public String displayName;
-
-  @GraphQLQuery(name = "damage", description = "The damage this item has received (durability)")
-  public Integer damage;
-
-  @GraphQLQuery(name = "author", description = "The author of this book")
-  public String author;
-
-  @GraphQLQuery(name = "pages", description = "The pages contained in this book")
-  public Collection<String> pages;
-
-  public ItemStack() {
-  }
-
-  public ItemStack(String type, int amount, Map<String, Integer> enchantments, String displayName,
-      Integer damage,
-      String author, Collection<String> pages) {
-    this.type = type;
-    this.amount = amount;
-    this.enchantments = enchantments;
-    this.displayName = displayName;
-    this.damage = damage;
-    this.author = author;
-    this.pages = pages;
-  }
 }

@@ -2,8 +2,9 @@ package io.valandur.webapi.sponge.entity;
 
 import io.valandur.webapi.entity.Entity;
 import io.valandur.webapi.entity.EntityService;
-import io.valandur.webapi.entity.Location;
 import io.valandur.webapi.sponge.SpongeWebAPI;
+import io.valandur.webapi.world.Location;
+import io.valandur.webapi.world.Position;
 import java.util.ArrayList;
 import java.util.Collection;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
@@ -35,8 +36,10 @@ public class SpongeEntityService extends EntityService<SpongeWebAPI> {
     return new Entity(
         entity.uniqueId(),
         entity.type().key(RegistryTypes.ENTITY_TYPE).asString(),
-        ((ServerWorld) entity.world()).uniqueId(),
-        new Location(entity.location().x(), entity.location().y(), entity.location().z()),
+        new Location(
+            ((ServerWorld) entity.world()).uniqueId(),
+            new Position(entity.location().x(), entity.location().y(), entity.location().z())
+        ),
         PlainTextComponentSerializer.plainText().serialize(entity.displayName().get())
     );
   }

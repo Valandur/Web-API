@@ -2,18 +2,17 @@ package io.valandur.webapi.spigot;
 
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.event.server.BroadcastMessageEvent;
-import org.bukkit.event.server.ServerCommandEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class SpigotWebAPIPlugin extends JavaPlugin implements Listener {
 
   private SpigotWebAPI webapi;
-  private long serverStart;
 
+  private long serverStart;
   public long getUptime() {
     return System.currentTimeMillis() - serverStart;
   }
@@ -23,12 +22,12 @@ public final class SpigotWebAPIPlugin extends JavaPlugin implements Listener {
     serverStart = System.currentTimeMillis();
 
     webapi = new SpigotWebAPI(this);
-    webapi.load();
+
+    getServer().getPluginManager().registerEvents(this, this);
   }
 
   @Override
   public void onEnable() {
-    getServer().getPluginManager().registerEvents(this, this);
     webapi.start();
   }
 
@@ -38,12 +37,7 @@ public final class SpigotWebAPIPlugin extends JavaPlugin implements Listener {
   }
 
   @EventHandler
-  public void onMessage(final BroadcastMessageEvent event) {
-
-  }
-
-  @EventHandler
-  public void onCommand(final ServerCommandEvent event) {
+  public void onMessage(final AsyncPlayerChatEvent event) {
 
   }
 

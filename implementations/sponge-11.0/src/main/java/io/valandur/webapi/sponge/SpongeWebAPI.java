@@ -1,16 +1,20 @@
 package io.valandur.webapi.sponge;
 
+import io.valandur.webapi.chat.ChatService;
 import io.valandur.webapi.common.WebAPIBase;
+import io.valandur.webapi.config.InfoConfig;
 import io.valandur.webapi.entity.EntityService;
 import io.valandur.webapi.logger.Logger;
 import io.valandur.webapi.player.PlayerService;
-import io.valandur.webapi.server.ServerService;
+import io.valandur.webapi.info.InfoService;
+import io.valandur.webapi.sponge.chat.SpongeChatService;
+import io.valandur.webapi.sponge.config.SpongeInfoConfig;
 import io.valandur.webapi.sponge.config.SpongeSecurityConfig;
-import io.valandur.webapi.sponge.config.SpongeServerConfig;
+import io.valandur.webapi.sponge.config.SpongeWebConfig;
 import io.valandur.webapi.sponge.entity.SpongeEntityService;
 import io.valandur.webapi.sponge.logger.SpongeLogger;
 import io.valandur.webapi.sponge.player.SpongePlayerService;
-import io.valandur.webapi.sponge.server.SpongeServerService;
+import io.valandur.webapi.sponge.info.SpongeInfoService;
 import io.valandur.webapi.sponge.world.SpongeWorldService;
 import io.valandur.webapi.world.WorldService;
 import java.util.concurrent.CompletableFuture;
@@ -19,31 +23,19 @@ import java.util.concurrent.ExecutorService;
 import java.util.function.Supplier;
 import org.spongepowered.api.Sponge;
 
-public class SpongeWebAPI extends WebAPIBase<SpongeWebAPI> {
-
-  private final SpongeWebAPIPlugin plugin;
-
-  public SpongeWebAPIPlugin getPlugin() {
-    return plugin;
-  }
+public class SpongeWebAPI extends WebAPIBase<SpongeWebAPI, SpongeWebAPIPlugin> {
 
   private final ExecutorService syncExecutor;
 
   public SpongeWebAPI(SpongeWebAPIPlugin plugin) {
-    super();
+    super(plugin);
 
-    this.plugin = plugin;
     this.syncExecutor = Sponge.server().scheduler().executor(plugin.getContainer());
   }
 
   @Override
-  public SpongeSecurityConfig createSecurityConfig() {
-    return new SpongeSecurityConfig(plugin);
-  }
-
-  @Override
-  public SpongeServerConfig createServerConfig() {
-    return new SpongeServerConfig(plugin);
+  public String getVersion() {
+    return plugin.getContainer().metadata().version().toString();
   }
 
   @Override
@@ -52,23 +44,37 @@ public class SpongeWebAPI extends WebAPIBase<SpongeWebAPI> {
   }
 
   @Override
+  public SpongeSecurityConfig createSecurityConfig() {
+    return new SpongeSecurityConfig(plugin);
+  }
+  @Override
+  public SpongeWebConfig createWebConfig() {
+    return new SpongeWebConfig(plugin);
+  }
+  @Override
+  protected InfoConfig createInfoConfig() {
+    return new SpongeInfoConfig(plugin);
+  }
+
+  @Override
   protected WorldService<SpongeWebAPI> createWorldService() {
     return new SpongeWorldService(this);
   }
-
   @Override
   protected PlayerService<SpongeWebAPI> createPlayerService() {
     return new SpongePlayerService(this);
   }
-
   @Override
   protected EntityService<SpongeWebAPI> createEntityService() {
     return new SpongeEntityService(this);
   }
-
   @Override
-  protected ServerService<SpongeWebAPI> createServerService() {
-    return new SpongeServerService(this);
+  protected InfoService<SpongeWebAPI> createInfoService() {
+    return new SpongeInfoService(this);
+  }
+  @Override
+  protected ChatService<SpongeWebAPI> createChatService() {
+    return new SpongeChatService(this);
   }
 
   @Override
@@ -80,7 +86,6 @@ public class SpongeWebAPI extends WebAPIBase<SpongeWebAPI> {
       future.get();
     }
   }
-
   @Override
   public <T> T runOnMain(Supplier<T> supplier) throws ExecutionException, InterruptedException {
     if (Sponge.server().onMainThread()) {

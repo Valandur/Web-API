@@ -1,11 +1,12 @@
 package io.valandur.webapi.spigot.player;
 
-import io.valandur.webapi.entity.Location;
+import io.valandur.webapi.world.Location;
 import io.valandur.webapi.item.Inventory;
 import io.valandur.webapi.item.ItemStack;
 import io.valandur.webapi.player.Player;
 import io.valandur.webapi.player.PlayerService;
 import io.valandur.webapi.spigot.SpigotWebAPI;
+import io.valandur.webapi.world.Position;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.InternalServerErrorException;
 import jakarta.ws.rs.NotFoundException;
@@ -14,7 +15,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import org.bukkit.Material;
 import org.bukkit.Server;
 import org.bukkit.inventory.meta.BookMeta;
@@ -81,11 +81,11 @@ public class SpigotPlayerService extends PlayerService<SpigotWebAPI> {
       throw new NotFoundException("Player not found: " + uuid);
     }
 
-    var itemStacks = stacks.stream().map(this::fromItemStack).collect(Collectors.toList());
+    var itemStacks = stacks.stream().map(this::fromItemStack).toList();
     var inv = player.getInventory();
     for (var itemStack : itemStacks) {
       var result = inv.addItem(itemStack);
-      if (result.size() > 0) {
+      if (!result.isEmpty()) {
         throw new InternalServerErrorException("Could not add item stacks to inventory");
       }
     }
@@ -99,11 +99,11 @@ public class SpigotPlayerService extends PlayerService<SpigotWebAPI> {
       throw new NotFoundException("Player not found: " + uuid);
     }
 
-    var itemStacks = stacks.stream().map(this::fromItemStack).collect(Collectors.toList());
+    var itemStacks = stacks.stream().map(this::fromItemStack).toList();
     var inv = player.getInventory();
     for (var itemStack : itemStacks) {
       var result = inv.removeItem(itemStack);
-      if (result.size() > 0) {
+      if (!result.isEmpty()) {
         throw new InternalServerErrorException("Could not remove item stacks from inventory");
       }
     }
@@ -142,11 +142,11 @@ public class SpigotPlayerService extends PlayerService<SpigotWebAPI> {
       throw new NotFoundException("Player not found: " + uuid);
     }
 
-    var itemStacks = stacks.stream().map(this::fromItemStack).collect(Collectors.toList());
+    var itemStacks = stacks.stream().map(this::fromItemStack).toList();
     var inv = player.getEnderChest();
     for (var itemStack : itemStacks) {
       var result = inv.addItem(itemStack);
-      if (result.size() > 0) {
+      if (!result.isEmpty()) {
         throw new InternalServerErrorException("Could not add item stacks to inventory");
       }
     }
@@ -160,11 +160,11 @@ public class SpigotPlayerService extends PlayerService<SpigotWebAPI> {
       throw new NotFoundException("Player not found: " + uuid);
     }
 
-    var itemStacks = stacks.stream().map(this::fromItemStack).collect(Collectors.toList());
+    var itemStacks = stacks.stream().map(this::fromItemStack).toList();
     var inv = player.getEnderChest();
     for (var itemStack : itemStacks) {
       var result = inv.removeItem(itemStack);
-      if (result.size() > 0) {
+      if (!result.isEmpty()) {
         throw new InternalServerErrorException("Could not remove item stacks from inventory");
       }
     }
@@ -187,10 +187,12 @@ public class SpigotPlayerService extends PlayerService<SpigotWebAPI> {
     var boots = bootsStack != null ? this.toItemStack(bootsStack) : null;
 
     return new Player(
-        player.getUniqueId().toString(),
+        player.getUniqueId(),
         player.getName(),
-        player.getWorld().getUID(),
-        new Location(player.getLocation().getX(), player.getLocation().getY(), player.getLocation().getZ()),
+        new Location(
+            player.getWorld().getUID(),
+            new Position(player.getLocation().getX(), player.getLocation().getY(), player.getLocation().getZ())
+        ),
         player.getAddress() != null ? player.getAddress().toString() : null,
         helmet,
         chestplate,
@@ -206,7 +208,6 @@ public class SpigotPlayerService extends PlayerService<SpigotWebAPI> {
       enchantments.put(entry.getKey().getKey().toString(), entry.getValue());
     }
 
-    var meta = new HashMap<String, Object>();
     var stackMeta = stack.getItemMeta();
 
     String displayName = null;
@@ -248,8 +249,8 @@ public class SpigotPlayerService extends PlayerService<SpigotWebAPI> {
 
   private org.bukkit.inventory.ItemStack fromItemStack(ItemStack stack)
       throws WebApplicationException {
-    var material = this.fromType(stack.type);
-    return new org.bukkit.inventory.ItemStack(material, stack.amount);
+    var material = this.fromType(stack.type());
+    return new org.bukkit.inventory.ItemStack(material, stack.amount());
   }
 
   private Material fromType(String type) {

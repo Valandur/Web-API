@@ -1,11 +1,12 @@
 package io.valandur.webapi.sponge.player;
 
-import io.valandur.webapi.entity.Location;
+import io.valandur.webapi.world.Location;
 import io.valandur.webapi.item.Inventory;
 import io.valandur.webapi.item.ItemStack;
 import io.valandur.webapi.player.Player;
 import io.valandur.webapi.player.PlayerService;
 import io.valandur.webapi.sponge.SpongeWebAPI;
+import io.valandur.webapi.world.Position;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.InternalServerErrorException;
 import jakarta.ws.rs.NotFoundException;
@@ -204,10 +205,12 @@ public class SpongePlayerService extends PlayerService<SpongeWebAPI> {
         .orElse(null);
 
     return new Player(
-        player.uniqueId().toString(),
+        player.uniqueId(),
         player.name(),
-        player.world().uniqueId(),
-        new Location(player.location().x(), player.location().y(), player.location().z()),
+        new Location(
+            player.world().uniqueId(),
+            new Position(player.location().x(), player.location().y(), player.location().z())
+        ),
         player.connection().address().toString(),
         helmet,
         chestplate,
@@ -265,8 +268,8 @@ public class SpongePlayerService extends PlayerService<SpongeWebAPI> {
 
   private org.spongepowered.api.item.inventory.ItemStack fromItemStack(ItemStack stack)
       throws WebApplicationException {
-    var type = this.fromType(stack.type);
-    return org.spongepowered.api.item.inventory.ItemStack.of(type, stack.amount);
+    var type = this.fromType(stack.type());
+    return org.spongepowered.api.item.inventory.ItemStack.of(type, stack.amount());
   }
 
   private ItemType fromType(String type) {

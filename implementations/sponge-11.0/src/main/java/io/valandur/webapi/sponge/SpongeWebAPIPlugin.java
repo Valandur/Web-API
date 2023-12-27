@@ -4,6 +4,7 @@ import com.google.inject.Inject;
 import java.nio.file.Path;
 import org.apache.logging.log4j.Logger;
 import org.spongepowered.api.Server;
+import org.spongepowered.api.Sponge;
 import org.spongepowered.api.config.ConfigDir;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.command.ExecuteCommandEvent;
@@ -21,6 +22,7 @@ import org.spongepowered.plugin.builtin.jvm.Plugin;
 public class SpongeWebAPIPlugin {
 
   private SpongeWebAPI webapi;
+
   private long serverStart;
 
   public long getUptime() {
@@ -49,7 +51,6 @@ public class SpongeWebAPIPlugin {
     return this.container;
   }
 
-
   @Inject
   SpongeWebAPIPlugin(final PluginContainer container, final Logger logger) {
     this.container = container;
@@ -64,7 +65,9 @@ public class SpongeWebAPIPlugin {
   @Listener
   public void onServerStarting(final StartingEngineEvent<Server> event) {
     webapi = new SpongeWebAPI(this);
-    webapi.load();
+
+    Sponge.eventManager().registerListeners(container, webapi.getChatService());
+
     webapi.start();
   }
 

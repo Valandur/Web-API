@@ -6,20 +6,23 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public abstract class SecurityConfig implements Config {
+public interface SecurityConfig extends Config {
 
-  protected Set<String> defaultWhitelist = new HashSet<>();
+  Set<String> defaultWhitelist = new HashSet<>();
 
-  public abstract Set<String> getWhitelist();
-  public abstract void setWhitelist(Set<String> whitelist);
+  Set<String> getWhitelist();
 
-  protected Set<String> defaultBlacklist = new HashSet<>();
+  void setWhitelist(Set<String> whitelist);
 
-  public abstract Set<String> getBlacklist();
-  public abstract void setBlacklist(Set<String> blacklist);
+  Set<String> defaultBlacklist = new HashSet<>();
 
-  protected Map<String, KeyPermissions> defaultKeys = new HashMap<>();
+  Set<String> getBlacklist();
 
-  public abstract Map<String, KeyPermissions> getKeys();
-  public abstract void setKeys(Map<String, KeyPermissions> keys);
+  void setBlacklist(Set<String> blacklist);
+
+  Map<String, KeyPermissions> defaultKeys = new HashMap<>();
+
+  Map<String, KeyPermissions> getKeys();
+
+  void setKeys(Map<String, KeyPermissions> keys);
 }

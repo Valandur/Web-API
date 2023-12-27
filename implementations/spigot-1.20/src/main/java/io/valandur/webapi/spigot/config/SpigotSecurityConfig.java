@@ -9,7 +9,7 @@ import java.util.Set;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
-public class SpigotSecurityConfig extends SecurityConfig {
+public class SpigotSecurityConfig implements SecurityConfig {
 
   private static final String path = "security.conf";
 

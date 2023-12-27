@@ -97,7 +97,7 @@ public class SpongeWorldService extends WorldService<SpongeWebAPI> {
         props.displayName().map(txt -> PlainTextComponentSerializer.plainText().serialize(txt))
             .orElse(null),
         world.difficulty().toString(),
-        world.seed(),
+        world.seed() + "",
         gameRules
     );
   }
@@ -107,7 +107,7 @@ public class SpongeWorldService extends WorldService<SpongeWebAPI> {
   }
 
   private BlockState fromBlock(Block block) throws WebApplicationException {
-    var type = this.fromType(block.type);
+    var type = this.fromType(block.type());
     return BlockState.builder().blockType(type).build();
   }
 

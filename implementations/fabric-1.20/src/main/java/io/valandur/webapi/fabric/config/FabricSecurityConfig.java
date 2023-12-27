@@ -5,7 +5,7 @@ import io.valandur.webapi.security.KeyPermissions;
 import java.util.Map;
 import java.util.Set;
 
-public class FabricSecurityConfig extends SecurityConfig {
+public class FabricSecurityConfig implements SecurityConfig {
 
   @Override
   public void save() throws Exception {

@@ -36,42 +36,43 @@ subprojects {
 
         mergeServiceFiles()
 
-        relocate 'com.fasterxml', 'io.valandur.shadow.com.fasterxml'
-        relocate 'com.sun.research', 'io.valandur.shadow.com.sun.research'
+        /*relocate 'com.fasterxml', 'io.valandur.shade.com.fasterxml'
+        relocate 'com.sun.research', 'io.valandur.shade.com.sun.research'
 
         // If we enable this then we have to fix strings in our code
-        // relocate 'graphql', 'io.valandur.shadow.graphql'
+        // relocate 'graphql', 'io.valandur.shade.graphql'
 
-        relocate 'io.github', 'io.valandur.shadow.io.github'
-        relocate 'io.leangen.graphql', 'io.valandur.shadow.io.leangen.graphql'
+        relocate 'io.github', 'io.valandur.shade.io.github'
+        relocate 'io.leangen.graphql', 'io.valandur.shade.io.leangen.graphql'
 
-        relocate 'jakarta.annotation', 'io.valandur.shadow.jakarta.annotation'
-        relocate 'jakarta.inject', 'io.valandur.shadow.jakarta.inject'
-        relocate 'jakarta.servlet', 'io.valandur.shadow.jakarta.servlet'
-        relocate 'jakarta.validation', 'io.valandur.shadow.jakarta.validation'
-        relocate 'jakarta.ws', 'io.valandur.shadow.jakarta.ws'
+        relocate 'jakarta.annotation', 'io.valandur.shade.jakarta.annotation'
+        relocate 'jakarta.inject', 'io.valandur.shade.jakarta.inject'
+        relocate 'jakarta.servlet', 'io.valandur.shade.jakarta.servlet'
+        relocate 'jakarta.validation', 'io.valandur.shade.jakarta.validation'
+        relocate 'jakarta.ws', 'io.valandur.shade.jakarta.ws'
 
-        relocate 'javassist', 'io.valandur.shadow.javassist'
+        relocate 'javassist', 'io.valandur.shade.javassist'
 
-        relocate 'javax.activation', 'io.valandur.shadow.javax.activation'
-        relocate 'javax.servlet', 'io.valandur.shadow.javax.servlet'
+        relocate 'javax.activation', 'io.valandur.shade.javax.activation'
+        relocate 'javax.servlet', 'io.valandur.shade.javax.servlet'
+        relocate 'javax.ws', 'io.valandur.shade.javax.ws'
         // If we enable this then Sponge (and others?) just break
         // relocate 'javax.xml', 'io.valandur.shadow.javax.xml'
 
-        relocate 'jersey.repackaged', 'io.valandur.shadow.jersey.repackaged'
+        relocate 'jersey.repackaged', 'io.valandur.shade.jersey.repackaged'
 
-        relocate 'net.dongliu', 'io.valandur.shadow.net.dongliu'
+        relocate 'net.dongliu', 'io.valandur.shade.net.dongliu'
 
-        relocate 'nonapi.io', 'io.valandur.shadow.nonapi.io'
+        relocate 'nonapi.io', 'io.valandur.shade.nonapi.io'
 
-        relocate 'org.antlr', 'io.valandur.shadow.org.antlr'
-        relocate 'org.aopalliance', 'io.valandur.shadow.org.aopalliance'
-        relocate 'org.dataloader', 'io.valandur.shadow.org.dataloader'
-        relocate 'org.eclipse', 'io.valandur.shadow.org.eclipse'
-        relocate 'org.glassfish', 'io.valandur.shadow.org.glassfish'
-        relocate 'org.jvnet', 'io.valandur.shadow.org.jvnet'
-        relocate 'org.reactivestreams', 'io.valandur.shadow.org.reactivestreams'
-        relocate 'org.slf4j', 'io.valandur.shadow.org.slf4j'
+        relocate 'org.antlr', 'io.valandur.shade.org.antlr'
+        relocate 'org.aopalliance', 'io.valandur.shade.org.aopalliance'
+        relocate 'org.dataloader', 'io.valandur.shade.org.dataloader'
+        relocate 'org.eclipse', 'io.valandur.shade.org.eclipse'
+        relocate 'org.glassfish', 'io.valandur.shade.org.glassfish'
+        relocate 'org.jvnet', 'io.valandur.shade.org.jvnet'
+        relocate 'org.reactivestreams', 'io.valandur.shade.org.reactivestreams'
+        relocate 'org.slf4j', 'io.valandur.shade.org.slf4j'*/
     }
 }
 

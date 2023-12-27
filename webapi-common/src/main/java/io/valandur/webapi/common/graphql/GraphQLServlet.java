@@ -4,24 +4,20 @@ import com.fasterxml.jackson.databind.JsonNode;
 import graphql.ExecutionInput;
 import graphql.GraphQL;
 import io.leangen.graphql.GraphQLSchemaGenerator;
+import io.swagger.v3.oas.annotations.Hidden;
 import io.valandur.webapi.common.WebAPIBase;
-import io.valandur.webapi.common.entity.EntityServlet;
-import io.valandur.webapi.common.player.PlayerServlet;
-import io.valandur.webapi.common.server.ServerServlet;
-import io.valandur.webapi.common.world.WorldServlet;
-import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import java.util.Map;
 
 @Singleton
 @Path("graphql")
+@Hidden
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public class GraphQLServlet extends HttpServlet {

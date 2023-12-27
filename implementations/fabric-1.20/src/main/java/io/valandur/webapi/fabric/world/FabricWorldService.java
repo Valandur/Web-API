@@ -5,33 +5,20 @@ import io.valandur.webapi.world.Block;
 import io.valandur.webapi.world.GameRule;
 import io.valandur.webapi.world.World;
 import io.valandur.webapi.world.WorldService;
+import jakarta.ws.rs.NotFoundException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Level;
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.resource.ResourceManager;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.GameRules.Key;
 import net.minecraft.world.GameRules.Rule;
 import net.minecraft.world.GameRules.Type;
-import net.minecraft.world.GameRules.Visitor;
 import net.minecraft.world.level.LevelProperties;
 import net.minecraft.world.level.UnmodifiableLevelProperties;
 
 public class FabricWorldService extends WorldService<FabricWebAPI> {
-
-  private Map<ServerWorld, UUID> worldKeys = new ConcurrentHashMap<>();
-  private Map<UUID, ServerWorld> worlds = new ConcurrentHashMap<>();
 
   public FabricWorldService(FabricWebAPI webapi) {
     super(webapi);
@@ -39,8 +26,6 @@ public class FabricWorldService extends WorldService<FabricWebAPI> {
 
   @Override
   public Collection<World> getWorlds() {
-    updateWorlds();
-
     var worlds = new ArrayList<World>();
     for (var world : webapi.getPlugin().getServer().getWorlds()) {
       worlds.add(toWorld(world));
@@ -50,7 +35,17 @@ public class FabricWorldService extends WorldService<FabricWebAPI> {
 
   @Override
   public Block getBlockAt(UUID worldId, int x, int y, int z) {
-    var world = worlds.get(worldId);
+    ServerWorld world = null;
+    for (var tempWorld : webapi.getPlugin().getServer().getWorlds()) {
+      if (webapi.getWorldUUID(tempWorld).equals(worldId)) {
+        world = tempWorld;
+        break;
+      }
+    }
+    if (world == null) {
+      throw new NotFoundException("World not found: " + worldId);
+    }
+
     var state = world.getBlockState(new BlockPos(x, y, z));
     return null;
   }
@@ -78,22 +73,15 @@ public class FabricWorldService extends WorldService<FabricWebAPI> {
       name = ((UnmodifiableLevelProperties) props).getLevelName();
     }
 
+    var uuid = webapi.getWorldUUID(world);
+
     return new World(
-        worldKeys.get(world),
+        uuid,
         world.getDimensionKey().getValue().toString(),
         name,
         world.getDifficulty().name(),
-        world.getSeed(),
+        world.getSeed() + "",
         gameRules
     );
-  }
-
-  private void updateWorlds() {
-    for (var world : webapi.getPlugin().getServer().getWorlds()) {
-      var uuid = UUID.randomUUID();
-      if (worldKeys.putIfAbsent(world, uuid) == null) {
-        worlds.put(uuid, world);
-      }
-    }
   }
 }

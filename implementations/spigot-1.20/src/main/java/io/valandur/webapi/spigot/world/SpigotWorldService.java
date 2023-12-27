@@ -73,7 +73,7 @@ public class SpigotWorldService extends WorldService<SpigotWebAPI> {
         world.getEnvironment().name(),
         world.getName(),
         world.getDifficulty().name(),
-        world.getSeed(),
+        world.getSeed() + "",
         gameRules
     );
   }
@@ -85,7 +85,7 @@ public class SpigotWorldService extends WorldService<SpigotWebAPI> {
   }
 
   private BlockData fromBlock(Block block) throws WebApplicationException {
-    var material = this.fromType(block.type);
+    var material = this.fromType(block.type());
     return Bukkit.createBlockData(material);
   }
 

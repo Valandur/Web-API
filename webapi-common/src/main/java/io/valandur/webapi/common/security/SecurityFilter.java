@@ -61,15 +61,12 @@ public class SecurityFilter implements ContainerRequestFilter, ContainerResponse
     String address = getRealAddress(request.getRemoteAddr(),
         reqContext.getHeaderString(X_FORWARDED_FOR));
 
-    String key = reqContext.getHeaderString(API_KEY);
+    String key = reqContext.getHeaderString(HttpHeaders.AUTHORIZATION);
     if (key == null || key.isEmpty()) {
-      key = reqContext.getUriInfo().getQueryParameters().getFirst("key");
+      key = reqContext.getHeaderString(API_KEY);
     }
     if (key == null || key.isEmpty()) {
-      key = reqContext.getHeaderString(HttpHeaders.AUTHORIZATION);
-        if (key != null) {
-            key = key.substring(key.indexOf(" ") + 1);
-        }
+      key = reqContext.getUriInfo().getQueryParameters().getFirst("key");
     }
 
     if (!srv.whitelistContains(address)) {

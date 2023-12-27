@@ -15,6 +15,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.function.Supplier;
 
 public abstract class WebAPI<T extends WebAPI<T>> {
+  public static final String NAME = "Web-API";
+
   protected static WebAPI<?> instance;
   public static WebAPI<?> getInstance() {
     return WebAPI.instance;
@@ -98,6 +100,8 @@ public abstract class WebAPI<T extends WebAPI<T>> {
     infoService.startRecording();
   }
 
+  public abstract String getFlavour();
+  public abstract String getFlavourVersion();
   public abstract String getVersion();
 
   protected abstract Logger createLogger();

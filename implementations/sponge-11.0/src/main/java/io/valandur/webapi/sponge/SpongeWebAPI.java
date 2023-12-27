@@ -2,8 +2,10 @@ package io.valandur.webapi.sponge;
 
 import io.valandur.webapi.chat.ChatService;
 import io.valandur.webapi.common.WebAPIBase;
+import io.valandur.webapi.config.HookConfig;
 import io.valandur.webapi.config.InfoConfig;
 import io.valandur.webapi.entity.EntityService;
+import io.valandur.webapi.hook.HookService;
 import io.valandur.webapi.logger.Logger;
 import io.valandur.webapi.player.PlayerService;
 import io.valandur.webapi.info.InfoService;
@@ -21,6 +23,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Supplier;
+
+import org.spongepowered.api.Platform;
 import org.spongepowered.api.Sponge;
 
 public class SpongeWebAPI extends WebAPIBase<SpongeWebAPI, SpongeWebAPIPlugin> {
@@ -39,6 +43,15 @@ public class SpongeWebAPI extends WebAPIBase<SpongeWebAPI, SpongeWebAPIPlugin> {
   }
 
   @Override
+  public String getFlavour() {
+    return Sponge.platform().container(Platform.Component.IMPLEMENTATION).metadata().id();
+  }
+  @Override
+  public String getFlavourVersion() {
+    return Sponge.platform().container(Platform.Component.IMPLEMENTATION).metadata().version().getQualifier();
+  }
+
+  @Override
   protected Logger createLogger() {
     return new SpongeLogger(plugin.getLogger());
   }
@@ -54,6 +67,10 @@ public class SpongeWebAPI extends WebAPIBase<SpongeWebAPI, SpongeWebAPIPlugin> {
   @Override
   protected InfoConfig createInfoConfig() {
     return new SpongeInfoConfig(plugin);
+  }
+  @Override
+  protected HookConfig createHookConfig() {
+    return null;
   }
 
   @Override
@@ -75,6 +92,10 @@ public class SpongeWebAPI extends WebAPIBase<SpongeWebAPI, SpongeWebAPIPlugin> {
   @Override
   protected ChatService<SpongeWebAPI> createChatService() {
     return new SpongeChatService(this);
+  }
+  @Override
+  protected HookService<SpongeWebAPI> createHookService() {
+    return null;
   }
 
   @Override

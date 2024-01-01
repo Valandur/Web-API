@@ -1,8 +1,9 @@
 package io.valandur.webapi.sponge.chat;
 
-import io.valandur.webapi.chat.ChatMessage;
+import io.valandur.webapi.chat.ChatHistoryItem;
 import io.valandur.webapi.chat.ChatService;
 import io.valandur.webapi.chat.ChatSource;
+import io.valandur.webapi.hook.event.ChatEventData;
 import io.valandur.webapi.sponge.SpongeWebAPI;
 import java.time.Instant;
 import net.kyori.adventure.chat.ChatType.Bound;
@@ -29,12 +30,15 @@ public class SpongeChatService extends ChatService<SpongeWebAPI> {
   }
 
   @Override
-  public void sendChatMessage(String message) {
-    var msg = SignedMessage.system(message, null);
-    Sponge.server().broadcastAudience().sendMessage(msg, webApiChatType);
+  public void sendChatMessage(String msg) {
+    var signedMessage = SignedMessage.system(msg, null);
+    Sponge.server().broadcastAudience().sendMessage(signedMessage, webApiChatType);
 
     var source = new ChatSource(null, null, true);
-    this.chatMessages.add(new ChatMessage(Instant.now(), message, source));
+    var message = new ChatHistoryItem(Instant.now(), msg, source);
+    chatHistory.add(message);
+
+    webapi.getHookService().notifyEventHooks(new ChatEventData(message));
   }
 
   @Listener
@@ -47,7 +51,10 @@ public class SpongeChatService extends ChatService<SpongeWebAPI> {
     var isFromServer = cause.first(Server.class).isPresent();
 
     var source = new ChatSource(playerId, cmd, isFromServer);
-    this.chatMessages.add(new ChatMessage(Instant.now(), msg, source));
+    var message = new ChatHistoryItem(Instant.now(), msg, source);
+    chatHistory.add(message);
+
+    webapi.getHookService().notifyEventHooks(new ChatEventData(message));
   }
 
   @Listener
@@ -60,6 +67,9 @@ public class SpongeChatService extends ChatService<SpongeWebAPI> {
     var isFromServer = cause.first(Server.class).isPresent();
 
     var source = new ChatSource(playerId, cmd, isFromServer);
-    this.chatMessages.add(new ChatMessage(Instant.now(), msg, source));
+    var message = new ChatHistoryItem(Instant.now(), msg, source);
+    chatHistory.add(message);
+
+    webapi.getHookService().notifyEventHooks(new ChatEventData(message));
   }
 }

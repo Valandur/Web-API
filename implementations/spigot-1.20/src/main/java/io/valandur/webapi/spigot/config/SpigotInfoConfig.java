@@ -1,6 +1,6 @@
 package io.valandur.webapi.spigot.config;
 
-import io.valandur.webapi.config.InfoConfig;
+import io.valandur.webapi.info.InfoConfig;
 
 public class SpigotInfoConfig implements InfoConfig {
 

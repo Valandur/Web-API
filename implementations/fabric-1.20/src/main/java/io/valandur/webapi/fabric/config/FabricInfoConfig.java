@@ -1,6 +1,6 @@
 package io.valandur.webapi.fabric.config;
 
-import io.valandur.webapi.config.InfoConfig;
+import io.valandur.webapi.info.InfoConfig;
 
 public class FabricInfoConfig implements InfoConfig {
 

@@ -49,4 +49,8 @@ public class SpongeInfoService extends InfoService<SpongeWebAPI> {
         task = Sponge.asyncScheduler().submit(tsk, "WebAPI - Stats");
     }
 
+    @Override
+    public void stopRecording() {
+        task.cancel();
+    }
 }

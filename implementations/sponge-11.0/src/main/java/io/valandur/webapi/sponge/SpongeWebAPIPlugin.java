@@ -2,6 +2,9 @@ package io.valandur.webapi.sponge;
 
 import com.google.inject.Inject;
 import java.nio.file.Path;
+
+import io.valandur.webapi.hook.HookEventType;
+import io.valandur.webapi.hook.event.ServerEventData;
 import org.apache.logging.log4j.Logger;
 import org.spongepowered.api.Server;
 import org.spongepowered.api.Sponge;
@@ -10,6 +13,7 @@ import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.command.ExecuteCommandEvent;
 import org.spongepowered.api.event.entity.living.player.KickPlayerEvent;
 import org.spongepowered.api.event.lifecycle.ConstructPluginEvent;
+import org.spongepowered.api.event.lifecycle.StartedEngineEvent;
 import org.spongepowered.api.event.lifecycle.StartingEngineEvent;
 import org.spongepowered.api.event.lifecycle.StoppingEngineEvent;
 import org.spongepowered.api.event.message.MessageEvent;
@@ -67,37 +71,20 @@ public class SpongeWebAPIPlugin {
     webapi = new SpongeWebAPI(this);
 
     Sponge.eventManager().registerListeners(container, webapi.getChatService());
+    Sponge.eventManager().registerListeners(container, webapi.getHookService());
 
     webapi.start();
   }
 
   @Listener
+  public void onServerStarted(final StartedEngineEvent<Server> event) {
+    webapi.getHookService().notifyEventHooks(new ServerEventData(HookEventType.SERVER_START));
+  }
+
+  @Listener
   public void onServerStopping(final StoppingEngineEvent<Server> event) {
+    webapi.getHookService().notifyEventHooks(new ServerEventData(HookEventType.SERVER_STOP));
+
     webapi.stop();
-  }
-
-  @Listener
-  public void onMessage(final MessageEvent event) {
-
-  }
-
-  @Listener
-  public void onCommand(final ExecuteCommandEvent event) {
-
-  }
-
-  @Listener
-  public void onPlayerJoin(final Join event) {
-
-  }
-
-  @Listener
-  public void onPlayerLeave(final Disconnect event) {
-
-  }
-
-  @Listener
-  public void onPlayerKick(final KickPlayerEvent event) {
-
   }
 }

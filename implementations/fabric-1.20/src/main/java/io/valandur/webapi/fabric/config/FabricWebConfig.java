@@ -1,6 +1,6 @@
 package io.valandur.webapi.fabric.config;
 
-import io.valandur.webapi.config.WebConfig;
+import io.valandur.webapi.web.WebConfig;
 
 public class FabricWebConfig implements WebConfig {
 

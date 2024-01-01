@@ -10,11 +10,8 @@ pluginManagement {
 
 rootProject.name = 'webapi'
 
-include ':webapi-api'
-project(':webapi-api').projectDir = "$rootDir/webapi-api" as File
-
-include ':webapi-common'
-project(':webapi-common').projectDir = "$rootDir/webapi-common" as File
+include ':webapi-lib'
+project(':webapi-lib').projectDir = "$rootDir/webapi-lib" as File
 
 include ':webapi-sponge-11.0'
 project(':webapi-sponge-11.0').projectDir = "$rootDir/implementations/sponge-11.0" as File

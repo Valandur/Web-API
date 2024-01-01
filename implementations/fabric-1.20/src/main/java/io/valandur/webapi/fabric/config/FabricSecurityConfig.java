@@ -1,6 +1,6 @@
 package io.valandur.webapi.fabric.config;
 
-import io.valandur.webapi.config.SecurityConfig;
+import io.valandur.webapi.security.SecurityConfig;
 import io.valandur.webapi.security.KeyPermissions;
 import java.util.Map;
 import java.util.Set;

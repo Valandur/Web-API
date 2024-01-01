@@ -1,6 +1,6 @@
 package io.valandur.webapi.spigot.config;
 
-import io.valandur.webapi.config.WebConfig;
+import io.valandur.webapi.web.WebConfig;
 import io.valandur.webapi.spigot.SpigotWebAPIPlugin;
 import java.io.File;
 import org.bukkit.configuration.file.FileConfiguration;

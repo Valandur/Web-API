@@ -1,6 +1,6 @@
 package io.valandur.webapi.spigot.config;
 
-import io.valandur.webapi.config.SecurityConfig;
+import io.valandur.webapi.security.SecurityConfig;
 import io.valandur.webapi.security.KeyPermissions;
 import io.valandur.webapi.spigot.SpigotWebAPIPlugin;
 import java.io.File;

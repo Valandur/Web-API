@@ -2,24 +2,21 @@ package io.valandur.webapi.security;
 
 import io.valandur.webapi.Config;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public interface SecurityConfig extends Config {
 
-  Set<String> defaultWhitelist = new HashSet<>();
+  List<String> defaultWhitelist = new ArrayList<>();
 
-  Set<String> getWhitelist();
+  List<String> getWhitelist();
 
-  void setWhitelist(Set<String> whitelist);
+  void setWhitelist(List<String> whitelist);
 
-  Set<String> defaultBlacklist = new HashSet<>();
+  List<String> defaultBlacklist = new ArrayList<>();
 
-  Set<String> getBlacklist();
+  List<String> getBlacklist();
 
-  void setBlacklist(Set<String> blacklist);
+  void setBlacklist(List<String> blacklist);
 
   Map<String, KeyPermissions> defaultKeys = new HashMap<>();
 

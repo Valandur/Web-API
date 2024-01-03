@@ -5,6 +5,7 @@ import io.valandur.webapi.WebAPI;
 
 import java.security.SecureRandom;
 import java.util.Base64;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -21,8 +22,8 @@ public class SecurityService<T extends WebAPI<?, ?>> extends Service<T> {
   public static final String ACCESS_CONTROL_METHODS = "GET,PUT,POST,DELETE,OPTIONS";
   public static final String ACCESS_CONTROL_HEADERS = "origin, content-type, x-webapi-key, x-forwarded-for";
 
-  private Set<String> whitelist;
-  private Set<String> blacklist;
+  private List<String> whitelist;
+  private List<String> blacklist;
   private Map<String, KeyPermissions> keys;
 
   private final Map<String, Double> lastCall = new ConcurrentHashMap<>();

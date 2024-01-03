@@ -4,8 +4,16 @@ pluginManagement {
             name = 'Fabric'
             url = 'https://maven.fabricmc.net/'
         }
+        maven {
+            name = 'MinecraftForge'
+            url = 'https://maven.minecraftforge.net/'
+        }
         gradlePluginPortal()
     }
+}
+
+plugins {
+    id 'org.gradle.toolchains.foojay-resolver-convention' version '0.5.0'
 }
 
 rootProject.name = 'webapi'
@@ -21,3 +29,6 @@ project(':webapi-spigot-1.20').projectDir = "$rootDir/implementations/spigot-1.2
 
 include ':webapi-fabric-1.20'
 project(':webapi-fabric-1.20').projectDir = "$rootDir/implementations/fabric-1.20" as File
+
+include ':webapi-forge-49.0'
+project(':webapi-forge-49.0').projectDir = "$rootDir/implementations/forge-49.0" as File

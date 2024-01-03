@@ -2,6 +2,8 @@ package io.valandur.webapi.fabric.config;
 
 import io.valandur.webapi.security.SecurityConfig;
 import io.valandur.webapi.security.KeyPermissions;
+
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -18,22 +20,22 @@ public class FabricSecurityConfig implements SecurityConfig {
   }
 
   @Override
-  public Set<String> getWhitelist() {
+  public List<String> getWhitelist() {
     return defaultWhitelist;
   }
 
   @Override
-  public void setWhitelist(Set<String> whitelist) {
+  public void setWhitelist(List<String> whitelist) {
 
   }
 
   @Override
-  public Set<String> getBlacklist() {
+  public List<String> getBlacklist() {
     return defaultBlacklist;
   }
 
   @Override
-  public void setBlacklist(Set<String> blacklist) {
+  public void setBlacklist(List<String> blacklist) {
 
   }
 

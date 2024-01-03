@@ -4,6 +4,7 @@ import io.valandur.webapi.security.SecurityConfig;
 import io.valandur.webapi.security.KeyPermissions;
 import io.valandur.webapi.spigot.SpigotWebAPIPlugin;
 import java.io.File;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -40,22 +41,22 @@ public class SpigotSecurityConfig implements SecurityConfig {
   }
 
   @Override
-  public Set<String> getWhitelist() {
+  public List<String> getWhitelist() {
     return this.get("whitelist", this.defaultWhitelist);
   }
 
   @Override
-  public void setWhitelist(Set<String> whitelist) {
+  public void setWhitelist(List<String> whitelist) {
     this.set("whitelist", whitelist);
   }
 
   @Override
-  public Set<String> getBlacklist() {
+  public List<String> getBlacklist() {
     return this.get("blacklist", this.defaultBlacklist);
   }
 
   @Override
-  public void setBlacklist(Set<String> blacklist) {
+  public void setBlacklist(List<String> blacklist) {
     this.set("blacklist", blacklist);
   }
 

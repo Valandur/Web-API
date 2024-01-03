@@ -4,8 +4,6 @@ import io.valandur.webapi.Config;
 
 public interface WebConfig extends Config {
 
-    String name = "web";
-
     String defaultBasePath = "/";
 
     String getBasePath();

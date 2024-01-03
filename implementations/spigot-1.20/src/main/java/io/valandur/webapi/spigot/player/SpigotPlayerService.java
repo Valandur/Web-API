@@ -242,6 +242,7 @@ public class SpigotPlayerService extends PlayerService<SpigotWebAPI> {
         enchantments,
         displayName,
         damage,
+        0,
         author,
         pages
     );

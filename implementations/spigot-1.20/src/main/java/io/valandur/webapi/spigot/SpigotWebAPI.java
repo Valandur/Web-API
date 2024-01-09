@@ -110,16 +110,6 @@ public class SpigotWebAPI extends WebAPI<SpigotWebAPI, SpigotWebAPIPlugin> {
     @Override
     public AsyncTask runAsync(Runnable runnable) {
         var res = plugin.getServer().getScheduler().runTaskAsynchronously(plugin, runnable);
-        return new AsyncTask() {
-            @Override
-            public void cancel() {
-                res.cancel();
-            }
-
-            @Override
-            public void await() throws Exception {
-                res.wait();
-            }
-        };
+        return res::cancel;
     }
 }

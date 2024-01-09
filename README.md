@@ -13,29 +13,36 @@ tasks through the web, or provide dynamic content for users.
 
 ### Players
 
-| Description | Forge | Spigot | Sponge |
-|---|---|---|---|
-| Get players | ✓ | ✓ | ✓ |
-| Get player | ✓ | ✓ | ✓ |
-| Get player inventory | ✓ | ✓ | ✓ |
-| Add items to player inventory | ✓ | ✓ | ✓ |
-| Remove items from player inventory | ✓ | ✓ | ✓ |
-| Get player ender chest | ✓ | ✓ | ✓ |
-| Add items to player ender chest | ✓ | ✓ | ✓ |
-| Remove items from player ender chest | ✓ | ✓ | ✓ |
+| Description                          | Fabric | Forge | Spigot | Sponge |
+|--------------------------------------|--------|-------|--------|--------|
+| List players                         | ✓      | ✓     | ✓      | ✓      |
+| Get player details                   | ✓      | ✓     | ✓      | ✓      |
+| Get player inventory                 | ✓      | ✓     | ✓      | ✓      |
+| Add items to player inventory        | ✓      | ✓     | ✓      | ✓      |
+| Remove items from player inventory   | ✓      | ✓     | ✓      | ✓      |
+| Get player ender chest               | ✓      | ✓     | ✓      | ✓      |
+| Add items to player ender chest      | ✓      | ✓     | ✓      | ✓      |
+| Remove items from player ender chest | ✓      | ✓     | ✓      | ✓      |
 
 ### Worlds
 
-| Endpoint | Forge | Spigot | Sponge |
-|----------|-------|--------|--------|
-| Get block | ✓ | ✓ | ✓ |
-| Set block | ✓ | ✓ | ✓ |
+| Endpoint      | Fabric | Forge | Spigot | Sponge |
+|---------------|--------|-------|--------|--------|
+| List worlds   | ✓      | ✓     | ✓      | ✓      |
+| World details | ✓      | ✓     | ✓      | ✓      |
+| Load world    | ✓      | ✓     | ✓      | ✓      |
+| Unload world  | ✓      | ✓     | ✓      | ✓      |
+| Create world  | ✓      | ✓     | ✓      | ✓      |
+| Delete world  | ✓      | ✓     | ✓      | ✓      |
+| Get block     | ✓      | ✓     | ✓      | ✓      |
+| Set block     | ✓      | ✓     | ✓      | ✓      |
 
 ### Server
 
-| Endpoint | Forge | Spigot | Sponge |
-|----------|-------|--------|--------|
-| Server info | ✓ | ✓ | ✓ |
+| Endpoint | Fabric | Forge | Spigot | Sponge |
+|----------|--------|-------|--------|--------|
+| Info     | ✓      | ✓     | ✓      | ✓      |
+| Stats    | ✓      | ✓     | ✓      | ✓      |
 
 ## Contributors & Special thanks
 

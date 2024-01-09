@@ -34,12 +34,3 @@ sponge {
         }
     }
 }
-
-var javaTarget = 17 // Sponge targets a minimum of Java 17
-java {
-    sourceCompatibility = JavaVersion.toVersion(javaTarget)
-    targetCompatibility = JavaVersion.toVersion(javaTarget)
-    if (JavaVersion.current() < JavaVersion.toVersion(javaTarget)) {
-        toolchain.languageVersion.set(JavaLanguageVersion.of(javaTarget))
-    }
-}

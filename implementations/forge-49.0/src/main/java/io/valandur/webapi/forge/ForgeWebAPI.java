@@ -119,16 +119,6 @@ public class ForgeWebAPI extends WebAPI<ForgeWebAPI, ForgeWebAPIPlugin> {
     @Override
     public AsyncTask runAsync(Runnable runnable) {
         var res = scheduler.submit(runnable);
-        return new AsyncTask() {
-            @Override
-            public void cancel() {
-                res.cancel(true);
-            }
-
-            @Override
-            public void await() throws Exception {
-                res.wait();
-            }
-        };
+        return () -> res.cancel(true);
     }
 }

@@ -13,8 +13,8 @@ subprojects {
     group = project.group
     version = project.version
 
-    sourceCompatibility = '17'
-    targetCompatibility = '17'
+    sourceCompatibility = 20
+    targetCompatibility = 20
 
     repositories {
         mavenCentral()
@@ -49,14 +49,14 @@ subprojects {
 
         // We can't move all of "io" because then we're moving our own namespace
         relocate 'io.github', 'io.valandur.shade.io.github'
-        relocate 'io.leangen', 'io.valandur.shade.io.leangen'
+        relocate 'io.leangen.graphql', 'io.valandur.shade.io.leangen.graphql'
         relocate 'io.swagger', 'io.valandur.shade.io.swagger'
 
         relocate 'jakarta', 'io.valandur.shade.jakarta'
 
         relocate 'javassist', 'io.valandur.shade.javassist'
 
-        relocate 'javax', 'io.valandur.shade.javax'
+        relocate 'javax.servlet', 'io.valandur.shade.javax.servlet'
 
         relocate 'jersey', 'io.valandur.shade.jersey'
 
@@ -67,7 +67,7 @@ subprojects {
 
         // Don't relocate slf4j
         relocate 'org.antlr', 'io.valandur.shade.org.antlr'
-        relocate 'org.apache', 'io.valandur.shade.org.apache'
+        relocate 'org.apache.commons', 'io.valandur.shade.org.apache.commons'
         relocate 'org.codehaus', 'io.valandur.shade.org.codehaus'
         relocate 'org.aopalliance', 'io.valandur.shade.org.aopalliance'
         relocate 'org.dataloader', 'io.valandur.shade.org.dataloader'

@@ -16,9 +16,14 @@ public record World(
     @GraphQLQuery(description = typeDescr)
     @Schema(description = typeDescr, requiredMode = RequiredMode.REQUIRED)
     String type,
+    @GraphQLNonNull
     @GraphQLQuery(description = nameDescr)
-    @Schema(description = nameDescr)
+    @Schema(description = nameDescr, requiredMode = RequiredMode.REQUIRED)
     String name,
+    @GraphQLNonNull
+    @GraphQLQuery(description = loadedDescr)
+    @Schema(description = loadedDescr, requiredMode = RequiredMode.REQUIRED)
+    boolean loaded,
     @GraphQLNonNull
     @GraphQLQuery(description = difficultyDescr)
     @Schema(description = difficultyDescr, requiredMode = RequiredMode.REQUIRED)
@@ -35,6 +40,7 @@ public record World(
     private static final String uuidDescr = "The unique ID of the world";
     private static final String typeDescr = "The type of this world";
     private static final String nameDescr = "The name of this world";
+    private static final String loadedDescr = "True if this world is currently loaded, false otherwise.";
     private static final String difficultyDescr = "The difficulty setting of this world";
     private static final String seedDescr = "The seed used to generate this world";
     private static final String gameRulesDescr = "The game rules that are applicable for this world";

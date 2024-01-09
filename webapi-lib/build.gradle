@@ -12,11 +12,14 @@ dependencies {
     shade group: "com.fasterxml.jackson.jakarta.rs", name: "jackson-jakarta-rs-xml-provider", version: project.jacksonVersion
 
     shade group: 'org.eclipse.jetty', name: 'jetty-server', version: project.jettyVersion
-    shade group: 'org.eclipse.jetty', name: 'jetty-servlet', version: project.jettyVersion
+    shade group: 'org.eclipse.jetty.ee10', name: 'jetty-ee10-servlet', version: project.jettyVersion
+    shade group: 'org.eclipse.jetty.http2', name: 'jetty-http2-server', version: project.jettyVersion
+    shade group: 'org.eclipse.jetty.http3', name: 'jetty-http3-server', version: project.jettyVersion
 
     api group: 'org.glassfish.jersey.core', name: 'jersey-server', version: project.jerseyVersion
     shade group: 'org.glassfish.jersey.inject', name: 'jersey-hk2', version: project.jerseyVersion
     shade group: 'org.glassfish.jersey.containers', name: 'jersey-container-servlet', version: project.jerseyVersion
+    shade group: 'org.glassfish.jersey.ext', name: 'jersey-bean-validation', version: project.jerseyVersion
 
     shade group: 'io.swagger.core.v3', name: 'swagger-core-jakarta', version: project.swaggerVersion
     shade group: 'io.swagger.core.v3', name: 'swagger-jaxrs2-jakarta', version: project.swaggerVersion

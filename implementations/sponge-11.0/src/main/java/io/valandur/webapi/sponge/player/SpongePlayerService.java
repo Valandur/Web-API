@@ -7,11 +7,11 @@ import io.valandur.webapi.player.Player;
 import io.valandur.webapi.player.PlayerService;
 import io.valandur.webapi.sponge.SpongeWebAPI;
 import io.valandur.webapi.world.Position;
+
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.InternalServerErrorException;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.WebApplicationException;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -88,7 +88,7 @@ public class SpongePlayerService extends PlayerService<SpongeWebAPI> {
             throw new NotFoundException("Player not found: " + uuid);
         }
 
-        var itemStacks = stacks.stream().map(this::fromItemStack).collect(Collectors.toList());
+        var itemStacks = stacks.stream().map(this::fromItemStack).toList();
         var inv = player.get().inventory();
 
         for (var itemStack : itemStacks) {
@@ -107,7 +107,7 @@ public class SpongePlayerService extends PlayerService<SpongeWebAPI> {
             throw new NotFoundException("Player not found: " + uuid);
         }
 
-        var itemStacks = stacks.stream().map(this::fromItemStack).collect(Collectors.toList());
+        var itemStacks = stacks.stream().map(this::fromItemStack).toList();
         var inv = player.get().inventory();
 
         for (var itemStack : itemStacks) {
@@ -155,7 +155,7 @@ public class SpongePlayerService extends PlayerService<SpongeWebAPI> {
             throw new NotFoundException("Player not found: " + uuid);
         }
 
-        var itemStacks = stacks.stream().map(this::fromItemStack).collect(Collectors.toList());
+        var itemStacks = stacks.stream().map(this::fromItemStack).toList();
         var inv = player.get().enderChestInventory();
 
         for (var itemStack : itemStacks) {
@@ -174,7 +174,7 @@ public class SpongePlayerService extends PlayerService<SpongeWebAPI> {
             throw new NotFoundException("Player not found: " + uuid);
         }
 
-        var itemStacks = stacks.stream().map(this::fromItemStack).collect(Collectors.toList());
+        var itemStacks = stacks.stream().map(this::fromItemStack).toList();
         var inv = player.get().enderChestInventory();
 
         for (var itemStack : itemStacks) {

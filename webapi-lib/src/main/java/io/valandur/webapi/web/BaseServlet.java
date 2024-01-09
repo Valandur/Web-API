@@ -9,6 +9,8 @@ import io.valandur.webapi.hook.HookService;
 import io.valandur.webapi.player.PlayerService;
 import io.valandur.webapi.info.InfoService;
 import io.valandur.webapi.world.WorldService;
+import jakarta.servlet.Servlet;
+import jakarta.servlet.http.HttpServlet;
 
 public abstract class BaseServlet {
 

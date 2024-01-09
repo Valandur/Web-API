@@ -4,6 +4,7 @@ import io.valandur.webapi.chat.ChatService;
 import io.valandur.webapi.chat.ChatServlet;
 import io.valandur.webapi.command.CommandService;
 import io.valandur.webapi.entity.EntityServlet;
+import io.valandur.webapi.graphql.GraphQLServlet;
 import io.valandur.webapi.hook.HookConfig;
 import io.valandur.webapi.info.InfoConfig;
 import io.valandur.webapi.info.InfoServlet;

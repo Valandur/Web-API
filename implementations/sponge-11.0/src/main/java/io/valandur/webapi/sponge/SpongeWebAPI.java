@@ -122,16 +122,6 @@ public class SpongeWebAPI extends WebAPI<SpongeWebAPI, SpongeWebAPIPlugin> {
                 .execute(runnable)
                 .build();
         var sub = Sponge.asyncScheduler().submit(task);
-        return new AsyncTask() {
-            @Override
-            public void cancel() {
-                sub.cancel();
-            }
-
-            @Override
-            public void await() throws Exception {
-                sub.wait();
-            }
-        };
+        return sub::cancel;
     }
 }

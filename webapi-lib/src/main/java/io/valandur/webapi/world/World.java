@@ -4,22 +4,18 @@ import io.leangen.graphql.annotations.GraphQLNonNull;
 import io.leangen.graphql.annotations.GraphQLQuery;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.media.Schema.RequiredMode;
+
 import java.util.Collection;
-import java.util.UUID;
 
 public record World(
-    @GraphQLNonNull
-    @GraphQLQuery(description = uuidDescr)
-    @Schema(description = uuidDescr, requiredMode = RequiredMode.REQUIRED)
-    UUID uuid,
-    @GraphQLNonNull
-    @GraphQLQuery(description = typeDescr)
-    @Schema(description = typeDescr, requiredMode = RequiredMode.REQUIRED)
-    String type,
     @GraphQLNonNull
     @GraphQLQuery(description = nameDescr)
     @Schema(description = nameDescr, requiredMode = RequiredMode.REQUIRED)
     String name,
+    @GraphQLNonNull
+    @GraphQLQuery(description = typeDescr)
+    @Schema(description = typeDescr, requiredMode = RequiredMode.REQUIRED)
+    String type,
     @GraphQLNonNull
     @GraphQLQuery(description = loadedDescr)
     @Schema(description = loadedDescr, requiredMode = RequiredMode.REQUIRED)
@@ -37,7 +33,6 @@ public record World(
     @Schema(description = gameRulesDescr, requiredMode = RequiredMode.REQUIRED)
     Collection<GameRule> gameRules) {
 
-    private static final String uuidDescr = "The unique ID of the world";
     private static final String typeDescr = "The type of this world";
     private static final String nameDescr = "The name of this world";
     private static final String loadedDescr = "True if this world is currently loaded, false otherwise.";

@@ -23,6 +23,11 @@ public class ForgeWorldService extends WorldService<ForgeWebAPI> {
     }
 
     @Override
+    public World getWorld(String worldName) {
+        return null;
+    }
+
+    @Override
     public WorldConstants getConstants() {
         return null;
     }
@@ -33,27 +38,27 @@ public class ForgeWorldService extends WorldService<ForgeWebAPI> {
     }
 
     @Override
-    public void deleteWorld(UUID worldId) {
+    public void deleteWorld(String worldName) {
 
     }
 
     @Override
-    public World loadWorld(UUID worldId) {
+    public void loadWorld(String worldName) {
+
+    }
+
+    @Override
+    public void unloadWorld(String worldName) {
+
+    }
+
+    @Override
+    public Block getBlockAt(String worldName, int x, int y, int z) {
         return null;
     }
 
     @Override
-    public void unloadWorld(UUID worldId) {
-
-    }
-
-    @Override
-    public Block getBlockAt(UUID worldId, int x, int y, int z) {
-        return null;
-    }
-
-    @Override
-    public void setBlockAt(UUID worldId, int x, int y, int z, Block block) {
+    public void setBlockAt(String worldName, int x, int y, int z, Block block) {
 
     }
 }

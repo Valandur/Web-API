@@ -3,8 +3,6 @@ package io.valandur.webapi.world;
 import io.valandur.webapi.Service;
 import io.valandur.webapi.WebAPI;
 import java.util.Collection;
-import java.util.List;
-import java.util.UUID;
 
 public abstract class WorldService<T extends WebAPI<?, ?>> extends Service<T> {
 
@@ -18,13 +16,15 @@ public abstract class WorldService<T extends WebAPI<?, ?>> extends Service<T> {
 
     public abstract World createWorld(CreateWorldData data);
 
-    public abstract void deleteWorld(UUID worldId);
+    public abstract World getWorld(String worldName);
 
-    public abstract World loadWorld(UUID worldId);
+    public abstract void deleteWorld(String worldName);
 
-    public abstract void unloadWorld(UUID worldId);
+    public abstract void loadWorld(String worldName);
 
-    public abstract Block getBlockAt(UUID worldId, int x, int y, int z);
+    public abstract void unloadWorld(String worldName);
 
-    public abstract void setBlockAt(UUID worldId, int x, int y, int z, Block block);
+    public abstract Block getBlockAt(String worldName, int x, int y, int z);
+
+    public abstract void setBlockAt(String worldName, int x, int y, int z, Block block);
 }

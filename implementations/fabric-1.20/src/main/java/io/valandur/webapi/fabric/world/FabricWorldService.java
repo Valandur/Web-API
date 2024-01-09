@@ -10,7 +10,6 @@ import io.valandur.webapi.world.WorldService;
 import jakarta.ws.rs.NotFoundException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.UUID;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
@@ -41,6 +40,11 @@ public class FabricWorldService extends WorldService<FabricWebAPI> {
   }
 
   @Override
+  public World getWorld(String worldName) {
+    return null;
+  }
+
+  @Override
   public WorldConstants getConstants() {
     return null;
   }
@@ -51,31 +55,31 @@ public class FabricWorldService extends WorldService<FabricWebAPI> {
   }
 
   @Override
-  public void deleteWorld(UUID worldId) {
+  public void deleteWorld(String worldName) {
 
   }
 
   @Override
-  public World loadWorld(UUID worldId) {
-    return null;
-  }
-
-  @Override
-  public void unloadWorld(UUID worldId) {
+  public void loadWorld(String worldName) {
 
   }
 
   @Override
-  public Block getBlockAt(UUID worldId, int x, int y, int z) {
+  public void unloadWorld(String worldName) {
+
+  }
+
+  @Override
+  public Block getBlockAt(String worldName, int x, int y, int z) {
     ServerWorld world = null;
     for (var tempWorld : server.getWorlds()) {
-      if (webapi.getWorldUUID(tempWorld).equals(worldId)) {
+      if (getName(tempWorld) == worldName) {
         world = tempWorld;
         break;
       }
     }
     if (world == null) {
-      throw new NotFoundException("World not found: " + worldId);
+      throw new NotFoundException("World not found: " + worldName);
     }
 
     var state = world.getBlockState(new BlockPos(x, y, z));
@@ -83,7 +87,7 @@ public class FabricWorldService extends WorldService<FabricWebAPI> {
   }
 
   @Override
-  public void setBlockAt(UUID worldId, int x, int y, int z, Block block) {
+  public void setBlockAt(String worldName, int x, int y, int z, Block block) {
 
   }
 
@@ -97,6 +101,19 @@ public class FabricWorldService extends WorldService<FabricWebAPI> {
       }
     });
 
+    String name = getName(world);
+
+    return new World(
+        name,
+        world.getDimensionKey().getValue().toString(),
+        isLoaded,
+        world.getDifficulty().name(),
+        world.getSeed() + "",
+        gameRules
+    );
+  }
+
+  private String getName(ServerWorld world) {
     String name = null;
     var props = world.getLevelProperties();
     if (props instanceof LevelProperties) {
@@ -104,17 +121,6 @@ public class FabricWorldService extends WorldService<FabricWebAPI> {
     } else if (props instanceof UnmodifiableLevelProperties) {
       name = ((UnmodifiableLevelProperties) props).getLevelName();
     }
-
-    var uuid = webapi.getWorldUUID(world);
-
-    return new World(
-        uuid,
-        world.getDimensionKey().getValue().toString(),
-        name,
-        isLoaded,
-        world.getDifficulty().name(),
-        world.getSeed() + "",
-        gameRules
-    );
+    return name;
   }
 }

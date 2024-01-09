@@ -27,14 +27,9 @@ import io.valandur.webapi.player.PlayerService;
 import io.valandur.webapi.info.InfoService;
 import io.valandur.webapi.world.WorldService;
 
-import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.world.level.LevelProperties;
-import net.minecraft.world.level.UnmodifiableLevelProperties;
 
 public class FabricWebAPI extends WebAPI<FabricWebAPI, FabricWebAPIPlugin> {
 
@@ -126,28 +121,5 @@ public class FabricWebAPI extends WebAPI<FabricWebAPI, FabricWebAPIPlugin> {
     public AsyncTask runAsync(Runnable runnable) {
         var res = scheduler.submit(runnable);
         return () -> res.cancel(true);
-    }
-
-    public UUID getWorldUUID(ServerWorld world) {
-        long total = 0;
-
-        String name = "";
-        var props = world.getLevelProperties();
-        if (props instanceof LevelProperties) {
-            name = ((LevelProperties) props).getLevelName();
-        } else if (props instanceof UnmodifiableLevelProperties) {
-            name = ((UnmodifiableLevelProperties) props).getLevelName();
-        }
-        for (var b : name.getBytes()) {
-            total += b;
-        }
-
-        var dimKey = world.getDimensionKey().getValue().toString();
-        for (var b : dimKey.getBytes()) {
-            total += (long) b << 16;
-        }
-
-        var seed = world.getSeed();
-        return new UUID(seed, total);
     }
 }

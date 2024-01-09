@@ -13,15 +13,19 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+
+import jakarta.ws.rs.NotFoundException;
 import org.spongepowered.api.ResourceKey;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.block.BlockType;
 import org.spongepowered.api.data.Keys;
+import org.spongepowered.api.data.value.Value;
 import org.spongepowered.api.registry.RegistryTypes;
 import org.spongepowered.api.world.WorldTypes;
 import org.spongepowered.api.world.difficulty.Difficulties;
 import org.spongepowered.api.world.generation.config.WorldGenerationConfig;
+import org.spongepowered.api.world.server.ServerWorld;
 import org.spongepowered.api.world.server.WorldManager;
 import org.spongepowered.api.world.server.WorldTemplate;
 import org.spongepowered.api.world.server.storage.ServerWorldProperties;
@@ -44,13 +48,31 @@ public class SpongeWorldService extends WorldService<SpongeWebAPI> {
       try {
         var props = world.isPresent()
             ? world.get().properties()
-            : worldManager.loadProperties(key).get(2, TimeUnit.SECONDS).orElseThrow();
+            : worldManager.loadProperties(key).get().orElseThrow();
         worlds.add(toWorld(props, world.isPresent()));
       } catch (Exception e) {
         logger.warn("Could not get world properties for " + key + ": " + e);
       }
     }
     return worlds;
+  }
+
+  @Override
+  public World getWorld(String worldName) {
+    var key = ResourceKey.resolve(worldName);
+    if (worldManager.worldKeys().stream().noneMatch(k -> k.equals(key))) {
+      throw new NotFoundException("World not found: " + worldName);
+    }
+
+    try {
+      var world = worldManager.world(key);
+      var props = world.isPresent()
+              ? world.get().properties()
+              : worldManager.loadProperties(key).get().orElseThrow();
+      return toWorld(props, world.isPresent());
+    } catch (Exception e) {
+      throw new InternalServerErrorException(e);
+    }
   }
 
   @Override
@@ -84,7 +106,7 @@ public class SpongeWorldService extends WorldService<SpongeWebAPI> {
 
     var type = WorldTypes.registry().findValue(ResourceKey.resolve(data.type()));
     if (type.isEmpty()) {
-      throw new BadRequestException("Could not find world type " + data.type());
+      throw new BadRequestException("World type not found: " + data.type());
     }
     template.add(Keys.WORLD_TYPE, type.get());
 
@@ -95,7 +117,7 @@ public class SpongeWorldService extends WorldService<SpongeWebAPI> {
     if (data.difficulty() != null) {
       var diff = Difficulties.registry().findValue(ResourceKey.resolve(data.difficulty()));
       if (diff.isEmpty()) {
-        throw new BadRequestException("Could not find difficulty " + data.difficulty());
+        throw new BadRequestException("Difficulty not found: " + data.difficulty());
       }
       template.add(Keys.WORLD_DIFFICULTY, diff.get());
     }
@@ -110,53 +132,43 @@ public class SpongeWorldService extends WorldService<SpongeWebAPI> {
   }
 
   @Override
-  public void deleteWorld(UUID worldId) {
-    var optKey = worldManager.worldKey(worldId);
-    if (optKey.isEmpty()) {
-      throw new BadRequestException("World not found: " + worldId);
-    }
+  public void deleteWorld(String worldName) {
+    var key = ResourceKey.resolve(worldName);
 
     try {
-      worldManager.deleteWorld(optKey.get()).get();
+      worldManager.deleteWorld(key).get();
     } catch (Exception e) {
       throw new InternalServerErrorException(e);
     }
   }
 
   @Override
-  public World loadWorld(UUID worldId) {
-    var optKey = worldManager.worldKey(worldId);
-    if (optKey.isEmpty()) {
-      throw new BadRequestException("World not found: " + worldId);
-    }
+  public void loadWorld(String worldName) {
+    var key = ResourceKey.resolve(worldName);
 
     try {
-      var world = worldManager.loadWorld(optKey.get()).get();
-      return toWorld(world.properties(), true);
+      worldManager.loadWorld(key).get();
     } catch (Exception e) {
       throw new InternalServerErrorException(e);
     }
   }
 
   @Override
-  public void unloadWorld(UUID worldId) {
-    var optKey = worldManager.worldKey(worldId);
-    if (optKey.isEmpty()) {
-      throw new BadRequestException("World not found: " + worldId);
-    }
+  public void unloadWorld(String worldName) {
+    var key = ResourceKey.resolve(worldName);
 
     try {
-      worldManager.unloadWorld(optKey.get()).get();
+      worldManager.unloadWorld(key).get();
     } catch (Exception e) {
       throw new InternalServerErrorException(e);
     }
   }
 
   @Override
-  public Block getBlockAt(UUID worldId, int x, int y, int z) {
-    var optWorld = worldManager.worldKey(worldId).flatMap(worldManager::world);
+  public Block getBlockAt(String worldName, int x, int y, int z) {
+    var optWorld = worldManager.world(ResourceKey.resolve(worldName));
     if (optWorld.isEmpty()) {
-      throw new BadRequestException("World not found or not loaded: " + worldId);
+      throw new BadRequestException("World not found or not loaded: " + worldName);
     }
 
     var world = optWorld.get();
@@ -165,10 +177,10 @@ public class SpongeWorldService extends WorldService<SpongeWebAPI> {
   }
 
   @Override
-  public void setBlockAt(UUID worldId, int x, int y, int z, Block block) {
-    var optWorld = worldManager.worldKey(worldId).flatMap(worldManager::world);
+  public void setBlockAt(String worldName, int x, int y, int z, Block block) {
+    var optWorld = worldManager.world(ResourceKey.resolve(worldName));
     if (optWorld.isEmpty()) {
-      throw new BadRequestException("World not found or not loaded: " + worldId);
+      throw new BadRequestException("World not found or not loaded: " + worldName);
     }
 
     var world = optWorld.get();
@@ -206,10 +218,11 @@ public class SpongeWorldService extends WorldService<SpongeWebAPI> {
 
     var seed = props.get(Keys.WORLD_GEN_CONFIG).map(WorldGenerationConfig::seed).orElse(null);
 
+    var type = props.get(Keys.WORLD_TYPE).map(v -> v.key(RegistryTypes.WORLD_TYPE).asString()).orElse("");
+
     return new World(
-        props.uniqueId(),
-        props.worldType().key(RegistryTypes.WORLD_TYPE).asString(),
         props.name(),
+        type,
         isLoaded,
         props.difficulty().key(RegistryTypes.DIFFICULTY).asString(),
         seed + "",

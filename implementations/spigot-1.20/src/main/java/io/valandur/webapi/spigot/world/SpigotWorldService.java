@@ -11,7 +11,6 @@ import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.WebApplicationException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Server;
@@ -36,6 +35,11 @@ public class SpigotWorldService extends WorldService<SpigotWebAPI> {
       worlds.add(this.toWorld(world, true));
     }
     return worlds;
+  }
+
+  @Override
+  public World getWorld(String worldName) {
+    return null;
   }
 
   @Override
@@ -64,34 +68,33 @@ public class SpigotWorldService extends WorldService<SpigotWebAPI> {
   }
 
   @Override
-  public void deleteWorld(UUID worldId) {
+  public void deleteWorld(String worldName) {
 
   }
 
   @Override
-  public World loadWorld(UUID worldId) {
+  public void loadWorld(String worldName) {
     var world = server.createWorld(new WorldCreator(""));
     if (world == null) {
-      throw new BadRequestException("Could not generate world");
+      throw new BadRequestException("Could not load world");
     }
-    return toWorld(world, true);
   }
 
   @Override
-  public void unloadWorld(UUID worldId) {
-    var world = server.getWorld(worldId);
+  public void unloadWorld(String worldName) {
+    var world = server.getWorld(worldName);
     if (world == null) {
-      throw new BadRequestException("World not found: " + worldId);
+      throw new BadRequestException("World not found: " + worldName);
     }
 
     server.unloadWorld(world, true);
   }
 
   @Override
-  public Block getBlockAt(UUID worldId, int x, int y, int z) {
-    var world = server.getWorld(worldId);
+  public Block getBlockAt(String worldName, int x, int y, int z) {
+    var world = server.getWorld(worldName);
     if (world == null) {
-      throw new BadRequestException("World not found: " + worldId);
+      throw new BadRequestException("World not found: " + worldName);
     }
 
     var block = world.getBlockAt(x, y, z);
@@ -99,10 +102,10 @@ public class SpigotWorldService extends WorldService<SpigotWebAPI> {
   }
 
   @Override
-  public void setBlockAt(UUID worldId, int x, int y, int z, Block block) {
-    var world = server.getWorld(worldId);
+  public void setBlockAt(String worldName, int x, int y, int z, Block block) {
+    var world = server.getWorld(worldName);
     if (world == null) {
-      throw new BadRequestException("World not found: " + worldId);
+      throw new BadRequestException("World not found: " + worldName);
     }
 
     var blockData = this.fromBlock(block);
@@ -122,9 +125,8 @@ public class SpigotWorldService extends WorldService<SpigotWebAPI> {
     }
 
     return new World(
-        world.getUID(),
-        world.getEnvironment().name(),
         world.getName(),
+        world.getEnvironment().name(),
         isLoaded,
         world.getDifficulty().name(),
         world.getSeed() + "",

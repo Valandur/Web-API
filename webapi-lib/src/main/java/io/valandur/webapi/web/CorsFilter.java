@@ -50,7 +50,7 @@ public class CorsFilter implements ContainerRequestFilter, ContainerResponseFilt
     if (isPreflightRequest(request)) {
       response.getHeaders().add("Access-Control-Allow-Credentials", "true");
       response.getHeaders().add("Access-Control-Allow-Methods",
-          "GET, POST, PUT, DELETE, OPTIONS, HEAD");
+          "GET, POST, PATCH, PUT, DELETE, OPTIONS, HEAD");
       response.getHeaders().add("Access-Control-Allow-Headers",
           "X-Requested-With, Authorization, Accept-Version, Content-MD5, CSRF-Token, Content-Type");
     }
